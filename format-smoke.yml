@@ -1,0 +1,94 @@
+name: format smoke
+
+# Validates the Format layer end to end WITHOUT any Deadlock files:
+#   - .NET builds on ubuntu-latest
+#   - ValvePak resolves from NuGet
+#   - the index reads and the envelope serialises
+#   - output is byte-identical across two runs (determinism is a contract)
+#
+# Any Source-engine VPK works as input. Drop one in fixtures/ — it does not
+# have to be Deadlock's, and for this test it should not be.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      vpk_path:
+        description: "Path to a *_dir.vpk to test against"
+        required: false
+        default: ""
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore and build
+        run: |
+          dotnet new sln -n Deadlock
+          dotnet sln add $(find src -name '*.csproj')
+          dotnet build -c Release --nologo
+
+      - name: Enforce layer boundaries
+        run: |
+          # Transform must never reference VRF or ValvePak; Format is the only
+          # layer that knows binary formats. Build-enforced, not conventional.
+          if grep -rl 'ValvePak\|ValveResourceFormat' src/Deadlock.Transform 2>/dev/null | grep -q .; then
+            echo "::error::Deadlock.Transform references a binary-format library. See TOOLING.md section 1."
+            exit 1
+          fi
+          if grep -q 'Deadlock.Tools\|Deadlock.Harness' src/Deadlock.Format/*.csproj; then
+            echo "::error::Deadlock.Format references a layer above it."
+            exit 1
+          fi
+          echo "layer boundaries ok"
+
+      - name: Locate a test VPK
+        id: vpk
+        run: |
+          P="${{ github.event.inputs.vpk_path }}"
+          if [ -z "$P" ]; then
+            P=$(find fixtures -name '*_dir.vpk' 2>/dev/null | sort | head -1)
+          fi
+          if [ -z "$P" ]; then
+            echo "::notice::No VPK in fixtures/ — skipping the read test."
+            echo "found=" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=$P" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Missing-fixture contract
+        run: |
+          # Exit 3 must mean "this machine isn't set up", distinct from misuse.
+          set +e
+          dotnet run --project src/Deadlock.Tools -c Release --no-build -- /nonexistent.vpk > out.json
+          CODE=$?
+          set -e
+          [ "$CODE" -eq 3 ] || { echo "::error::expected exit 3, got $CODE"; exit 1; }
+          grep -q FIXTURE_MISSING out.json || { echo "::error::missing error code"; exit 1; }
+          echo "exit-code contract ok"
+
+      - name: Read index
+        if: steps.vpk.outputs.found != ''
+        run: |
+          dotnet run --project src/Deadlock.Tools -c Release --no-build -- \
+            "${{ steps.vpk.outputs.found }}" > index-a.json
+          dotnet run --project src/Deadlock.Tools -c Release --no-build -- \
+            "${{ steps.vpk.outputs.found }}" > index-b.json
+          diff -q index-a.json index-b.json \
+            || { echo "::error::output not deterministic across runs"; exit 1; }
+          echo "determinism ok"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-output
+          path: |
+            *.json
+          if-no-files-found: ignore
