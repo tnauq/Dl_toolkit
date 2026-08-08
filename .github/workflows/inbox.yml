@@ -10,12 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Unpack anything in inbox/
+      - name: Unpack zips
         run: |
           shopt -s nullglob
-          ZIPS=(inbox/*.zip)
+          ZIPS=(inbox/*.zip *.zip)
           if [ ${#ZIPS[@]} -eq 0 ]; then
-            echo "::error::No zip in inbox/"
+            echo "::error::No zip found"
             exit 1
           fi
           mkdir -p _pending_workflows
@@ -30,16 +30,4 @@ jobs:
 
       - name: Commit
         run: |
-          git config user.name actions
-          git config user.email actions@github.com
-          git add -A
-          git commit -m "Unpack inbox" || { echo "nothing to commit"; exit 0; }
-          git push
-
-      - name: Note pending workflows
-        if: always()
-        run: |
-          if [ -d _pending_workflows/.github/workflows ]; then
-            echo "::warning::Workflow files need applying by hand:"
-            ls _pending_workflows/.github/workflows
-          fi
+          git config user.name
