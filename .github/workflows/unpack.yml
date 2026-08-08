@@ -21,5 +21,8 @@ jobs:
 
       - name: Commit
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.nore
+          git config user.name actions
+          git config user.email actions@github.com
+          git add -A
+          git commit -m "Unpack toolkit skeleton"
+          git push
