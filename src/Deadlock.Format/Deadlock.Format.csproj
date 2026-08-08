@@ -8,6 +8,9 @@
     <!-- Archive access only. VRF is added when a resource must be DECODED;
          ValvePak alone covers the index. See FINDINGS.md, VPK access. -->
     <PackageReference Include="ValvePak" Version="4.0.0.142" />
+    <!-- Independent CRC32, so round-trip checks don't verify ValvePak
+         against itself. -->
+    <PackageReference Include="System.IO.Hashing" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Deadlock.Contracts/Deadlock.Contracts.csproj" />
