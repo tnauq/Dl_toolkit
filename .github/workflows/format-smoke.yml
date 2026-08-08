@@ -1,23 +1,20 @@
 name: format smoke
 
-# Validates the Format layer end to end WITHOUT any Deadlock files:
-#   - .NET builds on ubuntu-latest
-#   - ValvePak resolves from NuGet
-#   - the index reads and the envelope serialises
-#   - output is byte-identical across two runs (determinism is a contract)
+# Validates the Format layer end to end with NO game files at all.
 #
-# Any Source-engine VPK works as input. Drop one in fixtures/ — it does not
-# have to be Deadlock's, and for this test it should not be.
+# The archive under test is GENERATED, not committed:
+#   dl-mkfixture writes a VPK from known content and reports checksums it
+#   computed itself; dl-extract reads the same archive back; compare.py asserts
+#   they agree. That is what actually verifies PackageEntry.CRC32 means the
+#   CRC32 of file contents — the assumption dl-diff's whole design rests on.
+#
+# Also checked: the build, layer boundaries, the exit-code contract, and
+# byte-identical output across repeated runs.
 
 on:
   push:
   pull_request:
   workflow_dispatch:
-    inputs:
-      vpk_path:
-        description: "Path to a *_dir.vpk to test against"
-        required: false
-        default: ""
 
 jobs:
   smoke:
@@ -29,6 +26,21 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Preflight - repo tree intact
+        run: |
+          MISSING=""
+          for d in src/Deadlock.Contracts src/Deadlock.Format \
+                   src/Deadlock.Tools src/Deadlock.MakeFixture; do
+            [ -d "$d" ] || MISSING="$MISSING $d"
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing directories:$MISSING"
+            echo "Commit is incomplete - files were likely copied flat."
+            find . -type f -not -path './.git/*' | sort
+            exit 1
+          fi
+          echo "tree ok"
+
       - name: Restore and build
         run: |
           dotnet new sln -n Deadlock
@@ -37,53 +49,60 @@ jobs:
 
       - name: Enforce layer boundaries
         run: |
-          # Transform must never reference VRF or ValvePak; Format is the only
-          # layer that knows binary formats. Build-enforced, not conventional.
-          if grep -rl 'ValvePak\|ValveResourceFormat' src/Deadlock.Transform 2>/dev/null | grep -q .; then
+          if [ -d src/Deadlock.Transform ] && \
+             grep -rl 'ValvePak\|ValveResourceFormat' src/Deadlock.Transform | grep -q .; then
             echo "::error::Deadlock.Transform references a binary-format library. See TOOLING.md section 1."
             exit 1
           fi
-          if grep -q 'Deadlock.Tools\|Deadlock.Harness' src/Deadlock.Format/*.csproj; then
+          if grep -q 'Deadlock.Tools\|Deadlock.Harness\|Deadlock.MakeFixture' \
+                  src/Deadlock.Format/*.csproj; then
             echo "::error::Deadlock.Format references a layer above it."
             exit 1
           fi
           echo "layer boundaries ok"
 
-      - name: Locate a test VPK
-        id: vpk
-        run: |
-          P="${{ github.event.inputs.vpk_path }}"
-          if [ -z "$P" ]; then
-            P=$(find fixtures -name '*_dir.vpk' 2>/dev/null | sort | head -1)
-          fi
-          if [ -z "$P" ]; then
-            echo "::notice::No VPK in fixtures/ — skipping the read test."
-            echo "found=" >> "$GITHUB_OUTPUT"
-          else
-            echo "found=$P" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Missing-fixture contract
         run: |
-          # Exit 3 must mean "this machine isn't set up", distinct from misuse.
           set +e
-          dotnet run --project src/Deadlock.Tools -c Release --no-build -- /nonexistent.vpk > out.json
+          dotnet run --project src/Deadlock.Tools -c Release --no-build -- \
+            /nonexistent.vpk > out.json
           CODE=$?
           set -e
           [ "$CODE" -eq 3 ] || { echo "::error::expected exit 3, got $CODE"; exit 1; }
           grep -q FIXTURE_MISSING out.json || { echo "::error::missing error code"; exit 1; }
           echo "exit-code contract ok"
 
-      - name: Read index
-        if: steps.vpk.outputs.found != ''
+      - name: Generate a VPK
+        run: |
+          dotnet run --project src/Deadlock.MakeFixture -c Release --no-build -- \
+            build/synthetic_dir.vpk > manifest.json
+          ls -la build/
+
+      - name: Read it back
         run: |
           dotnet run --project src/Deadlock.Tools -c Release --no-build -- \
-            "${{ steps.vpk.outputs.found }}" > index-a.json
+            build/synthetic_dir.vpk > index-a.json
           dotnet run --project src/Deadlock.Tools -c Release --no-build -- \
-            "${{ steps.vpk.outputs.found }}" > index-b.json
+            build/synthetic_dir.vpk > index-b.json
           diff -q index-a.json index-b.json \
             || { echo "::error::output not deterministic across runs"; exit 1; }
           echo "determinism ok"
+
+      - name: Verify round trip
+        run: python3 compare.py manifest.json index-a.json
+
+      - name: Determinism of the writer
+        run: |
+          mv build/synthetic_dir.vpk build/first.vpk
+          dotnet run --project src/Deadlock.MakeFixture -c Release --no-build -- \
+            build/synthetic_dir.vpk > /dev/null
+          if cmp -s build/first.vpk build/synthetic_dir.vpk; then
+            echo "writer is byte-deterministic"
+          else
+            echo "::warning::VPK writer output is not byte-identical across runs."
+            echo "Not fatal, but content-addressed caching must key on the"
+            echo "manifest rather than the archive bytes. Record in FINDINGS.md."
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
