@@ -14,7 +14,7 @@ jobs:
         run: |
           ZIP=$(find . -maxdepth 2 -name 'deadlock-toolkit.zip' | head -1)
           [ -n "$ZIP" ] || { echo "::error::zip not found"; exit 1; }
-          unzip -o "$ZIP" -d .
+          unzip -o "$ZIP" -x '.github/workflows/*' -d .
           rm -f "$ZIP"
           rm -f .github/workflows/unpack.yml
           find . -type f -not -path './.git/*' | sort
@@ -22,7 +22,4 @@ jobs:
       - name: Commit
         run: |
           git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Unpack toolkit skeleton"
-          git push
+          git config user.email "github-actions[bot]@users.nore
