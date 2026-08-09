@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>dl-probe-kv3</AssemblyName>
+    <RootNamespace>Deadlock.Probe.Kv3</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!--
+    Deliberately NOT referencing Deadlock.Contracts or Deadlock.Format.
+    This is a throwaway probe. It answers one question and must not become
+    a load-bearing part of the layer graph (D4). Delete it once FINDINGS
+    records the answer.
+  -->
+  <ItemGroup>
+    <PackageReference Include="ValveResourceFormat" Version="12.0.0" />
+  </ItemGroup>
+
+</Project>

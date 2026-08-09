@@ -1,0 +1,79 @@
+name: probe kv3
+
+# Answers ONE question: does VRF already give us a usable KV3 text serializer,
+# or does dl-patch have to ship its own?
+#
+# No CSDK, no Windows runner, no game install. Delete this workflow once
+# FINDINGS.md records the answer.
+
+on:
+  workflow_dispatch:
+    inputs:
+      vdata_path:
+        description: "Path inside GameTracking-Deadlock to probe"
+        required: false
+        default: "game/citadel/scripts/heroes.vdata"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # Sparse + blobless: the full repo is enormous and we want one file.
+      - name: Fetch a real hero vdata
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --sparse --depth 1 \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout set game/citadel/scripts || true
+          echo "--- what actually landed ---"
+          find . -name '*.vdata' | head -50 || true
+
+      - name: Locate the input
+        id: locate
+        run: |
+          set -euo pipefail
+          WANT="${{ github.event.inputs.vdata_path }}"
+          if [ -f "gt/$WANT" ]; then
+            echo "path=gt/$WANT" >> "$GITHUB_OUTPUT"
+          else
+            # Fall back to the largest .vdata we found. A miss here is a
+            # finding too: it means the path convention is not what we assumed.
+            FOUND=$(find gt -name '*.vdata' -printf '%s %p\n' | sort -rn | head -1 | cut -d' ' -f2 || true)
+            if [ -z "$FOUND" ]; then
+              echo "::error::no .vdata found under gt/ — record the tree layout in FINDINGS"
+              exit 4
+            fi
+            echo "requested path missing, using $FOUND"
+            echo "path=$FOUND" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build probe
+        run: dotnet build src/Deadlock.Probe.Kv3/Deadlock.Probe.Kv3.csproj -c Release
+
+      - name: Run probe
+        run: |
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.Probe.Kv3/Deadlock.Probe.Kv3.csproj \
+            -- "${{ steps.locate.outputs.path }}" probe-out
+
+      - name: Copy the original alongside the output
+        if: always()
+        run: cp "${{ steps.locate.outputs.path }}" probe-out/original.vdata || true
+
+      - name: Report to summary
+        if: always()
+        run: cat probe-out/report.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kv3-probe
+          path: probe-out/
