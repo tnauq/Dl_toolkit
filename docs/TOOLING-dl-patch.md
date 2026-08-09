@@ -1,33 +1,66 @@
-# TOOLING — `dl-patch`, including batch
+# TOOLING — `dl-patch`
 
-Spec only. **Nothing here is built.** Kept so the single-edit v1 does not paint
-batch into a corner, per D8: one tool at a time, but design the seams once.
-
-Everything in this file is `[?]` until the KV3 write path is settled by the
-`probe kv3` run.
+v1 is **built and CI-verified** (patch-smoke 2026-08-09). Batch is spec only.
 
 ---
 
-## v1 — single edit, scalars only
+## v1 — single edit, scalars only. SHIPPED.
 
 ```
-dl-patch --in <file.vdata> --out <file.vdata> --set <dotted.path>=<value>
+dl-patch --in <file.vdata> --out <file.vdata> --set <dotted.path>=<value> [--set ...]
+         [--dry-run] [--json]
 ```
 
-- `--set` may repeat. Repeats are applied in order, left to right.
-- Scalars only: number, string, bool. Array indices and object insertion are
-  out of scope and must produce a named error, not a partial write.
-- `--dry-run` reports what would change and writes nothing.
-- `--json` emits the envelope on stdout; diagnostics to stderr (D5).
+- `--set` may repeat; applied in order, left to right.
+- **Scalars only**: number, string, bool.
+- `--dry-run` reports and writes nothing.
+- `--json` puts the envelope on stdout; diagnostics to stderr (D5).
 - Exit codes: 0 ok, 2 misuse, 3 missing dependency, 4 input unreadable,
-  5 path not found in document, 6 type mismatch at path.
+  5 path not found, 6 type mismatch.
 
-### Why the seam matters now
+### Value inference — a contract, not an accident
 
-v1 takes `--set` from argv. Batch takes it from a file. If v1's internals take
-a `List<Edit>` rather than a string pair, batch is a new front end over the
-same core and nothing is rewritten. **Do not let argv parsing reach into the
-edit application code.**
+```
+true / false   -> bool
+-12            -> integer
+3.5            -> number
+"1"            -> string   (quotes force string)
+anything else  -> string
+```
+
+The quote escape exists so a numeric-looking value can still be written as a
+string. Without it there is no way to set a key to the string `"1"`.
+
+### Rules that are enforced, each for a reason
+
+- **The document's existing type wins.** A fractional value into an integer
+  field is REFUSED, not rounded — silent rounding is how a vdata edit changes
+  meaning invisibly.
+- **Flagged values are refused by name.** `resource_name:`, `subclass:`,
+  `panorama:` carry a `KVFlag`; writing one as a plain string would drop the
+  prefix with no visible sign.
+- **Arrays are refused.** Arrays are `KVObject` with `IsArray`, so without an
+  explicit check they would look like traversable blocks.
+- **All-or-nothing.** Any failed edit means nothing is written. Established
+  here because it is what batch needs.
+- **Source vdata in, source vdata out.** Compiling is a separate step.
+- The tool says "structurally valid", never "works" (D7).
+
+### What CI proves — and the trick that makes it work
+
+VRF reformats on write (floats to 6dp, arrays exploded), so a byte-identical
+assertion against the ORIGINAL is impossible. `patch-smoke` instead writes a
+**no-op baseline** first, then diffs the patched file against the baseline.
+Reformatting is constant on both sides, so the assertion reduces to *exactly
+two changed lines, one `<` and one `>`*.
+
+Also asserted: re-parse, determinism across runs, all four exit codes, flagged
+refusal, and that `--dry-run` leaves no file.
+
+### Known rough edge
+
+The envelope's `from` uses `"R"` formatting, so a field reading `780.0` in the
+file reports as `780`. Cosmetic now; see the batch `expect` note below.
 
 ---
 
@@ -37,8 +70,8 @@ edit application code.**
 dl-patch batch --plan <plan.json> [--root <dir>] [--out-root <dir>] [--dry-run]
 ```
 
-One plan touches many files. Motivating case: a hero rebalance that spans
-several vdata files and must land atomically or not at all.
+One plan touches many files. Motivating case: a rebalance spanning several
+vdata files that must land atomically or not at all.
 
 ### Plan shape — DRAFT
 
@@ -48,32 +81,37 @@ several vdata files and must land atomically or not at all.
   "description": "human note, echoed into the result",
   "edits": [
     {
-      "file": "game/citadel/scripts/heroes.vdata",
+      "file": "game/citadel/pak01_dir/scripts/heroes.vdata",
       "set": [
-        { "path": "hero_abrams.m_flMaxHealth", "value": 750 },
-        { "path": "hero_abrams.m_bDisabled", "value": false }
+        { "path": "hero_base.m_mapStartingStats.EMaxHealth", "value": 750, "expect": 780 },
+        { "path": "hero_base.m_bDisabled", "value": false }
       ]
     }
   ]
 }
 ```
 
-### Open questions — answer before building, do not guess
+### The seam v1 already respects
 
-- **Atomicity.** All-or-nothing across files, or per-file best effort? Leaning
-  all-or-nothing: a half-applied balance pass is worse than none. Requires
-  staging to temp and moving on success.
-- **Expected-value guards.** Should an edit be able to say
-  `"expect": 600` and fail if the current value differs? This is what makes a
-  plan survive a game patch instead of silently writing over changed values.
-  Probably yes, and probably the single most valuable field here.
-- **Path collisions.** Two edits to the same path in one plan: error, or
-  last-wins? Leaning error.
-- **Ordering.** Is plan order the contract, or is output sorted? D5 says
-  deterministic ordering is a contract — decide which one.
-- **Build id.** D2 says record the build id on every artifact rather than
-  pinning. The result envelope should carry the GameTracking commit the input
-  came from. Mechanism unspecified.
+`Edit` and `ScalarValue` are parsed from argv but **nothing in `Edit.cs`
+reaches into argv**. Batch is a new front end producing the same `List<Edit>`;
+`Kv3Document` does not change.
+
+### Open questions — answer before building
+
+- **`expect` guards.** The field that makes a plan survive a game patch instead
+  of overwriting values that moved underneath it. Probably the highest-value
+  item here. **Comparison must be numeric, not string** — `780` vs `780.0`
+  would fail a string compare (see the rough edge above).
+- **Atomicity across files.** Leaning all-or-nothing, which needs staging to
+  temp and moving on success.
+- **Path collisions** — two edits to one path: error, or last-wins? Leaning
+  error.
+- **Ordering** — plan order, or sorted output? D5 makes deterministic ordering
+  a contract; pick one and assert it.
+- **Build id.** D2 says record the build on every artifact. The envelope should
+  carry the GameTracking commit the input came from. `patch-smoke` already
+  records it in `source-build.txt`; the tool itself does not.
 
 ### Result envelope — DRAFT
 
@@ -81,29 +119,30 @@ several vdata files and must land atomically or not at all.
 {
   "ok": true,
   "tool": "dl-patch",
-  "version": "0.0.0",
-  "sourceBuild": "gametracking-commit-sha",
+  "sourceBuild": "0f32ac2411aa8e6832eb233b1db2d68800974714",
   "files": [
     {
-      "file": "game/citadel/scripts/heroes.vdata",
+      "file": "game/citadel/pak01_dir/scripts/heroes.vdata",
       "applied": 2,
       "skipped": 0,
       "edits": [
-        { "path": "hero_abrams.m_flMaxHealth", "from": 600, "to": 750, "ok": true }
+        { "path": "hero_base.m_mapStartingStats.EMaxHealth",
+          "from": 780, "to": 750, "ok": true }
       ]
     }
   ]
 }
 ```
 
-`from` is what makes the output reviewable on a phone without opening the file,
-and it is also the inverse of the plan — enough to generate an undo.
+`from` makes the result reviewable on a phone without opening the file, and it
+is the inverse of the plan — enough to generate an undo.
 
 ---
 
 ## Not in scope, recorded so it is not re-proposed
 
 - Compiling to `.vdata_c`. Separate step, separate tool, needs the CSDK.
-- Packing to a VPK addon. `Deadlock.Format` already writes archives; wiring is
-  a later tool.
+- Packing to a VPK addon. `Deadlock.Format` already writes archives.
 - Merging two plans. No use case yet.
+- Array-element and object-insertion edits. Wait for a real need; they are what
+  would force a genuine KV3 writer.
