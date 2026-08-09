@@ -1,12 +1,11 @@
 name: probe compiler
 on: workflow_dispatch
 
-# PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless on a
-# GitHub Windows runner, and what layout does it expect?
+# PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless here?
 #
-# Needs csdk/ committed with resourcecompiler.exe and its DLLs.
-# Without it the run PASSES with a warning - "not ready" is not a failure.
-# Red here means the compiler was found and something about it failed.
+# The CSDK is a RELEASE ASSET (tag csdk-12), split into 20 MB parts because
+# mobile upload caps at 25 MB. Parts are recombined and checksummed at run time.
+# No release yet -> the run PASSES with a warning.
 
 jobs:
   probe:
@@ -14,38 +13,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Locate the compiler
-        id: find
+      - name: Fetch and reassemble the CSDK
+        id: get
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          RC=""
-          if [ -d csdk ]; then
-            RC=$(find csdk -iname 'resourcecompiler.exe' 2>/dev/null | head -1 || true)
+          set +e
+          gh release download csdk-12 --pattern 'bin_cs2.zip.part*' --clobber
+          DL=$?
+          gh release download csdk-12 --pattern 'SHA256SUMS.txt' --clobber
+          set -e
+          COUNT=$(ls bin_cs2.zip.part* 2>/dev/null | wc -l)
+          if [ "$DL" -ne 0 ] || [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No csdk-12 parts found - probe skipped, nothing tested"
+            echo "ready=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-          if [ -z "$RC" ]; then
-            echo "::warning::csdk/ has no resourcecompiler.exe - probe skipped, nothing tested"
-            echo "Commit the CSDK bin_cs2/win64 slice, then re-run."
-            echo "found=" >> "$GITHUB_OUTPUT"
+          echo "found $COUNT parts"
+          cat $(ls bin_cs2.zip.part* | sort) > bin_cs2.zip
+          ls -la bin_cs2.zip
+          if [ -f SHA256SUMS.txt ]; then
+            sha256sum -c SHA256SUMS.txt || { echo "::error::checksum mismatch - a part is missing or corrupt"; exit 1; }
           else
-            echo "found=$RC" >> "$GITHUB_OUTPUT"
-            echo "found: $RC"
-            ls -la "$(dirname "$RC")" | head -40
+            echo "::warning::no SHA256SUMS.txt, skipping integrity check"
           fi
+          unzip -q bin_cs2.zip -d csdk
+          COMP=$(find csdk -iname 'resourcecompiler.exe' | head -1)
+          if [ -z "$COMP" ]; then
+            echo "::warning::archive has no resourcecompiler.exe"
+            echo "ready=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "ready=$COMP" >> "$GITHUB_OUTPUT"
+          echo "found: $COMP"
 
       - name: Does it run at all
-        if: steps.find.outputs.found != ''
+        if: steps.get.outputs.ready != ''
         shell: bash
         run: |
-          RC="${{ steps.find.outputs.found }}"
           set +e
-          "$RC" > usage.txt 2>&1
+          "${{ steps.get.outputs.ready }}" > usage.txt 2>&1
           echo "exit: $?"
           set -e
           head -60 usage.txt || true
-          echo "--- printed usage without hanging? that is the headline result ---"
 
       - name: Build a source vdata
-        if: steps.find.outputs.found != ''
+        if: steps.get.outputs.ready != ''
         shell: bash
         run: |
           mkdir -p content/citadel_addons/probe/scripts
@@ -58,28 +72,17 @@ jobs:
           find content -type f
 
       - name: Try compiling it
-        if: steps.find.outputs.found != ''
+        if: steps.get.outputs.ready != ''
         shell: bash
         run: |
-          RC="${{ steps.find.outputs.found }}"
           SRC="$(pwd -W 2>/dev/null || pwd)/content/citadel_addons/probe/scripts/probe.vdata"
           set +e
-          "$RC" -nop4 -v -i "$SRC" > compile.txt 2>&1
+          "${{ steps.get.outputs.ready }}" -nop4 -v -i "$SRC" > compile.txt 2>&1
           echo "exit: $?"
           set -e
-          tail -60 compile.txt || true
+          tail -80 compile.txt || true
           echo "--- searching for output ---"
           find . -name '*.vdata_c' 2>/dev/null || true
-
-      - name: Summary
-        if: always()
-        shell: bash
-        run: |
-          if [ -z "${{ steps.find.outputs.found }}" ]; then
-            echo "RESULT: skipped - no compiler committed"
-          else
-            echo "RESULT: compiler ran, see artifacts"
-          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
