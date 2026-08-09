@@ -1,1 +1,79 @@
+name: probe compiler
+on: workflow_dispatch
+
+# PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless on a
+# GitHub Windows runner, and what layout does it expect?
+#
+# Needs csdk/ committed with resourcecompiler.exe and its DLLs. Until then this
+# reports what is missing and exits 3 (missing dependency), not failure.
+#
+# Records the answer either way. Do not re-run once FINDINGS.md has it.
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Locate the compiler
+        id: find
+        shell: bash
+        run: |
+          RC=$(find csdk -iname 'resourcecompiler.exe' 2>/dev/null | head -1)
+          if [ -z "$RC" ]; then
+            echo "::warning::No resourcecompiler.exe under csdk/"
+            echo "Commit the CSDK bin_cs2/win64 slice, then re-run."
+            echo "found=" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=$RC" >> "$GITHUB_OUTPUT"
+            echo "found: $RC"
+            ls -la "$(dirname "$RC")" | head -40
+          fi
+
+      - name: Missing dependency
+        if: steps.find.outputs.found == ''
+        shell: bash
+        run: exit 3
+
+      - name: Does it run at all
+        shell: bash
+        run: |
+          RC="${{ steps.find.outputs.found }}"
+          set +e
+          "$RC" 2>&1 | tee usage.txt
+          echo "exit: $?"
+          set -e
+          echo "--- did it print usage without hanging? that is the headline result ---"
+
+      - name: Build a source vdata
+        shell: bash
+        run: |
+          mkdir -p content/citadel_addons/probe/scripts
+          cat > content/citadel_addons/probe/scripts/probe.vdata <<'VD'
+          <!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
+          {
+            probe_value = 1
+          }
+          VD
+          find content -type f
+
+      - name: Try compiling it
+        shell: bash
+        run: |
+          RC="${{ steps.find.outputs.found }}"
+          set +e
+          "$RC" -nop4 -v -i "$(pwd -W 2>/dev/null || pwd)/content/citadel_addons/probe/scripts/probe.vdata" 2>&1 | tee compile.txt
+          echo "exit: $?"
+          set -e
+          echo "--- searching for output ---"
+          find . -name '*.vdata_c' -newermt '-10 minutes' 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-compiler
+          path: |
+            usage.txt
+            compile.txt
+          if-no-files-found: ignore
 
