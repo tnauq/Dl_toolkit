@@ -6,8 +6,7 @@ name: probe kv3
 # No CSDK, no Windows runner, no game install. Delete this workflow once
 # FINDINGS.md records the answer.
 #
-# No inputs on purpose. The filter is hardcoded below; a probe run twice and
-# deleted does not need a UI form, and the form was costing revisions.
+# No inputs on purpose. The filter is hardcoded below.
 
 on:
   workflow_dispatch:
@@ -18,12 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 9.0 because VRF 12.x is net9.0-only (NU1202, run 2026-08-09).
+      # 8.0 stays installed so nothing else in the repo is disturbed.
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: |
+            8.0.x
+            9.0.x
 
-      # --no-checkout + blobless: we get the full file INDEX without
-      # downloading any content. Nothing is guessed about the layout.
       - name: Clone index only
         run: |
           set -euo pipefail
@@ -37,11 +38,17 @@ jobs:
           echo "=== top level ==="
           git ls-tree --name-only HEAD
           echo
-          echo "=== all vdata-ish paths (first 100) ==="
-          git ls-tree -r --name-only HEAD | grep -i 'vdata' | head -100 || echo "(none)"
+          echo "=== files ending .vdata (first 40) ==="
+          git ls-tree -r --name-only HEAD | grep -i '\.vdata$' | head -40 || echo "(none)"
           echo
-          echo "=== total vdata-ish count ==="
-          git ls-tree -r --name-only HEAD | grep -ci 'vdata' || true
+          echo "=== count .vdata ==="
+          git ls-tree -r --name-only HEAD | grep -ci '\.vdata$' || echo 0
+          echo
+          echo "=== files ending .vdata_c (first 20) ==="
+          git ls-tree -r --name-only HEAD | grep -i '\.vdata_c$' | head -20 || echo "(none)"
+          echo
+          echo "=== count .vdata_c ==="
+          git ls-tree -r --name-only HEAD | grep -ci '\.vdata_c$' || echo 0
 
       - name: Pick an input
         id: locate
@@ -50,8 +57,6 @@ jobs:
           cd gt
           FILTER="hero"
 
-          # Prefer uncompiled .vdata; fall back to .vdata_c only to report that
-          # the repo ships compiled files, which is itself a finding.
           CANDS=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata$' || true)
           KIND="source"
           if [ -z "$CANDS" ]; then
@@ -61,7 +66,6 @@ jobs:
 
           if [ -z "$CANDS" ]; then
             echo "::error::no .vdata or .vdata_c anywhere in the repo index"
-            echo "::error::record the layout printed above in FINDINGS"
             exit 4
           fi
 
@@ -75,7 +79,7 @@ jobs:
           echo "picked $PICK"
 
           if [ "$KIND" = "compiled" ]; then
-            echo "::warning::only compiled .vdata_c present — VRF will be asked to read a compiled resource, which is a DIFFERENT question from source KV3 round-tripping. Record this distinction."
+            echo "::warning::only compiled .vdata_c present — reading a compiled resource is a DIFFERENT question from source KV3 round-tripping. Record the distinction."
           fi
 
           git sparse-checkout init --no-cone
