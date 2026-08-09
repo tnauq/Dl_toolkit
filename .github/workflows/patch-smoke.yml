@@ -1,0 +1,180 @@
+name: patch smoke
+
+# Proves dl-patch v1 against a REAL hero vdata cloned from
+# GameTracking-Deadlock. No CSDK, no game install.
+#
+# What it can prove: the target value changed, everything else did not, the
+# result re-parses, exit codes are right, output is deterministic.
+# What it CANNOT prove: that the game loads the result. D7 — needs hardware.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/Deadlock.Patch/**"
+      - ".github/workflows/patch-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Fetch a real hero vdata
+        id: fetch
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout --depth 1 \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          PICK=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata$' | grep -i hero | head -1)
+          if [ -z "$PICK" ]; then
+            echo "::error::no hero .vdata found"
+            exit 4
+          fi
+          git sparse-checkout init --no-cone
+          git sparse-checkout set "$PICK"
+          git checkout HEAD -- "$PICK" || git checkout
+          ls -la "$PICK"
+          echo "path=gt/$PICK" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: dotnet build src/Deadlock.Patch/Deadlock.Patch.csproj -c Release
+
+      - name: Baseline — round trip with NO edits
+        # Separates VRF's reformatting from OUR change. Everything after this
+        # compares against the baseline, not the original, so the 6,000-line
+        # cosmetic diff does not drown the real one.
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
+            --in "${{ steps.fetch.outputs.path }}" \
+            --out out/baseline.vdata \
+            --set generic_data_type=CitadelHeroData_t \
+            --json | tee out/baseline.json
+          wc -l out/baseline.vdata
+
+      - name: Find a real numeric target
+        id: target
+        # Do not hardcode a hero path — the file changes with every game patch.
+        # Take the first EMaxHealth under hero_base and read its current value.
+        run: |
+          set -euo pipefail
+          CUR=$(grep -m1 -oE 'EMaxHealth = [0-9.]+' out/baseline.vdata | head -1 | awk '{print $3}')
+          if [ -z "$CUR" ]; then
+            echo "::error::no EMaxHealth found — the vdata shape changed, update this step"
+            exit 4
+          fi
+          echo "current EMaxHealth = $CUR"
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+
+      - name: Apply one edit
+        run: |
+          set -euo pipefail
+          dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
+            --in "${{ steps.fetch.outputs.path }}" \
+            --out out/patched.vdata \
+            --set hero_base.m_MovementSettings.EMaxHealth=1234.0 \
+            --json | tee out/patched.json
+
+      - name: ASSERT the value changed
+        run: |
+          set -euo pipefail
+          if ! grep -q 'EMaxHealth = 1234' out/patched.vdata; then
+            echo "::error::target value not present in output"
+            exit 1
+          fi
+          echo "target value written"
+
+      - name: ASSERT nothing else changed
+        # The load-bearing assertion. Against the BASELINE, the only differing
+        # lines must be the one we asked for.
+        run: |
+          set -euo pipefail
+          diff out/baseline.vdata out/patched.vdata > out/edit.diff || true
+          echo "--- diff ---"
+          cat out/edit.diff
+          CHANGED=$(grep -cE '^[<>]' out/edit.diff || echo 0)
+          if [ "$CHANGED" -ne 2 ]; then
+            echo "::error::expected exactly 2 changed lines (one < one >), got $CHANGED"
+            exit 1
+          fi
+          echo "collateral damage: none"
+
+      - name: ASSERT the result re-parses
+        run: |
+          set -euo pipefail
+          dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
+            --in out/patched.vdata \
+            --dry-run \
+            --set hero_base.m_MovementSettings.EMaxHealth=99.0 \
+            --json > out/reparse.json
+          cat out/reparse.json
+          grep -q '"ok": true' out/reparse.json
+
+      - name: ASSERT determinism
+        run: |
+          set -euo pipefail
+          dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
+            --in "${{ steps.fetch.outputs.path }}" \
+            --out out/patched2.vdata \
+            --set hero_base.m_MovementSettings.EMaxHealth=1234.0 >/dev/null 2>&1
+          cmp out/patched.vdata out/patched2.vdata
+          echo "byte-identical across runs"
+
+      - name: ASSERT exit codes
+        run: |
+          set -euo pipefail
+          run() { dotnet run --no-build -c Release \
+            --project src/Deadlock.Patch/Deadlock.Patch.csproj -- "$@" >/dev/null 2>&1; echo $?; }
+
+          C=$(run --in "${{ steps.fetch.outputs.path }}" --dry-run --set no.such.path=1)
+          [ "$C" = "5" ] || { echo "::error::missing path gave $C, want 5"; exit 1; }
+
+          C=$(run --in "${{ steps.fetch.outputs.path }}" --dry-run --set hero_base.m_bDisabled=7)
+          [ "$C" = "6" ] || { echo "::error::type mismatch gave $C, want 6"; exit 1; }
+
+          C=$(run --in /nope.vdata --dry-run --set a.b=1)
+          [ "$C" = "4" ] || { echo "::error::missing input gave $C, want 4"; exit 1; }
+
+          C=$(run --in "${{ steps.fetch.outputs.path }}")
+          [ "$C" = "2" ] || { echo "::error::no --set gave $C, want 2"; exit 1; }
+
+          echo "exit codes correct"
+
+      - name: ASSERT dry run writes nothing
+        run: |
+          set -euo pipefail
+          rm -f out/should-not-exist.vdata
+          dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
+            --in "${{ steps.fetch.outputs.path }}" \
+            --out out/should-not-exist.vdata \
+            --dry-run \
+            --set hero_base.m_MovementSettings.EMaxHealth=1.0 >/dev/null 2>&1
+          if [ -f out/should-not-exist.vdata ]; then
+            echo "::error::--dry-run wrote a file"
+            exit 1
+          fi
+          echo "dry run is clean"
+
+      - name: Record the source build
+        if: always()
+        run: |
+          echo "GameTracking commit: ${{ steps.fetch.outputs.commit }}" > out/source-build.txt
+          echo "baseline EMaxHealth: ${{ steps.target.outputs.current }}" >> out/source-build.txt
+          cat out/source-build.txt
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-smoke
+          path: out/
