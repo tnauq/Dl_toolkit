@@ -6,6 +6,10 @@ name: patch smoke
 # What it can prove: the target value changed, everything else did not, the
 # result re-parses, exit codes are right, output is deterministic.
 # What it CANNOT prove: that the game loads the result. D7 — needs hardware.
+#
+# Paths below are VERIFIED against the probe artifact 2026-08-09:
+#   file: game/citadel/pak01_dir/scripts/heroes.vdata
+#   path: hero_base.m_mapStartingStats.EMaxHealth  (780.0 at that commit)
 
 on:
   workflow_dispatch:
@@ -13,6 +17,9 @@ on:
     paths:
       - "src/Deadlock.Patch/**"
       - ".github/workflows/patch-smoke.yml"
+
+env:
+  TARGET: hero_base.m_mapStartingStats.EMaxHealth
 
 jobs:
   smoke:
@@ -33,7 +40,10 @@ jobs:
           git clone --filter=blob:none --no-checkout --depth 1 \
             https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
           cd gt
-          PICK=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata$' | grep -i hero | head -1)
+          PICK=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata$' | grep -i 'heroes\.vdata$' | head -1)
+          if [ -z "$PICK" ]; then
+            PICK=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata$' | grep -i hero | head -1)
+          fi
           if [ -z "$PICK" ]; then
             echo "::error::no hero .vdata found"
             exit 4
@@ -48,33 +58,21 @@ jobs:
       - name: Build
         run: dotnet build src/Deadlock.Patch/Deadlock.Patch.csproj -c Release
 
-      - name: Baseline — round trip with NO edits
+      - name: Baseline — round trip with a no-op edit
         # Separates VRF's reformatting from OUR change. Everything after this
-        # compares against the baseline, not the original, so the 6,000-line
+        # compares against the baseline, not the original, so the ~6,000-line
         # cosmetic diff does not drown the real one.
         run: |
           set -euo pipefail
           mkdir -p out
+          CUR=$(grep -m1 -oE 'EMaxHealth = [0-9.]+' "${{ steps.fetch.outputs.path }}" | awk '{print $3}')
+          echo "current $TARGET = $CUR"
           dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
             --in "${{ steps.fetch.outputs.path }}" \
             --out out/baseline.vdata \
-            --set generic_data_type=CitadelHeroData_t \
+            --set "$TARGET=$CUR" \
             --json | tee out/baseline.json
           wc -l out/baseline.vdata
-
-      - name: Find a real numeric target
-        id: target
-        # Do not hardcode a hero path — the file changes with every game patch.
-        # Take the first EMaxHealth under hero_base and read its current value.
-        run: |
-          set -euo pipefail
-          CUR=$(grep -m1 -oE 'EMaxHealth = [0-9.]+' out/baseline.vdata | head -1 | awk '{print $3}')
-          if [ -z "$CUR" ]; then
-            echo "::error::no EMaxHealth found — the vdata shape changed, update this step"
-            exit 4
-          fi
-          echo "current EMaxHealth = $CUR"
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
 
       - name: Apply one edit
         run: |
@@ -82,21 +80,19 @@ jobs:
           dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
             --in "${{ steps.fetch.outputs.path }}" \
             --out out/patched.vdata \
-            --set hero_base.m_MovementSettings.EMaxHealth=1234.0 \
+            --set "$TARGET=1234.0" \
             --json | tee out/patched.json
 
       - name: ASSERT the value changed
         run: |
           set -euo pipefail
-          if ! grep -q 'EMaxHealth = 1234' out/patched.vdata; then
-            echo "::error::target value not present in output"
-            exit 1
-          fi
+          grep -q 'EMaxHealth = 1234' out/patched.vdata || {
+            echo "::error::target value not present in output"; exit 1; }
           echo "target value written"
 
       - name: ASSERT nothing else changed
-        # The load-bearing assertion. Against the BASELINE, the only differing
-        # lines must be the one we asked for.
+        # The load-bearing assertion. Against the BASELINE, exactly one line
+        # differs — one '<' and one '>'.
         run: |
           set -euo pipefail
           diff out/baseline.vdata out/patched.vdata > out/edit.diff || true
@@ -104,7 +100,7 @@ jobs:
           cat out/edit.diff
           CHANGED=$(grep -cE '^[<>]' out/edit.diff || echo 0)
           if [ "$CHANGED" -ne 2 ]; then
-            echo "::error::expected exactly 2 changed lines (one < one >), got $CHANGED"
+            echo "::error::expected exactly 2 changed lines, got $CHANGED"
             exit 1
           fi
           echo "collateral damage: none"
@@ -115,7 +111,7 @@ jobs:
           dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
             --in out/patched.vdata \
             --dry-run \
-            --set hero_base.m_MovementSettings.EMaxHealth=99.0 \
+            --set "$TARGET=99.0" \
             --json > out/reparse.json
           cat out/reparse.json
           grep -q '"ok": true' out/reparse.json
@@ -126,7 +122,7 @@ jobs:
           dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
             --in "${{ steps.fetch.outputs.path }}" \
             --out out/patched2.vdata \
-            --set hero_base.m_MovementSettings.EMaxHealth=1234.0 >/dev/null 2>&1
+            --set "$TARGET=1234.0" >/dev/null 2>&1
           cmp out/patched.vdata out/patched2.vdata
           echo "byte-identical across runs"
 
@@ -139,7 +135,7 @@ jobs:
           C=$(run --in "${{ steps.fetch.outputs.path }}" --dry-run --set no.such.path=1)
           [ "$C" = "5" ] || { echo "::error::missing path gave $C, want 5"; exit 1; }
 
-          C=$(run --in "${{ steps.fetch.outputs.path }}" --dry-run --set hero_base.m_bDisabled=7)
+          C=$(run --in "${{ steps.fetch.outputs.path }}" --dry-run --set "$TARGET=notanumber")
           [ "$C" = "6" ] || { echo "::error::type mismatch gave $C, want 6"; exit 1; }
 
           C=$(run --in /nope.vdata --dry-run --set a.b=1)
@@ -150,6 +146,23 @@ jobs:
 
           echo "exit codes correct"
 
+      - name: ASSERT flagged values are refused
+        # resource_name: values carry a KVFlag. Writing one as a plain string
+        # would drop the prefix silently, so v1 must refuse by name.
+        run: |
+          set -euo pipefail
+          set +e
+          dotnet run --no-build -c Release --project src/Deadlock.Patch/Deadlock.Patch.csproj -- \
+            --in "${{ steps.fetch.outputs.path }}" \
+            --dry-run \
+            --set 'hero_base.m_strModelName=models/x.vmdl' \
+            --json > out/flagged.json 2>/dev/null
+          C=$?
+          set -e
+          cat out/flagged.json || true
+          [ "$C" != "0" ] || { echo "::error::flagged value was accepted"; exit 1; }
+          echo "flagged values refused"
+
       - name: ASSERT dry run writes nothing
         run: |
           set -euo pipefail
@@ -158,7 +171,7 @@ jobs:
             --in "${{ steps.fetch.outputs.path }}" \
             --out out/should-not-exist.vdata \
             --dry-run \
-            --set hero_base.m_MovementSettings.EMaxHealth=1.0 >/dev/null 2>&1
+            --set "$TARGET=1.0" >/dev/null 2>&1
           if [ -f out/should-not-exist.vdata ]; then
             echo "::error::--dry-run wrote a file"
             exit 1
@@ -169,7 +182,7 @@ jobs:
         if: always()
         run: |
           echo "GameTracking commit: ${{ steps.fetch.outputs.commit }}" > out/source-build.txt
-          echo "baseline EMaxHealth: ${{ steps.target.outputs.current }}" >> out/source-build.txt
+          echo "input: ${{ steps.fetch.outputs.path }}" >> out/source-build.txt
           cat out/source-build.txt
 
       - name: Upload artifacts
