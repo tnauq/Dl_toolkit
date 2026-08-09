@@ -9,10 +9,10 @@ name: probe kv3
 on:
   workflow_dispatch:
     inputs:
-      vdata_path:
-        description: "Path inside GameTracking-Deadlock to probe"
+      name_filter:
+        description: "Substring the vdata filename must contain (blank = any)"
         required: false
-        default: "game/citadel/scripts/heroes.vdata"
+        default: "hero"
 
 jobs:
   probe:
@@ -24,35 +24,74 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      # Sparse + blobless: the full repo is enormous and we want one file.
-      - name: Fetch a real hero vdata
+      # --no-checkout + blobless: we get the full file INDEX without
+      # downloading any content. Nothing is guessed about the layout.
+      - name: Clone index only
         run: |
           set -euo pipefail
-          git clone --filter=blob:none --sparse --depth 1 \
+          git clone --filter=blob:none --no-checkout --depth 1 \
             https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
-          cd gt
-          git sparse-checkout set game/citadel/scripts || true
-          echo "--- what actually landed ---"
-          find . -name '*.vdata' | head -50 || true
 
-      - name: Locate the input
+      - name: Report the tree layout
+        run: |
+          set -euo pipefail
+          cd gt
+          echo "=== top level ==="
+          git ls-tree --name-only HEAD
+          echo
+          echo "=== all vdata-ish paths (first 100) ==="
+          git ls-tree -r --name-only HEAD | grep -i 'vdata' | head -100 || echo "(none)"
+          echo
+          echo "=== total vdata-ish count ==="
+          git ls-tree -r --name-only HEAD | grep -ci 'vdata' || true
+
+      - name: Pick an input
         id: locate
         run: |
           set -euo pipefail
-          WANT="${{ github.event.inputs.vdata_path }}"
-          if [ -f "gt/$WANT" ]; then
-            echo "path=gt/$WANT" >> "$GITHUB_OUTPUT"
-          else
-            # Fall back to the largest .vdata we found. A miss here is a
-            # finding too: it means the path convention is not what we assumed.
-            FOUND=$(find gt -name '*.vdata' -printf '%s %p\n' | sort -rn | head -1 | cut -d' ' -f2 || true)
-            if [ -z "$FOUND" ]; then
-              echo "::error::no .vdata found under gt/ — record the tree layout in FINDINGS"
-              exit 4
-            fi
-            echo "requested path missing, using $FOUND"
-            echo "path=$FOUND" >> "$GITHUB_OUTPUT"
+          cd gt
+          FILTER="${{ github.event.inputs.name_filter }}"
+
+          # Prefer uncompiled .vdata; fall back to .vdata_c only to report that
+          # the repo ships compiled files, which is itself a finding.
+          CANDS=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata$' || true)
+          KIND="source"
+          if [ -z "$CANDS" ]; then
+            CANDS=$(git ls-tree -r --name-only HEAD | grep -i '\.vdata_c$' || true)
+            KIND="compiled"
           fi
+
+          if [ -z "$CANDS" ]; then
+            echo "::error::no .vdata or .vdata_c anywhere in the repo index"
+            echo "::error::record the layout printed above in FINDINGS"
+            exit 4
+          fi
+
+          if [ -n "$FILTER" ]; then
+            NARROW=$(printf '%s\n' "$CANDS" | grep -i -- "$FILTER" || true)
+            [ -n "$NARROW" ] && CANDS="$NARROW"
+          fi
+
+          PICK=$(printf '%s\n' "$CANDS" | head -1)
+          echo "kind=$KIND"
+          echo "picked $PICK"
+
+          if [ "$KIND" = "compiled" ]; then
+            echo "::warning::only compiled .vdata_c present — VRF will be asked to read a compiled resource, which is a DIFFERENT question from source KV3 round-tripping. Record this distinction."
+          fi
+
+          git sparse-checkout init --no-cone
+          git sparse-checkout set "$PICK"
+          git checkout HEAD -- "$PICK" || git checkout
+
+          if [ ! -f "$PICK" ]; then
+            echo "::error::sparse checkout did not materialise $PICK"
+            exit 4
+          fi
+
+          ls -la "$PICK"
+          echo "path=gt/$PICK" >> "$GITHUB_OUTPUT"
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
 
       - name: Build probe
         run: dotnet build src/Deadlock.Probe.Kv3/Deadlock.Probe.Kv3.csproj -c Release
@@ -65,7 +104,10 @@ jobs:
 
       - name: Copy the original alongside the output
         if: always()
-        run: cp "${{ steps.locate.outputs.path }}" probe-out/original.vdata || true
+        run: |
+          mkdir -p probe-out
+          cp "${{ steps.locate.outputs.path }}" probe-out/original.vdata || true
+          echo "input kind: ${{ steps.locate.outputs.kind }}" > probe-out/input-kind.txt
 
       - name: Report to summary
         if: always()
