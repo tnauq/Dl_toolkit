@@ -32,13 +32,16 @@ public sealed class Envelope
 
 public sealed class EditReport
 {
+    // NOTE: the factory below is called Of, not From — `From` is already a
+    // property name here and C# will not allow both on one type (CS0102,
+    // caught by the build 2026-08-09).
     [JsonPropertyName("path")] public string Path { get; set; } = "";
     [JsonPropertyName("from")] public string? From { get; set; }
     [JsonPropertyName("to")] public string To { get; set; } = "";
     [JsonPropertyName("ok")] public bool Ok { get; set; }
     [JsonPropertyName("error")] public string? Error { get; set; }
 
-    public static EditReport From(EditResult r) => new()
+    public static EditReport Of(EditResult r) => new()
     {
         Path = r.Path,
         From = r.From,

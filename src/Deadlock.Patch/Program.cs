@@ -129,7 +129,7 @@ internal static class Program
         }
 
         var results = edits.Select(doc.Apply).ToList();
-        env.Edits = results.Select(EditReport.From).ToList();
+        env.Edits = results.Select(EditReport.Of).ToList();
         env.Applied = results.Count(r => r.Ok);
         env.Failed = results.Count(r => !r.Ok);
         env.Ok = env.Failed == 0;
