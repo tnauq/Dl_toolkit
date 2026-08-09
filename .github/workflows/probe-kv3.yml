@@ -5,14 +5,12 @@ name: probe kv3
 #
 # No CSDK, no Windows runner, no game install. Delete this workflow once
 # FINDINGS.md records the answer.
+#
+# No inputs on purpose. The filter is hardcoded below; a probe run twice and
+# deleted does not need a UI form, and the form was costing revisions.
 
 on:
   workflow_dispatch:
-    inputs:
-      name_filter:
-        description: "Substring the vdata filename must contain (blank = any)"
-        required: false
-        default: "hero"
 
 jobs:
   probe:
@@ -50,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           cd gt
-          FILTER="${{ github.event.inputs.name_filter }}"
+          FILTER="hero"
 
           # Prefer uncompiled .vdata; fall back to .vdata_c only to report that
           # the repo ships compiled files, which is itself a finding.
