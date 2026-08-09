@@ -3,9 +3,9 @@ on: workflow_dispatch
 
 # PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless here?
 #
-# The CSDK is a RELEASE ASSET (tag csdk-12), split into 20 MB parts because
-# mobile upload caps at 25 MB. Parts are recombined and checksummed at run time.
-# No release yet -> the run PASSES with a warning.
+# CSDK lives as release assets (tag csdk-12), split for mobile upload limits.
+# Mobile renamed the parts, so we download EVERYTHING, natural-sort it, and
+# rely on the SHA256 to confirm the order was right.
 
 jobs:
   probe:
@@ -19,30 +19,50 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          echo "ready=" >> "$GITHUB_OUTPUT"
+          mkdir -p dl && cd dl
+
           set +e
-          gh release download csdk-12 --pattern 'bin_cs2.zip.part*' --clobber
-          DL=$?
-          gh release download csdk-12 --pattern 'SHA256SUMS.txt' --clobber
+          gh release download csdk-12 --clobber
           set -e
-          COUNT=$(ls bin_cs2.zip.part* 2>/dev/null | wc -l)
-          if [ "$DL" -ne 0 ] || [ "$COUNT" -eq 0 ]; then
-            echo "::warning::No csdk-12 parts found - probe skipped, nothing tested"
-            echo "ready=" >> "$GITHUB_OUTPUT"
+
+          echo "--- assets as downloaded ---"
+          ls -la || true
+
+          COUNT=0
+          for f in *; do [ -f "$f" ] && COUNT=$((COUNT+1)); done
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No assets on release csdk-12 - probe skipped"
+            gh release list || true
             exit 0
           fi
-          echo "found $COUNT parts"
-          cat $(ls bin_cs2.zip.part* | sort) > bin_cs2.zip
+
+          # checksum file aside, everything else is a part
+          mv SHA256SUMS.txt ../ 2>/dev/null || true
+
+          echo "--- concatenation order ---"
+          ls | sort -V | tee ../order.txt
+          cd ..
+          cat $(cd dl && ls | sort -V | sed 's|^|dl/|') > bin_cs2.zip
           ls -la bin_cs2.zip
+
           if [ -f SHA256SUMS.txt ]; then
-            sha256sum -c SHA256SUMS.txt || { echo "::error::checksum mismatch - a part is missing or corrupt"; exit 1; }
+            if sha256sum -c SHA256SUMS.txt; then
+              echo "checksum OK - part order was correct"
+            else
+              echo "::error::checksum mismatch. Order used was:"
+              cat order.txt
+              echo "Parts are out of order, or one is missing/duplicated."
+              exit 1
+            fi
           else
-            echo "::warning::no SHA256SUMS.txt, skipping integrity check"
+            echo "::warning::no SHA256SUMS.txt - cannot confirm order"
           fi
-          unzip -q bin_cs2.zip -d csdk
+
+          unzip -q bin_cs2.zip -d csdk || { echo "::error::unzip failed - reassembly is wrong"; exit 1; }
           COMP=$(find csdk -iname 'resourcecompiler.exe' | head -1)
           if [ -z "$COMP" ]; then
             echo "::warning::archive has no resourcecompiler.exe"
-            echo "ready=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "ready=$COMP" >> "$GITHUB_OUTPUT"
