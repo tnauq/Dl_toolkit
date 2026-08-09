@@ -3,27 +3,17 @@ using System.Text;
 
 namespace Deadlock.Probe.Kv3;
 
-// PROBE ONLY.
+// PROBE ONLY. Revision 2 — 2026-08-09.
 //
-// Question: does ValveResourceFormat already give us a usable KV3 TEXT
-// serializer, or do we have to write one for dl-patch?
+// Revision 1 answered the round-trip question (REFORMATTED but semantically
+// lossless, see the artifact). It ALSO tried to dump the API surface, but the
+// type filter only matched names containing "KV3", so KVObject, KVValue and
+// KVType were never printed — and dl-patch was then written against guessed
+// signatures and failed to compile three times.
 //
-// Method: take a real hero vdata (source text KV3) from GameTracking-Deadlock,
-// parse it with VRF, serialize it straight back with NO edit, and diff.
-//
-// Three possible answers, and the probe must distinguish them:
-//   IDENTICAL   byte-for-byte equal        -> wrap VRF, dl-patch is small
-//   REFORMATTED parses back to same shape,
-//               bytes differ               -> usable, but no byte assertion
-//   LOSSY       content actually missing   -> write our own serializer
-//
-// Exit codes follow the project convention:
-//   0 probe ran and reported          2 misuse (bad args)
-//   3 missing dependency / API absent 4 probe ran, input unreadable
-//
-// Note: exit 0 means THE PROBE SUCCEEDED, not that the round trip was clean.
-// The classification is in the report, not the exit code. Do not wire CI to
-// fail on a REFORMATTED result — that is a legitimate finding.
+// This revision dumps the MUTATION surface properly: every type reachable from
+// the KV3 namespace, with full member signatures, plus a live inspection of a
+// real parsed document. Read the artifact before writing any code against it.
 
 internal static class Program
 {
@@ -46,180 +36,167 @@ internal static class Program
 
         Directory.CreateDirectory(outDir);
 
-        var originalBytes = File.ReadAllBytes(input);
-        var originalText = File.ReadAllText(input);
+        DumpNamespaceSurface(outDir);
 
-        Console.Error.WriteLine($"[probe] input       {input}");
-        Console.Error.WriteLine($"[probe] size        {originalBytes.Length} bytes");
-        Console.Error.WriteLine($"[probe] first line  {FirstLine(originalText)}");
-
-        // ---- 1. what does VRF actually expose? -----------------------------
-        // Written before the API was read (see FINDINGS corrections, entry 1).
-        // So: dump the surface first, then try to use it. If the call below is
-        // wrong, the dump is what tells the next session the right name.
-        DumpKv3Surface(outDir);
-
-        string? roundTripped;
         try
         {
-            roundTripped = RoundTrip(input);
-        }
-        catch (TypeLoadException e)
-        {
-            Console.Error.WriteLine($"[probe] VRF KV3 type not found: {e.Message}");
-            Console.Error.WriteLine("[probe] see kv3-surface.txt for what IS exposed");
-            return 3;
-        }
-        catch (MissingMethodException e)
-        {
-            Console.Error.WriteLine($"[probe] VRF KV3 method not found: {e.Message}");
-            Console.Error.WriteLine("[probe] see kv3-surface.txt for what IS exposed");
-            return 3;
+            InspectLiveDocument(input, outDir);
         }
         catch (Exception e)
         {
-            // A parse failure IS an answer: it means VRF cannot read source
-            // vdata, which is itself decisive for dl-patch.
-            Console.Error.WriteLine($"[probe] round trip threw: {e.GetType().Name}: {e.Message}");
-            File.WriteAllText(Path.Combine(outDir, "report.md"),
-                Report("THREW", originalBytes.Length, 0, $"{e.GetType().Name}: {e.Message}", null));
-            return 0;
+            Console.Error.WriteLine($"[probe] live inspection failed: {e.GetType().Name}: {e.Message}");
+            File.WriteAllText(Path.Combine(outDir, "live-inspect.txt"),
+                $"FAILED: {e.GetType().Name}: {e.Message}\n{e.StackTrace}\n");
         }
 
-        if (roundTripped is null)
-        {
-            Console.Error.WriteLine("[probe] serializer returned null");
-            File.WriteAllText(Path.Combine(outDir, "report.md"),
-                Report("NULL", originalBytes.Length, 0, "serializer returned null", null));
-            return 0;
-        }
-
-        // ---- 2. classify ---------------------------------------------------
-        var outPath = Path.Combine(outDir, "roundtrip.vdata");
-        File.WriteAllText(outPath, roundTripped);
-        var newBytes = File.ReadAllBytes(outPath);
-
-        var identical = originalBytes.AsSpan().SequenceEqual(newBytes);
-        var divergence = identical ? null : FirstDivergence(originalText, roundTripped);
-
-        var verdict = identical
-            ? "IDENTICAL"
-            : LooksLossy(originalText, roundTripped) ? "LOSSY-SUSPECT" : "REFORMATTED";
-
-        Console.Error.WriteLine($"[probe] verdict     {verdict}");
-        Console.Error.WriteLine($"[probe] out size    {newBytes.Length} bytes");
-        if (divergence is not null)
-            Console.Error.WriteLine($"[probe] first diff  {divergence.Replace("\n", " | ")}");
-
-        File.WriteAllText(Path.Combine(outDir, "report.md"),
-            Report(verdict, originalBytes.Length, newBytes.Length, null, divergence));
-
+        Console.Error.WriteLine("[probe] done — read kv3-surface.txt and live-inspect.txt");
         return 0;
     }
 
-    // Adjust here if the surface dump says the names differ.
-    private static string? RoundTrip(string path)
-    {
-        var kv = ValveResourceFormat.Serialization.KeyValues.KeyValues3.ParseKVFile(path);
-        return kv?.ToString();
-    }
-
-    private static void DumpKv3Surface(string outDir)
+    /// <summary>
+    /// Everything in the KeyValues namespace, members included. No name filter
+    /// this time — the filter is what hid the answer last run.
+    /// </summary>
+    private static void DumpNamespaceSurface(string outDir)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("# VRF KV3 surface, as actually loaded");
-        sb.AppendLine();
-
         var asm = typeof(ValveResourceFormat.Resource).Assembly;
+
+        sb.AppendLine("# VRF KV3 mutation surface");
         sb.AppendLine($"assembly: {asm.FullName}");
         sb.AppendLine();
 
-        foreach (var t in asm.GetExportedTypes()
-                     .Where(t => t.FullName is not null &&
-                                 (t.FullName.Contains("KeyValues3", StringComparison.Ordinal) ||
-                                  t.FullName.Contains("KV3", StringComparison.Ordinal)))
-                     .OrderBy(t => t.FullName, StringComparer.Ordinal))
+        var types = asm.GetExportedTypes()
+            .Where(t => t.Namespace is not null &&
+                        t.Namespace.Contains("KeyValues", StringComparison.Ordinal))
+            .OrderBy(t => t.FullName, StringComparer.Ordinal)
+            .ToList();
+
+        sb.AppendLine($"{types.Count} exported types in *KeyValues* namespaces");
+        sb.AppendLine();
+
+        foreach (var t in types)
         {
-            sb.AppendLine($"## {t.FullName}");
-            foreach (var m in t.GetMembers(BindingFlags.Public | BindingFlags.Static |
-                                           BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                         .OrderBy(m => m.Name, StringComparer.Ordinal))
+            sb.AppendLine($"## {t.FullName}{(t.IsEnum ? "  [enum]" : "")}");
+
+            if (t.IsEnum)
             {
-                sb.AppendLine($"  {m.MemberType,-10} {m}");
+                foreach (var name in Enum.GetNames(t))
+                    sb.AppendLine($"  {name} = {Convert.ToInt64(Enum.Parse(t, name))}");
+                sb.AppendLine();
+                continue;
             }
+
+            foreach (var c in t.GetConstructors())
+                sb.AppendLine($"  ctor      {c}");
+
+            foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance |
+                                              BindingFlags.Static | BindingFlags.DeclaredOnly))
+                sb.AppendLine($"  property  {p.PropertyType.Name} {p.Name} " +
+                              $"{{ {(p.CanRead ? "get; " : "")}{(p.CanWrite ? "set; " : "")}}}");
+
+            foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.Instance |
+                                           BindingFlags.Static | BindingFlags.DeclaredOnly)
+                         .Where(m => !m.IsSpecialName)
+                         .OrderBy(m => m.Name, StringComparer.Ordinal))
+                sb.AppendLine($"  method    {m}");
+
+            foreach (var f in t.GetFields(BindingFlags.Public | BindingFlags.Instance |
+                                          BindingFlags.Static | BindingFlags.DeclaredOnly))
+                sb.AppendLine($"  field     {f.FieldType.Name} {f.Name}");
+
             sb.AppendLine();
         }
 
         File.WriteAllText(Path.Combine(outDir, "kv3-surface.txt"), sb.ToString());
-        Console.Error.WriteLine("[probe] wrote kv3-surface.txt");
+        Console.Error.WriteLine($"[probe] wrote kv3-surface.txt ({types.Count} types)");
     }
 
-    // Cheap heuristic, NOT proof. Real loss needs eyes on the diff.
-    private static bool LooksLossy(string a, string b)
-    {
-        var keysA = CountOccurrences(a, '=');
-        var keysB = CountOccurrences(b, '=');
-        return keysB < keysA * 0.98;
-    }
-
-    private static int CountOccurrences(string s, char c)
-    {
-        var n = 0;
-        foreach (var ch in s) if (ch == c) n++;
-        return n;
-    }
-
-    private static string FirstDivergence(string a, string b)
-    {
-        var la = a.ReplaceLineEndings("\n").Split('\n');
-        var lb = b.ReplaceLineEndings("\n").Split('\n');
-        var max = Math.Min(la.Length, lb.Length);
-        for (var i = 0; i < max; i++)
-        {
-            if (!string.Equals(la[i], lb[i], StringComparison.Ordinal))
-                return $"line {i + 1}\n  orig: {Trunc(la[i])}\n  new:  {Trunc(lb[i])}";
-        }
-        return $"identical for {max} lines, then length differs ({la.Length} vs {lb.Length})";
-    }
-
-    private static string Trunc(string s) =>
-        s.Length <= 160 ? s : s[..160] + "…";
-
-    private static string FirstLine(string s)
-    {
-        var i = s.IndexOf('\n');
-        return Trunc(i < 0 ? s : s[..i]).Trim();
-    }
-
-    private static string Report(string verdict, int origSize, int newSize,
-                                 string? error, string? divergence)
+    /// <summary>
+    /// What the object graph looks like in practice: runtime types of Root, of
+    /// a property entry, and of a scalar leaf. Signatures alone do not say
+    /// whether Properties is settable or what a scalar's Value boxes to.
+    /// </summary>
+    private static void InspectLiveDocument(string input, string outDir)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("# KV3 round-trip probe");
+        var file = ValveResourceFormat.Serialization.KeyValues.KeyValues3.ParseKVFile(input);
+
+        sb.AppendLine("# Live document inspection");
+        sb.AppendLine($"input: {input}");
         sb.AppendLine();
-        sb.AppendLine($"- verdict: **{verdict}**");
-        sb.AppendLine($"- original: {origSize} bytes");
-        sb.AppendLine($"- round-tripped: {newSize} bytes");
-        if (error is not null) sb.AppendLine($"- error: `{error}`");
+        sb.AppendLine($"KV3File type : {file?.GetType().FullName}");
+
+        var root = file?.Root;
+        sb.AppendLine($"Root type    : {root?.GetType().FullName}");
         sb.AppendLine();
-        if (divergence is not null)
+
+        if (root is null)
         {
-            sb.AppendLine("## First divergence");
-            sb.AppendLine();
-            sb.AppendLine("```");
-            sb.AppendLine(divergence);
-            sb.AppendLine("```");
-            sb.AppendLine();
+            File.WriteAllText(Path.Combine(outDir, "live-inspect.txt"), sb.ToString());
+            return;
         }
-        sb.AppendLine("## What each verdict means for dl-patch");
+
+        // How do we enumerate an object's children, and what do we get back?
+        sb.AppendLine("## Root members (runtime)");
+        foreach (var p in root.GetType().GetProperties())
+            sb.AppendLine($"  property  {p.PropertyType.FullName} {p.Name} " +
+                          $"{{ {(p.CanRead ? "get; " : "")}{(p.CanWrite ? "set; " : "")}}}");
+        foreach (var m in root.GetType().GetMethods()
+                     .Where(m => !m.IsSpecialName)
+                     .OrderBy(m => m.Name, StringComparer.Ordinal))
+            sb.AppendLine($"  method    {m}");
         sb.AppendLine();
-        sb.AppendLine("- `IDENTICAL` — wrap VRF. Byte-level assertions stay available.");
-        sb.AppendLine("- `REFORMATTED` — VRF is usable, but the unchanged-bytes assertion");
-        sb.AppendLine("  is off the table; CI has to compare parsed shape instead.");
-        sb.AppendLine("- `LOSSY-SUSPECT` / `THREW` / `NULL` — we write the serializer.");
+
+        // Walk a few levels and report the runtime type of everything we meet.
+        sb.AppendLine("## First few entries, with runtime types");
+        var propsProp = root.GetType().GetProperty("Properties");
+        sb.AppendLine($"Properties property: {propsProp?.PropertyType.FullName ?? "(none)"}");
+        sb.AppendLine($"Properties settable: {propsProp?.CanWrite}");
         sb.AppendLine();
-        sb.AppendLine("Heuristics here are `[?]`. Read the artifact diff before recording");
-        sb.AppendLine("anything as `[V-CI]` in FINDINGS.");
-        return sb.ToString();
+
+        if (propsProp?.GetValue(root) is System.Collections.IEnumerable entries)
+        {
+            var n = 0;
+            foreach (var entry in entries)
+            {
+                if (n++ >= 12) break;
+                var et = entry.GetType();
+                var key = et.GetProperty("Key")?.GetValue(entry);
+                var val = et.GetProperty("Value")?.GetValue(entry);
+                sb.AppendLine($"  [{n}] entryType={et.FullName}");
+                sb.AppendLine($"      key={key}");
+                sb.AppendLine($"      valueType={val?.GetType().FullName}");
+
+                if (val is not null)
+                {
+                    var vt = val.GetType();
+                    foreach (var p in vt.GetProperties())
+                    {
+                        object? pv;
+                        try { pv = p.GetValue(val); }
+                        catch (Exception ex) { pv = $"<threw {ex.GetType().Name}>"; }
+                        sb.AppendLine($"        .{p.Name} ({p.PropertyType.Name}, " +
+                                      $"{(p.CanWrite ? "settable" : "readonly")}) = " +
+                                      $"{Short(pv)}  [runtime {pv?.GetType().Name}]");
+                    }
+                }
+                sb.AppendLine();
+            }
+        }
+        else
+        {
+            sb.AppendLine("  Properties is not enumerable — record what it actually is above.");
+        }
+
+        File.WriteAllText(Path.Combine(outDir, "live-inspect.txt"), sb.ToString());
+        Console.Error.WriteLine("[probe] wrote live-inspect.txt");
+    }
+
+    private static string Short(object? v)
+    {
+        var s = v?.ToString() ?? "null";
+        s = s.Replace("\n", "\\n").Replace("\t", "\\t");
+        return s.Length <= 100 ? s : s[..100] + "…";
     }
 }
