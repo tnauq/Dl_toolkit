@@ -214,28 +214,27 @@ project but far from a dead one.
 
 ## Phase 2 — Asset toolchain
 
-**2–4 weeks · Easy to Moderate · [V]**
+**1–3 weeks · Easy to Moderate · [V]** *(reduced 2026-08-08)*
 
-Independent of everything above. Start it in parallel on days you don't feel
-like fighting a debugger.
+Independent of everything above. **Scope cut after surveying what exists** —
+see `FINDINGS.md`, "Existing tools". Extraction and KV3 reading are solved
+several times over; use Source2Viewer-CLI and stop.
 
-Build on ValveResourceFormat (.NET, open source, the library under Source 2
-Viewer). You get VPK read and KV3 parsing as a dependency, not a project.
+Remaining deliverables, in order of value:
 
-Deliverables, in order of value:
+1. **Patch differ (`dl-diff`).** Two builds in, structural changeset out.
+   Nothing does this. Cheap now that CI has confirmed VPK `CRC32` is a content
+   checksum, so change detection reads the index only.
+2. **Patch and repack (`dl-patch`).** Apply a changeset to vdata and write a
+   mod VPK. Every existing tool reads; **none writes back**. This is the loop
+   you'll run hundreds of times.
+3. ~~Reconstructed Deadlock FGD.~~ **Demoted to a probe.** Source 2 Hammer may
+   read entity definitions from game files rather than an FGD, and
+   `dl_example.vmap` already documents the entity surface. Confirm before
+   spending a week on it.
 
-1. **CLI: extract → patch vdata → repack VPK.** The loop you'll run hundreds of
-   times. Make it fast and scriptable.
-2. **Patch differ.** Dumps vdata for two builds and reports what changed.
-   Useful now, and it's the tool that lets you re-pin later without redoing
-   discovery.
-3. **Reconstructed Deadlock FGD.** Harvest entity classes and keyvalues from
-   decompiled official maps, emit an FGD for Hammer. Nobody has shipped a good
-   one. This is mostly data munging and it makes Phase 3 dramatically less
-   painful.
-
-**Gate:** change a hero stat in vdata, load it on the pinned server, observe
-the change in game.
+**Gate:** change a hero stat in vdata, repack, load it on the pinned server,
+observe the change in game.
 
 **Note:** writing *compiled* Source 2 resources is where VRF is weak — it reads
 far better than it writes. Route anything non-trivial through the CSDK
@@ -250,10 +249,13 @@ compilers from source assets rather than trying to round-trip binaries.
 Gated only on Phase 0. The most predictable phase in the plan — this is the one
 part of Deadlock modding with a real community track record.
 
-1. Hammer → compile against `deadlock.exe` in `Reduced_CSDK_12\game\bin_cs2\win64`
-   → full compile → package via CS2 workshop manager to get a `.vpk`.
+1. Install the latest CSDK package, launch `Deadlock_with_tools.exe`, open
+   Hammer from it. Compile against `deadlock.exe` in
+   `Reduced_CSDK_12\game\bin_cs2\win64`, package via the CS2 workshop manager.
 2. Respect the bounding box Deadlock enforces on maps.
-3. Greybox target first: a single-lane map that actually spawns troopers,
+3. **Start from the community `dl_example.vmap`**, which contains all the
+   important map and gamemode entities. Do not rediscover the entity surface.
+4. Greybox target: a single-lane map that actually spawns troopers,
    objectives, and both team spawns. Art later, never first.
 4. Then push on entity I/O. `logic_*` chains are a genuine scripting language
    and they work with zero binary access — this is where Fallback-Track game
@@ -377,13 +379,17 @@ rule variants expressible as entity graphs. That is most of a custom game mode.
 
 | Track | To first playable result |
 |---|---|
-| Maps only (0→2→3), agent-ready | **12–18 weeks** |
+| Maps only (0→2→3), agent-ready | **10–16 weeks** |
 | Fallback track (no binary access) | **12–18 weeks**, lower ceiling |
 | Full stack (0→1→2→3→4→5→6) | **5–9 months** to a custom mode with novel mechanics |
 
 Agent-friendliness adds ~3–4 weeks (CLI hardening, harness, context docs) and
 the parametric geometry layer another 3–4. Both are on the asset/map track;
-the plugin track is unchanged.
+the plugin track is unchanged. Scope reduction 2026-08-08 took ~2 weeks off
+Phase 2 by deleting work the ecosystem already does.
+
+**The differentiated core is: `dl-diff`, `dl-patch`, the verification harness,
+and parametric geometry.** Nothing comparable exists for any of the four.
 
 Phases 2 and 3 are parallel with 4 and 5. If you're working alone, run the
 asset/map track as the default and drop into the plugin track when you have

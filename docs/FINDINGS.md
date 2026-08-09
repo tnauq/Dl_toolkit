@@ -10,10 +10,9 @@ Every entry carries a confidence marker. **An unmarked claim is a bug.**
 | `[I]` | Inferred from how Source 2 works generally; untested on Deadlock |
 | `[?]` | Assumption. Could be wrong in a way that breaks whatever rests on it |
 
-**Nothing in this file has yet been verified against a real Deadlock install
-or a live server.** As of the first commit, `[V]` means *someone credible
-wrote it down*, not *we ran it*. Upgrade entries as probes land, and say what
-upgraded them.
+**Most of this file has not been verified against a real Deadlock install or a
+live server.** Where `[V]` means only *someone credible wrote it down*, it says
+so. Entries proven by a CI run are marked **`[V-CI]`** and name the run.
 
 ## Rule zero
 
@@ -66,6 +65,22 @@ and add it.
   entry is the floor.
 - Only `pak01_dir.vpk` is openable — numbered files such as `pak01_001.vpk`
   are data files, not archives.
+- **`FindEntry` is a linear scan** unless `OptimizeEntriesForBinarySearch()` is
+  called before `Read()`. Relevant to any lookup-heavy workload.
+
+### Confirmed by CI — `[V-CI]`, format-smoke 2026-08-08
+
+- **ValvePak 4.0.0.142 builds and runs on net8.0 / ubuntu-latest.** It requires
+  `System.IO.Hashing >= 9.0.11`; pinning lower fails restore with NU1605.
+- **`PackageEntry.CRC32` IS the CRC32 of file contents.** Five files written by
+  `dl-mkfixture` with checksums computed independently via `System.IO.Hashing`
+  matched ValvePak's reported values exactly on read-back. **This is what
+  licenses index-only diffing** — it was an assumption, now it is a fact.
+- `TotalLength`, `GetFullPath()` and `ArchiveIndex` behave as assumed.
+- `ArchiveIndex` reads **32767** (0x7FFF) for entries stored in the dir file.
+- **ValvePak can WRITE archives** — `AddFile()` then `Write()`. This is what
+  makes fixture-free testing possible; no committed VPK is needed.
+- `dl-extract` output is byte-identical across repeated runs.
 
 ## Scripting — `[V]` unless marked
 
@@ -108,13 +123,46 @@ transfer** to a pinned mod branch.
 
 ---
 
+## Existing tools — surveyed 2026-08-08, scope reduced because of it
+
+The canonical community tool list is **four items**: CSDK 12, CSDK 10,
+Source 2 Viewer, Asset Browser. Beyond it:
+
+| Exists | What it does |
+|---|---|
+| **Source2Viewer-CLI** | `--vpk_list`, `--vpk_dir`, filtered extract, `-d` decompile. **Covers general VPK extraction entirely.** |
+| **Zehmosu/kv3parser** | Python KV3 → JSON, written for Deadlock analysis |
+| **STmihan/deadlock-data-extractor** | automated heroes/items/abilities JSON + vdata + images |
+| **Deadlock Mod Manager**, Grimoire | mod install/ordering |
+| community server managers | dedicated server lifecycle |
+| **`Deadlock_with_tools.exe`** | the game ships launchable Source 2 tools; Hammer opens from it |
+| **`dl_example.vmap`** | community dev map containing all important map/gamemode entities |
+
+**Consequences, all acted on:**
+
+- `dl-extract` is **demoted to internal** — Source2Viewer-CLI already does it.
+- Reading vdata is a solved problem. **Writing it back is not.**
+- `dl_example.vmap` is a **partial answer to probe 3** and a better fixture than
+  anything Valve-shipped. Get it early.
+- The mod-manager and server-manager space is crowded. Stay out.
+
+**VRF does not guarantee CLI stability** — argument names and output formats may
+change between releases. That justifies building on the library for tools we
+need anyway. It does **not** justify rebuilding a tool that exists.
+
+**Still nothing exists for:** cross-build vdata diffing, patch-and-repack,
+headless verification, parametric map generation, or any agent-oriented
+interface. That is the whole of our remaining scope.
+
+---
+
 ## Open probes — nothing downstream of these is settled
 
 | # | Question | Blocks | Status |
 |---|---|---|---|
 | 1 | What does the server do without Valve's GC? Does a match start, heroes populate, shop load? | Shape of Phase 6 | open |
 | 2 | `cvarlist` dump on the pinned build, diffed against a recent build | Which build to pin | open |
-| 3 | Entity dump during a live match + decompile an official map | Phase 3 ceiling | open |
+| 3 | Entity dump during a live match + decompile an official map | Phase 3 ceiling | **partly answered** — `dl_example.vmap` covers the entity surface |
 | 4 | Does Metamod:Source (Source 2 branch) load into Deadlock's **server** binary? | Phases 4, 5, 6 | open |
 | 5 | Does the Lua VM ship in the pinned binary? String-search `luaL_`, `lua_pcall`, `CScriptVM` | Phase 5 | open |
 | 6 | Do the CSDK compilers run headless on a `windows-latest` runner? | Whether Phase 3 is phone-drivable | open |
@@ -130,7 +178,9 @@ no desktop — only a workflow file and a fixture set.
 
 ## Known unknowns, not yet probes
 
-- Exact Deadlock map bounding box dimensions.
+- Exact Deadlock map bounding box dimensions. Measurable off `dl_example.vmap`.
+- **Whether Source 2 Hammer needs an FGD for Deadlock at all**, or reads entity
+  definitions from game files. Decides whether an FGD tool has any value.
 - Whether the dedicated server can boot inside a CI runner against bots
   (headless, no GPU required — but the 6-hour job ceiling caps what it could
   ever cover).
