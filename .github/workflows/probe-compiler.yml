@@ -1,13 +1,6 @@
 name: probe compiler
 on: workflow_dispatch
 
-# PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless here?
-#
-# CSDK split across release assets on tag csdk-12. Mobile renamed the parts;
-# GitHub turned spaces into dots: bin.cs2.zip (part 1), bin.cs2.2.zip ...
-# bin.cs2.14.zip. Order comes from the number AFTER "bin.cs2.", and the
-# SHA256 confirms it.
-
 jobs:
   probe:
     runs-on: windows-latest
@@ -27,34 +20,34 @@ jobs:
 
           N=$(jq '.assets | length' rel.json)
           echo "asset count: $N"
-          if [ "$N" -eq 0 ]; then
-            echo "::warning::release has no assets - attach them under 'Attach binaries'"
-            exit 0
-          fi
+          [ "$N" -eq 0 ] && { echo "::warning::no assets"; exit 0; }
 
           mkdir -p dl
           jq -r '.assets[] | "\(.id)\t\(.name)"' rel.json | while IFS=$'\t' read -r id name; do
             gh api -H "Accept: application/octet-stream" \
               "repos/${GITHUB_REPOSITORY}/releases/assets/$id" > "dl/$name"
           done
-          ls -la dl
 
-          # order: number directly after "bin.cs2." ; bare bin.cs2.zip is part 1
-          for f in dl/bin.cs2*.zip; do
-            b=$(basename "$f")
+          # no globbing: list the directory and filter
+          ls dl | grep -i '\.zip$' > parts.txt
+          echo "--- parts found ---"
+          cat parts.txt
+
+          : > ordered.txt
+          while read -r b; do
             n=$(printf '%s' "$b" | sed -n 's/^bin\.cs2\.\([0-9]\{1,\}\)\.zip$/\1/p')
             [ -z "$n" ] && n=1
-            printf '%05d\t%s\n' "$n" "$b"
-          done | sort -n > order.txt
+            printf '%05d\t%s\n' "$n" "$b" >> ordered.txt
+          done < parts.txt
+          sort -n ordered.txt > order.txt
 
           echo "--- concatenation order ---"
           cat order.txt
 
           COUNT=$(wc -l < order.txt)
           UNIQ=$(cut -f1 order.txt | sort -u | wc -l)
-          if [ "$COUNT" -ne "$UNIQ" ]; then
-            echo "::error::duplicate ordinals - ordering is wrong"; exit 1
-          fi
+          [ "$COUNT" -ne "$UNIQ" ] && { echo "::error::duplicate ordinals"; exit 1; }
+          echo "parts: $COUNT"
 
           : > bin_cs2.zip
           while IFS=$'\t' read -r n f; do cat "dl/$f" >> bin_cs2.zip; done < order.txt
@@ -64,14 +57,12 @@ jobs:
             cp dl/SHA256SUMS.txt .
             sha256sum -c SHA256SUMS.txt || {
               echo "::error::checksum mismatch. Order used:"; cat order.txt; exit 1; }
-            echo "checksum OK - reassembly correct"
-          else
-            echo "::warning::no SHA256SUMS.txt - cannot confirm order"
+            echo "checksum OK"
           fi
 
           unzip -q bin_cs2.zip -d csdk || { echo "::error::unzip failed"; exit 1; }
           COMP=$(find csdk -iname 'resourcecompiler.exe' | head -1)
-          [ -z "$COMP" ] && { echo "::warning::no resourcecompiler.exe in archive"; exit 0; }
+          [ -z "$COMP" ] && { echo "::warning::no resourcecompiler.exe"; exit 0; }
           echo "ready=$COMP" >> "$GITHUB_OUTPUT"
           echo "found: $COMP"
 
