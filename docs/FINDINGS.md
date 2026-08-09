@@ -82,6 +82,54 @@ and add it.
   makes fixture-free testing possible; no committed VPK is needed.
 - `dl-extract` output is byte-identical across repeated runs.
 
+## Compiling — `[V-CI]`, probe-compiler run 2026-08-09
+
+**`resourcecompiler.exe` RUNS HEADLESS on `windows-latest`.** This was the
+pivotal unknown for the mobile workflow and it is now answered. It launched
+from a bare extracted CSDK tree, printed full usage, and exited cleanly — no
+hang, no missing DLL, no tools install, no game install.
+
+- **The extracted CSDK is self-sufficient.** 658 MB unpacked; nothing else
+  needed to invoke the compiler.
+- **`resourcecompiler.exe` is a 160 KB launcher** that statically imports only
+  `tier0.dll`. Everything else resolves at runtime from the `assettypes`
+  config, so **the DLL set cannot be trimmed by static analysis** — do not try
+  to ship a subset.
+- **Flags confirmed against the binary itself** (not documentation):
+  `-i`, `-filelist`, `-r`, `-nop4` (disables Perforce checkout),
+  `-game <path>`, `-v`, `-f`, `-fshallow`, `-fshallow2`, `-pc`,
+  `-novpk` (loose files instead of a VPK), `-vpkincr`, `-pauseiferror`,
+  `-pause`, `-changelist`, `-skiptype`, `-crc`.
+
+**What blocks an actual compile — the ONLY remaining gap:**
+
+```
+Application unable to load gameinfo.gi file from directory "game\citadel"
+Can't find 'game\citadel\gameinfo.gi'
+```
+
+It needs a game directory to build *for*. `-game <path>` names the
+`gameinfo.gi` explicitly; without it the path is derived from the input
+filename. `gameinfo.gi` is a small text file — Deadlock's is on the Valve
+Developer Community wiki verbatim and in GameTracking-Deadlock — so this is
+**synthesizable in CI**, no game install.
+
+**Next step for this probe:** create `game/citadel/gameinfo.gi`, pass
+`-game`, re-run. Unknown whether it then wants further content-tree structure.
+
+## Distribution of the CSDK in CI — `[V]`
+
+- The CSDK is ~261 MB zipped, ~658 MB extracted. **Do not commit it** —
+  git history is permanent and every checkout pays.
+- It lives as **release assets on tag `csdk-12`**, split into 20 MB parts
+  because mobile upload caps at 25 MB.
+- Mobile renamed the parts and GitHub converted spaces to dots:
+  `bin.cs2.zip` is part 1, then `bin.cs2.2.zip` … `bin.cs2.14.zip`.
+- **Do the download and reassembly in Python, not bash.** Git Bash on the
+  runner produced files that `ls` listed and `cat` could not open, and
+  `jq | while read` lost the downloads across the step boundary. Four
+  workflow revisions were burned on this.
+
 ## Scripting — `[V]` unless marked
 
 - Source 2 ships a **Lua VScript VM that is present but disabled** in shipping
@@ -165,7 +213,7 @@ interface. That is the whole of our remaining scope.
 | 3 | Entity dump during a live match + decompile an official map | Phase 3 ceiling | **partly answered** — `dl_example.vmap` covers the entity surface |
 | 4 | Does Metamod:Source (Source 2 branch) load into Deadlock's **server** binary? | Phases 4, 5, 6 | open |
 | 5 | Does the Lua VM ship in the pinned binary? String-search `luaL_`, `lua_pcall`, `CScriptVM` | Phase 5 | open |
-| 6 | Do the CSDK compilers run headless on a `windows-latest` runner? | Whether Phase 3 is phone-drivable | open |
+| 6 | Do the CSDK compilers run headless on a `windows-latest` runner? | Whether Phase 3 is phone-drivable | **ANSWERED YES** — see Compiling |
 
 **Probe 4 is the highest-leverage unknown in the project.** Run it first. If
 it fails, the plan drops to the fallback track: maps plus vdata plus map
