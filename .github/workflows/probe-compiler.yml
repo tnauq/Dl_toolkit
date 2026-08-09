@@ -4,10 +4,8 @@ on: workflow_dispatch
 # PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless on a
 # GitHub Windows runner, and what layout does it expect?
 #
-# Needs csdk/ committed with resourcecompiler.exe and its DLLs. Until then this
-# reports what is missing and exits 3 (missing dependency), not failure.
-#
-# Records the answer either way. Do not re-run once FINDINGS.md has it.
+# Needs csdk/ committed with resourcecompiler.exe and its DLLs. Until then it
+# reports what is missing and exits 3, not failure.
 
 jobs:
   probe:
@@ -19,7 +17,10 @@ jobs:
         id: find
         shell: bash
         run: |
-          RC=$(find csdk -iname 'resourcecompiler.exe' 2>/dev/null | head -1)
+          RC=""
+          if [ -d csdk ]; then
+            RC=$(find csdk -iname 'resourcecompiler.exe' 2>/dev/null | head -1 || true)
+          fi
           if [ -z "$RC" ]; then
             echo "::warning::No resourcecompiler.exe under csdk/"
             echo "Commit the CSDK bin_cs2/win64 slice, then re-run."
@@ -33,19 +34,24 @@ jobs:
       - name: Missing dependency
         if: steps.find.outputs.found == ''
         shell: bash
-        run: exit 3
+        run: |
+          echo "csdk/ not present - nothing to probe"
+          exit 3
 
       - name: Does it run at all
+        if: steps.find.outputs.found != ''
         shell: bash
         run: |
           RC="${{ steps.find.outputs.found }}"
           set +e
-          "$RC" 2>&1 | tee usage.txt
+          "$RC" > usage.txt 2>&1
           echo "exit: $?"
           set -e
-          echo "--- did it print usage without hanging? that is the headline result ---"
+          head -60 usage.txt || true
+          echo "--- printed usage without hanging? that is the headline result ---"
 
       - name: Build a source vdata
+        if: steps.find.outputs.found != ''
         shell: bash
         run: |
           mkdir -p content/citadel_addons/probe/scripts
@@ -58,15 +64,18 @@ jobs:
           find content -type f
 
       - name: Try compiling it
+        if: steps.find.outputs.found != ''
         shell: bash
         run: |
           RC="${{ steps.find.outputs.found }}"
+          SRC="$(pwd -W 2>/dev/null || pwd)/content/citadel_addons/probe/scripts/probe.vdata"
           set +e
-          "$RC" -nop4 -v -i "$(pwd -W 2>/dev/null || pwd)/content/citadel_addons/probe/scripts/probe.vdata" 2>&1 | tee compile.txt
+          "$RC" -nop4 -v -i "$SRC" > compile.txt 2>&1
           echo "exit: $?"
           set -e
+          tail -60 compile.txt || true
           echo "--- searching for output ---"
-          find . -name '*.vdata_c' -newermt '-10 minutes' 2>/dev/null || true
+          find . -name '*.vdata_c' 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -76,4 +85,3 @@ jobs:
             usage.txt
             compile.txt
           if-no-files-found: ignore
-
