@@ -43,6 +43,7 @@ jobs:
 
       - name: Restore and build
         run: |
+          rm -f Deadlock.sln Deadlock.slnx
           dotnet new sln -n Deadlock
           dotnet sln add $(find src -name '*.csproj')
           dotnet build -c Release --nologo

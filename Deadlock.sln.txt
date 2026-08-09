@@ -1,0 +1,3 @@
+Generate with:  dotnet new sln -n Deadlock && dotnet sln add src/**/*.csproj
+Kept as a note rather than a committed .sln so the file is generated on a real
+machine rather than hand-written blind.

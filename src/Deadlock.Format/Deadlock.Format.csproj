@@ -9,8 +9,9 @@
          ValvePak alone covers the index. See FINDINGS.md, VPK access. -->
     <PackageReference Include="ValvePak" Version="4.0.0.142" />
     <!-- Independent CRC32, so round-trip checks don't verify ValvePak
-         against itself. -->
-    <PackageReference Include="System.IO.Hashing" Version="9.0.0" />
+         against itself. Must be >= the version ValvePak itself pulls in
+         (4.0.0.142 requires 9.0.11) or NuGet errors NU1605 on downgrade. -->
+    <PackageReference Include="System.IO.Hashing" Version="9.0.11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Deadlock.Contracts/Deadlock.Contracts.csproj" />

@@ -1,6 +1,10 @@
 bin/
 obj/
+build/
 *.sln
+*.slnx
 *.user
 out.json
+manifest.json
 index-*.json
+_pending_workflows/
