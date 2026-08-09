@@ -3,9 +3,10 @@ on: workflow_dispatch
 
 # PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless here?
 #
-# CSDK lives as release assets (tag csdk-12), split for mobile upload limits.
-# Mobile renamed the parts, so we download EVERYTHING, natural-sort it, and
-# rely on the SHA256 to confirm the order was right.
+# CSDK is split across release assets on tag csdk-12. Mobile renamed the parts
+# to "bin cs2.zip", "bin cs2 2.zip" ... "bin cs2 14.zip" (GitHub turns spaces
+# into dots). Order is derived from the trailing number, unnumbered = 1, and
+# confirmed by SHA256 - if the checksum passes, the order was right.
 
 jobs:
   probe:
@@ -32,34 +33,44 @@ jobs:
           COUNT=0
           for f in *; do [ -f "$f" ] && COUNT=$((COUNT+1)); done
           if [ "$COUNT" -eq 0 ]; then
-            echo "::warning::No assets on release csdk-12 - probe skipped"
+            echo "::warning::No assets downloaded - if you just uploaded, wait and re-run"
             gh release list || true
             exit 0
           fi
 
-          # checksum file aside, everything else is a part
           mv SHA256SUMS.txt ../ 2>/dev/null || true
 
+          # order: trailing number before .zip, unnumbered counts as 1
+          for f in *; do
+            [ -f "$f" ] || continue
+            n=$(printf '%s' "$f" | sed -n 's/.*[^0-9]\([0-9]\{1,\}\)\.zip$/\1/p')
+            [ -z "$n" ] && n=1
+            printf '%05d\t%s\n' "$n" "$f"
+          done | sort -n > ../order.txt
+
           echo "--- concatenation order ---"
-          ls | sort -V | tee ../order.txt
+          cat ../order.txt
           cd ..
-          cat $(cd dl && ls | sort -V | sed 's|^|dl/|') > bin_cs2.zip
+
+          : > bin_cs2.zip
+          while IFS=$'\t' read -r n f; do
+            cat "dl/$f" >> bin_cs2.zip
+          done < order.txt
           ls -la bin_cs2.zip
 
           if [ -f SHA256SUMS.txt ]; then
             if sha256sum -c SHA256SUMS.txt; then
-              echo "checksum OK - part order was correct"
+              echo "checksum OK - reassembly correct"
             else
-              echo "::error::checksum mismatch. Order used was:"
+              echo "::error::checksum mismatch. Order used:"
               cat order.txt
-              echo "Parts are out of order, or one is missing/duplicated."
               exit 1
             fi
           else
             echo "::warning::no SHA256SUMS.txt - cannot confirm order"
           fi
 
-          unzip -q bin_cs2.zip -d csdk || { echo "::error::unzip failed - reassembly is wrong"; exit 1; }
+          unzip -q bin_cs2.zip -d csdk || { echo "::error::unzip failed"; exit 1; }
           COMP=$(find csdk -iname 'resourcecompiler.exe' | head -1)
           if [ -z "$COMP" ]; then
             echo "::warning::archive has no resourcecompiler.exe"
