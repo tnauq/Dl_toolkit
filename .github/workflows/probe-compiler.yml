@@ -4,8 +4,9 @@ on: workflow_dispatch
 # PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless on a
 # GitHub Windows runner, and what layout does it expect?
 #
-# Needs csdk/ committed with resourcecompiler.exe and its DLLs. Until then it
-# reports what is missing and exits 3, not failure.
+# Needs csdk/ committed with resourcecompiler.exe and its DLLs.
+# Without it the run PASSES with a warning - "not ready" is not a failure.
+# Red here means the compiler was found and something about it failed.
 
 jobs:
   probe:
@@ -22,7 +23,7 @@ jobs:
             RC=$(find csdk -iname 'resourcecompiler.exe' 2>/dev/null | head -1 || true)
           fi
           if [ -z "$RC" ]; then
-            echo "::warning::No resourcecompiler.exe under csdk/"
+            echo "::warning::csdk/ has no resourcecompiler.exe - probe skipped, nothing tested"
             echo "Commit the CSDK bin_cs2/win64 slice, then re-run."
             echo "found=" >> "$GITHUB_OUTPUT"
           else
@@ -30,13 +31,6 @@ jobs:
             echo "found: $RC"
             ls -la "$(dirname "$RC")" | head -40
           fi
-
-      - name: Missing dependency
-        if: steps.find.outputs.found == ''
-        shell: bash
-        run: |
-          echo "csdk/ not present - nothing to probe"
-          exit 3
 
       - name: Does it run at all
         if: steps.find.outputs.found != ''
@@ -76,6 +70,16 @@ jobs:
           tail -60 compile.txt || true
           echo "--- searching for output ---"
           find . -name '*.vdata_c' 2>/dev/null || true
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -z "${{ steps.find.outputs.found }}" ]; then
+            echo "RESULT: skipped - no compiler committed"
+          else
+            echo "RESULT: compiler ran, see artifacts"
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
