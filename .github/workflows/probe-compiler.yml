@@ -7,73 +7,76 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch the CSDK
-        shell: bash
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/csdk-12" > rel.json
-          N=$(jq '.assets | length' rel.json)
-          echo "asset count: $N"
-          [ "$N" -eq 0 ] && { echo "::error::no assets"; exit 1; }
-          mkdir -p dl
-          jq -r '.assets[] | "\(.id)\t\(.name)"' rel.json | while IFS=$'\t' read -r id name; do
-            gh api -H "Accept: application/octet-stream" \
-              "repos/${GITHUB_REPOSITORY}/releases/assets/$id" > "dl/$name"
-          done
+          import os, re, json, hashlib, zipfile, sys, subprocess
 
-      - name: Reassemble
-        id: get
-        shell: python
-        run: |
-          import os, re, hashlib, zipfile, sys
+          repo = os.environ['GITHUB_REPOSITORY']
+
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          print(f"assets: {len(assets)}")
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              print(f"  downloading {a['name']} ({a['size']} bytes)")
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+              print(f"    -> {os.path.getsize(dest)} bytes on disk")
 
           files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
-          def ordinal(name):
-              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', name)
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
               return int(m.group(1)) if m else 1
           files.sort(key=ordinal)
           print("order:")
           for f in files:
-              print("  %2d  %s  %d bytes" % (ordinal(f), f, os.path.getsize(os.path.join('dl', f))))
-
-          ords = [ordinal(f) for f in files]
-          if len(set(ords)) != len(ords):
-              print("::error::duplicate ordinals"); sys.exit(1)
+              print(f"  {ordinal(f):2d}  {f}  {os.path.getsize(os.path.join('dl', f))}")
+          if len(files) == 0:
+              print("::error::no zip parts after download"); sys.exit(1)
 
           h = hashlib.sha256()
           with open('bin_cs2.zip', 'wb') as out:
               for f in files:
-                  with open(os.path.join('dl', f), 'rb') as part:
-                      while True:
-                          chunk = part.read(1 << 20)
-                          if not chunk: break
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
                           out.write(chunk); h.update(chunk)
           got = h.hexdigest()
-          print("reassembled %d bytes, sha256 %s" % (os.path.getsize('bin_cs2.zip'), got))
+          print(f"reassembled {os.path.getsize('bin_cs2.zip')} bytes")
+          print(f"sha256 {got}")
 
           sums = os.path.join('dl', 'SHA256SUMS.txt')
           if os.path.exists(sums):
               want = open(sums).read().split()[0]
               if want != got:
-                  print("::error::checksum mismatch, expected %s" % want); sys.exit(1)
+                  print(f"::error::checksum mismatch, expected {want}"); sys.exit(1)
               print("checksum OK")
-          else:
-              print("::warning::no SHA256SUMS.txt")
 
           with zipfile.ZipFile('bin_cs2.zip') as z:
-              names = z.namelist()
-              print("archive holds %d entries" % len(names))
+              print(f"archive holds {len(z.namelist())} entries")
               z.extractall('csdk')
 
           comp = ''
           for root, _, fs in os.walk('csdk'):
               for f in fs:
                   if f.lower() == 'resourcecompiler.exe':
-                      comp = os.path.join(root, f); break
+                      comp = os.path.abspath(os.path.join(root, f))
           print("compiler:", comp or "NOT FOUND")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
-              g.write("ready=%s\n" % comp)
+              g.write(f"ready={comp}\n")
 
       - name: Does it run at all
         if: steps.get.outputs.ready != ''
