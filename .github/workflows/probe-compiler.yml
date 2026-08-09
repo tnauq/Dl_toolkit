@@ -3,10 +3,9 @@ on: workflow_dispatch
 
 # PROBE (b): does the Deadlock CSDK's resourcecompiler.exe run headless here?
 #
-# CSDK is split across release assets on tag csdk-12. Mobile renamed the parts
-# to "bin cs2.zip", "bin cs2 2.zip" ... "bin cs2 14.zip" (GitHub turns spaces
-# into dots). Order is derived from the trailing number, unnumbered = 1, and
-# confirmed by SHA256 - if the checksum passes, the order was right.
+# gh release download reported "no assets" while the web UI showed 15, so this
+# queries the API directly and downloads by asset ID. It also prints each
+# asset's state - anything not "uploaded" never finished uploading.
 
 jobs:
   probe:
@@ -14,68 +13,66 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch and reassemble the CSDK
+      - name: Inspect the release
         id: get
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "ready=" >> "$GITHUB_OUTPUT"
-          mkdir -p dl && cd dl
 
-          set +e
-          gh release download csdk-12 --clobber
-          set -e
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/csdk-12" > rel.json || {
+            echo "::warning::cannot read release csdk-12"; exit 0; }
 
-          echo "--- assets as downloaded ---"
-          ls -la || true
+          echo "--- assets: id | state | size | name ---"
+          jq -r '.assets[] | "\(.id) | \(.state) | \(.size) | \(.name)"' rel.json
 
-          COUNT=0
-          for f in *; do [ -f "$f" ] && COUNT=$((COUNT+1)); done
-          if [ "$COUNT" -eq 0 ]; then
-            echo "::warning::No assets downloaded - if you just uploaded, wait and re-run"
-            gh release list || true
+          N=$(jq '.assets | length' rel.json)
+          echo "asset count: $N"
+          if [ "$N" -eq 0 ]; then
+            echo "::warning::release has no assets via API"
             exit 0
           fi
 
-          mv SHA256SUMS.txt ../ 2>/dev/null || true
+          BAD=$(jq -r '[.assets[] | select(.state != "uploaded")] | length' rel.json)
+          if [ "$BAD" -gt 0 ]; then
+            echo "::error::$BAD asset(s) are not in state 'uploaded' - re-upload those"
+            exit 1
+          fi
 
-          # order: trailing number before .zip, unnumbered counts as 1
-          for f in *; do
-            [ -f "$f" ] || continue
-            n=$(printf '%s' "$f" | sed -n 's/.*[^0-9]\([0-9]\{1,\}\)\.zip$/\1/p')
+          mkdir -p dl
+          jq -r '.assets[] | "\(.id)\t\(.name)"' rel.json | while IFS=$'\t' read -r id name; do
+            echo "downloading $name"
+            gh api -H "Accept: application/octet-stream" \
+              "repos/${GITHUB_REPOSITORY}/releases/assets/$id" > "dl/$name"
+          done
+          ls -la dl
+
+          mv "dl/SHA256SUMS.txt" . 2>/dev/null || true
+
+          for f in dl/*; do
+            b=$(basename "$f")
+            n=$(printf '%s' "$b" | sed -n 's/.*[^0-9]\([0-9]\{1,\}\)\.zip$/\1/p')
             [ -z "$n" ] && n=1
-            printf '%05d\t%s\n' "$n" "$f"
-          done | sort -n > ../order.txt
+            printf '%05d\t%s\n' "$n" "$b"
+          done | sort -n > order.txt
 
           echo "--- concatenation order ---"
-          cat ../order.txt
-          cd ..
+          cat order.txt
 
           : > bin_cs2.zip
-          while IFS=$'\t' read -r n f; do
-            cat "dl/$f" >> bin_cs2.zip
-          done < order.txt
+          while IFS=$'\t' read -r n f; do cat "dl/$f" >> bin_cs2.zip; done < order.txt
           ls -la bin_cs2.zip
 
           if [ -f SHA256SUMS.txt ]; then
-            if sha256sum -c SHA256SUMS.txt; then
-              echo "checksum OK - reassembly correct"
-            else
-              echo "::error::checksum mismatch. Order used:"
-              cat order.txt
-              exit 1
-            fi
-          else
-            echo "::warning::no SHA256SUMS.txt - cannot confirm order"
+            sha256sum -c SHA256SUMS.txt || {
+              echo "::error::checksum mismatch. Order used:"; cat order.txt; exit 1; }
+            echo "checksum OK"
           fi
 
           unzip -q bin_cs2.zip -d csdk || { echo "::error::unzip failed"; exit 1; }
           COMP=$(find csdk -iname 'resourcecompiler.exe' | head -1)
-          if [ -z "$COMP" ]; then
-            echo "::warning::archive has no resourcecompiler.exe"
-            exit 0
-          fi
+          [ -z "$COMP" ] && { echo "::warning::no resourcecompiler.exe in archive"; exit 0; }
           echo "ready=$COMP" >> "$GITHUB_OUTPUT"
           echo "found: $COMP"
 
@@ -112,7 +109,6 @@ jobs:
           echo "exit: $?"
           set -e
           tail -80 compile.txt || true
-          echo "--- searching for output ---"
           find . -name '*.vdata_c' 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
