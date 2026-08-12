@@ -1,7 +1,14 @@
 # TOOLING — `dl-patch`
 
-v1 is **built and CI-verified** (patch-smoke 2026-08-09). Batch is **specced
-and written 2026-08-12**, awaiting its first green `batch-smoke`.
+Four modes, all CI-verified: `set` (default, no subcommand), `batch`, `diff`,
+`pack`. One binary; `Program.cs` is a dispatcher.
+
+| mode | status |
+|---|---|
+| `set` | green, patch-smoke 2026-08-09 |
+| `batch` | green, batch-smoke 2026-08-12 |
+| `diff` | green, diff-smoke 2026-08-12 |
+| `pack` | green, loop 2026-08-12 |
 
 ---
 
@@ -69,7 +76,7 @@ numerically after normalisation rather than as strings.
 
 ---
 
-## Batch — WRITTEN 2026-08-12, not yet green
+## Batch — GREEN 2026-08-12
 
 ```
 dl-patch batch --plan <plan.json> --root <dir> --out-root <dir>
@@ -108,7 +115,7 @@ reaches into argv**. Batch is a new front end producing the same `List<Edit>`.
 `Kv3Document` gained a read path (`TryRead`, `Serialize`) so guards can be
 evaluated before anything mutates; `Apply` is untouched.
 
-### Settled decisions — answered 2026-08-12, do not relitigate
+### Settled decisions — answered 2026-08-12, do not relitigate. Each has a named assertion in `batch-smoke.yml`.
 
 | # | Decision | Reasoning |
 |---|---|---|
@@ -181,3 +188,90 @@ is the inverse of the plan — enough to generate an undo.
   open by erroring rather than guessing.
 - Array-element and object-insertion edits. Wait for a real need; they are what
   would force a genuine KV3 writer.
+
+
+---
+
+## diff — GREEN 2026-08-12
+
+```
+dl-patch diff --old <file.vdata> --new <file.vdata>
+              [--json] [--max-entries N] [--paths-only]
+```
+
+**Why it exists.** Guards are mandatory and a guard fails when the build moved
+underneath the plan. `--dry-run` says a plan HAS gone stale; diff says WHAT
+moved, which is what you need to re-derive it.
+
+### Decisions
+
+| | |
+|---|---|
+| **Subcommand, not a new assembly** | `Kv3Document.cs` is the only file that touches VRF. A second assembly means duplicating that access or refactoring out a shared vdata layer |
+| **Semantic, not textual** | Compares parsed values. Diffing a file against its own no-op round trip reports **zero** differences — verified at 35,443 paths |
+| **Floats normalise to 6dp** | Same rule as batch guards (Q2) |
+| **Arrays are opaque** | Length change registers, element edit does not. Array elements have no dotted path |
+| **Exit 1 = differ** | `ExpectedFailure`, used for its stated meaning. `ok` stays true, `errors` empty: a difference is a RESULT |
+| **`retyped` is its own change class** | A float becoming a string is drift a value-only diff would misreport |
+
+Change classes: `added`, `removed`, `changed`, `retyped`. Results sorted by
+path. `kind` currently reports the CLR type name (`Double`) — honest but it
+leaks an implementation detail; map to KV3 vocabulary if anything branches on it.
+
+---
+
+## pack — GREEN 2026-08-12
+
+```
+dl-patch pack --in <dir> --out <pak01_dir.vpk> --source-build <sha>
+              [--prefix <p>] [--json] [--verify]
+```
+
+The last link: compiled tree -> addon VPK.
+
+### Decisions
+
+| | |
+|---|---|
+| **Archive writing stays in `Deadlock.Format`** | CI enforces the layer boundary. pack is a front end over `VpkWriter.CreateFromDirectory` and touches no archive API |
+| **Entries keyed relative to `--in`**, forward-slashed | `scripts/heroes.vdata_c`. `[I]` — consistent with gameinfo's mounts and the compiler's write path, unconfirmed against a running game. `--prefix` if it proves wrong |
+| **`--source-build` required** | D2; a VPK is the most shippable artifact here |
+| **`--verify` exit 8** | Re-reads and checks every CRC32 against the independently computed one. Distinct code because the tool worked and the RESULT is untrustworthy |
+
+### PACK FROM A CURATED TREE
+
+**Do not point `--in` at the compiler's output directory.** It holds
+`gameinfo.gi` (game config, never mod content), and the compiler writes there,
+so it may hold a stale artifact. The first green `loop` run shipped
+`gameinfo.gi` plus the *unpatched* resource and every assertion passed. Stage
+what you mean to ship.
+
+### Install
+
+A mod is a VPK at `Deadlock/game/citadel/addons/pak##_dir.vpk`, `##` 01-99,
+**lower number = higher priority**. Requires a one-time `gameinfo.gi`
+SearchPaths edit. Whether Deadlock accepts a modded vdata this way is
+**unconfirmed** — needs hardware (D7).
+
+---
+
+## Compiling — no longer a gap
+
+`resourcecompiler.exe` compiles source vdata headlessly on `windows-latest`.
+See `FINDINGS-2026-08-12.md` for the three sub-gaps that were closed. In short:
+`-game` names the directory holding `gameinfo.gi`, **the compiler must be run
+from the directory containing `citadel/`** because `GAMEROOT` is the working
+directory, `modtools.dll` is a loose release asset on `csdk-12`, and vdata must
+declare `generic_data_type`.
+
+`heroes.vdata` compiles from a bare content tree.
+
+---
+
+## Deferred, deliberately
+
+- **`--emit-undo <path>`.** The envelope already carries `from` per edit.
+  Building it now means designing undo semantics for guards before the main
+  path has run in anger.
+- **`--check` mode.** Code 1 is now spent on diff, so `--check` needs its own.
+- **`pack --exclude <glob>`.** The curated-tree discipline covers it for now.
