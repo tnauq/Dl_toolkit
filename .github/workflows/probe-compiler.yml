@@ -1,4 +1,23 @@
 name: probe compiler
+
+# Closes the one remaining gap from FINDINGS "Compiling":
+#
+#   Application unable to load gameinfo.gi file from directory "game\citadel"
+#
+# The compiler needs a game directory to build FOR. `-game <path>` names it.
+# gameinfo.gi is fetched from GameTracking-Deadlock rather than written by
+# hand — a synthesized approximation that the compiler rejects would look
+# identical to the compiler not accepting the flag, and the two need telling
+# apart.
+#
+# Layout built here, which is the standard Source 2 shape:
+#
+#   build/game/citadel/gameinfo.gi     what -game points at
+#   build/content/citadel/scripts/     where source assets live
+#
+# Unknown going in: whether gameinfo.gi alone satisfies it or whether it then
+# wants more of the content tree. That is what this run answers.
+
 on: workflow_dispatch
 
 jobs:
@@ -88,30 +107,104 @@ jobs:
           set -e
           head -60 usage.txt || true
 
-      - name: Build a source vdata
+      # ------------------------------------------------------------------
+      # NEW — the game directory
+      # ------------------------------------------------------------------
+      - name: Fetch the real gameinfo.gi
+        id: gameinfo
+        shell: bash
+        run: |
+          set -euo pipefail
+          # From GameTracking-Deadlock, not written by hand. A hand-made file
+          # the compiler rejects is indistinguishable from the compiler
+          # rejecting the flag, and those need telling apart.
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone '/**/gameinfo.gi'
+          echo "--- gameinfo.gi found in the tracking repo ---"
+          find . -name 'gameinfo.gi' -not -path './.git/*' | tee ../found.txt
+          COUNT=$(wc -l < ../found.txt)
+          if [ "$COUNT" = "0" ]; then
+            echo "::error::no gameinfo.gi in GameTracking-Deadlock"
+            exit 3
+          fi
+          # Prefer the citadel one if several exist.
+          SRC=$(grep -m1 'citadel/gameinfo.gi' ../found.txt || head -1 ../found.txt)
+          echo "using: $SRC"
+          cd ..
+          mkdir -p build/game/citadel
+          cp "gt/$SRC" build/game/citadel/gameinfo.gi
+          echo "--- contents ---"
+          cat build/game/citadel/gameinfo.gi
+          echo "found=1" >> "$GITHUB_OUTPUT"
+
+      - name: Build the content tree
         if: steps.get.outputs.ready != ''
         shell: bash
         run: |
-          mkdir -p content/citadel_addons/probe/scripts
-          cat > content/citadel_addons/probe/scripts/probe.vdata <<'VD'
+          set -euo pipefail
+          mkdir -p build/content/citadel/scripts
+          cat > build/content/citadel/scripts/probe.vdata <<'VD'
           <!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
           {
             probe_value = 1
           }
           VD
-          find content -type f
+          find build -type f | head -20
 
-      - name: Try compiling it
+      # Three attempts, narrowing. Each writes its own log so a partial
+      # success is legible: if A fails and B succeeds, -game is the answer;
+      # if both fail the same way, the content tree is the next suspect.
+      - name: A — compile with -game
         if: steps.get.outputs.ready != ''
         shell: bash
         run: |
-          SRC="$(pwd -W 2>/dev/null || pwd)/content/citadel_addons/probe/scripts/probe.vdata"
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
           set +e
-          "${{ steps.get.outputs.ready }}" -nop4 -v -i "$SRC" > compile.txt 2>&1
+          "${{ steps.get.outputs.ready }}" -nop4 -v \
+            -game "$ROOT/build/game/citadel" \
+            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > compile-a.txt 2>&1
           echo "exit: $?"
           set -e
-          tail -80 compile.txt || true
-          find . -name '*.vdata_c' 2>/dev/null || true
+          tail -60 compile-a.txt || true
+
+      - name: B — compile with -game pointed at the game root
+        if: steps.get.outputs.ready != ''
+        shell: bash
+        run: |
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          set +e
+          "${{ steps.get.outputs.ready }}" -nop4 -v \
+            -game "$ROOT/build/game" \
+            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > compile-b.txt 2>&1
+          echo "exit: $?"
+          set -e
+          tail -60 compile-b.txt || true
+
+      - name: C — run from inside the tree, no -game
+        if: steps.get.outputs.ready != ''
+        shell: bash
+        run: |
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build
+          set +e
+          "${{ steps.get.outputs.ready }}" -nop4 -v \
+            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > ../compile-c.txt 2>&1
+          echo "exit: $?"
+          set -e
+          cd ..
+          tail -60 compile-c.txt || true
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          echo "--- any compiled output anywhere ---"
+          find . -name '*.vdata_c' -not -path './csdk/*' 2>/dev/null || true
+          echo "--- build tree after ---"
+          find build -type f 2>/dev/null | head -40 || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -119,5 +212,8 @@ jobs:
           name: probe-compiler
           path: |
             usage.txt
-            compile.txt
+            compile-a.txt
+            compile-b.txt
+            compile-c.txt
+            found.txt
           if-no-files-found: ignore
