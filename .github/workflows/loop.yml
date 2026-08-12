@@ -1,0 +1,309 @@
+name: loop
+
+# END TO END: plan -> dl-patch batch -> overlay -> resourcecompiler -> .vdata_c
+#
+# Every link is separately green as of 2026-08-12. This asserts them TOGETHER,
+# which is the claim that actually matters: a hero stat can be changed and a
+# compiled resource produced, from a phone, with no desktop anywhere.
+#
+# Two tracks, deliberately separated:
+#
+#   ASSERTED  a small vdata is patched then compiled. Must pass; a red here is
+#             a real regression in the chain.
+#   EXPLORING heroes.vdata, the file the project actually cares about. Allowed
+#             to fail and REPORTED either way — a hero file may reference
+#             resources absent from a bare content tree, and that is worth
+#             measuring rather than assuming in either direction.
+#
+# Runs on windows-latest because resourcecompiler.exe does. dotnet is present
+# on the runner, so dl-patch builds here too.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  loop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess
+
+          repo = os.environ['GITHUB_REPOSITORY']
+
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          print(f"assets: {len(assets)}")
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              print(f"  downloading {a['name']} ({a['size']} bytes)")
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+              print(f"    -> {os.path.getsize(dest)} bytes on disk")
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          print("order:")
+          for f in files:
+              print(f"  {ordinal(f):2d}  {f}  {os.path.getsize(os.path.join('dl', f))}")
+          if len(files) == 0:
+              print("::error::no zip parts after download"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          got = h.hexdigest()
+          print(f"reassembled {os.path.getsize('bin_cs2.zip')} bytes")
+          print(f"sha256 {got}")
+
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != got:
+                  print(f"::error::checksum mismatch, expected {want}"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              print(f"archive holds {len(z.namelist())} entries")
+              z.extractall('csdk')
+
+          # The CSDK was zipped on macOS: __MACOSX holds AppleDouble `._`
+          # stubs that shadow every real file (128 real DLLs, 128 ghosts).
+          # Harmless to the compiler, but anything walking the tree by name
+          # sees doubles, so remove it. (Found 2026-08-12.)
+          import shutil
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+              print("removed the __MACOSX shadow tree")
+
+          comp = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+          print("compiler:", comp or "NOT FOUND")
+
+          # modtools.dll is NOT in the Reduced CSDK bin (verified 2026-08-12:
+          # zero matches across 128 real DLLs), and the compiler loads it as an
+          # application dependency — error 126 before any work begins. It ships
+          # as a LOOSE release asset on the csdk-12 tag and is copied in here.
+          # Its own static imports are only KERNEL32 and tier0.dll, and tier0
+          # is already in bin_cs2/win64, so no further chain is predictable.
+          loose = os.path.join('dl', 'modtools.dll')
+          if comp and os.path.exists(loose):
+              dest = os.path.join(os.path.dirname(comp), 'modtools.dll')
+              shutil.copy(loose, dest)
+              print(f"placed modtools.dll -> {dest} ({os.path.getsize(dest)} bytes)")
+          elif not os.path.exists(loose):
+              print("::warning::modtools.dll not among the release assets")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"ready={comp}\n")
+
+      - name: Clone GameTracking (vdata + gameinfo)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone '/**/gameinfo.gi' '/**/*.vdata'
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        id: gt
+
+      - name: Build the game tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/game/citadel build/content/citadel/scripts
+          cp gt/game/citadel/gameinfo.gi build/game/citadel/gameinfo.gi
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+          fi
+          find build -type f
+
+      - name: Build dl-patch
+        shell: bash
+        run: dotnet build src/Deadlock.Patch/Deadlock.Patch.csproj -c Release
+
+      # ------------------------------------------------------------------
+      # ASSERTED TRACK
+      # ------------------------------------------------------------------
+      - name: Pick a small vdata that is both compilable and patchable
+        id: pick
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Needs BOTH: a generic_data_type key (or the compiler refuses it)
+          # and a plain float (or there is nothing for dl-patch to guard on).
+          # Git bash on windows-latest may expose python as `python`, not
+          # `python3` — resolve it rather than assuming.
+          PY=$(command -v python3 || command -v python)
+          [ -n "$PY" ] || { echo "::error::no python on the runner"; exit 3; }
+          echo "python: $PY"
+          find gt -name '*.vdata' -not -path '*/.git/*' -printf '%s\t%p\n' \
+            | sort -n > all-vdata.txt
+          PICK=""
+          while IFS=$'\t' read -r size path; do
+            grep -q 'generic_data_type' "$path" 2>/dev/null || continue
+            if "$PY" tools/pick_target.py "$path" "scripts/$(basename "$path")" \
+                 > plan.json 2>pick.log; then
+              PICK="$path"; PICKSZ="$size"; break
+            fi
+          done < all-vdata.txt
+          if [ -z "$PICK" ]; then
+            echo "::error::no vdata is both compilable and patchable"
+            head -20 all-vdata.txt
+            exit 3
+          fi
+          NAME=$(basename "$PICK")
+          echo "picked: $PICK ($PICKSZ bytes)"
+          cat pick.log
+          cat plan.json
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "src=$PICK" >> "$GITHUB_OUTPUT"
+          # The plan addresses the file as scripts/<name>, so stage it under a
+          # matching root for batch to find.
+          mkdir -p patchroot/scripts
+          cp "$PICK" "patchroot/scripts/$NAME"
+
+      - name: Patch it with dl-patch batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan plan.json --root patchroot --out-root overlay \
+                  --source-build "${{ steps.gt.outputs.sha }}" --json > batch.json
+          cat batch.json
+          find overlay -type f
+          # The overlay is what gets compiled — not the pristine corpus file.
+          cp "overlay/scripts/${{ steps.pick.outputs.name }}" \
+             "build/content/citadel/scripts/${{ steps.pick.outputs.name }}"
+
+      - name: Compile the PATCHED file
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          set +e
+          "${{ steps.get.outputs.ready }}" -nop4 -v -game citadel \
+            -i "$ROOT/build/content/citadel/scripts/${{ steps.pick.outputs.name }}" \
+            > "$ROOT/compile-patched.txt" 2>&1
+          RC=$?
+          set -e
+          cd "$ROOT"
+          tail -12 compile-patched.txt
+          [ "$RC" = "0" ] || { echo "compile of the patched file failed" >&2; exit 1; }
+
+      - name: Assert a .vdata_c exists and differs from the unpatched one
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="build/game/citadel/scripts/${{ steps.pick.outputs.name }}_c"
+          test -f "$OUT" || { echo "no compiled output at $OUT" >&2; exit 1; }
+          echo "compiled: $(stat -c %s "$OUT") bytes"
+          cp "$OUT" patched.vdata_c
+          # Now compile the PRISTINE file and confirm the bytes differ, which
+          # proves the edit survived all the way through compilation rather
+          # than the compiler having ignored our input.
+          cp "${{ steps.pick.outputs.src }}" \
+             "build/content/citadel/scripts/${{ steps.pick.outputs.name }}"
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          "${{ steps.get.outputs.ready }}" -nop4 -f -game citadel \
+            -i "$ROOT/build/content/citadel/scripts/${{ steps.pick.outputs.name }}" \
+            > "$ROOT/compile-pristine.txt" 2>&1
+          cd "$ROOT"
+          cp "$OUT" pristine.vdata_c
+          echo "patched:  $(stat -c %s patched.vdata_c) bytes"
+          echo "pristine: $(stat -c %s pristine.vdata_c) bytes"
+          if cmp -s patched.vdata_c pristine.vdata_c; then
+            echo "::error::patched and pristine compiled output are IDENTICAL — the edit did not survive"
+            exit 1
+          fi
+          echo "compiled outputs differ — the edit survived compilation"
+
+      # ------------------------------------------------------------------
+      # EXPLORING TRACK — allowed to fail, always reported
+      # ------------------------------------------------------------------
+      - name: Try a real hero vdata
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          HERO=$(find gt -name 'heroes.vdata' -not -path '*/.git/*' | head -1)
+          if [ -z "$HERO" ]; then echo "no heroes.vdata"; exit 0; fi
+          echo "hero file: $HERO ($(stat -c %s "$HERO") bytes)"
+          grep -m1 'generic_data_type' "$HERO" || echo "NO generic_data_type key"
+          cp "$HERO" build/content/citadel/scripts/heroes.vdata
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          "${{ steps.get.outputs.ready }}" -nop4 -v -game citadel \
+            -i "$ROOT/build/content/citadel/scripts/heroes.vdata" \
+            > "$ROOT/compile-heroes.txt" 2>&1
+          RC=$?
+          cd "$ROOT"
+          echo "exit: $RC"
+          echo "--- verdict ---"
+          grep -E "RESOURCE COMPILE ERROR|compiled, .* failed|Wrote to:" compile-heroes.txt | tail -5 || true
+          echo "--- tail ---"
+          tail -15 compile-heroes.txt
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          echo "=== compiled resources produced ==="
+          find build/game -name '*_c' 2>/dev/null || true
+          echo "=== hero attempt ==="
+          if grep -q "Wrote to:" compile-heroes.txt 2>/dev/null; then
+            echo "heroes.vdata COMPILED"
+          else
+            echo "heroes.vdata did not compile — see compile-heroes.txt"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loop
+          path: |
+            plan.json
+            batch.json
+            compile-patched.txt
+            compile-pristine.txt
+            compile-heroes.txt
+            all-vdata.txt
+          if-no-files-found: ignore
