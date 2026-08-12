@@ -232,32 +232,14 @@ jobs:
         id: plan
         run: |
           set -euo pipefail
-          # Read a real scalar out of the file so the guard is true by
-          # construction — the point is exercising the machinery, not
-          # hardcoding a value that a patch will move.
-          python3 - "corpus/${{ steps.target.outputs.file }}" "${{ steps.target.outputs.file }}" \
-            > plan.json <<'PY'
-          import json, re, sys
-          src, rel = sys.argv[1], sys.argv[2]
-          text = open(src, encoding="utf-8", errors="replace").read()
-          # first top-level-ish block, then a plain float key inside it
-          m = re.search(r'^\t(\w+)\s*=\s*$\n^\t\{$(.*?)^\t\}$',
-                        text, re.M | re.S)
-          if not m:
-              print("could not find a block", file=sys.stderr); sys.exit(3)
-          block, body = m.group(1), m.group(2)
-          f = re.search(r'^\t\t(m_fl\w+)\s*=\s*(-?\d+\.\d+)\s*$', body, re.M)
-          if not f:
-              print("could not find a float in %s" % block, file=sys.stderr); sys.exit(3)
-          key, val = f.group(1), float(f.group(2))
-          print(json.dumps({
-            "version": 1,
-            "description": "batch-smoke",
-            "edits": [{"file": rel, "set": [
-              {"path": "%s.%s" % (block, key), "value": val + 1.0, "expect": val}]}]},
-            indent=2))
-          sys.stderr.write("guarding %s.%s = %s\n" % (block, key, val))
-          PY
+          # The target is read out of the file so the guard is true by
+          # construction. Hardcoding a path means the test breaks whenever
+          # Valve moves the value, which is noise. pick_target.py walks the
+          # block structure rather than guessing at indentation depth — an
+          # inline regex assuming `m_fl*` at two tabs failed on the real file.
+          python3 tools/pick_target.py \
+            "corpus/${{ steps.target.outputs.file }}" \
+            "${{ steps.target.outputs.file }}" > plan.json
           cat plan.json
 
       - name: Dry run evaluates but writes nothing (Q12)
