@@ -19,6 +19,13 @@ namespace Deadlock.Patch;
 ///                              which lives in a DIFFERENT assembly
 ///   KVValue.Value           -> readonly object; a nested block boxes a KVObject
 ///   ctor (Type, Flag, Value)
+///   KVValue is a STRUCT     -> `KVValue?` means Nullable&lt;KVValue&gt;, NOT a
+///                              nullable reference. Writing `out KVValue?` and
+///                              then reaching for .Flag/.Type gives seven
+///                              CS1061s plus a CS0184 saying an `is KVObject`
+///                              test can never be true, because `.Value` binds
+///                              to Nullable.Value. Declare it plain and
+///                              initialise with `default`. (Build 2026-08-12.)
 ///
 /// Design consequence worth stating: we never construct a KVValueType, we
 /// REUSE the existing one along with its Flag. That preserves typed prefixes
@@ -60,10 +67,10 @@ public sealed class Kv3Document
     /// Returns false with a populated <paramref name="error"/> for any miss.
     /// </summary>
     private bool Resolve(string path, out KVObject? parent, out string leaf,
-                         out KVValue? existing, out string? error)
+                         out KVValue existing, out string? error)
     {
         parent = null;
-        existing = null;
+        existing = default;
         error = null;
 
         var segments = path.Split('.');
@@ -124,7 +131,7 @@ public sealed class Kv3Document
         if (!Resolve(path, out _, out var leaf, out var existing, out error))
             return false;
 
-        if (existing!.Value is KVObject)
+        if (existing.Value is KVObject)
         {
             error = $"'{leaf}' is a block or array; v1 sets scalars only";
             return false;
@@ -155,7 +162,7 @@ public sealed class Kv3Document
         if (!Resolve(edit.Path, out var parent, out var leaf, out var existing, out var resolveError))
             return new EditResult(edit.Path, null, to, false, resolveError);
 
-        if (existing!.Value is KVObject)
+        if (existing.Value is KVObject)
             return new EditResult(edit.Path, null, to, false,
                 $"'{leaf}' is a block or array; v1 sets scalars only");
 
