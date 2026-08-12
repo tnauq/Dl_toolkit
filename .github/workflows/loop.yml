@@ -229,6 +229,7 @@ jobs:
           [ "$RC" = "0" ] || { echo "compile of the patched file failed" >&2; exit 1; }
 
       - name: Assert a .vdata_c exists and differs from the unpatched one
+        id: compiled
         shell: bash
         run: |
           set -euo pipefail
@@ -255,6 +256,19 @@ jobs:
             exit 1
           fi
           echo "compiled outputs differ — the edit survived compilation"
+          # Stage the PATCHED artifact for packing, in the shape the game asks
+          # for. Two reasons this cannot just point at build/game/citadel:
+          #   1. that directory holds gameinfo.gi, which is game config, NOT
+          #      mod content and must never ship inside an addon;
+          #   2. the pristine recompile above OVERWROTE the compiler's output,
+          #      so the tree currently holds the unpatched resource. The first
+          #      run of this workflow packed 1501 bytes (pristine) instead of
+          #      1524 (patched) and every assertion still passed, because none
+          #      of them checked WHICH version landed. This one does.
+          mkdir -p packroot/scripts
+          cp patched.vdata_c "packroot/scripts/${{ steps.pick.outputs.name }}_c"
+          echo "patched_size=$(stat -c %s patched.vdata_c)" >> "$GITHUB_OUTPUT"
+          find packroot -type f
 
       # ------------------------------------------------------------------
       # PACK — the last link
@@ -263,10 +277,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # --in is the compiler's own output directory, so entries come out
-          # keyed as scripts/<name>.vdata_c — the shape the game asks for.
+          # --in is the CURATED tree, not build/game/citadel: that directory
+          # also holds gameinfo.gi (game config, never mod content) and its
+          # compiled output was overwritten by the pristine comparison run.
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
-            pack --in build/game/citadel --out dist/pak01_dir.vpk \
+            pack --in packroot --out dist/pak01_dir.vpk \
                  --source-build "${{ steps.gt.outputs.sha }}" \
                  --verify --json > pack.json
           cat pack.json
@@ -295,6 +310,15 @@ jobs:
               assert not p.startswith('/'), 'absolute entry path: %r' % p
               assert ':' not in p, 'drive letter in entry path: %r' % p
           assert any(p.endswith('.vdata_c') for p in paths), paths
+          # gameinfo.gi is game config, not mod content — it must not ship.
+          assert not any(p.endswith('gameinfo.gi') for p in paths), \
+              'gameinfo.gi must not be packed into an addon: %r' % paths
+          # And the packed resource must be the PATCHED one. Without this the
+          # first run happily shipped the pristine build.
+          want = int("${{ steps.compiled.outputs.patched_size }}")
+          got = [e['length'] for e in data['entries'] if e['path'].endswith('.vdata_c')][0]
+          assert got == want, 'packed %d bytes, patched artifact is %d' % (got, want)
+          print('packed the PATCHED resource:', got, 'bytes')
           print('total bytes:', data['total_bytes'])
           PYEOF
 
