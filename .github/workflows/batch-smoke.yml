@@ -1,5 +1,11 @@
 name: batch smoke
 
+# HARNESS NOTE. GitHub runs steps as `bash -e`, and `set -uo pipefail` does
+# NOT clear that -e. A bare `cmd` followed by `RC=$?` therefore kills the step
+# the moment cmd exits nonzero, and RC is never read — which failed every
+# negative assertion here on the first run even though the tool was correct.
+# `RC=0; cmd || RC=$?` is -e-safe because cmd sits on the left of ||.
+#
 # Asserts dl-patch batch against a REAL vdata file cloned from
 # GameTracking-Deadlock. Every assertion here corresponds to a decision taken
 # 2026-08-12; a red assertion means either the code drifted or the decision
@@ -64,10 +70,10 @@ jobs:
           { "version": 1, "edits": [ { "file": "x.vdata", "oops": 1,
             "set": [ { "path": "a.b", "value": 1, "expect": 1 } ] } ] }
           EOF
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan bad.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}" --json
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       - name: Unsupported version is refused (Q10)
@@ -77,10 +83,10 @@ jobs:
           { "version": 2, "edits": [ { "file": "x.vdata",
             "set": [ { "path": "a.b", "value": 1, "expect": 1 } ] } ] }
           EOF
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan v2.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}"
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       # ------------------------------------------------------------------
@@ -93,10 +99,10 @@ jobs:
           { "version": 1, "edits": [ { "file": "x.vdata",
             "set": [ { "path": "a.b", "value": 1 } ] } ] }
           EOF
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan noexpect.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}"
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       # ------------------------------------------------------------------
@@ -110,10 +116,10 @@ jobs:
             { "path": "a.b", "value": 1, "expect": null },
             { "path": "a.b", "value": 2, "expect": null } ] } ] }
           EOF
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan duppath.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}"
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       - name: Duplicate file is refused (Q11)
@@ -124,10 +130,10 @@ jobs:
             { "file": "x.vdata", "set": [ { "path": "a.b", "value": 1, "expect": null } ] },
             { "file": "x.vdata", "set": [ { "path": "c.d", "value": 2, "expect": null } ] } ] }
           EOF
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan dupfile.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}"
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       # ------------------------------------------------------------------
@@ -140,9 +146,9 @@ jobs:
           { "version": 1, "edits": [ { "file": "x.vdata",
             "set": [ { "path": "a.b", "value": 1, "expect": null } ] } ] }
           EOF
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
-            batch --plan any.json --root corpus --out-root out
-          RC=$?
+            batch --plan any.json --root corpus --out-root out || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       # ------------------------------------------------------------------
@@ -160,10 +166,10 @@ jobs:
               {"path": "generic_person.m_flStepSoundTime",
                "value": 1.0, "expect": -987654.0}]}]}))
           PY
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan stale.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}" --json > stale-out.json
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json > stale-out.json || RC=$?
           cat stale-out.json
           [ "$RC" = "7" ] || { echo "expected 7, got $RC" >&2; exit 1; }
           [ ! -d out ] || { echo "guard failure wrote files" >&2; exit 1; }
@@ -178,10 +184,10 @@ jobs:
             "edits": [{"file": sys.argv[1], "set": [
               {"path": "no_such_block.no_such_key", "value": 1, "expect": 1}]}]}))
           PY
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan gone.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}"
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" || RC=$?
           [ "$RC" = "7" ] || { echo "expected 7, got $RC" >&2; exit 1; }
 
       - name: Unguarded bad path is 5, not 7 (Q9 boundary)
@@ -194,10 +200,10 @@ jobs:
             "edits": [{"file": sys.argv[1], "set": [
               {"path": "no_such_block.no_such_key", "value": 1, "expect": None}]}]}))
           PY
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan typo.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}"
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" || RC=$?
           [ "$RC" = "5" ] || { echo "expected 5, got $RC" >&2; exit 1; }
 
       # ------------------------------------------------------------------
@@ -213,10 +219,10 @@ jobs:
              "set": [{"path": "a.b", "value": 1, "expect": None}]}
             for i in range(5)]}))
           PY
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan many.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}" --max-files 4
-          RC=$?
+                  --source-build "${{ steps.fixture.outputs.sha }}" --max-files 4 || RC=$?
           [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
 
       # ------------------------------------------------------------------
