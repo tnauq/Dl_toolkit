@@ -4,9 +4,8 @@
     <OutputType>Exe</OutputType>
     <!--
       net9.0 is FORCED by ValveResourceFormat 12.x (NU1202, probe-kv3
-      2026-08-09). The rest of the solution is net8.0. This is the first
-      shipping tool to carry the split; if a second one does, migrate the
-      whole solution rather than accumulating exceptions.
+      2026-08-09). The rest of the solution is net8.0. Deadlock.Contracts is
+      multi-targeted so this project can reference it; see the note there.
     -->
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -21,14 +20,13 @@
   </ItemGroup>
 
   <!--
-    NOT referencing Deadlock.Contracts yet, and that is deliberate rather than
-    an oversight: its envelope and exit-code type names have not been read, and
-    guessing them is exactly the mistake FINDINGS correction 1 warns about.
-    Envelope.cs below mirrors the shape locally. Folding it back into Contracts
-    is a follow-up, and it is a rename, not a redesign.
-
-    Note the framework split makes that fold non-trivial: a net9.0 project can
-    reference a net8.0 one, but not the reverse.
+    Folded 2026-08-12. The local envelope copy is gone: Envelope.cs now holds
+    only the dl-patch PAYLOAD, and the outer shape plus the shared exit codes
+    come from Contracts. The copy existed because Contracts' type names had not
+    been read; they have now (dump-contracts, 2026-08-12).
   -->
+  <ItemGroup>
+    <ProjectReference Include="..\Deadlock.Contracts\Deadlock.Contracts.csproj" />
+  </ItemGroup>
 
 </Project>

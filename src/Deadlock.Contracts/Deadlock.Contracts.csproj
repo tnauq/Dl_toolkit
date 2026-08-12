@@ -1,6 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!--
+      MULTI-TARGETED, 2026-08-12. Deadlock.Patch is net9.0 (forced by
+      ValveResourceFormat 12.x, NU1202); Format, Tools and MakeFixture are
+      net8.0. A net9.0 project can reference a net8.0 one but not the reverse,
+      and Contracts sits UNDER both, so it has to satisfy both.
+
+      This is not the "accumulating exceptions" the Patch csproj warned about.
+      That warning is about shipping TOOLS on mixed frameworks. Contracts is
+      the bottom of the graph and references nothing of ours, which is exactly
+      the assembly for which multi-targeting is free — no dependency can
+      disagree with it because it has none.
+
+      Collapsing to a single net9.0 target stays available and becomes a
+      one-line change here plus one in each of the other three csproj files.
+      Do it when something other than framework tidiness needs it.
+    -->
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

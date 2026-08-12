@@ -1,3 +1,5 @@
+using Deadlock.Contracts;
+
 namespace Deadlock.Patch;
 
 /// <summary>
@@ -12,9 +14,16 @@ namespace Deadlock.Patch;
 /// It emits SOURCE vdata. Compiling is a separate step and a separate tool.
 /// It says "structurally valid", never "works" — nothing here has been loaded
 /// by the game (D7).
+///
+/// Envelope comes from Deadlock.Contracts as of 2026-08-12; the payload is
+/// PatchData in Envelope.cs. Exit codes 0–3 are Contracts.Exit, 4–6 are
+/// PatchExit.
 /// </summary>
 internal static class Program
 {
+    private const string ToolName = "dl-patch";
+    private const string ToolVersion = "0.1.0";
+
     private const string Usage = """
         dl-patch — set scalar values in a Deadlock source vdata file
 
@@ -106,13 +115,17 @@ internal static class Program
             edits.Add(e!);
         }
 
-        var env = new Envelope { DryRun = dryRun, Input = input, Output = dryRun ? null : output };
+        var effectiveOutput = dryRun ? null : output;
 
         if (!File.Exists(input))
         {
-            env.Ok = false;
-            env.Error = $"input not found: {input}";
-            return Emit(env, Exit.InputUnreadable, json);
+            return Emit(
+                Data(dryRun, input, effectiveOutput, new List<EditReport>(), 0, 0),
+                new ToolError(
+                    ErrorCode.InputNotFound,
+                    $"input not found: {input}",
+                    "check the path, or clone the fixture from GameTracking-Deadlock"),
+                PatchExit.InputUnreadable, json);
         }
 
         Kv3Document doc;
@@ -122,28 +135,35 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            env.Ok = false;
-            env.Error = $"could not parse as KV3: {ex.GetType().Name}: {ex.Message}. " +
-                        "v1 supports uncompiled source vdata; compiled .vdata_c is not supported.";
-            return Emit(env, Exit.InputUnreadable, json);
+            return Emit(
+                Data(dryRun, input, effectiveOutput, new List<EditReport>(), 0, 0),
+                new ToolError(
+                    ErrorCode.InputUnreadable,
+                    $"could not parse as KV3: {ex.GetType().Name}: {ex.Message}",
+                    "v1 supports uncompiled source vdata; compiled .vdata_c is not supported"),
+                PatchExit.InputUnreadable, json);
         }
 
         var results = edits.Select(doc.Apply).ToList();
-        env.Edits = results.Select(EditReport.Of).ToList();
-        env.Applied = results.Count(r => r.Ok);
-        env.Failed = results.Count(r => !r.Ok);
-        env.Ok = env.Failed == 0;
+        var reports = results.Select(EditReport.Of).ToList();
+        var applied = results.Count(r => r.Ok);
+        var failed = results.Count(r => !r.Ok);
 
         // All-or-nothing. A half-applied stat change is worse than none, and
         // this is the behaviour batch will need — establish it here.
-        if (env.Failed > 0)
+        if (failed > 0)
         {
-            env.Error = $"{env.Failed} of {results.Count} edits failed; nothing written";
-            var code = results.Any(r => !r.Ok && r.Error is not null &&
-                                        r.Error.Contains("path not found", StringComparison.Ordinal))
-                ? Exit.PathNotFound
-                : Exit.TypeMismatch;
-            return Emit(env, code, json);
+            var pathMiss = results.Any(r => !r.Ok && r.Error is not null &&
+                                            r.Error.Contains("path not found", StringComparison.Ordinal));
+            return Emit(
+                Data(dryRun, input, effectiveOutput, reports, applied, failed),
+                new ToolError(
+                    pathMiss ? ErrorCode.PathNotFound : ErrorCode.TypeMismatch,
+                    $"{failed} of {results.Count} edits failed; nothing written",
+                    pathMiss
+                        ? "check the dotted path against the source vdata; every segment must exist"
+                        : "the document's existing type wins; quote a value to force a string"),
+                pathMiss ? PatchExit.PathNotFound : PatchExit.TypeMismatch, json);
         }
 
         if (!dryRun)
@@ -154,21 +174,44 @@ internal static class Program
             }
             catch (Exception ex)
             {
-                env.Ok = false;
-                env.Error = $"could not write {output}: {ex.Message}";
-                return Emit(env, Exit.InputUnreadable, json);
+                return Emit(
+                    Data(dryRun, input, effectiveOutput, reports, applied, failed),
+                    new ToolError(
+                        ErrorCode.OutputUnwritable,
+                        $"could not write {output}: {ex.Message}",
+                        "check the directory is writable and the path is not a directory"),
+                    PatchExit.InputUnreadable, json);
             }
         }
 
-        return Emit(env, Exit.Ok, json);
+        return Emit(
+            Data(dryRun, input, effectiveOutput, reports, applied, failed),
+            null, Exit.Ok, json);
     }
+
+    private static PatchData Data(bool dryRun, string? input, string? output,
+                                  List<EditReport> edits, int applied, int failed)
+        => new()
+        {
+            DryRun = dryRun,
+            Input = input,
+            Output = output,
+            Applied = applied,
+            Failed = failed,
+            Edits = edits
+        };
 
     private static int Misuse(string message, bool json)
     {
         if (json)
         {
-            var env = new Envelope { Ok = false, Error = message };
-            Console.WriteLine(env.ToJson());
+            Json.ToStdout(new Envelope<PatchData>
+            {
+                Tool = ToolName,
+                Version = ToolVersion,
+                Ok = false,
+                Errors = { new ToolError(ErrorCode.Misuse, message, "see --help for the argument list") }
+            });
         }
         Console.Error.WriteLine($"error: {message}");
         Console.Error.WriteLine();
@@ -176,24 +219,45 @@ internal static class Program
         return Exit.Misuse;
     }
 
-    private static int Emit(Envelope env, int code, bool json)
+    private static int Emit(PatchData data, ToolError? error, int code, bool json)
     {
+        var envelope = new Envelope<PatchData>
+        {
+            Tool = ToolName,
+            Version = ToolVersion,
+            Ok = error is null,
+            Data = data
+        };
+        if (error is not null) envelope.Errors.Add(error);
+
         if (json)
         {
-            Console.WriteLine(env.ToJson());
+            Json.ToStdout(envelope);
         }
         else
         {
-            foreach (var e in env.Edits)
+            foreach (var e in data.Edits)
             {
                 Console.Error.WriteLine(e.Ok
                     ? $"  ok    {e.Path}: {e.From} -> {e.To}"
                     : $"  FAIL  {e.Path}: {e.Error}");
             }
-            if (env.Error is not null) Console.Error.WriteLine($"error: {env.Error}");
-            else if (env.DryRun) Console.Error.WriteLine($"dry run: {env.Applied} edits would apply");
-            else Console.Error.WriteLine($"wrote {env.Output} ({env.Applied} edits, structurally valid)");
+            if (error is not null)
+            {
+                Console.Error.WriteLine($"error: {error.Message}");
+                Console.Error.WriteLine($"  fix: {error.Fix}");
+            }
+            else if (data.DryRun)
+            {
+                Console.Error.WriteLine($"dry run: {data.Applied} edits would apply");
+            }
+            else
+            {
+                Console.Error.WriteLine(
+                    $"wrote {data.Output} ({data.Applied} edits, structurally valid)");
+            }
         }
+
         return code;
     }
 }
