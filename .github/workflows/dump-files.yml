@@ -1,0 +1,63 @@
+name: dump files
+
+# Generic surface dumper. Takes a space-separated glob, writes every match into
+# one markdown file, uploads it as an artifact.
+#
+# Artifact rather than $GITHUB_STEP_SUMMARY: the mobile Actions view does not
+# render step summaries, so the summary page is unreadable on a phone. This
+# replaces the ad-hoc dump-contracts workflow, which can be deleted.
+#
+# Reading a surface before writing against it is the standing rule here — three
+# compile failures and a wrong-shaped picker all came from inferring an API or
+# a file layout instead of looking at it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      glob:
+        description: "Paths to dump, space-separated (globs allowed)"
+        required: true
+        default: ".github/workflows/*.yml"
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dump
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          COUNT=0
+          {
+            echo "# Surface dump"
+            echo ""
+            echo "glob: \`${{ github.event.inputs.glob }}\`"
+            echo ""
+            echo "commit: \`$(git rev-parse HEAD)\`"
+            for f in ${{ github.event.inputs.glob }}; do
+              [ -f "$f" ] || continue
+              COUNT=$((COUNT+1))
+              echo ""
+              echo "## $f"
+              echo ""
+              echo '```'
+              cat "$f"
+              echo '```'
+            done
+          } > out/surface.md
+          echo "dumped $COUNT files"
+          wc -l out/surface.md
+          echo "--- files matched ---"
+          for f in ${{ github.event.inputs.glob }}; do
+            [ -f "$f" ] && echo "  $f"
+          done
+          if [ "$COUNT" = "0" ]; then
+            echo "::warning::glob matched nothing"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: surface
+          path: out/surface.md
