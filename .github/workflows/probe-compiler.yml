@@ -15,8 +15,23 @@ name: probe compiler
 #   build/game/citadel/gameinfo.gi     what -game points at
 #   build/content/citadel/scripts/     where source assets live
 #
-# Unknown going in: whether gameinfo.gi alone satisfies it or whether it then
-# wants more of the content tree. That is what this run answers.
+# ANSWERED 2026-08-12: -game DOES work, and must name the directory holding
+# gameinfo.gi (build/game/citadel), not its parent — pointing at build/game
+# failed instantly with the original error. The compiler then loaded the file,
+# resolved its whole search-path table, and ran on for 50+ lines before dying
+# on a DIFFERENT problem:
+#
+#   CAppSystemDict:Unable to load module modtools (Dependency of application),
+#   error 126
+#
+# 126 is ERROR_MOD_NOT_FOUND. Two candidate causes, which steps D and E below
+# separate: either the Reduced CSDK does not ship modtools at all, or it does
+# and Windows cannot resolve it, because LoadLibrary searches the exe's own
+# directory and PATH — NOT the EXECUTABLE_PATH entries the compiler prints.
+#
+# The hundreds of "Failed loading resource ... vmat_c" lines above the crash
+# are NOT the problem; that is the compiler booting without a content tree and
+# carrying on regardless.
 
 on: workflow_dispatch
 
@@ -197,6 +212,76 @@ jobs:
           cd ..
           tail -60 compile-c.txt || true
 
+      # ------------------------------------------------------------------
+      # NEW — separate the two candidate causes of error 126
+      # ------------------------------------------------------------------
+      - name: Inventory the CSDK for modtools
+        if: steps.get.outputs.ready != ''
+        id: inv
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN=$(dirname "${{ steps.get.outputs.ready }}")
+          echo "compiler dir: $BIN"
+          echo "--- anything named modtools, anywhere in the CSDK ---"
+          find csdk -iname '*modtools*' | tee modtools.txt || true
+          COUNT=$(wc -l < modtools.txt || echo 0)
+          echo "modtools matches: $COUNT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "--- dll count by directory ---"
+          find csdk -iname '*.dll' | sed 's|/[^/]*$||' | sort | uniq -c | sort -rn | head -10
+          echo "--- first 40 dlls beside the compiler ---"
+          ls -1 "$BIN"/*.dll 2>/dev/null | head -40 || true
+          echo "--- full inventory written to csdk-dlls.txt ---"
+          find csdk -iname '*.dll' | sort > csdk-dlls.txt
+          wc -l csdk-dlls.txt
+
+      - name: D — retry with both bin dirs on PATH
+        if: steps.get.outputs.ready != ''
+        shell: bash
+        run: |
+          # LoadLibrary searches the exe's own directory and PATH — NOT the
+          # EXECUTABLE_PATH entries the compiler prints in its search table.
+          # resourcecompiler.exe lives in bin_cs2\win64 while some DLLs sit in
+          # bin_cs2, so if modtools IS present this is the whole fix. If it is
+          # absent, this run fails identically to A and the answer is "the
+          # Reduced CSDK does not ship it".
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          BIN=$(dirname "${{ steps.get.outputs.ready }}")
+          BINW=$(cd "$BIN" && (pwd -W 2>/dev/null || pwd))
+          PARENTW=$(cd "$BIN/.." && (pwd -W 2>/dev/null || pwd))
+          echo "adding to PATH: $BINW ; $PARENTW"
+          export PATH="$BINW:$PARENTW:$PATH"
+          set +e
+          "${{ steps.get.outputs.ready }}" -nop4 -v \
+            -game "$ROOT/build/game/citadel" \
+            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > compile-d.txt 2>&1
+          echo "exit: $?"
+          set -e
+          echo "--- last 25 lines ---"
+          tail -25 compile-d.txt || true
+          echo "--- did the failure change? ---"
+          grep -c "error 126" compile-d.txt || echo "no error 126 — moved past it"
+
+      - name: E — run with the compiler dir as CWD
+        if: steps.get.outputs.ready != ''
+        shell: bash
+        run: |
+          # Second resolution route, independent of PATH. If D fixes it and E
+          # does not, the dependency is resolved from PATH; if both work the
+          # cause is simply that neither was set before.
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          BIN=$(dirname "${{ steps.get.outputs.ready }}")
+          cd "$BIN"
+          set +e
+          ./resourcecompiler.exe -nop4 -v \
+            -game "$ROOT/build/game/citadel" \
+            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > "$ROOT/compile-e.txt" 2>&1
+          echo "exit: $?"
+          set -e
+          cd "$ROOT"
+          tail -25 compile-e.txt || true
+
       - name: What landed
         if: always()
         shell: bash
@@ -215,5 +300,9 @@ jobs:
             compile-a.txt
             compile-b.txt
             compile-c.txt
+            compile-d.txt
+            compile-e.txt
             found.txt
+            modtools.txt
+            csdk-dlls.txt
           if-no-files-found: ignore
