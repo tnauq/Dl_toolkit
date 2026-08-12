@@ -5,6 +5,20 @@ name: probe compiler
 #   Application unable to load gameinfo.gi file from directory "game\citadel"
 #
 # The compiler needs a game directory to build FOR. `-game <path>` names it.
+#
+# PATH RESOLUTION — read off gameinfo.gi 2026-08-12, not inferred. The file
+# comments that "Search paths are relative to the exe directory\..\" and
+# declares two mounts, `Game citadel` and `Game core`. What the compiler
+# actually printed shows the rule:
+#
+#   GAMEROOT  = the CURRENT WORKING DIRECTORY
+#   GAME      = GAMEROOT + "citadel"   and   GAMEROOT + "core"
+#   CONTENT   = GAMEROOT\..\content\<game>
+#
+# Therefore the compiler must be RUN FROM build/game. Every earlier failure
+# was working directory: from the repo root, CONTENT resolved outside the repo
+# entirely, and "Failed to split full path ... FS: Tried to FileExists NULL"
+# is the compiler reporting that the input lies under no content mount.
 # gameinfo.gi is fetched from GameTracking-Deadlock rather than written by
 # hand — a synthesized approximation that the compiler rejects would look
 # identical to the compiler not accepting the flag, and the two need telling
@@ -180,8 +194,17 @@ jobs:
           SRC=$(grep -m1 'citadel/gameinfo.gi' ../found.txt || head -1 ../found.txt)
           echo "using: $SRC"
           cd ..
-          mkdir -p build/game/citadel
+          mkdir -p build/game/citadel build/content/citadel
           cp "gt/$SRC" build/game/citadel/gameinfo.gi
+          # gameinfo declares TWO mounts: "Game citadel" and "Game core".
+          # core is a real search path and the tracking repo has its gameinfo.
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+            echo "copied core gameinfo too"
+          else
+            echo "::warning::no core gameinfo.gi in the tracking repo"
+          fi
           echo "--- contents ---"
           cat build/game/citadel/gameinfo.gi
           echo "found=1" >> "$GITHUB_OUTPUT"
@@ -203,49 +226,54 @@ jobs:
       # Three attempts, narrowing. Each writes its own log so a partial
       # success is legible: if A fails and B succeeds, -game is the answer;
       # if both fail the same way, the content tree is the next suspect.
-      - name: A — compile with -game
+      # READ OFF gameinfo.gi, not guessed. The file says search paths are
+      # relative, and the table the compiler printed shows how:
+      #
+      #   GAMEROOT   = the CURRENT WORKING DIRECTORY
+      #   GAME       = GAMEROOT + "citadel"        (from `Game citadel`)
+      #   CONTENT    = GAMEROOT\..\content\citadel
+      #
+      # So GAMEROOT must be the directory CONTAINING citadel/ — that is
+      # build/game — and content then resolves to build/content/citadel, which
+      # is where the source already sits. Earlier attempts failed purely on
+      # working directory: from the repo root CONTENT landed outside the repo,
+      # and "Failed to split full path" is the compiler saying the input is not
+      # under any content mount.
+      - name: A — run from build/game so GAMEROOT is correct
         if: steps.get.outputs.ready != ''
         shell: bash
         run: |
           ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          echo "cwd: $(pwd -W 2>/dev/null || pwd)"
           set +e
           "${{ steps.get.outputs.ready }}" -nop4 -v \
-            -game "$ROOT/build/game/citadel" \
-            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > compile-a.txt 2>&1
+            -game citadel \
+            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > "$ROOT/compile-a.txt" 2>&1
           echo "exit: $?"
           set -e
-          tail -60 compile-a.txt || true
+          cd "$ROOT"
+          echo "--- search paths as resolved ---"
+          grep -A6 "^CONTENT" compile-a.txt | head -12 || true
+          tail -20 compile-a.txt || true
 
-      - name: B — compile with -game pointed at the game root
+      # Fallback: relative input path, in case it wants the input expressed
+      # relative to the content mount rather than absolute.
+      - name: B — same, with a content-relative input
         if: steps.get.outputs.ready != ''
         shell: bash
         run: |
           ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
           set +e
           "${{ steps.get.outputs.ready }}" -nop4 -v \
-            -game "$ROOT/build/game" \
-            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > compile-b.txt 2>&1
+            -game citadel \
+            -i "../content/citadel/scripts/probe.vdata" > "$ROOT/compile-b.txt" 2>&1
           echo "exit: $?"
           set -e
-          tail -60 compile-b.txt || true
+          cd "$ROOT"
+          tail -20 compile-b.txt || true
 
-      - name: C — run from inside the tree, no -game
-        if: steps.get.outputs.ready != ''
-        shell: bash
-        run: |
-          ROOT="$(pwd -W 2>/dev/null || pwd)"
-          cd build
-          set +e
-          "${{ steps.get.outputs.ready }}" -nop4 -v \
-            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > ../compile-c.txt 2>&1
-          echo "exit: $?"
-          set -e
-          cd ..
-          tail -60 compile-c.txt || true
-
-      # ------------------------------------------------------------------
-      # NEW — separate the two candidate causes of error 126
-      # ------------------------------------------------------------------
       - name: Inventory the CSDK for modtools
         if: steps.get.outputs.ready != ''
         id: inv
@@ -295,7 +323,6 @@ jobs:
             usage.txt
             compile-a.txt
             compile-b.txt
-            compile-c.txt
             found.txt
             modtools.txt
             csdk-dlls.txt
