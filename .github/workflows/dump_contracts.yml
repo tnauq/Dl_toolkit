@@ -1,0 +1,23 @@
+name: dump contracts
+
+on: workflow_dispatch
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dump surface
+        run: |
+          set -euo pipefail
+          {
+            echo "## Contracts + Patch surface"
+            for f in $(find src/Deadlock.Contracts src/Deadlock.Patch \
+                         -name '*.cs' -o -name '*.csproj' | sort); do
+              echo ""
+              echo "### \`$f\`"
+              echo '```'
+              cat "$f"
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
