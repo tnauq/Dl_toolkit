@@ -16,7 +16,8 @@ Writes a version-1 plan to stdout. Exit 3 if no suitable target exists.
 What counts as suitable:
   - a plain float scalar (a decimal point, no type prefix, not quoted)
   - reachable by a dotted path of plain identifiers
-  - NOT inside an array, since v1 refuses array traversal
+  - NOT inside an array or an anonymous block, since neither is addressable
+    by a dotted path and v1 refuses array traversal
   - shallow first, so the resulting path is short and legible in a log
 """
 
@@ -34,19 +35,39 @@ CLOSE_LINE = re.compile(r'^(\t*)([\}\]])')
 
 
 def candidates(text):
-    """Yield (depth, dotted_path, value) for every plain float outside arrays."""
-    stack = []          # list of (name, is_array)
+    """
+    Yield (depth, dotted_path, value) for every plain float that a dotted path
+    can actually address.
+
+    Every opener pushes a frame, INCLUDING an anonymous one — a bare `{` inside
+    an array of objects. Skipping those was the bug: the anonymous block's `}`
+    popped the array frame, and the array's `]` then popped the real parent, so
+    every array-of-objects in the file shortened the path by one level and the
+    plan guarded a path that did not exist. (batch-smoke, 2026-08-12.)
+
+    A frame with no name, or an array frame, makes everything beneath it
+    unaddressable, so candidates under one are dropped rather than renamed.
+    """
+    stack = []          # list of (name_or_None, is_array)
     pending = None      # a key awaiting its opening brace on the next line
 
     for raw in text.split("\n"):
         line = raw.rstrip("\r")
 
-        if pending is not None:
-            m = BARE_OPEN.match(line)
-            if m:
-                stack.append((pending, m.group(2) == "["))
-                pending = None
+        m = BARE_OPEN.match(line)
+        if m:
+            is_array = m.group(2) == "["
+            if pending is None and not stack:
+                # The document root. Not a frame — everything is inside it, so
+                # counting it would make every path unaddressable. Its closing
+                # brace is absorbed by the empty-stack guard below.
                 continue
+            # named if a `key =` line preceded it, anonymous otherwise
+            stack.append((pending, is_array))
+            pending = None
+            continue
+
+        if pending is not None:
             # key wasn't a block after all
             pending = None
 
@@ -59,7 +80,9 @@ def candidates(text):
         m = FLOAT_LINE.match(line)
         if m:
             key, value = m.group(2), float(m.group(3))
-            if not any(is_array for _, is_array in stack):
+            addressable = all(name is not None and not is_array
+                              for name, is_array in stack)
+            if addressable:
                 path = ".".join([name for name, _ in stack] + [key])
                 yield len(stack), path, value
             continue
