@@ -1,0 +1,349 @@
+name: batch smoke
+
+# Asserts dl-patch batch against a REAL vdata file cloned from
+# GameTracking-Deadlock. Every assertion here corresponds to a decision taken
+# 2026-08-12; a red assertion means either the code drifted or the decision
+# needs reopening, and the step name says which decision.
+#
+# The no-op baseline trick is inherited from patch-smoke: VRF reformats on
+# write (floats to 6dp, arrays exploded), so a patched file can only be
+# compared against a file that went through the same reserialisation.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  batch-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Clone fixture tree (vdata only)
+        id: fixture
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git corpus
+          cd corpus
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone '/**/*.vdata'
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "$SHA" > ../source-build.txt
+          echo "source build: $SHA"
+
+      - name: Build
+        run: dotnet build src/Deadlock.Patch/Deadlock.Patch.csproj -c Release
+
+      - name: Locate a hero vdata and a real scalar
+        id: target
+        run: |
+          set -euo pipefail
+          FILE=$(cd corpus && find . -name 'heroes.vdata' | head -1 | sed 's|^\./||')
+          if [ -z "$FILE" ]; then
+            echo "no heroes.vdata in the fixture tree" >&2
+            exit 3
+          fi
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "target: $FILE"
+
+      # ------------------------------------------------------------------
+      # Q10 — strict plan validation
+      # ------------------------------------------------------------------
+      - name: Unknown field is refused (Q10)
+        run: |
+          set -uo pipefail
+          cat > bad.json <<'EOF'
+          { "version": 1, "edits": [ { "file": "x.vdata", "oops": 1,
+            "set": [ { "path": "a.b", "value": 1, "expect": 1 } ] } ] }
+          EOF
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan bad.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      - name: Unsupported version is refused (Q10)
+        run: |
+          set -uo pipefail
+          cat > v2.json <<'EOF'
+          { "version": 2, "edits": [ { "file": "x.vdata",
+            "set": [ { "path": "a.b", "value": 1, "expect": 1 } ] } ] }
+          EOF
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan v2.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      # ------------------------------------------------------------------
+      # Q1 — guards are mandatory
+      # ------------------------------------------------------------------
+      - name: Missing expect is refused (Q1)
+        run: |
+          set -uo pipefail
+          cat > noexpect.json <<'EOF'
+          { "version": 1, "edits": [ { "file": "x.vdata",
+            "set": [ { "path": "a.b", "value": 1 } ] } ] }
+          EOF
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan noexpect.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      # ------------------------------------------------------------------
+      # Q5 / Q11 — collisions
+      # ------------------------------------------------------------------
+      - name: Duplicate path is refused (Q5)
+        run: |
+          set -uo pipefail
+          cat > duppath.json <<'EOF'
+          { "version": 1, "edits": [ { "file": "x.vdata", "set": [
+            { "path": "a.b", "value": 1, "expect": null },
+            { "path": "a.b", "value": 2, "expect": null } ] } ] }
+          EOF
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan duppath.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      - name: Duplicate file is refused (Q11)
+        run: |
+          set -uo pipefail
+          cat > dupfile.json <<'EOF'
+          { "version": 1, "edits": [
+            { "file": "x.vdata", "set": [ { "path": "a.b", "value": 1, "expect": null } ] },
+            { "file": "x.vdata", "set": [ { "path": "c.d", "value": 2, "expect": null } ] } ] }
+          EOF
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan dupfile.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      # ------------------------------------------------------------------
+      # Q7 — build id required
+      # ------------------------------------------------------------------
+      - name: Missing --source-build is misuse (Q7)
+        run: |
+          set -uo pipefail
+          cat > any.json <<'EOF'
+          { "version": 1, "edits": [ { "file": "x.vdata",
+            "set": [ { "path": "a.b", "value": 1, "expect": null } ] } ] }
+          EOF
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan any.json --root corpus --out-root out
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      # ------------------------------------------------------------------
+      # Q8 / Q9 — guard failure is code 7
+      # ------------------------------------------------------------------
+      - name: Stale guard fails with 7 (Q8)
+        run: |
+          set -uo pipefail
+          python3 - "${{ steps.target.outputs.file }}" > stale.json <<'PY'
+          import json, sys
+          print(json.dumps({
+            "version": 1,
+            "description": "a value nothing in the tree holds",
+            "edits": [{"file": sys.argv[1], "set": [
+              {"path": "generic_person.m_flStepSoundTime",
+               "value": 1.0, "expect": -987654.0}]}]}))
+          PY
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan stale.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json > stale-out.json
+          RC=$?
+          cat stale-out.json
+          [ "$RC" = "7" ] || { echo "expected 7, got $RC" >&2; exit 1; }
+          [ ! -d out ] || { echo "guard failure wrote files" >&2; exit 1; }
+
+      - name: Vanished guarded path also fails with 7 (Q9)
+        run: |
+          set -uo pipefail
+          python3 - "${{ steps.target.outputs.file }}" > gone.json <<'PY'
+          import json, sys
+          print(json.dumps({
+            "version": 1,
+            "edits": [{"file": sys.argv[1], "set": [
+              {"path": "no_such_block.no_such_key", "value": 1, "expect": 1}]}]}))
+          PY
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan gone.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          RC=$?
+          [ "$RC" = "7" ] || { echo "expected 7, got $RC" >&2; exit 1; }
+
+      - name: Unguarded bad path is 5, not 7 (Q9 boundary)
+        run: |
+          set -uo pipefail
+          python3 - "${{ steps.target.outputs.file }}" > typo.json <<'PY'
+          import json, sys
+          print(json.dumps({
+            "version": 1,
+            "edits": [{"file": sys.argv[1], "set": [
+              {"path": "no_such_block.no_such_key", "value": 1, "expect": None}]}]}))
+          PY
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan typo.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          RC=$?
+          [ "$RC" = "5" ] || { echo "expected 5, got $RC" >&2; exit 1; }
+
+      # ------------------------------------------------------------------
+      # Q13 — file cap
+      # ------------------------------------------------------------------
+      - name: File cap is enforced (Q13)
+        run: |
+          set -uo pipefail
+          python3 - > many.json <<'PY'
+          import json
+          print(json.dumps({"version": 1, "edits": [
+            {"file": "f%d.vdata" % i,
+             "set": [{"path": "a.b", "value": 1, "expect": None}]}
+            for i in range(5)]}))
+          PY
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan many.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}" --max-files 4
+          RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      # ------------------------------------------------------------------
+      # Q12 / Q3 / Q4 — the happy path
+      # ------------------------------------------------------------------
+      - name: Build a plan from a real value
+        id: plan
+        run: |
+          set -euo pipefail
+          # Read a real scalar out of the file so the guard is true by
+          # construction — the point is exercising the machinery, not
+          # hardcoding a value that a patch will move.
+          python3 - "corpus/${{ steps.target.outputs.file }}" "${{ steps.target.outputs.file }}" \
+            > plan.json <<'PY'
+          import json, re, sys
+          src, rel = sys.argv[1], sys.argv[2]
+          text = open(src, encoding="utf-8", errors="replace").read()
+          # first top-level-ish block, then a plain float key inside it
+          m = re.search(r'^\t(\w+)\s*=\s*$\n^\t\{$(.*?)^\t\}$',
+                        text, re.M | re.S)
+          if not m:
+              print("could not find a block", file=sys.stderr); sys.exit(3)
+          block, body = m.group(1), m.group(2)
+          f = re.search(r'^\t\t(m_fl\w+)\s*=\s*(-?\d+\.\d+)\s*$', body, re.M)
+          if not f:
+              print("could not find a float in %s" % block, file=sys.stderr); sys.exit(3)
+          key, val = f.group(1), float(f.group(2))
+          print(json.dumps({
+            "version": 1,
+            "description": "batch-smoke",
+            "edits": [{"file": rel, "set": [
+              {"path": "%s.%s" % (block, key), "value": val + 1.0, "expect": val}]}]},
+            indent=2))
+          sys.stderr.write("guarding %s.%s = %s\n" % (block, key, val))
+          PY
+          cat plan.json
+
+      - name: Dry run evaluates but writes nothing (Q12)
+        run: |
+          set -euo pipefail
+          rm -rf out
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan plan.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}" \
+                  --dry-run --json > dry.json
+          cat dry.json
+          [ ! -d out ] || { echo "--dry-run created --out-root" >&2; exit 1; }
+          python3 -c "
+          import json
+          d = json.load(open('dry.json'))
+          assert d['ok'] is True, d
+          assert d['data']['dry_run'] is True
+          assert d['data']['applied'] == 1, d['data']
+          assert d['pinned_build'], 'build id missing from envelope (Q7)'
+          "
+
+      - name: Real run writes an overlay (Q4)
+        run: |
+          set -euo pipefail
+          rm -rf out
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan plan.json --root corpus --out-root out \
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json > run.json
+          cat run.json
+          # Only the planned file exists in the overlay.
+          COUNT=$(find out -type f | wc -l)
+          [ "$COUNT" = "1" ] || { echo "overlay has $COUNT files, expected 1" >&2; find out -type f; exit 1; }
+          test -f "out/${{ steps.target.outputs.file }}"
+
+      - name: Exactly one line differs from a no-op baseline
+        run: |
+          set -euo pipefail
+          # A no-op plan reserialises without changing meaning, giving the
+          # baseline that cancels VRF's reformatting on both sides.
+          python3 - "${{ steps.target.outputs.file }}" plan.json > noop.json <<'PY'
+          import json, sys
+          p = json.load(open(sys.argv[2]))
+          s = p["edits"][0]["set"][0]
+          s["value"] = s["expect"]
+          print(json.dumps(p))
+          PY
+          rm -rf base
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan noop.json --root corpus --out-root base \
+                  --source-build "${{ steps.fixture.outputs.sha }}"
+          DIFF=$(diff "base/${{ steps.target.outputs.file }}" \
+                      "out/${{ steps.target.outputs.file }}" | grep -c '^[<>]' || true)
+          echo "changed lines: $DIFF"
+          [ "$DIFF" = "2" ] || { echo "expected 2 (one < one >), got $DIFF" >&2; exit 1; }
+
+      - name: No-op edit reports as skipped, not applied (Q16)
+        run: |
+          set -euo pipefail
+          rm -rf noopout
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan noop.json --root corpus --out-root noopout \
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json > noop-out.json
+          python3 -c "
+          import json
+          d = json.load(open('noop-out.json'))['data']
+          assert d['applied'] == 0, d
+          assert d['skipped'] == 1, d
+          assert len(d['files']) == 1, 'planned file must appear even unchanged (Q16)'
+          "
+
+      - name: Envelope is deterministic across runs (D5, Q6)
+        run: |
+          set -euo pipefail
+          rm -rf o1 o2
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan plan.json --root corpus --out-root o1 \
+                  --source-build fixed-sha --json > e1.json
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            batch --plan plan.json --root corpus --out-root o1 \
+                  --source-build fixed-sha --json > e2.json
+          # out_root differs between the two only if we vary it; hold it fixed
+          # so any difference is genuine nondeterminism.
+          diff e1.json e2.json || { echo "envelope is not deterministic" >&2; exit 1; }
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-smoke
+          path: |
+            plan.json
+            dry.json
+            run.json
+            noop-out.json
+            source-build.txt

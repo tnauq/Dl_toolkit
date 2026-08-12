@@ -25,6 +25,12 @@ namespace Deadlock.Patch;
 /// such as resource_name: for free, and means this file names no enum member
 /// it has not verified. Classification is done on the runtime type of
 /// .Value — bool, long, double, string — which the dump confirms directly.
+///
+/// CHANGED 2026-08-12 for batch: traversal is factored into Resolve, and
+/// TryRead exposes the current value WITHOUT mutating. Guard evaluation needs
+/// to read every target before anything is applied, so read and write can no
+/// longer be the same operation. Apply's behaviour and its error strings are
+/// unchanged — patch-smoke asserts on them.
 /// </summary>
 public sealed class Kv3Document
 {
@@ -46,6 +52,97 @@ public sealed class Kv3Document
         File.WriteAllText(path, _file.ToString());
     }
 
+    /// <summary>Serialised form, for callers that stage in memory (batch).</summary>
+    public string Serialize() => _file.ToString();
+
+    /// <summary>
+    /// Walks a dotted path to its leaf without changing anything.
+    /// Returns false with a populated <paramref name="error"/> for any miss.
+    /// </summary>
+    private bool Resolve(string path, out KVObject? parent, out string leaf,
+                         out KVValue? existing, out string? error)
+    {
+        parent = null;
+        existing = null;
+        error = null;
+
+        var segments = path.Split('.');
+        leaf = segments[^1];
+
+        var node = _file.Root;
+        if (node is null)
+        {
+            error = "document has no root object";
+            return false;
+        }
+
+        for (var i = 0; i < segments.Length - 1; i++)
+        {
+            var seg = segments[i];
+            if (!node.Properties.TryGetValue(seg, out var childValue))
+            {
+                error = $"path not found: no key '{seg}' at '{string.Join('.', segments[..(i + 1)])}'";
+                return false;
+            }
+
+            if (childValue.Value is not KVObject childObj)
+            {
+                error = $"path traverses a scalar: '{seg}' is a value, not a block";
+                return false;
+            }
+
+            if (childObj.IsArray)
+            {
+                error = $"'{seg}' is an array; v1 does not address array elements";
+                return false;
+            }
+
+            node = childObj;
+        }
+
+        if (!node.Properties.TryGetValue(leaf, out var found))
+        {
+            error = $"path not found: no key '{leaf}'";
+            return false;
+        }
+
+        parent = node;
+        existing = found;
+        return true;
+    }
+
+    /// <summary>
+    /// Reads the current scalar at a path. Used by batch to evaluate every
+    /// guard before any edit is applied. Blocks, arrays and flagged values are
+    /// refused here for the same reasons Apply refuses them — a guard that
+    /// passed on something Apply would then reject is worse than no guard.
+    /// </summary>
+    public bool TryRead(string path, out object? value, out string? error)
+    {
+        value = null;
+
+        if (!Resolve(path, out _, out var leaf, out var existing, out error))
+            return false;
+
+        if (existing!.Value is KVObject)
+        {
+            error = $"'{leaf}' is a block or array; v1 sets scalars only";
+            return false;
+        }
+
+        if (existing.Flag != KVFlag.None)
+        {
+            error = $"'{leaf}' is a {existing.Flag} value; v1 sets plain scalars only";
+            return false;
+        }
+
+        value = existing.Value;
+        return true;
+    }
+
+    /// <summary>Renders a value the way the envelope reports it.</summary>
+    public static string Show(object? v) => Render(v);
+
     /// <summary>
     /// Applies one edit. Never throws for an ordinary miss — a missing path or
     /// a type clash is a RESULT, not an exception, because batch has to report
@@ -53,37 +150,12 @@ public sealed class Kv3Document
     /// </summary>
     public EditResult Apply(Edit edit)
     {
-        var segments = edit.Path.Split('.');
         var to = edit.Value.ToString();
 
-        var node = _file.Root;
-        if (node is null)
-            return new EditResult(edit.Path, null, to, false, "document has no root object");
+        if (!Resolve(edit.Path, out var parent, out var leaf, out var existing, out var resolveError))
+            return new EditResult(edit.Path, null, to, false, resolveError);
 
-        for (var i = 0; i < segments.Length - 1; i++)
-        {
-            var seg = segments[i];
-            if (!node.Properties.TryGetValue(seg, out var childValue))
-                return new EditResult(edit.Path, null, to, false,
-                    $"path not found: no key '{seg}' at '{string.Join('.', segments[..(i + 1)])}'");
-
-            if (childValue.Value is not KVObject childObj)
-                return new EditResult(edit.Path, null, to, false,
-                    $"path traverses a scalar: '{seg}' is a value, not a block");
-
-            if (childObj.IsArray)
-                return new EditResult(edit.Path, null, to, false,
-                    $"'{seg}' is an array; v1 does not address array elements");
-
-            node = childObj;
-        }
-
-        var leaf = segments[^1];
-        if (!node.Properties.TryGetValue(leaf, out var existing))
-            return new EditResult(edit.Path, null, to, false,
-                $"path not found: no key '{leaf}'");
-
-        if (existing.Value is KVObject)
+        if (existing!.Value is KVObject)
             return new EditResult(edit.Path, null, to, false,
                 $"'{leaf}' is a block or array; v1 sets scalars only");
 
@@ -100,7 +172,7 @@ public sealed class Kv3Document
             return new EditResult(edit.Path, from, to, false, why);
 
         // Reuse Type and Flag: only the boxed value changes.
-        node.Properties[leaf] = new KVValue(existing.Type, existing.Flag, boxed!);
+        parent!.Properties[leaf] = new KVValue(existing.Type, existing.Flag, boxed!);
         return new EditResult(edit.Path, from, to, true, null);
     }
 
