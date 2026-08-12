@@ -24,10 +24,17 @@ name: probe compiler
 #   CAppSystemDict:Unable to load module modtools (Dependency of application),
 #   error 126
 #
-# 126 is ERROR_MOD_NOT_FOUND. Two candidate causes, which steps D and E below
-# separate: either the Reduced CSDK does not ship modtools at all, or it does
-# and Windows cannot resolve it, because LoadLibrary searches the exe's own
-# directory and PATH — NOT the EXECUTABLE_PATH entries the compiler prints.
+# 126 is ERROR_MOD_NOT_FOUND. SETTLED 2026-08-12: the Reduced CSDK simply does
+# not ship modtools — zero matches across its 128 real DLLs, and retries with
+# both bin dirs on PATH and with the compiler dir as CWD failed identically,
+# which ruled out resolution as the cause. The upload was complete and
+# checksum-verified; only bin_cs2 was ever uploaded, and modtools lives
+# elsewhere in the CSDK tree.
+#
+# It is now a LOOSE release asset on csdk-12, copied beside the compiler by the
+# fetch step. Its static imports are only KERNEL32 and tier0.dll (tier0 already
+# present), so no further missing module is predictable from the binary —
+# though a runtime LoadLibrary could still surface one.
 #
 # The hundreds of "Failed loading resource ... vmat_c" lines above the crash
 # are NOT the problem; that is the compiler booting without a content tree and
@@ -103,12 +110,36 @@ jobs:
               print(f"archive holds {len(z.namelist())} entries")
               z.extractall('csdk')
 
+          # The CSDK was zipped on macOS: __MACOSX holds AppleDouble `._`
+          # stubs that shadow every real file (128 real DLLs, 128 ghosts).
+          # Harmless to the compiler, but anything walking the tree by name
+          # sees doubles, so remove it. (Found 2026-08-12.)
+          import shutil
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+              print("removed the __MACOSX shadow tree")
+
           comp = ''
           for root, _, fs in os.walk('csdk'):
               for f in fs:
                   if f.lower() == 'resourcecompiler.exe':
                       comp = os.path.abspath(os.path.join(root, f))
           print("compiler:", comp or "NOT FOUND")
+
+          # modtools.dll is NOT in the Reduced CSDK bin (verified 2026-08-12:
+          # zero matches across 128 real DLLs), and the compiler loads it as an
+          # application dependency — error 126 before any work begins. It ships
+          # as a LOOSE release asset on the csdk-12 tag and is copied in here.
+          # Its own static imports are only KERNEL32 and tier0.dll, and tier0
+          # is already in bin_cs2/win64, so no further chain is predictable.
+          loose = os.path.join('dl', 'modtools.dll')
+          if comp and os.path.exists(loose):
+              dest = os.path.join(os.path.dirname(comp), 'modtools.dll')
+              shutil.copy(loose, dest)
+              print(f"placed modtools.dll -> {dest} ({os.path.getsize(dest)} bytes)")
+          elif not os.path.exists(loose):
+              print("::warning::modtools.dll not among the release assets")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
               g.write(f"ready={comp}\n")
 
@@ -236,60 +267,25 @@ jobs:
           find csdk -iname '*.dll' | sort > csdk-dlls.txt
           wc -l csdk-dlls.txt
 
-      - name: D — retry with both bin dirs on PATH
-        if: steps.get.outputs.ready != ''
-        shell: bash
-        run: |
-          # LoadLibrary searches the exe's own directory and PATH — NOT the
-          # EXECUTABLE_PATH entries the compiler prints in its search table.
-          # resourcecompiler.exe lives in bin_cs2\win64 while some DLLs sit in
-          # bin_cs2, so if modtools IS present this is the whole fix. If it is
-          # absent, this run fails identically to A and the answer is "the
-          # Reduced CSDK does not ship it".
-          ROOT="$(pwd -W 2>/dev/null || pwd)"
-          BIN=$(dirname "${{ steps.get.outputs.ready }}")
-          BINW=$(cd "$BIN" && (pwd -W 2>/dev/null || pwd))
-          PARENTW=$(cd "$BIN/.." && (pwd -W 2>/dev/null || pwd))
-          echo "adding to PATH: $BINW ; $PARENTW"
-          export PATH="$BINW:$PARENTW:$PATH"
-          set +e
-          "${{ steps.get.outputs.ready }}" -nop4 -v \
-            -game "$ROOT/build/game/citadel" \
-            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > compile-d.txt 2>&1
-          echo "exit: $?"
-          set -e
-          echo "--- last 25 lines ---"
-          tail -25 compile-d.txt || true
-          echo "--- did the failure change? ---"
-          grep -c "error 126" compile-d.txt || echo "no error 126 — moved past it"
-
-      - name: E — run with the compiler dir as CWD
-        if: steps.get.outputs.ready != ''
-        shell: bash
-        run: |
-          # Second resolution route, independent of PATH. If D fixes it and E
-          # does not, the dependency is resolved from PATH; if both work the
-          # cause is simply that neither was set before.
-          ROOT="$(pwd -W 2>/dev/null || pwd)"
-          BIN=$(dirname "${{ steps.get.outputs.ready }}")
-          cd "$BIN"
-          set +e
-          ./resourcecompiler.exe -nop4 -v \
-            -game "$ROOT/build/game/citadel" \
-            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > "$ROOT/compile-e.txt" 2>&1
-          echo "exit: $?"
-          set -e
-          cd "$ROOT"
-          tail -25 compile-e.txt || true
-
       - name: What landed
         if: always()
         shell: bash
         run: |
-          echo "--- any compiled output anywhere ---"
-          find . -name '*.vdata_c' -not -path './csdk/*' 2>/dev/null || true
-          echo "--- build tree after ---"
+          echo "=== compiled output ==="
+          FOUND=$(find . -name '*.vdata_c' -not -path './csdk/*' 2>/dev/null | tee compiled.txt | wc -l)
+          echo "vdata_c files: $FOUND"
+          cat compiled.txt || true
+          echo "=== build tree after ==="
           find build -type f 2>/dev/null | head -40 || true
+          echo "=== did we clear error 126? ==="
+          if grep -q "error 126" compile-a.txt 2>/dev/null; then
+            echo "NO — still failing on a missing module:"
+            grep "Unable to load module" compile-a.txt || true
+          else
+            echo "YES — no module-load failure in compile-a.txt"
+          fi
+          echo "=== last 10 lines of compile-a ==="
+          tail -10 compile-a.txt 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -300,9 +296,8 @@ jobs:
             compile-a.txt
             compile-b.txt
             compile-c.txt
-            compile-d.txt
-            compile-e.txt
             found.txt
             modtools.txt
             csdk-dlls.txt
+            compiled.txt
           if-no-files-found: ignore
