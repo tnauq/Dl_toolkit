@@ -1,0 +1,112 @@
+name: probe floats
+
+# Read-only corpus sweep. Answers one question: does any source vdata literal
+# carry more decimal places than VRF's reserializer preserves? If yes,
+# dl-patch's parse-and-reserialize model silently alters values it was never
+# asked to touch, and the round-trip finding does not generalise past the one
+# file it was established on.
+#
+# Never fails the run on findings — findings ARE the result. It fails only on
+# a broken scan (bad clone, no files, scanner crash).
+
+on:
+  workflow_dispatch:
+    inputs:
+      dp:
+        description: "Decimal places VRF preserves"
+        required: false
+        default: "6"
+      ext:
+        description: "Comma-separated extensions to scan"
+        required: false
+        default: ".vdata"
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Blobless + non-cone sparse checkout: only the files we scan are ever
+      # downloaded. A full clone of GameTracking-Deadlock is many GB.
+      - name: Clone corpus (vdata only)
+        run: |
+          set -euo pipefail
+          EXT="${{ github.event.inputs.ext }}"
+          EXT="${EXT:-.vdata}"
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git corpus
+          cd corpus
+          git sparse-checkout init --no-cone
+          : > .git/info/sparse-checkout-patterns
+          IFS=',' read -ra PARTS <<< "$EXT"
+          ARGS=()
+          for p in "${PARTS[@]}"; do
+            p="${p#.}"
+            ARGS+=("/**/*.${p}")
+          done
+          git sparse-checkout set --no-cone "${ARGS[@]}"
+          echo "matched files:"
+          find . -path ./.git -prune -o -type f -print | wc -l
+
+      - name: Scan
+        id: scan
+        run: |
+          set -uo pipefail
+          mkdir -p out
+          python3 tools/scan_floats.py \
+            --root corpus \
+            --dp "${{ github.event.inputs.dp || '6' }}" \
+            --ext "${{ github.event.inputs.ext || '.vdata' }}" \
+            --json out/float-precision.json \
+            > out/stdout.json
+          RC=$?
+          echo "rc=$RC" >> "$GITHUB_OUTPUT"
+          if [ "$RC" -ge 2 ]; then
+            echo "scanner failed with exit $RC" >&2
+            exit "$RC"
+          fi
+          exit 0
+
+      - name: Summarise
+        if: always()
+        run: |
+          set -euo pipefail
+          F=out/float-precision.json
+          [ -f "$F" ] || { echo "no result file" >&2; exit 3; }
+          python3 - "$F" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, sys
+          r = json.load(open(sys.argv[1]))
+          print("## Float precision sweep\n")
+          print("| | |")
+          print("|---|---|")
+          print("| files scanned | %d |" % r["files_scanned"])
+          print("| preserved dp | %d |" % r["decimal_places_preserved"])
+          print("| literals over threshold | %d |" % r["findings_total"])
+          print("| files affected | %d |" % r["files_with_findings"])
+          print("| worst precision seen | %d dp |" % r["worst_precision"])
+          print()
+          if not r["findings_total"]:
+              print("**Clean.** No source literal exceeds what VRF preserves. "
+                    "The round-trip finding generalises to the corpus.")
+          else:
+              print("**Findings.** Parse-and-reserialize alters these values. "
+                    "First 20:\n")
+              print("| file | line | literal | rounded to |")
+              print("|---|---|---|---|")
+              for f in r["findings"][:20]:
+                  print("| `%s` | %d | `%s` | `%s` |"
+                        % (f["file"], f["line"], f.get("literal",""),
+                           f.get("rounded","")))
+          PY
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: float-precision
+          path: out/
