@@ -252,6 +252,66 @@ public sealed class Kv3Document
         }
     }
 
+
+    /// <summary>
+    /// Every addressable scalar in the document, as (path, kind, value).
+    ///
+    /// Used by `diff`. Arrays are reported as a single opaque entry rather
+    /// than descended into: their elements have no dotted path, so a change
+    /// inside one cannot be named, and pretending otherwise would emit paths
+    /// that dl-patch then refuses. An array whose length changes shows up as
+    /// a changed entry; an element edited in place does not. That is a stated
+    /// limitation, not an oversight — v1 refuses array traversal everywhere.
+    ///
+    /// `kind` carries the KVFlag for flagged values (resource_name: and
+    /// friends) so a diff can tell a genuine value change from a type change.
+    /// </summary>
+    public IEnumerable<(string Path, string Kind, string Value)> Flatten()
+    {
+        var root = _file.Root;
+        if (root is null) yield break;
+        foreach (var entry in Walk(root, ""))
+            yield return entry;
+    }
+
+    private static IEnumerable<(string, string, string)> Walk(KVObject node, string prefix)
+    {
+        foreach (var kv in node.Properties)
+        {
+            var path = prefix.Length == 0 ? kv.Key : prefix + "." + kv.Key;
+            var value = kv.Value;
+
+            if (value.Value is KVObject child)
+            {
+                if (child.IsArray)
+                {
+                    yield return (path, "array", "[" + child.Properties.Count + " items]");
+                    continue;
+                }
+                foreach (var entry in Walk(child, path))
+                    yield return entry;
+                continue;
+            }
+
+            var kind = value.Flag != KVFlag.None
+                ? value.Flag.ToString()
+                : (value.Value?.GetType().Name ?? "null");
+            yield return (path, kind, Render(value.Value));
+        }
+    }
+
+    /// <summary>
+    /// Comparison form. Floats normalise to 6dp so VRF's own reformatting
+    /// never registers as a difference — a diff that reported every float in
+    /// the file after a no-op round trip would be useless.
+    /// </summary>
+    public static string Comparable(string kind, string value)
+    {
+        if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
+            return d.ToString("F6", CultureInfo.InvariantCulture);
+        return value;
+    }
+
     private static string Render(object? v) => v switch
     {
         null => "null",

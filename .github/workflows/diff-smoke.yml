@@ -1,0 +1,179 @@
+name: diff smoke
+
+# HARNESS NOTE. GitHub runs steps as `bash -e`, and `set -uo pipefail` does NOT
+# clear it. Use `RC=0; cmd || RC=$?` for anything expected to exit nonzero, and
+# `cat` output BEFORE asserting so a failure is diagnosable rather than silent.
+# Both rules were learned the expensive way on batch-smoke, 2026-08-12.
+#
+# The load-bearing assertion here is REFORMAT INVARIANCE: diffing a file
+# against its own no-op round trip must report ZERO differences. That is what
+# makes diff usable at all — a textual diff would report most of the file,
+# because VRF pads floats to 6dp and explodes arrays on every write.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  diff-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Clone fixture tree (vdata only)
+        id: fixture
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git corpus
+          cd corpus
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone '/**/*.vdata'
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: dotnet build src/Deadlock.Patch/Deadlock.Patch.csproj -c Release
+
+      - name: Locate a hero vdata
+        id: target
+        run: |
+          set -euo pipefail
+          FILE=$(cd corpus && find . -name 'heroes.vdata' | head -1 | sed 's|^\./||')
+          [ -n "$FILE" ] || { echo "no heroes.vdata" >&2; exit 3; }
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "target: $FILE"
+
+      - name: Produce a no-op baseline and a one-edit variant
+        id: make
+        run: |
+          set -euo pipefail
+          SRC="corpus/${{ steps.target.outputs.file }}"
+          # pick_target gives a real path with its current value
+          python3 tools/pick_target.py "$SRC" "${{ steps.target.outputs.file }}" > plan.json
+          cat plan.json
+          PATHSEL=$(python3 -c "
+          import json
+          print(json.load(open('plan.json'))['edits'][0]['set'][0]['path'])")
+          OLDV=$(python3 -c "
+          import json
+          print(json.load(open('plan.json'))['edits'][0]['set'][0]['expect'])")
+          NEWV=$(python3 -c "
+          import json
+          print(json.load(open('plan.json'))['edits'][0]['set'][0]['value'])")
+          echo "path=$PATHSEL" >> "$GITHUB_OUTPUT"
+          echo "path: $PATHSEL   $OLDV -> $NEWV"
+          # baseline: same value in, so only reserialisation differs
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            --in "$SRC" --out baseline.vdata --set "$PATHSEL=$OLDV"
+          # variant: one scalar genuinely changed
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            --in "$SRC" --out variant.vdata --set "$PATHSEL=$NEWV"
+          ls -la baseline.vdata variant.vdata
+
+      - name: Reformatting is invisible (the load-bearing assertion)
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old "corpus/${{ steps.target.outputs.file }}" \
+                 --new baseline.vdata --json > noop-diff.json || RC=$?
+          cat noop-diff.json
+          [ "$RC" = "0" ] || { echo "expected 0 differences, exit was $RC" >&2; exit 1; }
+          python3 -c "
+          import json
+          d = json.load(open('noop-diff.json'))['data']
+          assert d['total'] == 0, d
+          assert d['old_paths'] > 100, 'suspiciously few paths: %r' % d['old_paths']
+          assert d['old_paths'] == d['new_paths'], d
+          print('paths compared:', d['old_paths'])
+          "
+
+      - name: A real edit is one changed path, exit 1
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old baseline.vdata --new variant.vdata --json > one-diff.json || RC=$?
+          cat one-diff.json
+          [ "$RC" = "1" ] || { echo "expected exit 1, got $RC" >&2; exit 1; }
+          python3 -c "
+          import json
+          d = json.load(open('one-diff.json'))['data']
+          assert d['total'] == 1, d
+          assert d['changed'] == 1, d
+          assert d['added'] == 0 and d['removed'] == 0 and d['retyped'] == 0, d
+          e = d['entries'][0]
+          assert e['path'] == '${{ steps.make.outputs.path }}', e
+          assert e['change'] == 'changed', e
+          print('changed:', e['path'], e['from'], '->', e['to'])
+          "
+
+      - name: Differences are a result, not an error
+        run: |
+          set -euo pipefail
+          python3 -c "
+          import json
+          d = json.load(open('one-diff.json'))
+          assert d['ok'] is True, 'ok must stay true when files differ'
+          assert d['errors'] == [], d['errors']
+          "
+
+      - name: Identical files compare equal
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old baseline.vdata --new baseline.vdata || RC=$?
+          [ "$RC" = "0" ] || { echo "a file must equal itself, got $RC" >&2; exit 1; }
+
+      - name: Deterministic across runs (D5)
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old baseline.vdata --new variant.vdata --json > d1.json || RC=$?
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old baseline.vdata --new variant.vdata --json > d2.json || RC=$?
+          diff d1.json d2.json || { echo "diff output is not deterministic" >&2; exit 1; }
+
+      - name: Missing input is 4, misuse is 2
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old nope.vdata --new baseline.vdata || RC=$?
+          [ "$RC" = "4" ] || { echo "expected 4, got $RC" >&2; exit 1; }
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old baseline.vdata || RC=$?
+          [ "$RC" = "2" ] || { echo "expected 2, got $RC" >&2; exit 1; }
+
+      - name: paths-only omits values
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            diff --old baseline.vdata --new variant.vdata --paths-only --json > po.json || RC=$?
+          python3 -c "
+          import json
+          e = json.load(open('po.json'))['data']['entries'][0]
+          assert e.get('from') is None and e.get('to') is None, e
+          assert e['path']
+          "
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: diff-smoke
+          path: |
+            noop-diff.json
+            one-diff.json
+            po.json
+            plan.json

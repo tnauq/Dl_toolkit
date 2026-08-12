@@ -85,6 +85,36 @@ public sealed class EditReport
 }
 
 /// <summary>
+/// diff payload. Differences are a RESULT: `ok` stays true and `errors` stays
+/// empty even when the files differ. The exit code carries the verdict.
+/// </summary>
+public sealed class DiffData
+{
+    [JsonPropertyName("mode")] public string Mode { get; init; } = "diff";
+    [JsonPropertyName("old")] public string? Old { get; init; }
+    [JsonPropertyName("new")] public string? New { get; init; }
+    [JsonPropertyName("old_paths")] public int OldPaths { get; init; }
+    [JsonPropertyName("new_paths")] public int NewPaths { get; init; }
+    [JsonPropertyName("added")] public int Added { get; init; }
+    [JsonPropertyName("removed")] public int Removed { get; init; }
+    [JsonPropertyName("changed")] public int Changed { get; init; }
+    [JsonPropertyName("retyped")] public int Retyped { get; init; }
+    [JsonPropertyName("total")] public int Total { get; init; }
+    [JsonPropertyName("truncated")] public bool Truncated { get; init; }
+    [JsonPropertyName("entries")] public List<DiffEntry> Entries { get; init; } = new();
+}
+
+public sealed class DiffEntry
+{
+    /// <summary>added, removed, changed, or retyped.</summary>
+    [JsonPropertyName("change")] public string Change { get; set; } = "";
+    [JsonPropertyName("path")] public string Path { get; set; } = "";
+    [JsonPropertyName("from")] public string? From { get; set; }
+    [JsonPropertyName("to")] public string? To { get; set; }
+    [JsonPropertyName("kind")] public string? Kind { get; set; }
+}
+
+/// <summary>
 /// Exit codes ABOVE the shared range.
 ///
 /// <c>Deadlock.Contracts.Exit</c> owns 0–3 and they mean the same thing in
@@ -93,8 +123,9 @@ public sealed class EditReport
 /// shared codes still reads "nonzero, and not misuse", which is the useful
 /// part.
 ///
-/// dl-patch does not use code 1; a future <c>--check</c> mode is what that
-/// code is for (Q8).
+/// Code 1 (ExpectedFailure) is used by `diff` for "files differ" — a completed
+/// run whose assertion did not hold, which is precisely its shared meaning.
+/// batch does not use it; a future <c>--check</c> mode is what it would use.
 /// </summary>
 public static class PatchExit
 {

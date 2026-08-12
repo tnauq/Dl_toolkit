@@ -3,7 +3,7 @@ namespace Deadlock.Patch;
 /// <summary>
 /// Argv dispatch and nothing else.
 ///
-/// `batch` is a subcommand rather than another flag because the two modes take
+/// Subcommands are used rather than flags because the modes take
 /// disjoint arguments — sharing one parser would mean validating that --plan
 /// and --set are never both present, which is a rule the shape can express for
 /// free instead.
@@ -13,11 +13,14 @@ namespace Deadlock.Patch;
 ///
 ///   dl-patch --in a.vdata --out b.vdata --set x.y=1
 ///   dl-patch batch --plan p.json --root . --out-root out --source-build &lt;sha&gt;
+///   dl-patch diff --old a.vdata --new b.vdata
 /// </summary>
 internal static class Program
 {
     private static int Main(string[] args)
-        => args.Length > 0 && args[0] == "batch"
-            ? BatchCommand.Run(args[1..])
-            : SetCommand.Run(args);
+    {
+        if (args.Length > 0 && args[0] == "batch") return BatchCommand.Run(args[1..]);
+        if (args.Length > 0 && args[0] == "diff") return DiffCommand.Run(args[1..]);
+        return SetCommand.Run(args);
+    }
 }
