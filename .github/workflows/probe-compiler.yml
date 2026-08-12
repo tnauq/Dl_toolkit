@@ -19,6 +19,13 @@ name: probe compiler
 # was working directory: from the repo root, CONTENT resolved outside the repo
 # entirely, and "Failed to split full path ... FS: Tried to FileExists NULL"
 # is the compiler reporting that the input lies under no content mount.
+#
+# CONFIRMED 2026-08-12. Running from build/game, the compiler split the input
+# correctly — ContentRoot=build/content/, ModName=citadel,
+# RelativePath=scripts/... — and reached actual compilation. Path resolution
+# is SOLVED. The only remaining failure was the toy fixture being invalid:
+#   RESOURCE COMPILE ERROR: VData must have a 'generic_data_type' key
+# so the input is now a real vdata from GameTracking instead.
 # gameinfo.gi is fetched from GameTracking-Deadlock rather than written by
 # hand — a synthesized approximation that the compiler rejects would look
 # identical to the compiler not accepting the flag, and the two need telling
@@ -209,23 +216,42 @@ jobs:
           cat build/game/citadel/gameinfo.gi
           echo "found=1" >> "$GITHUB_OUTPUT"
 
-      - name: Build the content tree
-        if: steps.get.outputs.ready != ''
+      - name: Stage a REAL vdata as the compile input
+        id: input
         shell: bash
         run: |
           set -euo pipefail
+          # The toy fixture `{ probe_value = 1 }` failed with
+          #   RESOURCE COMPILE ERROR: VData must have a 'generic_data_type' key
+          # which is correct — a vdata declares its type. Rather than invent
+          # that key, compile a real file from GameTracking. It is also the
+          # better test: real vdata is exactly what dl-patch emits.
           mkdir -p build/content/citadel/scripts
-          cat > build/content/citadel/scripts/probe.vdata <<'VD'
-          <!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
-          {
-            probe_value = 1
-          }
-          VD
+          git -C gt sparse-checkout set --no-cone '/**/gameinfo.gi' '/**/*.vdata'
+          echo "--- smallest vdata files carrying generic_data_type ---"
+          find gt -name '*.vdata' -not -path '*/.git/*' -printf '%s\t%p\n' \
+            | sort -n > all-vdata.txt
+          head -10 all-vdata.txt
+          PICK=""
+          while IFS=$'\t' read -r size path; do
+            if grep -q 'generic_data_type' "$path" 2>/dev/null; then
+              PICK="$path"; PICKSZ="$size"; break
+            fi
+          done < all-vdata.txt
+          if [ -z "$PICK" ]; then
+            echo "::error::no vdata with generic_data_type found"
+            exit 3
+          fi
+          echo "picked: $PICK ($PICKSZ bytes)"
+          echo "--- its declared type ---"
+          grep -m1 'generic_data_type' "$PICK"
+          NAME=$(basename "$PICK")
+          cp "$PICK" "build/content/citadel/scripts/$NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "--- head of the staged input ---"
+          head -8 "build/content/citadel/scripts/$NAME"
           find build -type f | head -20
 
-      # Three attempts, narrowing. Each writes its own log so a partial
-      # success is legible: if A fails and B succeeds, -game is the answer;
-      # if both fail the same way, the content tree is the next suspect.
       # READ OFF gameinfo.gi, not guessed. The file says search paths are
       # relative, and the table the compiler printed shows how:
       #
@@ -249,7 +275,7 @@ jobs:
           set +e
           "${{ steps.get.outputs.ready }}" -nop4 -v \
             -game citadel \
-            -i "$ROOT/build/content/citadel/scripts/probe.vdata" > "$ROOT/compile-a.txt" 2>&1
+            -i "$ROOT/build/content/citadel/scripts/${{ steps.input.outputs.name }}" > "$ROOT/compile-a.txt" 2>&1
           echo "exit: $?"
           set -e
           cd "$ROOT"
@@ -268,7 +294,7 @@ jobs:
           set +e
           "${{ steps.get.outputs.ready }}" -nop4 -v \
             -game citadel \
-            -i "../content/citadel/scripts/probe.vdata" > "$ROOT/compile-b.txt" 2>&1
+            -i "../content/citadel/scripts/${{ steps.input.outputs.name }}" > "$ROOT/compile-b.txt" 2>&1
           echo "exit: $?"
           set -e
           cd "$ROOT"
@@ -299,6 +325,9 @@ jobs:
         if: always()
         shell: bash
         run: |
+          echo "=== did the compile succeed? ==="
+          grep -E "^ *(ERROR|Success|[0-9]+ compiled)" compile-a.txt 2>/dev/null | tail -5 || true
+          grep "RESOURCE COMPILE ERROR" compile-a.txt 2>/dev/null || echo "no resource compile error"
           echo "=== compiled output ==="
           FOUND=$(find . -name '*.vdata_c' -not -path './csdk/*' 2>/dev/null | tee compiled.txt | wc -l)
           echo "vdata_c files: $FOUND"
@@ -324,6 +353,7 @@ jobs:
             compile-a.txt
             compile-b.txt
             found.txt
+            all-vdata.txt
             modtools.txt
             csdk-dlls.txt
             compiled.txt
