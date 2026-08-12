@@ -233,24 +233,35 @@ jobs:
         run: |
           set -euo pipefail
           # The target is read out of the file so the guard is true by
-          # construction. Hardcoding a path means the test breaks whenever
-          # Valve moves the value, which is noise. pick_target.py walks the
-          # block structure rather than guessing at indentation depth — an
-          # inline regex assuming `m_fl*` at two tabs failed on the real file.
+          # construction. pick_target.py walks the block structure rather than
+          # guessing at indentation depth.
           python3 tools/pick_target.py \
             "corpus/${{ steps.target.outputs.file }}" \
             "${{ steps.target.outputs.file }}" > plan.json
           cat plan.json
+          # Show the target as it appears in the file. If the guard then fails,
+          # this line is the evidence for whether the PATH or the VALUE is wrong.
+          PATHSEL=$(python3 -c "
+          import json
+          print(json.load(open('plan.json'))['edits'][0]['set'][0]['path'])")
+          LEAF="${PATHSEL##*.}"
+          echo "picked path: $PATHSEL   leaf: $LEAF"
+          echo "--- occurrences of the leaf in the source ---"
+          grep -n "\b${LEAF}\b" "corpus/${{ steps.target.outputs.file }}" | head -5 || true
+          echo "--- first 40 lines, tabs shown as ^I ---"
+          head -40 "corpus/${{ steps.target.outputs.file }}" | cat -T
 
       - name: Dry run evaluates but writes nothing (Q12)
         run: |
           set -euo pipefail
           rm -rf out
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan plan.json --root corpus --out-root out \
                   --source-build "${{ steps.fixture.outputs.sha }}" \
-                  --dry-run --json > dry.json
+                  --dry-run --json > dry.json || RC=$?
           cat dry.json
+          [ "${RC:-0}" = "0" ] || { echo "dry run exited ${RC}" >&2; exit 1; }
           [ ! -d out ] || { echo "--dry-run created --out-root" >&2; exit 1; }
           python3 -c "
           import json
@@ -265,10 +276,12 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf out
+          RC=0
           dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
             batch --plan plan.json --root corpus --out-root out \
-                  --source-build "${{ steps.fixture.outputs.sha }}" --json > run.json
+                  --source-build "${{ steps.fixture.outputs.sha }}" --json > run.json || RC=$?
           cat run.json
+          [ "${RC:-0}" = "0" ] || { echo "real run exited ${RC}" >&2; exit 1; }
           # Only the planned file exists in the overlay.
           COUNT=$(find out -type f | wc -l)
           [ "$COUNT" = "1" ] || { echo "overlay has $COUNT files, expected 1" >&2; find out -type f; exit 1; }
