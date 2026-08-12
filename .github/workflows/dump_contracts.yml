@@ -1,6 +1,17 @@
-name: dump contracts
+name: dump files
 
-on: workflow_dispatch
+# Generic surface dumper. Takes a glob, writes every match into one markdown
+# file, uploads it as an artifact. Replaces the ad-hoc dump-contracts workflow:
+# the mobile Actions view does not render step summaries, so artifacts are the
+# only reliable read path.
+
+on:
+  workflow_dispatch:
+    inputs:
+      glob:
+        description: "Paths to dump, space-separated (globs allowed)"
+        required: true
+        default: ".github/workflows/*.yml"
 
 jobs:
   dump:
@@ -8,23 +19,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Dump surface
+      - name: Dump
         run: |
           set -euo pipefail
           mkdir -p out
+          COUNT=0
           {
-            echo "# Contracts + Patch surface"
-            find src/Deadlock.Contracts src/Deadlock.Patch \
-              \( -name '*.cs' -o -name '*.csproj' \) -print0 \
-            | sort -z \
-            | while IFS= read -r -d '' f; do
-                echo ""
-                echo "## $f"
-                echo '```'
-                cat "$f"
-                echo '```'
-              done
+            echo "# Surface dump"
+            echo ""
+            echo "glob: \`${{ github.event.inputs.glob }}\`"
+            for f in ${{ github.event.inputs.glob }}; do
+              [ -f "$f" ] || continue
+              COUNT=$((COUNT+1))
+              echo ""
+              echo "## $f"
+              echo '```'
+              cat "$f"
+              echo '```'
+            done
           } > out/surface.md
+          echo "dumped $COUNT files"
           wc -l out/surface.md
 
       - uses: actions/upload-artifact@v4
