@@ -1,6 +1,7 @@
 name: loop
 
 # END TO END: plan -> dl-patch batch -> overlay -> resourcecompiler -> .vdata_c
+#             -> dl-patch pack -> addon VPK
 #
 # Every link is separately green as of 2026-08-12. This asserts them TOGETHER,
 # which is the claim that actually matters: a hero stat can be changed and a
@@ -256,6 +257,55 @@ jobs:
           echo "compiled outputs differ — the edit survived compilation"
 
       # ------------------------------------------------------------------
+      # PACK — the last link
+      # ------------------------------------------------------------------
+      - name: Pack the compiled tree into an addon VPK
+        shell: bash
+        run: |
+          set -euo pipefail
+          # --in is the compiler's own output directory, so entries come out
+          # keyed as scripts/<name>.vdata_c — the shape the game asks for.
+          dotnet run --no-build -c Release --project src/Deadlock.Patch -- \
+            pack --in build/game/citadel --out dist/pak01_dir.vpk \
+                 --source-build "${{ steps.gt.outputs.sha }}" \
+                 --verify --json > pack.json
+          cat pack.json
+          ls -la dist/
+
+      - name: Assert the VPK verified and holds the patched resource
+        shell: bash
+        run: |
+          set -euo pipefail
+          PY=$(command -v python3 || command -v python)
+          "$PY" - <<'PYEOF'
+          import json, sys
+          d = json.load(open('pack.json'))
+          assert d['ok'] is True, d
+          data = d['data']
+          assert data['verified'] is True, 'CRC round trip did not verify'
+          assert data['file_count'] >= 1, data
+          assert d['pinned_build'], 'build id missing (D2)'
+          paths = [e['path'] for e in data['entries']]
+          print('entries:', paths)
+          # Entries must be forward-slashed and relative — no drive letters,
+          # no backslashes, no leading slash. A Windows runner would produce
+          # backslashed keys if normalisation regressed.
+          for p in paths:
+              assert '\\' not in p, 'backslash in entry path: %r' % p
+              assert not p.startswith('/'), 'absolute entry path: %r' % p
+              assert ':' not in p, 'drive letter in entry path: %r' % p
+          assert any(p.endswith('.vdata_c') for p in paths), paths
+          print('total bytes:', data['total_bytes'])
+          PYEOF
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: addon-vpk
+          path: dist/pak01_dir.vpk
+          if-no-files-found: warn
+
+      # ------------------------------------------------------------------
       # EXPLORING TRACK — allowed to fail, always reported
       # ------------------------------------------------------------------
       - name: Try a real hero vdata
@@ -306,4 +356,5 @@ jobs:
             compile-pristine.txt
             compile-heroes.txt
             all-vdata.txt
+            pack.json
           if-no-files-found: ignore

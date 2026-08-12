@@ -63,4 +63,69 @@ public static class VpkWriter
             Output: outputPath,
             Entries: manifest.OrderBy(e => e.Path, StringComparer.Ordinal).ToList());
     }
+
+    /// <summary>
+    /// Pack every file under <paramref name="root"/> into a VPK, keyed by path
+    /// RELATIVE to that root. Added 2026-08-12 for `dl-patch pack`.
+    ///
+    /// WHY RELATIVE-TO-ROOT. A Deadlock addon VPK lives at
+    /// citadel/addons/pak##_dir.vpk and is mounted as a search path alongside
+    /// the `citadel` game path declared in gameinfo.gi. Entries therefore have
+    /// to be expressed the way the game asks for them — `scripts/heroes.vdata_c`,
+    /// not `citadel/scripts/...` and not an absolute path. Pointing this at the
+    /// compiler's own output directory (game/citadel) produces exactly that,
+    /// because the compiler already writes to DEFAULT_WRITE_PATH in that shape.
+    ///
+    /// `[I]` — consistent with how gameinfo declares its mounts and with where
+    /// resourcecompiler writes, but NOT confirmed against a running game. Use
+    /// <paramref name="prefix"/> if a real addon turns out to need one.
+    ///
+    /// Separators are normalised to '/' because VPK paths are forward-slashed
+    /// and a Windows runner would otherwise write backslashed keys that the
+    /// game never asks for.
+    /// </summary>
+    public static ManifestResult CreateFromDirectory(
+        string root, string outputPath, string? prefix = null)
+    {
+        if (!Directory.Exists(root))
+            throw new DirectoryNotFoundException($"input directory not found: {root}");
+
+        var outDir = System.IO.Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(outDir)) Directory.CreateDirectory(outDir);
+
+        // Sorted so the archive, and therefore its bytes, are deterministic.
+        var files = Directory
+            .EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .ToList();
+
+        if (files.Count == 0)
+            throw new InvalidOperationException($"no files under {root}");
+
+        using var package = new Package();
+        var manifest = new List<ManifestEntry>();
+
+        foreach (var file in files)
+        {
+            var relative = System.IO.Path
+                .GetRelativePath(root, file)
+                .Replace('\\', '/');
+
+            if (!string.IsNullOrEmpty(prefix))
+                relative = prefix.TrimEnd('/') + "/" + relative;
+
+            var bytes = File.ReadAllBytes(file);
+            package.AddFile(relative, bytes);
+            manifest.Add(new ManifestEntry(
+                Path: relative,
+                Length: (uint)bytes.Length,
+                Crc32: Crc32.HashToUInt32(bytes)));
+        }
+
+        package.Write(outputPath);
+
+        return new ManifestResult(
+            Output: outputPath,
+            Entries: manifest.OrderBy(e => e.Path, StringComparer.Ordinal).ToList());
+    }
 }

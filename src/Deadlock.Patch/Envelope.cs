@@ -115,6 +115,32 @@ public sealed class DiffEntry
 }
 
 /// <summary>
+/// pack payload. The manifest is the shippable record of what went into the
+/// archive: path, length, and a CRC32 computed independently of ValvePak.
+/// </summary>
+public sealed class PackData
+{
+    [JsonPropertyName("mode")] public string Mode { get; init; } = "pack";
+    [JsonPropertyName("input")] public string? Input { get; init; }
+    [JsonPropertyName("output")] public string? Output { get; init; }
+    [JsonPropertyName("prefix")] public string? Prefix { get; init; }
+    [JsonPropertyName("file_count")] public int FileCount { get; init; }
+    [JsonPropertyName("total_bytes")] public long TotalBytes { get; init; }
+
+    /// <summary>True only when --verify re-read the archive and every CRC matched.</summary>
+    [JsonPropertyName("verified")] public bool Verified { get; init; }
+
+    [JsonPropertyName("entries")] public List<PackEntry> Entries { get; init; } = new();
+}
+
+public sealed class PackEntry
+{
+    [JsonPropertyName("path")] public string Path { get; set; } = "";
+    [JsonPropertyName("length")] public uint Length { get; set; }
+    [JsonPropertyName("crc32")] public uint Crc32 { get; set; }
+}
+
+/// <summary>
 /// Exit codes ABOVE the shared range.
 ///
 /// <c>Deadlock.Contracts.Exit</c> owns 0–3 and they mean the same thing in
@@ -140,6 +166,14 @@ public static class PatchExit
     /// seeing 7 should re-derive the plan, not fix its syntax.
     /// </summary>
     public const int GuardFailed = 7;
+
+    /// <summary>
+    /// `pack --verify` re-read the archive and it did not match what was
+    /// written. Distinct in kind: the tool did its job and the RESULT is
+    /// untrustworthy, which is the one case where shipping the artifact
+    /// anyway would be actively harmful.
+    /// </summary>
+    public const int VerifyFailed = 8;
 }
 
 /// <summary>
@@ -157,4 +191,5 @@ public static class ErrorCode
     public const string GuardFailed = "guard_failed";
     public const string PlanInvalid = "plan_invalid";
     public const string TooManyFiles = "too_many_files";
+    public const string VerifyFailed = "verify_failed";
 }

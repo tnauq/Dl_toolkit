@@ -27,6 +27,13 @@
   -->
   <ItemGroup>
     <ProjectReference Include="..\Deadlock.Contracts\Deadlock.Contracts.csproj" />
+    <!--
+      Added 2026-08-12 for `dl-patch pack`. Format owns ValvePak and CI
+      enforces the layer boundary, so pack is a front end over VpkWriter and
+      touches no archive API itself. Format targets net8.0 and this project
+      net9.0; a net9 project consuming a net8 one is fine, so no migration.
+    -->
+    <ProjectReference Include="..\Deadlock.Format\Deadlock.Format.csproj" />
   </ItemGroup>
 
 </Project>
