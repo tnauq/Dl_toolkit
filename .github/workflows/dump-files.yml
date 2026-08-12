@@ -10,14 +10,17 @@ name: dump files
 # Reading a surface before writing against it is the standing rule here — three
 # compile failures and a wrong-shaped picker all came from inferring an API or
 # a file layout instead of looking at it.
+#
+# PATHS ARE HARDCODED BELOW, not taken as a workflow input: the mobile Actions
+# view renders the Run button but NOT the input fields, so a dispatch input is
+# unreachable from a phone. Edit TARGETS and re-run instead.
 
 on:
   workflow_dispatch:
-    inputs:
-      glob:
-        description: "Paths to dump, space-separated (globs allowed)"
-        required: true
-        default: ".github/workflows/*.yml"
+
+env:
+  # Edit this line to dump something else. Space-separated; * is a wildcard.
+  TARGETS: "src/Deadlock.Format/*.cs src/Deadlock.Format/*.csproj"
 
 jobs:
   dump:
@@ -33,10 +36,10 @@ jobs:
           {
             echo "# Surface dump"
             echo ""
-            echo "glob: \`${{ github.event.inputs.glob }}\`"
+            echo "targets: \`$TARGETS\`"
             echo ""
             echo "commit: \`$(git rev-parse HEAD)\`"
-            for f in ${{ github.event.inputs.glob }}; do
+            for f in $TARGETS; do
               [ -f "$f" ] || continue
               COUNT=$((COUNT+1))
               echo ""
@@ -50,7 +53,7 @@ jobs:
           echo "dumped $COUNT files"
           wc -l out/surface.md
           echo "--- files matched ---"
-          for f in ${{ github.event.inputs.glob }}; do
+          for f in $TARGETS; do
             [ -f "$f" ] && echo "  $f"
           done
           if [ "$COUNT" = "0" ]; then
