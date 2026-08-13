@@ -178,6 +178,12 @@ jobs:
 
           # Second file: the smallest OTHER vdata that is both compilable
           # (declares generic_data_type) and patchable (has a plain float).
+          #
+          # NOTE: intermediates live in the working directory, NOT /tmp. Git
+          # bash on windows-latest maps /tmp to an MSYS path, but Windows
+          # Python reads "/tmp/x" as C:\tmp\x — the shell and the interpreter
+          # disagree about what /tmp means, and the redirect lands somewhere
+          # Python cannot see. (Cost one run, 2026-08-13.)
           find gt -name '*.vdata' -not -path '*/.git/*' -printf '%s\t%p\n' \
             | sort -n > all-vdata.txt
           SECOND=""
@@ -185,7 +191,7 @@ jobs:
             [ "$path" = "$HERO" ] && continue
             grep -q 'generic_data_type' "$path" 2>/dev/null || continue
             if "$PY" tools/pick_target.py "$path" "scripts/$(basename "$path")" \
-                 > /tmp/p2.json 2>/dev/null; then
+                 > p2.json 2>/dev/null; then
               SECOND="$path"; break
             fi
           done < all-vdata.txt
@@ -198,15 +204,15 @@ jobs:
           cp "$HERO" "patchroot/scripts/$H"
           cp "$SECOND" "patchroot/scripts/$S"
 
-          "$PY" tools/pick_target.py "$HERO" "scripts/$H" > /tmp/p1.json
+          "$PY" tools/pick_target.py "$HERO" "scripts/$H" > p1.json
           # p2 was already generated for $SECOND above, but regenerate against
           # the staged copy so both plans are derived identically.
-          "$PY" tools/pick_target.py "$SECOND" "scripts/$S" > /tmp/p2.json
+          "$PY" tools/pick_target.py "$SECOND" "scripts/$S" > p2.json
 
           "$PY" - <<'PYEOF' > plan.json
           import json
-          a = json.load(open('/tmp/p1.json'))
-          b = json.load(open('/tmp/p2.json'))
+          a = json.load(open('p1.json'))
+          b = json.load(open('p2.json'))
           plan = {
               "version": 1,
               "description": "loop: two real files, one atomic plan",
@@ -392,6 +398,8 @@ jobs:
             batch.json
             pack.json
             all-vdata.txt
+            p1.json
+            p2.json
             compile-*.txt
             pristine-*.txt
           if-no-files-found: ignore
