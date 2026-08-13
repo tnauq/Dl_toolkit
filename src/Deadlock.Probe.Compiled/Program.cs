@@ -23,9 +23,10 @@
 using System.Reflection;
 
 var path = args.Length > 0 ? args[0] : null;
+var sourcePath = args.Length > 1 ? args[1] : null;
 if (path is null || !File.Exists(path))
 {
-    Console.Error.WriteLine("usage: probe-compiled <file.vdata_c>");
+    Console.Error.WriteLine("usage: probe-compiled <file.vdata_c> [source.vdata]");
     return 2;
 }
 
@@ -162,6 +163,113 @@ catch (Exception ex)
     Console.WriteLine($"  FAILED {ex.GetType().Name}: {ex.Message}");
 }
 
+
+// ---------------------------------------------------------------------------
+// Route 4 — SOURCE vs COMPILED, the question that decides whether a
+// cross-boundary diff is worth building.
+//
+// `loop` currently proves the compiled output of a patched file DIFFERS from
+// the compiled output of the pristine one. That is much weaker than proving it
+// differs CORRECTLY — nothing asserts the compiled resource actually holds the
+// value we wrote rather than some other change.
+//
+// If flattening source and compiled yields the same path/value set, then
+// `dl diff --old x.vdata --new x.vdata_c` reporting zero differences is a
+// strong, falsifiable claim that compilation is value-preserving, and it is
+// worth building. If it yields hundreds of spurious differences — compiler-
+// added metadata, type normalisation — the feature is noise and needs a filter
+// before it is worth anything.
+//
+// Counting is the whole point. Do not judge from the first few lines.
+// ---------------------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("=== route 4: source vs compiled, flattened ===");
+if (sourcePath is null || !File.Exists(sourcePath))
+{
+    Console.WriteLine("  no source file given — skipped");
+}
+else
+{
+    try
+    {
+        var srcFile = ValveResourceFormat.Serialization.KeyValues.KeyValues3.ParseKVFile(sourcePath);
+        var srcRoot = srcFile?.Root;
+
+        using var resource = new ValveResourceFormat.Resource();
+        resource.Read(path);
+        var kv3 = resource.DataBlock as ValveResourceFormat.ResourceTypes.BinaryKV3;
+        var cmpRoot = kv3?.Data;
+
+        if (srcRoot is null || cmpRoot is null)
+        {
+            Console.WriteLine($"  could not obtain both roots (source null? {srcRoot is null}, compiled null? {cmpRoot is null})");
+        }
+        else
+        {
+            var a = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            var b = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            Flatten(srcRoot, "", a);
+            Flatten(cmpRoot, "", b);
+
+            Console.WriteLine($"  source paths:   {a.Count}");
+            Console.WriteLine($"  compiled paths: {b.Count}");
+
+            var onlySrc = a.Keys.Where(k => !b.ContainsKey(k)).ToList();
+            var onlyCmp = b.Keys.Where(k => !a.ContainsKey(k)).ToList();
+            var differing = a.Keys.Where(k => b.ContainsKey(k) && a[k] != b[k]).ToList();
+
+            Console.WriteLine($"  only in source:   {onlySrc.Count}");
+            Console.WriteLine($"  only in compiled: {onlyCmp.Count}");
+            Console.WriteLine($"  present in both but differing: {differing.Count}");
+
+            foreach (var k in onlySrc.Take(10)) Console.WriteLine($"    src-only  {k} = {a[k]}");
+            foreach (var k in onlyCmp.Take(10)) Console.WriteLine($"    cmp-only  {k} = {b[k]}");
+            foreach (var k in differing.Take(10)) Console.WriteLine($"    differs   {k}: {a[k]}  ->  {b[k]}");
+
+            var total = onlySrc.Count + onlyCmp.Count + differing.Count;
+            Console.WriteLine();
+            Console.WriteLine(total == 0
+                ? "  VERDICT: identical — a cross-boundary diff would be a strong assertion"
+                : $"  VERDICT: {total} differences — a cross-boundary diff needs a filter to be useful");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"  FAILED {ex.GetType().Name}: {ex.Message}");
+    }
+}
+
 Console.WriteLine();
 Console.WriteLine("probe complete");
 return 0;
+
+// Local flatten, deliberately self-contained: a probe must not depend on the
+// shipping code it exists to inform.
+static void Flatten(ValveResourceFormat.Serialization.KeyValues.KVObject node,
+                    string prefix, SortedDictionary<string, string> into)
+{
+    foreach (var kv in node.Properties)
+    {
+        var p = prefix.Length == 0 ? kv.Key : prefix + "." + kv.Key;
+        var v = kv.Value;
+        if (v.Value is ValveResourceFormat.Serialization.KeyValues.KVObject child)
+        {
+            if (child.IsArray)
+            {
+                into[p] = "[array:" + child.Properties.Count + "]";
+                continue;
+            }
+            Flatten(child, p, into);
+            continue;
+        }
+        into[p] = v.Value switch
+        {
+            null => "null",
+            bool bo => bo ? "true" : "false",
+            double d => d.ToString("F6", System.Globalization.CultureInfo.InvariantCulture),
+            float f => ((double)f).ToString("F6", System.Globalization.CultureInfo.InvariantCulture),
+            IFormattable i => i.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+            _ => v.Value.ToString() ?? "null"
+        };
+    }
+}
