@@ -16,6 +16,13 @@ on:
   push:
     paths:
       - "src/Deadlock.Patch/**"
+      # Contracts added 2026-08-13. v1 depends on its envelope and exit codes,
+      # so a Contracts change can break this test WITHOUT triggering it — the
+      # fold that multi-targeted Contracts went in unguarded for exactly this
+      # reason.
+      - "src/Deadlock.Contracts/**"
+      # Format added too: Patch references it as of `pack`.
+      - "src/Deadlock.Format/**"
       - ".github/workflows/patch-smoke.yml"
 
 env:

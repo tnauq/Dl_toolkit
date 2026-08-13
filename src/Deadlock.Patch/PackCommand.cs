@@ -221,57 +221,20 @@ internal static class PackCommand
                 new ToolError(code, message, fix), exitCode, json);
 
     private static int Emit(PackData data, string sourceBuild, ToolError? error, int code, bool json)
-    {
-        var envelope = new Envelope<PackData>
-        {
-            Tool = Tool.Name,
-            Version = Tool.Version,
-            PinnedBuild = sourceBuild,
-            Ok = error is null,
-            Data = data
-        };
-        if (error is not null) envelope.Errors.Add(error);
-
-        if (json)
-        {
-            Json.ToStdout(envelope);
-        }
-        else
-        {
-            foreach (var e in data.Entries)
-                Console.Error.WriteLine($"  {e.Path}  ({e.Length} bytes, crc32 {e.Crc32:X8})");
-
-            if (error is not null)
+        => CommandIo.Emit(data, error, code, json, sourceBuild,
+            body: () =>
             {
-                Console.Error.WriteLine($"error: {error.Message}");
-                Console.Error.WriteLine($"  fix: {error.Fix}");
-            }
-            else
+                foreach (var e in data.Entries)
+                    Console.Error.WriteLine($"  {e.Path}  ({e.Length} bytes, crc32 {e.Crc32:X8})");
+            },
+            footer: () =>
             {
+                if (error is not null) return;
                 Console.Error.WriteLine(
                     $"wrote {data.Output} — {data.FileCount} files, {data.TotalBytes} bytes" +
                     (data.Verified ? ", verified" : "") + ", structurally valid");
-            }
-        }
-
-        return code;
-    }
+            });
 
     private static int Misuse(string message, bool json)
-    {
-        if (json)
-        {
-            Json.ToStdout(new Envelope<PackData>
-            {
-                Tool = Tool.Name,
-                Version = Tool.Version,
-                Ok = false,
-                Errors = { new ToolError(ErrorCode.Misuse, message, "see 'dl-patch pack --help'") }
-            });
-        }
-        Console.Error.WriteLine($"error: {message}");
-        Console.Error.WriteLine();
-        Console.Error.WriteLine(Usage);
-        return Exit.Misuse;
-    }
+        => CommandIo.Misuse<PackData>(message, json, Usage, "see 'dl-patch pack --help'");
 }

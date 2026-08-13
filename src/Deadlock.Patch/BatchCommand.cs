@@ -201,13 +201,15 @@ internal static class BatchCommand
 
             foreach (var ps in pf.Sets)
             {
-                var readOk = doc.TryRead(ps.Path, out var current, out var readError);
+                var readOk = doc.TryRead(ps.Path, out var current, out var readError,
+                                         out var readFailure);
 
                 if (!readOk)
                 {
                     // Q9: a guarded path that has vanished is drift, not a typo.
-                    var isMissing = readError is not null &&
-                                    readError.Contains("path not found", StringComparison.Ordinal);
+                    // Branches on the structured kind, never on message text
+                    // (2026-08-13).
+                    var isMissing = readFailure == EditFailure.PathNotFound;
                     if (ps.Guarded && isMissing)
                     {
                         guardFailures++;
@@ -293,7 +295,7 @@ internal static class BatchCommand
 
             foreach (var ps in pf.Sets)
             {
-                doc.TryRead(ps.Path, out var before, out _);
+                doc.TryRead(ps.Path, out var before, out _, out _);
                 var noop = Guard.Matches(before, ps.Value, out _);
 
                 var result = doc.Apply(new Edit(ps.Path, ps.Value));
@@ -386,76 +388,37 @@ internal static class BatchCommand
     }
 
     private static int Misuse(string message, bool json)
-    {
-        if (json)
-        {
-            Json.ToStdout(new Envelope<BatchData>
-            {
-                Tool = Tool.Name,
-                Version = Tool.Version,
-                Ok = false,
-                Errors = { new ToolError(ErrorCode.Misuse, message, "see 'dl-patch batch --help'") }
-            });
-        }
-        Console.Error.WriteLine($"error: {message}");
-        Console.Error.WriteLine();
-        Console.Error.WriteLine(Usage);
-        return Exit.Misuse;
-    }
+        => CommandIo.Misuse<BatchData>(message, json, Usage, "see 'dl-patch batch --help'");
 
     private static int Fail(BatchData? data, string sourceBuild, string code,
                             string message, string fix, int exitCode, bool json)
-        => Emit(data ?? new BatchData(), sourceBuild, new ToolError(code, message, fix), exitCode, json);
+        => Emit(data ?? new BatchData(), sourceBuild,
+                new ToolError(code, message, fix), exitCode, json);
 
     private static int Emit(BatchData data, string sourceBuild, ToolError? error, int code, bool json)
-    {
-        var envelope = new Envelope<BatchData>
-        {
-            Tool = Tool.Name,
-            Version = Tool.Version,
-            PinnedBuild = sourceBuild,
-            Ok = error is null,
-            Data = data
-        };
-        if (error is not null) envelope.Errors.Add(error);
-
-        if (json)
-        {
-            Json.ToStdout(envelope);
-        }
-        else
-        {
-            foreach (var f in data.Files)
+        => CommandIo.Emit(data, error, code, json, sourceBuild,
+            body: () =>
             {
-                Console.Error.WriteLine($"  {f.File}");
-                foreach (var e in f.Edits)
+                foreach (var f in data.Files)
                 {
-                    Console.Error.WriteLine(e.Ok
-                        ? (e.Noop
-                            ? $"    noop  {e.Path}: already {e.To}"
-                            : $"    ok    {e.Path}: {e.From} -> {e.To}")
-                        : $"    FAIL  {e.Path}: {e.Error}");
+                    Console.Error.WriteLine($"  {f.File}");
+                    foreach (var e in f.Edits)
+                    {
+                        Console.Error.WriteLine(e.Ok
+                            ? (e.Noop
+                                ? $"    noop  {e.Path}: already {e.To}"
+                                : $"    ok    {e.Path}: {e.From} -> {e.To}")
+                            : $"    FAIL  {e.Path}: {e.Error}");
+                    }
                 }
-            }
-            if (error is not null)
+            },
+            footer: () =>
             {
-                Console.Error.WriteLine($"error: {error.Message}");
-                Console.Error.WriteLine($"  fix: {error.Fix}");
-            }
-            else if (data.DryRun)
-            {
-                Console.Error.WriteLine(
-                    $"dry run: {data.Applied} edits would apply across {data.FilesTotal} files " +
-                    $"({data.Skipped} already at target)");
-            }
-            else
-            {
-                Console.Error.WriteLine(
-                    $"wrote {data.FilesTotal} files to {data.OutRoot} " +
-                    $"({data.Applied} edits, {data.Skipped} no-ops, structurally valid)");
-            }
-        }
-
-        return code;
-    }
+                if (error is not null) return;
+                Console.Error.WriteLine(data.DryRun
+                    ? $"dry run: {data.Applied} edits would apply across {data.FilesTotal} files " +
+                      $"({data.Skipped} already at target)"
+                    : $"wrote {data.FilesTotal} files to {data.OutRoot} " +
+                      $"({data.Applied} edits, {data.Skipped} no-ops, structurally valid)");
+            });
 }

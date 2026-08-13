@@ -2,13 +2,6 @@ using Deadlock.Contracts;
 
 namespace Deadlock.Patch;
 
-/// <summary>Tool identity, shared by both front ends.</summary>
-internal static class Tool
-{
-    public const string Name = "dl-patch";
-    public const string Version = "0.2.0";
-}
-
 /// <summary>
 /// dl-patch v1 — hero vdata, scalars only. The default mode.
 ///
@@ -158,8 +151,9 @@ internal static class SetCommand
         // this is the behaviour batch needed — established here first.
         if (failed > 0)
         {
-            var pathMiss = results.Any(r => !r.Ok && r.Error is not null &&
-                                            r.Error.Contains("path not found", StringComparison.Ordinal));
+            // Branch on the structured failure, NOT on message text
+            // (2026-08-13). Rewording an error must not change an exit code.
+            var pathMiss = results.Any(r => r.Failure == EditFailure.PathNotFound);
             return Emit(
                 Data(dryRun, input, effectiveOutput, reports, applied, failed),
                 new ToolError(
@@ -207,62 +201,25 @@ internal static class SetCommand
         };
 
     private static int Misuse(string message, bool json)
-    {
-        if (json)
-        {
-            Json.ToStdout(new Envelope<PatchData>
-            {
-                Tool = Tool.Name,
-                Version = Tool.Version,
-                Ok = false,
-                Errors = { new ToolError(ErrorCode.Misuse, message, "see --help for the argument list") }
-            });
-        }
-        Console.Error.WriteLine($"error: {message}");
-        Console.Error.WriteLine();
-        Console.Error.WriteLine(Usage);
-        return Exit.Misuse;
-    }
+        => CommandIo.Misuse<PatchData>(message, json, Usage,
+                                       "see --help for the argument list");
 
     private static int Emit(PatchData data, ToolError? error, int code, bool json)
-    {
-        var envelope = new Envelope<PatchData>
-        {
-            Tool = Tool.Name,
-            Version = Tool.Version,
-            Ok = error is null,
-            Data = data
-        };
-        if (error is not null) envelope.Errors.Add(error);
-
-        if (json)
-        {
-            Json.ToStdout(envelope);
-        }
-        else
-        {
-            foreach (var e in data.Edits)
+        => CommandIo.Emit(data, error, code, json,
+            body: () =>
             {
-                Console.Error.WriteLine(e.Ok
-                    ? $"  ok    {e.Path}: {e.From} -> {e.To}"
-                    : $"  FAIL  {e.Path}: {e.Error}");
-            }
-            if (error is not null)
+                foreach (var e in data.Edits)
+                {
+                    Console.Error.WriteLine(e.Ok
+                        ? $"  ok    {e.Path}: {e.From} -> {e.To}"
+                        : $"  FAIL  {e.Path}: {e.Error}");
+                }
+            },
+            footer: () =>
             {
-                Console.Error.WriteLine($"error: {error.Message}");
-                Console.Error.WriteLine($"  fix: {error.Fix}");
-            }
-            else if (data.DryRun)
-            {
-                Console.Error.WriteLine($"dry run: {data.Applied} edits would apply");
-            }
-            else
-            {
-                Console.Error.WriteLine(
-                    $"wrote {data.Output} ({data.Applied} edits, structurally valid)");
-            }
-        }
-
-        return code;
-    }
+                if (error is not null) return;
+                Console.Error.WriteLine(data.DryRun
+                    ? $"dry run: {data.Applied} edits would apply"
+                    : $"wrote {data.Output} ({data.Applied} edits, structurally valid)");
+            });
 }

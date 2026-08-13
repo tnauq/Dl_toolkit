@@ -33,6 +33,10 @@ namespace Deadlock.Patch;
 /// it has not verified. Classification is done on the runtime type of
 /// .Value — bool, long, double, string — which the dump confirms directly.
 ///
+/// CHANGED 2026-08-13: every failure path now reports a structured
+/// EditFailure alongside its human message, so callers stop string-matching
+/// error prose to pick an exit code. See the note on EditFailure in Edit.cs.
+///
 /// CHANGED 2026-08-12 for batch: traversal is factored into Resolve, and
 /// TryRead exposes the current value WITHOUT mutating. Guard evaluation needs
 /// to read every target before anything is applied, so read and write can no
@@ -67,11 +71,12 @@ public sealed class Kv3Document
     /// Returns false with a populated <paramref name="error"/> for any miss.
     /// </summary>
     private bool Resolve(string path, out KVObject? parent, out string leaf,
-                         out KVValue existing, out string? error)
+                         out KVValue existing, out string? error, out EditFailure failure)
     {
         parent = null;
         existing = default;
         error = null;
+        failure = EditFailure.None;
 
         var segments = path.Split('.');
         leaf = segments[^1];
@@ -80,6 +85,7 @@ public sealed class Kv3Document
         if (node is null)
         {
             error = "document has no root object";
+            failure = EditFailure.Malformed;
             return false;
         }
 
@@ -89,18 +95,21 @@ public sealed class Kv3Document
             if (!node.Properties.TryGetValue(seg, out var childValue))
             {
                 error = $"path not found: no key '{seg}' at '{string.Join('.', segments[..(i + 1)])}'";
+                failure = EditFailure.PathNotFound;
                 return false;
             }
 
             if (childValue.Value is not KVObject childObj)
             {
                 error = $"path traverses a scalar: '{seg}' is a value, not a block";
+                failure = EditFailure.NotAScalar;
                 return false;
             }
 
             if (childObj.IsArray)
             {
                 error = $"'{seg}' is an array; v1 does not address array elements";
+                failure = EditFailure.NotAScalar;
                 return false;
             }
 
@@ -110,6 +119,7 @@ public sealed class Kv3Document
         if (!node.Properties.TryGetValue(leaf, out var found))
         {
             error = $"path not found: no key '{leaf}'";
+            failure = EditFailure.PathNotFound;
             return false;
         }
 
@@ -124,22 +134,25 @@ public sealed class Kv3Document
     /// refused here for the same reasons Apply refuses them — a guard that
     /// passed on something Apply would then reject is worse than no guard.
     /// </summary>
-    public bool TryRead(string path, out object? value, out string? error)
+    public bool TryRead(string path, out object? value, out string? error,
+                        out EditFailure failure)
     {
         value = null;
 
-        if (!Resolve(path, out _, out var leaf, out var existing, out error))
+        if (!Resolve(path, out _, out var leaf, out var existing, out error, out failure))
             return false;
 
         if (existing.Value is KVObject)
         {
             error = $"'{leaf}' is a block or array; v1 sets scalars only";
+            failure = EditFailure.NotAScalar;
             return false;
         }
 
         if (existing.Flag != KVFlag.None)
         {
             error = $"'{leaf}' is a {existing.Flag} value; v1 sets plain scalars only";
+            failure = EditFailure.Flagged;
             return false;
         }
 
@@ -159,12 +172,14 @@ public sealed class Kv3Document
     {
         var to = edit.Value.ToString();
 
-        if (!Resolve(edit.Path, out var parent, out var leaf, out var existing, out var resolveError))
-            return new EditResult(edit.Path, null, to, false, resolveError);
+        if (!Resolve(edit.Path, out var parent, out var leaf, out var existing,
+                     out var resolveError, out var resolveFailure))
+            return new EditResult(edit.Path, null, to, false, resolveError, resolveFailure);
 
         if (existing.Value is KVObject)
             return new EditResult(edit.Path, null, to, false,
-                $"'{leaf}' is a block or array; v1 sets scalars only");
+                $"'{leaf}' is a block or array; v1 sets scalars only",
+                EditFailure.NotAScalar);
 
         var from = Render(existing.Value);
 
@@ -173,10 +188,11 @@ public sealed class Kv3Document
         // them is a scalar stat, and getting one wrong is invisible in a diff.
         if (existing.Flag != KVFlag.None)
             return new EditResult(edit.Path, from, to, false,
-                $"'{leaf}' is a {existing.Flag} value; v1 sets plain scalars only");
+                $"'{leaf}' is a {existing.Flag} value; v1 sets plain scalars only",
+                EditFailure.Flagged);
 
         if (!TryCoerce(existing, edit.Value, out var boxed, out var why))
-            return new EditResult(edit.Path, from, to, false, why);
+            return new EditResult(edit.Path, from, to, false, why, EditFailure.TypeMismatch);
 
         // Reuse Type and Flag: only the boxed value changes.
         parent!.Properties[leaf] = new KVValue(existing.Type, existing.Flag, boxed!);

@@ -184,40 +184,29 @@ internal static class DiffCommand
             Entries = entries.Take(maxEntries).ToList()
         };
 
-        var envelope = new Envelope<DiffData>
-        {
-            Tool = Tool.Name,
-            Version = Tool.Version,
-            // Differences are a RESULT, not a failure. ok stays true.
-            Ok = true,
-            Data = data
-        };
-
-        if (json)
-        {
-            Json.ToStdout(envelope);
-        }
-        else
-        {
-            foreach (var e in data.Entries)
+        // Differences are a RESULT, not a failure: ok stays true and errors
+        // stays empty. The exit code carries the verdict.
+        return CommandIo.Emit(data, null,
+            data.Total == 0 ? Exit.Ok : Exit.ExpectedFailure, json,
+            body: () =>
             {
-                Console.Error.WriteLine(e.Change switch
+                foreach (var e in data.Entries)
                 {
-                    "added" => $"  +   {e.Path} = {e.To}",
-                    "removed" => $"  -   {e.Path} (was {e.From})",
-                    "retyped" => $"  !   {e.Path}: {e.Kind}",
-                    _ => $"  ~   {e.Path}: {e.From} -> {e.To}"
-                });
-            }
-            if (data.Truncated)
-                Console.Error.WriteLine($"  ... {data.Total - data.Entries.Count} more");
-            Console.Error.WriteLine(
+                    Console.Error.WriteLine(e.Change switch
+                    {
+                        "added" => $"  +   {e.Path} = {e.To}",
+                        "removed" => $"  -   {e.Path} (was {e.From})",
+                        "retyped" => $"  !   {e.Path}: {e.Kind}",
+                        _ => $"  ~   {e.Path}: {e.From} -> {e.To}"
+                    });
+                }
+                if (data.Truncated)
+                    Console.Error.WriteLine($"  ... {data.Total - data.Entries.Count} more");
+            },
+            footer: () => Console.Error.WriteLine(
                 $"{data.Total} differences ({data.Added} added, {data.Removed} removed, " +
                 $"{data.Changed} changed, {data.Retyped} retyped) across " +
-                $"{data.OldPaths} -> {data.NewPaths} paths");
-        }
-
-        return data.Total == 0 ? Exit.Ok : Exit.ExpectedFailure;
+                $"{data.OldPaths} -> {data.NewPaths} paths"));
     }
 
     private static Dictionary<string, (string Kind, string Value)> Index(Kv3Document doc)
@@ -256,37 +245,8 @@ internal static class DiffCommand
     }
 
     private static int Fail(string code, string message, string fix, int exitCode, bool json)
-    {
-        if (json)
-        {
-            Json.ToStdout(new Envelope<DiffData>
-            {
-                Tool = Tool.Name,
-                Version = Tool.Version,
-                Ok = false,
-                Errors = { new ToolError(code, message, fix) }
-            });
-        }
-        Console.Error.WriteLine($"error: {message}");
-        Console.Error.WriteLine($"  fix: {fix}");
-        return exitCode;
-    }
+        => CommandIo.Fail(new DiffData(), code, message, fix, exitCode, json);
 
     private static int Misuse(string message, bool json)
-    {
-        if (json)
-        {
-            Json.ToStdout(new Envelope<DiffData>
-            {
-                Tool = Tool.Name,
-                Version = Tool.Version,
-                Ok = false,
-                Errors = { new ToolError(ErrorCode.Misuse, message, "see 'dl-patch diff --help'") }
-            });
-        }
-        Console.Error.WriteLine($"error: {message}");
-        Console.Error.WriteLine();
-        Console.Error.WriteLine(Usage);
-        return Exit.Misuse;
-    }
+        => CommandIo.Misuse<DiffData>(message, json, Usage, "see 'dl-patch diff --help'");
 }

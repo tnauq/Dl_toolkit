@@ -68,7 +68,10 @@ public enum ScalarKind
 /// as a string. Without it there is no way to set a key to the string "1".
 ///
 /// Inference is only a starting point: the document's existing type wins where
-/// they disagree and a conversion is safe. See Kv3Document.Set.
+/// they disagree and a conversion is safe. See Kv3Document.Apply.
+///
+/// NOTE: batch does NOT use this parser. A plan is JSON, which is already
+/// typed, so no inference and no quote escape are needed there.
 /// </remarks>
 public sealed record ScalarValue(ScalarKind Kind, object Value, string Raw)
 {
@@ -104,10 +107,49 @@ public sealed record ScalarValue(ScalarKind Kind, object Value, string Raw)
     };
 }
 
-/// <summary>What happened to one edit. Reported whether or not it succeeded.</summary>
+/// <summary>
+/// Why an edit failed, as a VALUE rather than as prose.
+///
+/// ADDED 2026-08-13, fixing a real hazard. Both front ends previously decided
+/// which exit code to return by string-matching the error message:
+///
+///     r.Error.Contains("path not found")   ->  exit 5 rather than 6
+///
+/// That contradicts the project's own principle — agents branch on codes, not
+/// prose — and it means REWORDING AN ERROR MESSAGE SILENTLY CHANGES EXIT-CODE
+/// BEHAVIOUR. The message stays for humans; nothing behavioural reads it now.
+/// </summary>
+public enum EditFailure
+{
+    /// <summary>The edit succeeded.</summary>
+    None = 0,
+
+    /// <summary>A path segment does not exist in this document.</summary>
+    PathNotFound,
+
+    /// <summary>The path resolves, but not to a plain scalar (block or array).</summary>
+    NotAScalar,
+
+    /// <summary>A flagged value — resource_name:, subclass:, panorama:.</summary>
+    Flagged,
+
+    /// <summary>The document's existing type refuses the supplied value.</summary>
+    TypeMismatch,
+
+    /// <summary>The document itself is malformed, e.g. no root object.</summary>
+    Malformed
+}
+
+/// <summary>
+/// What happened to one edit. Reported whether or not it succeeded.
+///
+/// <c>Failure</c> is the machine-readable reason and is what callers branch on.
+/// <c>Error</c> is the human sentence and carries no behaviour.
+/// </summary>
 public sealed record EditResult(
     string Path,
     string? From,
     string To,
     bool Ok,
-    string? Error);
+    string? Error,
+    EditFailure Failure = EditFailure.None);
