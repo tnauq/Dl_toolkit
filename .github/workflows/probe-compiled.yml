@@ -1,0 +1,174 @@
+name: probe compiled
+
+# THROWAWAY. Delete with src/Deadlock.Probe.Compiled once the findings land.
+#
+# Q9, maps track: can VRF read a COMPILED Source 2 resource, and does the
+# payload come back as a walkable KV3 object?
+#
+# Everything shipped so far reads UNCOMPILED source vdata. A published map
+# contains only compiled resources and no recoverable source
+# (FINDINGS-maps-2026-08-13 §3), so whether map READING tools reuse the vdata
+# layer — Kv3Document, the only file that touches VRF — turns entirely on this.
+#
+# The input is a .vdata_c compiled HERE, so no third-party file is involved.
+# That answers the general question; whether map-specific lumps (.vents_c,
+# .vwrld_c) behave the same is a follow-up needing a map fixture we do not have.
+#
+# The probe never fails the run on a route that throws — it reports the
+# exception type and continues. Route 0 dumps the real VRF surface first, so
+# even a total failure tells us the type and member names to write against.
+
+on: workflow_dispatch
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Cache the extracted CSDK
+        id: csdk-cache
+        uses: actions/cache@v4
+        with:
+          path: csdk
+          key: csdk-12-v1
+
+      - name: Fetch, reassemble, extract
+        if: steps.csdk-cache.outputs.cache-hit != 'true'
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in rel['assets']:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+              print(f"  {a['name']} -> {os.path.getsize(dest)} bytes")
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      shutil.copyfileobj(p, out)
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          loose = os.path.join('dl', 'modtools.dll')
+          comp = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+          if comp and os.path.exists(loose):
+              shutil.copy(loose, os.path.join(os.path.dirname(comp), 'modtools.dll'))
+              print("placed modtools.dll")
+
+      - name: Locate the compiler
+        id: get
+        shell: python
+        run: |
+          import os, sys
+          comp = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+          if not comp:
+              print("::error::resourcecompiler.exe not found under csdk/")
+              sys.exit(1)
+          print("compiler:", comp)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"ready={comp}\n")
+
+      - name: Build the game tree and a source vdata
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone '/**/gameinfo.gi' '/**/*.vdata'
+          cd ..
+          mkdir -p build/game/citadel build/content/citadel/scripts
+          cp gt/game/citadel/gameinfo.gi build/game/citadel/gameinfo.gi
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+          fi
+          # Smallest real vdata that declares generic_data_type, so it compiles.
+          find gt -name '*.vdata' -not -path '*/.git/*' -printf '%s\t%p\n' | sort -n > all.txt
+          PICK=""
+          while IFS=$'\t' read -r size path; do
+            grep -q 'generic_data_type' "$path" 2>/dev/null && { PICK="$path"; break; }
+          done < all.txt
+          [ -n "$PICK" ] || { echo "::error::no compilable vdata"; exit 3; }
+          N=$(basename "$PICK")
+          cp "$PICK" "build/content/citadel/scripts/$N"
+          echo "name=$N" >> "$GITHUB_OUTPUT"
+          echo "picked $PICK"
+
+      - name: Compile it
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          "${{ steps.get.outputs.ready }}" -nop4 -f -game citadel \
+            -i "$ROOT/build/content/citadel/scripts/${{ steps.stage.outputs.name }}" \
+            > "$ROOT/compile.txt" 2>&1
+          cd "$ROOT"
+          tail -6 compile.txt
+          OUT="build/game/citadel/scripts/${{ steps.stage.outputs.name }}_c"
+          test -f "$OUT" || { echo "no compiled output" >&2; exit 1; }
+          echo "compiled: $(stat -c %s "$OUT") bytes"
+
+      - name: Probe reading the compiled resource
+        shell: bash
+        run: |
+          set -uo pipefail
+          dotnet run -c Release --project src/Deadlock.Probe.Compiled -- \
+            "build/game/citadel/scripts/${{ steps.stage.outputs.name }}_c" \
+            > probe.txt 2>&1
+          RC=$?
+          cat probe.txt
+          # The probe reports rather than asserts: a route that throws is a
+          # finding, not a failure. Only a crashed process is a red run.
+          [ "$RC" -le 2 ] || { echo "probe crashed with $RC" >&2; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-compiled
+          path: |
+            probe.txt
+            compile.txt
+          if-no-files-found: ignore
