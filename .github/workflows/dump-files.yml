@@ -20,7 +20,7 @@ on:
 
 env:
   # Edit this line to dump something else. Space-separated; * is a wildcard.
-  TARGETS: "src/Deadlock.Format/*.cs src/Deadlock.Format/*.csproj"
+  TARGETS: "src/Deadlock.Patch/Edit.cs"
 
 jobs:
   dump:
