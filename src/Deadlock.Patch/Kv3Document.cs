@@ -275,7 +275,7 @@ public sealed class Kv3Document
     /// Used by `diff`. Arrays are reported as a single opaque entry rather
     /// than descended into: their elements have no dotted path, so a change
     /// inside one cannot be named, and pretending otherwise would emit paths
-    /// that dl-patch then refuses. An array whose length changes shows up as
+    /// that dl then refuses. An array whose length changes shows up as
     /// a changed entry; an element edited in place does not. That is a stated
     /// limitation, not an oversight — v1 refuses array traversal everywhere.
     ///

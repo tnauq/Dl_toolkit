@@ -3,9 +3,9 @@ using Deadlock.Contracts;
 namespace Deadlock.Patch;
 
 /// <summary>
-/// dl-patch diff — what changed between two source vdata files.
+/// dl diff — what changed between two source vdata files.
 ///
-///   dl-patch diff --old &lt;file&gt; --new &lt;file&gt; [--json] [--max-entries N]
+///   dl diff --old &lt;file&gt; --new &lt;file&gt; [--json] [--max-entries N]
 ///                 [--paths-only]
 ///
 /// WHY THIS EXISTS. Batch guards are mandatory (Q1) and a guard fails when the
@@ -28,7 +28,7 @@ namespace Deadlock.Patch;
 ///     consistently with batch guards (Q2).
 ///   - Arrays are opaque: a length change registers, an element edit does not.
 ///     Their elements have no dotted path, so naming them would emit paths
-///     dl-patch refuses. Stated, not hidden.
+///     dl refuses. Stated, not hidden.
 ///
 /// EXIT CODES. 0 means identical, 1 means differences found. Code 1 is
 /// Contracts' ExpectedFailure and this is exactly what it is for: a completed
@@ -40,10 +40,10 @@ internal static class DiffCommand
     public const int DefaultMaxEntries = 200;
 
     public const string Usage = """
-        dl-patch diff — semantic difference between two source vdata files
+        dl diff — semantic difference between two source vdata files
 
         usage:
-          dl-patch diff --old <file.vdata> --new <file.vdata>
+          dl diff --old <file.vdata> --new <file.vdata>
                         [--json] [--max-entries N] [--paths-only]
 
         options:
@@ -248,5 +248,5 @@ internal static class DiffCommand
         => CommandIo.Fail(new DiffData(), code, message, fix, exitCode, json);
 
     private static int Misuse(string message, bool json)
-        => CommandIo.Misuse<DiffData>(message, json, Usage, "see 'dl-patch diff --help'");
+        => CommandIo.Misuse<DiffData>(message, json, Usage, "see 'dl diff --help'");
 }

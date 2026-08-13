@@ -18,6 +18,10 @@ name: loop
 #     Use `RC=0; cmd || RC=$?` for anything expected to exit nonzero.
 #   - `cat` output BEFORE asserting, or a failure shows nothing.
 #   - `python3` may not resolve in Git bash: resolve it.
+#   - Cheap validation runs BEFORE expensive setup. The plan is composed and
+#     asserted, and batch applied, before the 261 MB CSDK is fetched — a bad
+#     plan used to cost the full download before anyone found out. Measured as
+#     "time to first assertion".
 #   - PACK FROM A CURATED TREE. The compiler's output directory holds
 #     gameinfo.gi and may hold stale artifacts. The first green run of this
 #     workflow shipped the wrong file with every assertion passing.
@@ -38,100 +42,10 @@ jobs:
             8.0.x
             9.0.x
 
-      - name: Fetch, reassemble, extract
-        id: get
-        shell: python
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          import os, re, json, hashlib, zipfile, sys, subprocess
-
-          repo = os.environ['GITHUB_REPOSITORY']
-
-          rel = json.loads(subprocess.run(
-              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
-              capture_output=True, text=True, check=True).stdout)
-
-          assets = rel['assets']
-          print(f"assets: {len(assets)}")
-          if not assets:
-              print("::error::no assets on release"); sys.exit(1)
-
-          os.makedirs('dl', exist_ok=True)
-          for a in assets:
-              dest = os.path.join('dl', a['name'])
-              print(f"  downloading {a['name']} ({a['size']} bytes)")
-              with open(dest, 'wb') as fh:
-                  subprocess.run(
-                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
-                       f"repos/{repo}/releases/assets/{a['id']}"],
-                      stdout=fh, check=True)
-              print(f"    -> {os.path.getsize(dest)} bytes on disk")
-
-          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
-          def ordinal(n):
-              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
-              return int(m.group(1)) if m else 1
-          files.sort(key=ordinal)
-          print("order:")
-          for f in files:
-              print(f"  {ordinal(f):2d}  {f}  {os.path.getsize(os.path.join('dl', f))}")
-          if len(files) == 0:
-              print("::error::no zip parts after download"); sys.exit(1)
-
-          h = hashlib.sha256()
-          with open('bin_cs2.zip', 'wb') as out:
-              for f in files:
-                  with open(os.path.join('dl', f), 'rb') as p:
-                      for chunk in iter(lambda: p.read(1 << 20), b''):
-                          out.write(chunk); h.update(chunk)
-          got = h.hexdigest()
-          print(f"reassembled {os.path.getsize('bin_cs2.zip')} bytes")
-          print(f"sha256 {got}")
-
-          sums = os.path.join('dl', 'SHA256SUMS.txt')
-          if os.path.exists(sums):
-              want = open(sums).read().split()[0]
-              if want != got:
-                  print(f"::error::checksum mismatch, expected {want}"); sys.exit(1)
-              print("checksum OK")
-
-          with zipfile.ZipFile('bin_cs2.zip') as z:
-              print(f"archive holds {len(z.namelist())} entries")
-              z.extractall('csdk')
-
-          # The CSDK was zipped on macOS: __MACOSX holds AppleDouble `._`
-          # stubs that shadow every real file (128 real DLLs, 128 ghosts).
-          # Harmless to the compiler, but anything walking the tree by name
-          # sees doubles, so remove it. (Found 2026-08-12.)
-          import shutil
-          ghosts = os.path.join('csdk', '__MACOSX')
-          if os.path.isdir(ghosts):
-              shutil.rmtree(ghosts)
-              print("removed the __MACOSX shadow tree")
-
-          comp = ''
-          for root, _, fs in os.walk('csdk'):
-              for f in fs:
-                  if f.lower() == 'resourcecompiler.exe':
-                      comp = os.path.abspath(os.path.join(root, f))
-          print("compiler:", comp or "NOT FOUND")
-
-          # modtools.dll is NOT in the Reduced CSDK bin (verified 2026-08-12:
-          # zero matches across 128 real DLLs), and the compiler loads it as an
-          # application dependency — error 126 before any work begins. It ships
-          # as a LOOSE release asset on the csdk-12 tag and is copied in here.
-          # Its own static imports are only KERNEL32 and tier0.dll, and tier0
-          # is already in bin_cs2/win64, so no further chain is predictable.
-          loose = os.path.join('dl', 'modtools.dll')
-          if comp and os.path.exists(loose):
-              dest = os.path.join(os.path.dirname(comp), 'modtools.dll')
-              shutil.copy(loose, dest)
-              print(f"placed modtools.dll -> {dest} ({os.path.getsize(dest)} bytes)")
-          elif not os.path.exists(loose):
-              print("::warning::modtools.dll not among the release assets")
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
-              g.write(f"ready={comp}\n")
+      - name: Mark start
+        id: t0
+        shell: bash
+        run: echo "epoch=$(date +%s)" >> "$GITHUB_OUTPUT"
 
       - name: Clone GameTracking (vdata + gameinfo)
         id: gt
@@ -144,18 +58,6 @@ jobs:
           git sparse-checkout init --no-cone
           git sparse-checkout set --no-cone '/**/gameinfo.gi' '/**/*.vdata'
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Build the game tree
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build/game/citadel build/content/citadel/scripts
-          cp gt/game/citadel/gameinfo.gi build/game/citadel/gameinfo.gi
-          if [ -f gt/game/core/gameinfo.gi ]; then
-            mkdir -p build/game/core build/content/core
-            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
-          fi
-          find build -type f
 
       - name: Build dl-patch
         shell: bash
@@ -278,7 +180,156 @@ jobs:
               assert f['written'] is True, f
               assert f['applied'] == 1, f
           print('applied across', data['files_total'], 'files')
+          # MEASUREMENT: batch holds every parsed document in memory and the
+          # 32-file cap was set by judgement. This is the evidence for it.
+          print('peak memory:', data.get('peak_memory_mb'), 'MB for',
+                data['files_total'], 'files')
           PYEOF
+
+      - name: Time to first assertion
+        shell: bash
+        run: |
+          # MEASUREMENT. How long from job start to the first thing that could
+          # tell us something is wrong. This is the number that actually costs
+          # a round trip, so it is the one worth watching.
+          echo "seconds to first assertion: $(( $(date +%s) - ${{ steps.t0.outputs.epoch }} ))"
+
+      # MEASUREMENT / SPEED. The CSDK is 261 MB compressed and 658 MB extracted
+      # and was re-downloaded on every run — by far the largest slice of
+      # wall-clock. Keyed on the release tag, which is what actually
+      # determines the contents.
+      - name: Cache the extracted CSDK
+        id: csdk-cache
+        uses: actions/cache@v4
+        with:
+          path: csdk
+          key: csdk-12-v1
+
+      - name: Fetch, reassemble, extract
+        if: steps.csdk-cache.outputs.cache-hit != 'true'
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess
+
+          repo = os.environ['GITHUB_REPOSITORY']
+
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          print(f"assets: {len(assets)}")
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              print(f"  downloading {a['name']} ({a['size']} bytes)")
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+              print(f"    -> {os.path.getsize(dest)} bytes on disk")
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          print("order:")
+          for f in files:
+              print(f"  {ordinal(f):2d}  {f}  {os.path.getsize(os.path.join('dl', f))}")
+          if len(files) == 0:
+              print("::error::no zip parts after download"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          got = h.hexdigest()
+          print(f"reassembled {os.path.getsize('bin_cs2.zip')} bytes")
+          print(f"sha256 {got}")
+
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != got:
+                  print(f"::error::checksum mismatch, expected {want}"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              print(f"archive holds {len(z.namelist())} entries")
+              z.extractall('csdk')
+
+          # The CSDK was zipped on macOS: __MACOSX holds AppleDouble `._`
+          # stubs that shadow every real file (128 real DLLs, 128 ghosts).
+          # Harmless to the compiler, but anything walking the tree by name
+          # sees doubles, so remove it. (Found 2026-08-12.)
+          import shutil
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+              print("removed the __MACOSX shadow tree")
+
+          comp = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+          print("compiler:", comp or "NOT FOUND")
+
+          # modtools.dll is NOT in the Reduced CSDK bin (verified 2026-08-12:
+          # zero matches across 128 real DLLs), and the compiler loads it as an
+          # application dependency — error 126 before any work begins. It ships
+          # as a LOOSE release asset on the csdk-12 tag and is copied in here.
+          # Its own static imports are only KERNEL32 and tier0.dll, and tier0
+          # is already in bin_cs2/win64, so no further chain is predictable.
+          loose = os.path.join('dl', 'modtools.dll')
+          if comp and os.path.exists(loose):
+              dest = os.path.join(os.path.dirname(comp), 'modtools.dll')
+              shutil.copy(loose, dest)
+              print(f"placed modtools.dll -> {dest} ({os.path.getsize(dest)} bytes)")
+          elif not os.path.exists(loose):
+              print("::warning::modtools.dll not among the release assets")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"ready={comp}\n")
+
+      # Runs whether the CSDK came from cache or from a fresh download, so the
+      # compiler path is set either way.
+      - name: Locate the compiler
+        id: get
+        shell: python
+        run: |
+          import os, sys
+          comp = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+          if not comp:
+              print("::error::resourcecompiler.exe not found under csdk/")
+              sys.exit(1)
+          print("compiler:", comp)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"ready={comp}\n")
+
+      - name: Build the game tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/game/citadel build/content/citadel/scripts
+          cp gt/game/citadel/gameinfo.gi build/game/citadel/gameinfo.gi
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+          fi
+          find build -type f
 
       - name: Compile both patched files
         id: compile

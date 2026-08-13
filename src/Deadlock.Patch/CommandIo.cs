@@ -7,7 +7,7 @@ namespace Deadlock.Patch;
 /// </summary>
 internal static class Tool
 {
-    public const string Name = "dl-patch";
+    public const string Name = "dl";
     public const string Version = "0.2.0";
 }
 

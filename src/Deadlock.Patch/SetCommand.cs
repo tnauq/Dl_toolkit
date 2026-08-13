@@ -3,9 +3,9 @@ using Deadlock.Contracts;
 namespace Deadlock.Patch;
 
 /// <summary>
-/// dl-patch v1 — hero vdata, scalars only. The default mode.
+/// dl v1 (default mode) — hero vdata, scalars only. The default mode.
 ///
-///   dl-patch --in &lt;file&gt; --out &lt;file&gt; --set path=value [--set ...]
+///   dl --in &lt;file&gt; --out &lt;file&gt; --set path=value [--set ...]
 ///            [--dry-run] [--json]
 ///
 /// EXTRACTED from Program.cs 2026-08-12 when batch arrived. Behaviour is
@@ -22,12 +22,12 @@ namespace Deadlock.Patch;
 internal static class SetCommand
 {
     public const string Usage = """
-        dl-patch — set scalar values in a Deadlock source vdata file
+        dl — set scalar values in a Deadlock source vdata file
 
         usage:
-          dl-patch --in <file.vdata> --out <file.vdata> --set <path>=<value> [--set ...]
+          dl --in <file.vdata> --out <file.vdata> --set <path>=<value> [--set ...]
                    [--dry-run] [--json]
-          dl-patch batch --plan <plan.json> ...        (see 'dl-patch batch --help')
+          dl batch --plan <plan.json> ...        (see 'dl batch --help')
 
         options:
           --in <path>       source vdata to read (required)

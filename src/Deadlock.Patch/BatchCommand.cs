@@ -3,9 +3,9 @@ using Deadlock.Contracts;
 namespace Deadlock.Patch;
 
 /// <summary>
-/// dl-patch batch — one plan, many files, all or nothing.
+/// dl batch — one plan, many files, all or nothing.
 ///
-///   dl-patch batch --plan &lt;plan.json&gt; --root &lt;dir&gt; --out-root &lt;dir&gt;
+///   dl batch --plan &lt;plan.json&gt; --root &lt;dir&gt; --out-root &lt;dir&gt;
 ///                  --source-build &lt;sha&gt; [--dry-run] [--json] [--max-files N]
 ///
 /// Design decisions this file implements, all settled 2026-08-12. Each is here
@@ -28,10 +28,10 @@ internal static class BatchCommand
     public const int DefaultMaxFiles = 32;
 
     public const string Usage = """
-        dl-patch batch — apply a plan of scalar edits across many vdata files
+        dl batch — apply a plan of scalar edits across many vdata files
 
         usage:
-          dl-patch batch --plan <plan.json> --root <dir> --out-root <dir>
+          dl batch --plan <plan.json> --root <dir> --out-root <dir>
                          --source-build <sha> [--dry-run] [--json] [--max-files N]
 
         options:
@@ -347,8 +347,8 @@ internal static class BatchCommand
             }
         }
 
-        return Emit(Data(plan, planPath, root, outRoot, dryRun, reports),
-                    sourceBuild, null, Exit.Ok, json);
+        var final = Data(plan, planPath, root, outRoot, dryRun, reports);
+        return Emit(final, sourceBuild, null, Exit.Ok, json);
     }
 
     private static void Recount(Dictionary<string, BatchFileReport> reports)
@@ -374,6 +374,13 @@ internal static class BatchCommand
 
         return new BatchData
         {
+            // MEASUREMENT, added 2026-08-13. The 32-file cap (Q13) was chosen
+            // by judgement and never measured: every document is held in
+            // memory, and nobody knows what 32 hero-sized files cost. Peak
+            // working set is recorded on every run so the cap can be set from
+            // evidence rather than from a guess.
+            PeakMemoryMb = System.Diagnostics.Process.GetCurrentProcess()
+                .PeakWorkingSet64 / (1024 * 1024),
             DryRun = dryRun,
             PlanPath = planPath,
             Description = plan.Description,
@@ -388,7 +395,7 @@ internal static class BatchCommand
     }
 
     private static int Misuse(string message, bool json)
-        => CommandIo.Misuse<BatchData>(message, json, Usage, "see 'dl-patch batch --help'");
+        => CommandIo.Misuse<BatchData>(message, json, Usage, "see 'dl batch --help'");
 
     private static int Fail(BatchData? data, string sourceBuild, string code,
                             string message, string fix, int exitCode, bool json)

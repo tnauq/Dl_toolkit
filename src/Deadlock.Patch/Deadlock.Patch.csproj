@@ -10,7 +10,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>dl-patch</AssemblyName>
+    <!--
+      RENAMED 2026-08-13. The binary is four modes — set, batch, diff, pack —
+      three of which are not patching, so `dl-patch` had become a misleading
+      name for a coherent tool. Only the USER-FACING name changed: the project
+      and namespace stay Deadlock.Patch, because the directory name is baked
+      into patch-smoke's paths filter and every delivery path. An assembly name
+      differing from its project name is ordinary in .NET.
+    -->
+    <AssemblyName>dl</AssemblyName>
     <RootNamespace>Deadlock.Patch</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>

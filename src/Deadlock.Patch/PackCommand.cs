@@ -4,9 +4,9 @@ using Deadlock.Format;
 namespace Deadlock.Patch;
 
 /// <summary>
-/// dl-patch pack — turn a compiled tree into an addon VPK.
+/// dl pack — turn a compiled tree into an addon VPK.
 ///
-///   dl-patch pack --in &lt;dir&gt; --out &lt;pak01_dir.vpk&gt; --source-build &lt;sha&gt;
+///   dl pack --in &lt;dir&gt; --out &lt;pak01_dir.vpk&gt; --source-build &lt;sha&gt;
 ///                 [--prefix &lt;p&gt;] [--json] [--verify]
 ///
 /// The last link in the chain: plan -> batch -> overlay -> resourcecompiler ->
@@ -34,10 +34,10 @@ namespace Deadlock.Patch;
 internal static class PackCommand
 {
     public const string Usage = """
-        dl-patch pack — build an addon VPK from a compiled tree
+        dl pack — build an addon VPK from a compiled tree
 
         usage:
-          dl-patch pack --in <dir> --out <pak01_dir.vpk> --source-build <sha>
+          dl pack --in <dir> --out <pak01_dir.vpk> --source-build <sha>
                         [--prefix <p>] [--json] [--verify]
 
         options:
@@ -236,5 +236,5 @@ internal static class PackCommand
             });
 
     private static int Misuse(string message, bool json)
-        => CommandIo.Misuse<PackData>(message, json, Usage, "see 'dl-patch pack --help'");
+        => CommandIo.Misuse<PackData>(message, json, Usage, "see 'dl pack --help'");
 }

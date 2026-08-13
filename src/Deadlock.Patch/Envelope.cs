@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Deadlock.Patch;
 
 /// <summary>
-/// The dl-patch PAYLOAD — what goes in <c>Envelope&lt;T&gt;.Data</c>.
+/// The dl PAYLOAD — what goes in <c>Envelope&lt;T&gt;.Data</c>.
 ///
 /// FOLDED 2026-08-12. This file used to declare a second, local copy of the
 /// envelope and the exit codes, because Deadlock.Contracts' type names had not
@@ -44,6 +44,13 @@ public sealed class BatchData
     [JsonPropertyName("skipped")] public int Skipped { get; init; }
     [JsonPropertyName("failed")] public int Failed { get; init; }
     [JsonPropertyName("files")] public List<BatchFileReport> Files { get; init; } = new();
+
+    /// <summary>
+    /// Peak working set for the process, in MB. Recorded because batch holds
+    /// every parsed document in memory and the file cap was set by judgement.
+    /// Measure before tuning it.
+    /// </summary>
+    [JsonPropertyName("peak_memory_mb")] public long PeakMemoryMb { get; init; }
 }
 
 public sealed class BatchFileReport
