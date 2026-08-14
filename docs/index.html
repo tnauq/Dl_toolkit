@@ -126,7 +126,7 @@
   </label>
   <button id="spd">speed: walk</button>
   <button id="respawn">respawn</button>
-  <button id="noclip">noclip: off</button>
+  <button id="noclip">fly: off</button>
   <span id="name">sealed_room</span>
 </div>
 
@@ -680,11 +680,22 @@ function tick(){
   if(fwd || str){
     // forward is (cos,sin); strafe-right is (sin,-cos) in this handedness.
     const c = Math.cos(cam.yaw), sn = Math.sin(cam.yaw);
-    move((c*fwd + sn*str)*speed, (sn*fwd - c*str)*speed);
+    if(noclip){
+      // Fly: forward follows where you are LOOKING, so pitching up and
+      // holding forward climbs. Strafe stays level, which is what makes
+      // it steerable — a banking strafe is disorienting.
+      const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+      cam.x += (c*cp*fwd + sn*str) * speed;
+      cam.y += (sn*cp*fwd - c*str) * speed;
+      cam.z += (sp*fwd) * speed;
+    } else {
+      move((c*fwd + sn*str)*speed, (sn*fwd - c*str)*speed);
+    }
   }
   if(noclip){
+    // Straight up and down, independent of where the camera points.
+    if(keys['e'] || keys[' ']) cam.z += speed;
     if(keys['q']) cam.z -= speed;
-    if(keys['e']) cam.z += speed;
   }
 
   render();
@@ -856,7 +867,13 @@ showSpeed();
 el('respawn').addEventListener('click', spawnPoint);
 el('noclip').addEventListener('click', ev=>{
   noclip = !noclip;
-  ev.target.textContent = 'noclip: ' + (noclip ? 'on' : 'off');
+  ev.target.textContent = 'fly: ' + (noclip ? 'on' : 'off');
+  // Dropping out of fly mode mid-air would leave the camera floating with
+  // no floor under it, so settle onto whatever is below.
+  if(!noclip){
+    const g = floorUnder(cam.x, cam.y, cam.z - EYE);
+    if(g > -1e8) cam.z = g + EYE;
+  }
 });
 
 function resize(){
