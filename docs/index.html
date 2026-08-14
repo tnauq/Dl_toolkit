@@ -94,9 +94,10 @@
 <canvas id="c"></canvas>
 
 <div class="hud">
-  <span><span class="k">pos</span> <b id="pos">0 0 0</b></span>
+  <span><span class="k">pos</span> <b id="pos">0 0 0</b> <span class="k" id="posm">0 0 0 m</span></span>
   <span><span class="k">yaw</span> <b id="yaw">0</b></span>
   <span><span class="k">cell</span> <b id="cell">64</b></span>
+  <span><span class="k">eye</span> <b id="eyem">2.44 m</b></span>
   <span><span class="k">boxes</span> <b id="nbox">0</b></span>
   <span><span class="k">fps</span> <b id="fps">0</b></span>
 </div>
@@ -143,26 +144,141 @@
 ------------------------------------------------------------------- */
 
 const DEFAULT_PLAN = {
-  version: 1, name: "sealed_room", cell: 64,
-  boxes: [
-    { name:"floor",   origin:[0,0,0],     extents:[1024,1024,64] },
-    { name:"ceiling", origin:[0,0,512],   extents:[1024,1024,64] },
-    { name:"wall_-x", origin:[-512,0,256],extents:[64,1024,448] },
-    { name:"wall_+x", origin:[512,0,256], extents:[64,1024,448] },
-    { name:"wall_-y", origin:[0,-512,256],extents:[1024,64,448] },
-    { name:"wall_+y", origin:[0,512,256], extents:[1024,64,448] }
+  "version": 1,
+  "name": "sealed_room",
+  "cell": 64,
+  "boxes": [
+    {
+      "name": "floor",
+      "origin": [
+        0,
+        0,
+        -32.0
+      ],
+      "extents": [
+        1664,
+        1664,
+        64
+      ]
+    },
+    {
+      "name": "ceiling",
+      "origin": [
+        0,
+        0,
+        544.0
+      ],
+      "extents": [
+        1664,
+        1664,
+        64
+      ]
+    },
+    {
+      "name": "wall_-x",
+      "origin": [
+        -800.0,
+        0,
+        256.0
+      ],
+      "extents": [
+        64,
+        1536,
+        512
+      ]
+    },
+    {
+      "name": "wall_+x",
+      "origin": [
+        800.0,
+        0,
+        256.0
+      ],
+      "extents": [
+        64,
+        1536,
+        512
+      ]
+    },
+    {
+      "name": "wall_-y",
+      "origin": [
+        0,
+        -800.0,
+        256.0
+      ],
+      "extents": [
+        1664,
+        64,
+        512
+      ]
+    },
+    {
+      "name": "wall_+y",
+      "origin": [
+        0,
+        800.0,
+        256.0
+      ],
+      "extents": [
+        1664,
+        64,
+        512
+      ]
+    }
   ],
-  entities: [
-    { classname:"info_team_spawn", origin:[-256,0,64], angles:[0,0,0],
-      properties:{teamnumber:"2",lanenum:"1",initialspawn:"1"} },
-    { classname:"info_team_spawn", origin:[256,0,64], angles:[0,180,0],
-      properties:{teamnumber:"3",lanenum:"1",initialspawn:"1"} }
+  "entities": [
+    {
+      "classname": "info_team_spawn",
+      "origin": [
+        -384,
+        0,
+        0
+      ],
+      "angles": [
+        0,
+        0,
+        0
+      ],
+      "properties": {
+        "teamnumber": "2",
+        "lanenum": "1",
+        "initialspawn": "1"
+      }
+    },
+    {
+      "classname": "info_team_spawn",
+      "origin": [
+        384,
+        0,
+        0
+      ],
+      "angles": [
+        0,
+        180,
+        0
+      ],
+      "properties": {
+        "teamnumber": "3",
+        "lanenum": "1",
+        "initialspawn": "1"
+      }
+    }
   ]
 };
 
-const EYE = 64;        // eye height above the surface stood on
-const RADIUS = 16;     // player cylinder radius
-const STEP = 18;       // step-up height
+/* Scale, derived rather than assumed.
+   Deadlock reports distance in metres but works in hammer units where
+   1 unit is ~1 inch, so 1 m = 39.37 u. Its heroes are far taller than a
+   Source shooter's 72-unit player: Bebop is about 3.05 m (~120 u) and
+   Lady Geist 2.57 m (~101 u). Walking a blockout at a 64-unit eye makes
+   every space read as taller than it will play. */
+const U_PER_M = 39.37;
+const HERO = 120;      // ~3.05 m, the tall end of the roster
+const EYE = 96;        // ~2.44 m eye height, scaled off HERO
+const RADIUS = 24;     // player cylinder radius
+const STEP = 30;       // step-up height, scaled from the 72-unit default
+const m = u => (u / U_PER_M);
 const NEAR = 4;
 const FOV = 75 * Math.PI / 180;
 
@@ -370,6 +486,8 @@ function render(){
   }
   el('pos').textContent =
     Math.round(cam.x)+' '+Math.round(cam.y)+' '+Math.round(cam.z);
+  el('posm').textContent =
+    m(cam.x).toFixed(1)+' '+m(cam.y).toFixed(1)+' '+m(cam.z).toFixed(1)+' m';
   el('yaw').textContent = Math.round(((cam.yaw*180/Math.PI)%360+360)%360);
 }
 
@@ -568,7 +686,8 @@ function load(p){
     throw new Error('plan has no boxes array');
   plan = p;
   const cell = prepare(p);
-  el('cell').textContent = cell;
+  el('cell').textContent = cell + ' u / ' + m(cell).toFixed(2) + ' m';
+  el('eyem').textContent = m(EYE).toFixed(2) + ' m';
   el('nbox').textContent = solids.length;
   el('name').textContent = p.name || 'untitled';
   spawnPoint();
