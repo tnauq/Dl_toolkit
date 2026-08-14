@@ -1,0 +1,373 @@
+name: probe compiler flags
+
+# WHY THIS EXISTS
+#
+# probe-compiler-control settled the shape of the problem:
+#
+#   C1  real vdata, citadel mount   -> exit 0, COMPILED in under a second
+#   C2  our vmap,   citadel mount   -> hung, killed at 150s
+#   C3  our vmap,   addon mount     -> hung, killed at 150s
+#
+# TWO LEADS DIED THERE, and neither should be revisited:
+#
+# 1. FGDs are NOT the cause. C1 emitted the identical
+#    "Unable to find fgd file models_gamedata.fgd" warnings and finished
+#    anyway. GameTracking also ships NO .fgd files at all (fgds.txt came back
+#    empty), so staging them was a no-op regardless.
+# 2. The addon mount WORKS. C3's search paths showed
+#    CONTENT build\content\citadel_addons\dl_toolkit_test\ ahead of citadel
+#    and core, from a gameinfo patched with sed. That upgrades a FINDINGS
+#    line from [I] to [V-CI]. It did not change the outcome, but it is one
+#    fewer variable forever. This workflow uses the PLAIN citadel mount to
+#    keep the comparison against C2 clean.
+#
+# WHAT THE USAGE TEXT CHANGED
+#
+# resourcecompiler -help (captured for the first time) proves it handles maps
+# and names the knobs:
+#
+#   -novpk    loose files for THE MAP RESOURCE AND ITS CHILDREN instead of
+#             generating a vpk
+#   -fshallow compile top-level resources, children/associates only as needed
+#   -skiptype <ext,ext>  skip resource types by extension
+#   -crc <abspath>       report the CRC of a file and QUIT
+#
+# So a map compile pulls in children and then packs a VPK. The stall is very
+# likely in that tail, not in reading our file. Both hung logs truncate at the
+# identical mid-word point (GAMEBIN "...\build\game\cita) which is an
+# UNFLUSHED BUFFER at kill time, so the visible last line is NOT the real
+# stall point and must not be read as one.
+#
+# THE RUNS, cheapest and most decisive first
+#
+#   D1  -crc on our vmap        reads the file and QUITS. If this returns a
+#                               CRC, the compiler can open what we emitted and
+#                               the hang is downstream of parsing. If it hangs
+#                               or errors, the file itself is the problem.
+#   D2  -crc on the FIXTURE     control for D1. dl_example.vmap is a real
+#                               Hammer-authored map. If D1 hangs and D2 does
+#                               not, our emitter is implicated.
+#   D3  -novpk                  skip VPK packing
+#   D4  -novpk -fshallow        also skip child compilation
+#   D5  -novpk -skiptype ...    belt and braces on child resource types
+#
+# D1 and D2 are expected to take SECONDS. They get a short cap on purpose:
+# if a "read and quit" flag hangs, that is itself the finding.
+#
+# NOTHING GATES except emit. The map compiler probe is a warning, per the
+# settled decisions.
+
+on: workflow_dispatch
+
+env:
+  PLAN: examples/sealed-room.mapplan.json
+  MAPNAME: sealed_room
+  FIXTURE: dl_example.vmap
+  QUICK_CAP: 60
+  CAP_SECONDS: 120
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Build
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet build src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -c Release > build.txt 2>&1 || RC=$?
+          cat build.txt
+          [ "$RC" -eq 0 ] || exit 1
+
+      # The only gate.
+      - name: Emit the map
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          RC=0
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- emit "$PLAN" work/t1.vmap > out/emit.txt 2>&1 || RC=$?
+          cat out/emit.txt
+          [ "$RC" -eq 0 ] || { echo "::error::emit failed"; exit 1; }
+          [ -s work/t1.vmap ] || { echo "::error::empty emit"; exit 1; }
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          comp = conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  low = f.lower()
+                  if low == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+                  elif low == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          print("compiler:  ", comp or "NOT FOUND")
+          print("dmxconvert:", conv or "NOT FOUND")
+          if not comp or not conv:
+              print("::error::missing a tool"); sys.exit(1)
+
+          loose = os.path.join('dl', 'modtools.dll')
+          if os.path.exists(loose):
+              shutil.copy(loose, os.path.join(os.path.dirname(comp), 'modtools.dll'))
+              print("placed modtools.dll")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"comp={comp}\n")
+              g.write(f"conv={conv}\n")
+
+      - name: Text to binary vmap
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/t1.vmap" -ie keyvalues2_noids \
+            -o "$ROOT/work/$MAPNAME.vmap" -oe binary -of vmap \
+            > out/conv.txt 2>&1 || RC=$?
+          cat out/conv.txt
+          [ -s "work/$MAPNAME.vmap" ] || { echo "::error::no binary vmap"; exit 1; }
+          ls -l "work/$MAPNAME.vmap"
+
+      - name: Build the tree — plain citadel mount only
+        shell: bash
+        run: |
+          set -uo pipefail
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout init --no-cone
+          # No .fgd here: GameTracking ships none, and C1 proved they are
+          # not the cause anyway.
+          git sparse-checkout set --no-cone '/**/gameinfo.gi'
+          cd ..
+          find gt -name 'gameinfo.gi' -not -path './gt/.git/*' > found.txt
+          SRC=$(grep -m1 'citadel/gameinfo.gi' found.txt || head -1 found.txt)
+          echo "gameinfo: $SRC"
+
+          mkdir -p build/game/citadel build/content/citadel/maps
+          cp "$SRC" build/game/citadel/gameinfo.gi
+          cp "work/$MAPNAME.vmap" "build/content/citadel/maps/$MAPNAME.vmap"
+          # The fixture goes in too, as the D2 control.
+          cp "$FIXTURE" "build/content/citadel/maps/fixture.vmap"
+
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+          fi
+          ls -l build/content/citadel/maps/
+
+      - name: Write the watchdog
+        shell: bash
+        run: |
+          set -uo pipefail
+          cat > capped.sh <<'SH'
+          #!/usr/bin/env bash
+          # $1 log  $2 cap  $3 compiler  then ALL REMAINING ARGS are passed
+          # to the compiler verbatim, so each run can vary its flags.
+          set -uo pipefail
+          LOG="$1"; CAP="$2"; COMP="$3"; shift 3
+          cd build/game || { echo "no build/game" > "$LOG"; exit 0; }
+          echo "=== args: $* === cap ${CAP}s ===" > "$LOG"
+          "$COMP" "$@" >> "$LOG" 2>&1 < /dev/null &
+          PID=$!
+          ELAPSED=0
+          while kill -0 "$PID" 2>/dev/null; do
+            sleep 5; ELAPSED=$((ELAPSED+5))
+            CUR=$(tail -1 "$LOG" 2>/dev/null | tr -d '\r')
+            echo "  [${ELAPSED}s] $(wc -l < "$LOG") lines | ${CUR:0:90}"
+            if [ "$ELAPSED" -ge "$CAP" ]; then
+              echo "" >> "$LOG"
+              echo "=== WATCHDOG: killed after ${CAP}s ===" >> "$LOG"
+              kill -9 "$PID" 2>/dev/null || true
+              taskkill //F //IM resourcecompiler.exe 2>/dev/null || true
+              sleep 2
+              break
+            fi
+          done
+          wait "$PID" 2>/dev/null; RC=$?
+          echo "exit: $RC" >> "$LOG"
+          echo "--- last 20 lines ---"
+          tail -20 "$LOG" || true
+          exit 0
+          SH
+          sed -i 's/^          //' capped.sh
+          chmod +x capped.sh
+          bash -n capped.sh && echo "watchdog syntax OK"
+
+      # ------------------------------------------------------------------
+      # Nothing below fails the job.
+      # ------------------------------------------------------------------
+      - name: D1 — -crc on OUR vmap (read and quit)
+        if: always()
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/d1.txt" "$QUICK_CAP" \
+            "${{ steps.get.outputs.comp }}" \
+            -nop4 -crc "$ROOT/build/content/citadel/maps/$MAPNAME.vmap"
+
+      - name: D2 — -crc on the FIXTURE (control)
+        if: always()
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/d2.txt" "$QUICK_CAP" \
+            "${{ steps.get.outputs.comp }}" \
+            -nop4 -crc "$ROOT/build/content/citadel/maps/fixture.vmap"
+
+      - name: D3 — -novpk
+        if: always()
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/d3.txt" "$CAP_SECONDS" \
+            "${{ steps.get.outputs.comp }}" \
+            -nop4 -v -novpk -game citadel -i "../content/citadel/maps/$MAPNAME.vmap"
+
+      - name: D4 — -novpk -fshallow
+        if: always()
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/d4.txt" "$CAP_SECONDS" \
+            "${{ steps.get.outputs.comp }}" \
+            -nop4 -v -novpk -fshallow -game citadel \
+            -i "../content/citadel/maps/$MAPNAME.vmap"
+
+      - name: D5 — -novpk -skiptype
+        if: always()
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/d5.txt" "$CAP_SECONDS" \
+            "${{ steps.get.outputs.comp }}" \
+            -nop4 -v -novpk -skiptype vmat,vtex,vmdl,vsnd,vpcf -game citadel \
+            -i "../content/citadel/maps/$MAPNAME.vmap"
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          {
+            echo "=== compiled output ==="
+            echo "vmap_c:  $(find build -name '*.vmap_c' 2>/dev/null | wc -l)"
+            find build -name '*.vmap_c' 2>/dev/null | head -10
+            echo "loose map dirs (from -novpk):"
+            find build/game -type d -name 'maps' 2>/dev/null | head -5
+            echo
+            for f in d1 d2 d3 d4 d5; do
+              L="out/$f.txt"
+              echo "=== $f ==="
+              if [ ! -f "$L" ]; then echo "(no log)"; echo; continue; fi
+              head -1 "$L"
+              echo "lines: $(wc -l < "$L")"
+              if grep -q 'WATCHDOG' "$L"; then
+                echo "outcome: HUNG"
+              else
+                echo "outcome: exited on its own"
+              fi
+              grep '^exit:' "$L" | tail -1 || true
+              echo "-- crc / result lines --"
+              grep -i 'crc\|OK:\|compiled,\|Wrote to' "$L" | head -6 || echo none
+              echo "-- errors --"
+              grep -i 'RESOURCE COMPILE ERROR\|error 126\|Failed to split\|FileExists NULL\|ERROR' "$L" | head -5 || echo none
+              echo "-- last line --"
+              tail -1 "$L" | tr -d '\r' || true
+              echo
+            done
+          } > out/summary.txt 2>&1
+          cat out/summary.txt
+          echo
+          echo "READ D1 AND D2 FIRST."
+          echo "D1 returns a CRC  -> the compiler can OPEN our vmap; the hang"
+          echo "                     is downstream of parsing, and D3/D4/D5"
+          echo "                     say which stage."
+          echo "D1 hangs, D2 does not -> our emitted file is implicated."
+          echo "BOTH hang          -> -crc is not the quick exit the usage"
+          echo "                     text implies, and this whole approach"
+          echo "                     needs rethinking rather than more flags."
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-compiler-flags
+          path: |
+            out/
+            build.txt
+            found.txt
+          if-no-files-found: ignore
