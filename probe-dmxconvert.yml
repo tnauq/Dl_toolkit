@@ -1,0 +1,153 @@
+# probe-dmxconvert
+#
+# Question 1: is dmxconvert.exe present in the Reduced CSDK?
+# Question 2: does it round-trip dl_example.vmap at binary 9 / vmap 40?
+#
+# These are separate. Q1 can pass while Q2 fails. Every dmxconvert guide found
+# uses it on models and particles, NEVER on maps.
+#
+# No workflow_dispatch inputs: an input-requiring workflow cannot be run from
+# a phone. Everything is hardcoded in env. All findings go to an ARTIFACT,
+# because the mobile Actions view shows neither step summaries nor inputs.
+#
+# ---------------------------------------------------------------------------
+# BEFORE RUNNING: replace the step marked [[CSDK SETUP]] with the CSDK restore
+# block copied VERBATIM from probe-compiler.yml. It is not reproduced here on
+# purpose: it already works, it carries the cache key, the __MACOSX strip and
+# the modtools.dll fetch, and retyping it from memory is exactly the kind of
+# scaffolding-written-against-an-imagined-shape that has caused every failure
+# so far.
+# ---------------------------------------------------------------------------
+
+name: probe-dmxconvert
+
+on:
+  workflow_dispatch:
+
+env:
+  FIXTURE: tests/fixtures/dl_example.vmap
+  OUT: probe-out
+  # Expected floors. State these BEFORE reading any measurement.
+  MIN_TEXT_BYTES: 1000000
+  EXPECT_HEADER: 'binary 9 format vmap 40'
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # [[CSDK SETUP]] -- paste the block from probe-compiler.yml here.
+      # It must leave the CSDK unpacked and export CSDK_BIN pointing at
+      # the bin_cs2/win64 directory.
+
+      - name: Prepare output dir
+        shell: bash
+        run: mkdir -p "$OUT"
+
+      # -- Q1 ------------------------------------------------------------
+      - name: Q1 does dmxconvert exist
+        shell: bash
+        run: |
+          set -uo pipefail
+          {
+            echo "== search for dmxconvert =="
+            find "$CSDK_BIN/../.." -iname 'dmxconvert*' 2>/dev/null || true
+            echo
+            echo "== bin_cs2/win64 exe listing =="
+            ls -1 "$CSDK_BIN" | grep -i '\.exe$' || true
+          } > "$OUT/q1-presence.txt"
+          cat "$OUT/q1-presence.txt"
+
+      - name: Q1 assert
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          grep -qi 'dmxconvert' "$OUT/q1-presence.txt" || RC=$?
+          if [ "$RC" -ne 0 ]; then
+            echo "RESULT: dmxconvert NOT FOUND in the Reduced CSDK."
+            echo "Q2 cannot run. Fall back to the VRF map-decompiler survey."
+            exit 1
+          fi
+          echo "RESULT: dmxconvert present."
+
+      # -- Q2 ------------------------------------------------------------
+      # Note: relative paths only. Do NOT hand a Unix absolute path to a
+      # Windows binary -- git bash maps /tmp via MSYS and Windows reads it
+      # as C:\tmp.
+      - name: Q2 binary to text
+        shell: bash
+        run: |
+          set -uo pipefail
+          cp "$FIXTURE" "$OUT/in.vmap"
+          RC=0
+          "$CSDK_BIN/dmxconvert.exe" \
+            -i "$OUT/in.vmap" -ie binary \
+            -o "$OUT/text.vmap" -oe keyvalues2 > "$OUT/q2a-log.txt" 2>&1 || RC=$?
+          cat "$OUT/q2a-log.txt"
+          echo "exit code: $RC" | tee -a "$OUT/q2a-log.txt"
+          ls -l "$OUT" | tee -a "$OUT/q2a-log.txt"
+
+      - name: Q2 assert text output is real
+        shell: bash
+        run: |
+          set -uo pipefail
+          # A cheerful zero-difference from an empty file is the trap here.
+          # Floor first: size, then content.
+          SZ=$(wc -c < "$OUT/text.vmap")
+          echo "text bytes: $SZ (floor $MIN_TEXT_BYTES)"
+          [ "$SZ" -ge "$MIN_TEXT_BYTES" ] || { echo "FAIL: text output below floor"; exit 1; }
+          RC=0
+          grep -q 'CDmePolygonMesh' "$OUT/text.vmap" || RC=$?
+          [ "$RC" -eq 0 ] || { echo "FAIL: no CDmePolygonMesh in text output"; exit 1; }
+          head -c 200 "$OUT/text.vmap"
+          echo
+          echo "RESULT: text conversion produced a plausible file."
+
+      - name: Q2 text back to binary
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          "$CSDK_BIN/dmxconvert.exe" \
+            -i "$OUT/text.vmap" -ie keyvalues2 \
+            -o "$OUT/rt.vmap" -oe binary -of vmap > "$OUT/q2b-log.txt" 2>&1 || RC=$?
+          cat "$OUT/q2b-log.txt"
+          echo "exit code: $RC" | tee -a "$OUT/q2b-log.txt"
+
+      - name: Q2 assert round trip
+        shell: bash
+        run: |
+          set -uo pipefail
+          {
+            echo "== headers =="
+            echo -n "original: "; head -c 60 "$OUT/in.vmap" | tr -d '\0'; echo
+            echo -n "roundtrip: "; head -c 60 "$OUT/rt.vmap" | tr -d '\0'; echo
+            echo
+            echo "== sizes =="
+            wc -c "$OUT/in.vmap" "$OUT/rt.vmap"
+            echo
+            echo "== byte identity =="
+            RC=0
+            cmp "$OUT/in.vmap" "$OUT/rt.vmap" || RC=$?
+            echo "cmp exit: $RC"
+          } > "$OUT/q2-result.txt" 2>&1
+          cat "$OUT/q2-result.txt"
+          # Header/format check is the REAL gate. Byte identity is a bonus:
+          # dmxconvert may legitimately reorder or renumber the string table.
+          RC=0
+          head -c 60 "$OUT/rt.vmap" | tr -d '\0' | grep -q "$EXPECT_HEADER" || RC=$?
+          if [ "$RC" -ne 0 ]; then
+            echo "FAIL: roundtrip is not $EXPECT_HEADER"
+            exit 1
+          fi
+          echo "RESULT: dmxconvert emits $EXPECT_HEADER."
+          echo "If cmp exit was 0, it is byte-identical too."
+
+      - name: Upload findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-dmxconvert
+          path: probe-out/
