@@ -1,0 +1,305 @@
+name: probe dmx noids
+
+# Follow-up to probe-dmxconvert, which came back green:
+#   dmxconvert.exe IS in csdk/bin_cs2/win64
+#   binary 9 <-> keyvalues2 round-trips at `format vmap 40`
+#   the only cmp difference was +7 bytes inside the string table
+#
+# THE QUESTION HERE
+#
+# dmxconvert's usage lists `keyvalues2_noids` among its encodings. If that
+# encoding survives a round trip back to binary, the emitter never has to
+# generate, track or de-duplicate element GUIDs. Output becomes deterministic
+# and diffable, which matters more than usual here because reviewing diffs on
+# a phone is the actual workflow.
+#
+# THE RISK, stated before the run
+#
+# Elements reference each other BY GUID. `meshData` is a containment, so it
+# is safe, but `relayPlugData`, `connectionsData` and the CMapWorld children
+# list are references. If dropping ids silently drops or breaks those, the
+# file will still convert, still carry the right header, and still look fine.
+# That is exactly the failure the FINDINGS corollary warns about: a green run
+# is not a correct run.
+#
+# So this probe does a TRIPLE conversion and counts elements at the far end:
+#
+#   in.vmap (binary) -> noids.vmap (text) -> rt.vmap (binary) -> back.vmap (text)
+#
+# and asserts the census at `back` matches the census at `in`. If ids are
+# load-bearing, the counts will move.
+#
+# CENSUS FLOORS — from FINDINGS-vmap-2026-08-14, measured on this exact
+# fixture. Stated here BEFORE any number is read, per lesson 5.
+#
+#   CDmePolygonMesh   222      CMapEntity          598
+#   CMapMesh          222      DmeConnectionData    89
+#
+# No workflow_dispatch inputs; everything in env; everything readable goes to
+# an artifact.
+
+on: workflow_dispatch
+
+env:
+  FIXTURE: dl_example.vmap
+  EXPECT_HEADER: 'binary 9 format vmap 40'
+  # Census, measured on this fixture. If the fixture is ever replaced these
+  # must be re-measured, not carried over.
+  EXPECT_POLYMESH: 222
+  EXPECT_MAPMESH: 222
+  EXPECT_ENTITY: 598
+  EXPECT_CONN: 89
+  MIN_TEXT_BYTES: 1000000
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm the fixture is present
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ ! -f "$FIXTURE" ]; then
+            echo "::error::fixture not at $FIXTURE — fix env.FIXTURE"
+            find . -iname '*.vmap' -not -path './.git/*' 2>/dev/null | head -40 \
+              || echo "(none — the fixture is not committed)"
+            exit 3
+          fi
+          ls -l "$FIXTURE"
+          echo -n "header: "; head -c 60 "$FIXTURE" | tr -d '\0'; echo
+
+      # ------------------------------------------------------------------
+      # CSDK fetch — unchanged from probe-compiler.yml / probe-dmxconvert.yml.
+      # probe-dmxconvert proved dmxconvert.exe sits beside resourcecompiler,
+      # so this only needs to locate one of them.
+      # ------------------------------------------------------------------
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          print(f"assets: {len(assets)}")
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              print(f"  downloading {a['name']} ({a['size']} bytes)")
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+              print(f"    -> {os.path.getsize(dest)} bytes on disk")
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if len(files) == 0:
+              print("::error::no zip parts after download"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          got = h.hexdigest()
+          print(f"reassembled {os.path.getsize('bin_cs2.zip')} bytes, sha256 {got}")
+
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != got:
+                  print(f"::error::checksum mismatch, expected {want}"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+              print("removed the __MACOSX shadow tree")
+
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          print("dmxconvert:", conv or "NOT FOUND")
+          if not conv:
+              print("::error::dmxconvert.exe missing — probe-dmxconvert found it, so this is a regression")
+              sys.exit(1)
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+              g.write(f"bin={os.path.dirname(conv)}\n")
+
+      # ------------------------------------------------------------------
+      # Conversions. Windows paths via `pwd -W` — never hand a Unix absolute
+      # path to a Windows binary.
+      # ------------------------------------------------------------------
+      - name: A — binary to keyvalues2_noids
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="${{ steps.get.outputs.bin }}:$PATH"
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          mkdir -p work probe-out
+          cp "$FIXTURE" work/in.vmap
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/in.vmap" -ie binary \
+            -o "$ROOT/work/noids.vmap" -oe keyvalues2_noids \
+            > probe-out/a-log.txt 2>&1 || RC=$?
+          cat probe-out/a-log.txt
+          echo "exit: $RC" | tee -a probe-out/a-log.txt
+          ls -l work | tee -a probe-out/a-log.txt
+
+      - name: A — assert the noids text is real AND actually id-free
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ ! -f work/noids.vmap ]; then echo "FAIL: no noids output"; exit 1; fi
+          SZ=$(wc -c < work/noids.vmap)
+          echo "noids bytes: $SZ (floor $MIN_TEXT_BYTES)"
+          [ "$SZ" -ge "$MIN_TEXT_BYTES" ] || { echo "FAIL: below floor"; exit 1; }
+
+          echo "--- first 20 lines ---"
+          head -20 work/noids.vmap
+
+          # The whole point. If elementid lines survive, the encoding did
+          # nothing for us and there is no reason to prefer it.
+          IDS=$(grep -c 'elementid' work/noids.vmap || true)
+          echo "elementid occurrences: $IDS"
+          if [ "$IDS" -ne 0 ]; then
+            echo "RESULT: noids still writes ids — no benefit. Stop here,"
+            echo "keep plain keyvalues2 and generate GUIDs in the emitter."
+            exit 1
+          fi
+          echo "RESULT: id-free text confirmed."
+
+      - name: B — noids text back to binary
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="${{ steps.get.outputs.bin }}:$PATH"
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/noids.vmap" -ie keyvalues2_noids \
+            -o "$ROOT/work/rt.vmap" -oe binary -of vmap \
+            > probe-out/b-log.txt 2>&1 || RC=$?
+          cat probe-out/b-log.txt
+          echo "exit: $RC" | tee -a probe-out/b-log.txt
+          ls -l work | tee -a probe-out/b-log.txt
+
+      - name: B — assert header
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ ! -f work/rt.vmap ]; then
+            echo "FAIL: noids text does not convert back to binary."
+            echo "That settles it: the encoding is export-only. Use keyvalues2."
+            exit 1
+          fi
+          echo -n "roundtrip header: "; head -c 60 work/rt.vmap | tr -d '\0'; echo
+          RC=0
+          head -c 60 work/rt.vmap | tr -d '\0' | grep -q "$EXPECT_HEADER" || RC=$?
+          [ "$RC" -eq 0 ] || { echo "FAIL: not $EXPECT_HEADER"; exit 1; }
+          echo "RESULT: header intact."
+
+      # ------------------------------------------------------------------
+      # The identity check across the stage boundary. A matching header
+      # proves only that the container survived, not the contents.
+      # ------------------------------------------------------------------
+      - name: C — reconvert to text and take a census
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="${{ steps.get.outputs.bin }}:$PATH"
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/rt.vmap" -ie binary \
+            -o "$ROOT/work/back.vmap" -oe keyvalues2 \
+            > probe-out/c-log.txt 2>&1 || RC=$?
+          cat probe-out/c-log.txt
+          echo "exit: $RC" | tee -a probe-out/c-log.txt
+          if [ ! -f work/back.vmap ]; then echo "FAIL: could not re-text"; exit 1; fi
+
+          count () { grep -c "\"$1\"" "$2" || true; }
+          {
+            echo "type                 expected   found"
+            echo "CDmePolygonMesh      $EXPECT_POLYMESH        $(count CDmePolygonMesh work/back.vmap)"
+            echo "CMapMesh             $EXPECT_MAPMESH        $(count CMapMesh work/back.vmap)"
+            echo "CMapEntity           $EXPECT_ENTITY        $(count CMapEntity work/back.vmap)"
+            echo "DmeConnectionData    $EXPECT_CONN         $(count DmeConnectionData work/back.vmap)"
+            echo
+            echo "sizes:"
+            wc -c work/in.vmap work/noids.vmap work/rt.vmap work/back.vmap
+          } > probe-out/census.txt 2>&1
+          cat probe-out/census.txt
+
+      - name: C — assert the census
+        shell: bash
+        run: |
+          set -uo pipefail
+          FAIL=0
+          chk () {
+            GOT=$(grep -c "\"$1\"" work/back.vmap || true)
+            if [ "$GOT" -ne "$2" ]; then
+              echo "MISMATCH $1: expected $2, found $GOT"; FAIL=1
+            else
+              echo "ok $1 = $GOT"
+            fi
+          }
+          chk CDmePolygonMesh "$EXPECT_POLYMESH"
+          chk CMapMesh        "$EXPECT_MAPMESH"
+          chk CMapEntity      "$EXPECT_ENTITY"
+          chk DmeConnectionData "$EXPECT_CONN"
+          if [ "$FAIL" -ne 0 ]; then
+            echo
+            echo "RESULT: noids LOSES elements. References are carried by id,"
+            echo "and dropping ids breaks them. Use keyvalues2 and generate"
+            echo "GUIDs in the emitter."
+            exit 1
+          fi
+          echo
+          echo "RESULT: census intact through binary -> noids -> binary."
+          echo "The emitter can write keyvalues2_noids and skip GUIDs entirely."
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          # The noids text is the most valuable thing here: it is the emitter's
+          # actual target format. Keep a head of it for schema reading.
+          if [ -f work/noids.vmap ]; then
+            head -c 4000000 work/noids.vmap > probe-out/noids-head.vmap
+            echo "noids bytes: $(wc -c < work/noids.vmap)"
+          fi
+          ls -l probe-out || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-dmx-noids
+          path: probe-out/
+          if-no-files-found: ignore
