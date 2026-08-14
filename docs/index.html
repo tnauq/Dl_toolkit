@@ -98,6 +98,7 @@
   <span><span class="k">yaw</span> <b id="yaw">0</b></span>
   <span><span class="k">cell</span> <b id="cell">64</b></span>
   <span><span class="k">eye</span> <b id="eyem">2.44 m</b></span>
+  <span><span class="k">speed</span> <b id="spdm">walk</b></span>
   <span><span class="k">boxes</span> <b id="nbox">0</b></span>
   <span><span class="k">fps</span> <b id="fps">0</b></span>
 </div>
@@ -123,6 +124,7 @@
   <label class="file" tabindex="0">open file
     <input type="file" id="file" accept=".json,application/json">
   </label>
+  <button id="spd">speed: walk</button>
   <button id="respawn">respawn</button>
   <button id="noclip">noclip: off</button>
   <span id="name">sealed_room</span>
@@ -274,6 +276,17 @@ const DEFAULT_PLAN = {
    Lady Geist 2.57 m (~101 u). Walking a blockout at a 64-unit eye makes
    every space read as taller than it will play. */
 const U_PER_M = 39.37;
+/* Movement speeds, in units per second.
+   Anchored to a real figure: Deadlock's slide threshold is 350 u/s, which
+   the game shows as 8.9 m/s. So "walk" sits near in-game pace, "slow" is
+   for judging a cover height or a doorway width up close, and "fast" is
+   for crossing a 130 m layout without it becoming a chore. */
+const SPEEDS = [
+  { name:'slow',  u:120  },
+  { name:'walk',  u:380  },
+  { name:'fast',  u:1200 }
+];
+let speedIx = 1;
 const HERO = 120;      // ~3.05 m, the tall end of the roster
 const EYE = 96;        // ~2.44 m eye height, scaled off HERO
 const RADIUS = 24;     // player cylinder radius
@@ -536,9 +549,15 @@ function move(dx,dy){
 const keys = Object.create(null);
 addEventListener('keydown', e=>{
   keys[e.key.toLowerCase()] = true;
+  keys['shift'] = e.shiftKey; keys['control'] = e.ctrlKey; keys['alt'] = e.altKey;
   if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
 });
-addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+addEventListener('keyup', e=>{
+  keys[e.key.toLowerCase()] = false;
+  keys['shift'] = e.shiftKey; keys['control'] = e.ctrlKey; keys['alt'] = e.altKey;
+});
+// A window that loses focus mid-hold would otherwise stay stuck fast.
+addEventListener('blur', ()=>{ for(const k in keys) keys[k] = false; });
 
 const touches = new Map();
 const pad = el('dpad'), nub = el('nub');
@@ -642,7 +661,13 @@ let last = performance.now();
 function tick(){
   const now = performance.now();
   const dt = Math.min(0.05, (now-last)/1000); last = now;
-  const speed = 320 * dt;
+  // Hold shift for fast or ctrl/alt for slow. A held key OVERRIDES the
+  // selected mode for as long as it is down, then snaps back, which is
+  // less fiddly than toggling twice to peek at something.
+  let ix = speedIx;
+  if(keys['shift']) ix = 2;
+  else if(keys['control'] || keys['alt']) ix = 0;
+  const speed = SPEEDS[ix].u * dt;
 
   let fwd = 0, str = 0;
   if(keys['w']||keys['arrowup']) fwd += 1;
@@ -816,6 +841,17 @@ async function boot(){
   if(havePicker){ await selectPlan(pick.value, false); }
   // Otherwise the embedded default stays loaded.
 }
+
+function showSpeed(){
+  const s = SPEEDS[speedIx];
+  el('spd').textContent = 'speed: ' + s.name;
+  el('spdm').textContent = s.name + ' · ' + (s.u/U_PER_M).toFixed(1) + ' m/s';
+}
+el('spd').addEventListener('click', ()=>{
+  speedIx = (speedIx + 1) % SPEEDS.length;
+  showSpeed();
+});
+showSpeed();
 
 el('respawn').addEventListener('click', spawnPoint);
 el('noclip').addEventListener('click', ev=>{
