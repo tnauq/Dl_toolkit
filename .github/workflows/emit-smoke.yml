@@ -1,0 +1,236 @@
+name: emit smoke
+
+# THE EMITTER GATE.
+#
+#   sealed-room.mapplan.json
+#     -> OUR emitter          -> t1 (keyvalues2_noids text)
+#     -> dmxconvert           -> binary .vmap        <-- Valve judges it
+#     -> dmxconvert           -> t2 (text)
+#     -> OUR reader           -> census              <-- nothing lost
+#
+# dmxconvert in the middle is the whole point. A reader and writer that shared
+# a misunderstanding would cancel out; Valve's binary will not.
+#
+# CENSUS for examples/sealed-room.mapplan.json — 6 boxes, 2 spawns. Derived
+# from the emitter's structure, stated BEFORE the run per lesson 5:
+#
+#   per box:  1 CMapMesh, 1 CDmePolygonMesh, 4 CDmePolygonMeshDataArray,
+#             11 CDmePolygonMeshDataStream, 1 CDmePolygonMeshSubdivisionData
+#   per ent:  1 CMapEntity, 1 EditGameClassProps, 1 DmePlugList
+#   world:    1 EditGameClassProps, 1 DmePlugList
+#   once:     CMapRootElement, CMapWorld, CVisibilityMgr, CMapVariableSet,
+#             CMapSelectionSet, CStoredCameras
+#
+# NOTE ON SCOPE: green here means STRUCTURALLY VALID and accepted by
+# dmxconvert. It does NOT mean Hammer opens it, and it does not mean Deadlock
+# loads it. That ceiling has not moved.
+
+on: workflow_dispatch
+
+env:
+  PLAN: examples/sealed-room.mapplan.json
+  EXPECT_HEADER: 'binary 9 format vmap 40'
+  EXPECT_MAPMESH: 6
+  EXPECT_POLYMESH: 6
+  EXPECT_ENTITY: 2
+  EXPECT_DATAARRAY: 24
+  EXPECT_STREAM: 66
+  EXPECT_SUBDIV: 6
+  EXPECT_CLASSPROPS: 3
+  EXPECT_PLUGLIST: 3
+
+jobs:
+  emit:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      # Build BEFORE the CSDK fetch. A long download that ends in a typo is
+      # the most expensive possible ordering.
+      - name: Build
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet build src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -c Release > build.txt 2>&1 || RC=$?
+          cat build.txt
+          [ "$RC" -eq 0 ] || exit 1
+
+      - name: Emit — plan to KV2 text
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          RC=0
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- emit "$PLAN" work/t1.vmap > out/emit.txt 2>&1 || RC=$?
+          cat out/emit.txt
+          echo "exit: $RC" | tee -a out/emit.txt
+          [ "$RC" -eq 0 ] || exit 1
+          [ -s work/t1.vmap ] || { echo "FAIL: empty emit"; exit 1; }
+          wc -c work/t1.vmap
+          echo "--- first 40 lines ---"
+          head -40 work/t1.vmap
+
+      - name: Assert the emitted census
+        shell: bash
+        run: |
+          set -uo pipefail
+          FAIL=0
+          chk () {
+            GOT=$(awk -v t="$1" '$2==t {print $1}' out/emit.txt | head -1)
+            GOT=${GOT:-0}
+            if [ "$GOT" != "$2" ]; then echo "MISMATCH $1: want $2 got $GOT"; FAIL=1
+            else echo "ok $1 = $GOT"; fi
+          }
+          chk CMapMesh                        "$EXPECT_MAPMESH"
+          chk CDmePolygonMesh                 "$EXPECT_POLYMESH"
+          chk CMapEntity                      "$EXPECT_ENTITY"
+          chk CDmePolygonMeshDataArray        "$EXPECT_DATAARRAY"
+          chk CDmePolygonMeshDataStream       "$EXPECT_STREAM"
+          chk CDmePolygonMeshSubdivisionData  "$EXPECT_SUBDIV"
+          chk EditGameClassProps              "$EXPECT_CLASSPROPS"
+          chk DmePlugList                     "$EXPECT_PLUGLIST"
+          [ "$FAIL" -eq 0 ] || exit 1
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          if not conv:
+              print("::error::dmxconvert.exe missing"); sys.exit(1)
+          print("dmxconvert:", conv)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+
+      - name: Valve judges the emitted text
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/t1.vmap" -ie keyvalues2_noids \
+            -o "$ROOT/work/room.vmap" -oe binary -of vmap > out/conv.txt 2>&1 || RC=$?
+          cat out/conv.txt
+          echo "exit: $RC" | tee -a out/conv.txt
+          if [ ! -s work/room.vmap ]; then
+            echo "FAIL: dmxconvert rejected our emitted map."
+            echo "This is the finding this workflow exists for. Read out/conv.txt."
+            exit 1
+          fi
+          echo -n "header: "; head -c 60 work/room.vmap | tr -d '\0'; echo
+          RC=0
+          head -c 60 work/room.vmap | tr -d '\0' | grep -q "$EXPECT_HEADER" || RC=$?
+          [ "$RC" -eq 0 ] || { echo "FAIL: not $EXPECT_HEADER"; exit 1; }
+          wc -c work/room.vmap
+
+      - name: Read it back and re-census
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/room.vmap" -ie binary \
+            -o "$ROOT/work/t2.vmap" -oe keyvalues2 > out/conv2.txt 2>&1 || RC=$?
+          cat out/conv2.txt
+          [ -s work/t2.vmap ] || { echo "FAIL: could not re-text"; exit 1; }
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- info work/t2.vmap > out/final.txt 2>&1 || RC=$?
+          cat out/final.txt
+          FAIL=0
+          chk () {
+            GOT=$(awk -v t="$1" '$2==t {print $1}' out/final.txt | head -1)
+            GOT=${GOT:-0}
+            if [ "$GOT" != "$2" ]; then echo "LOST $1: want $2 got $GOT"; FAIL=1
+            else echo "ok $1 = $GOT"; fi
+          }
+          chk CMapMesh           "$EXPECT_MAPMESH"
+          chk CDmePolygonMesh    "$EXPECT_POLYMESH"
+          chk CMapEntity         "$EXPECT_ENTITY"
+          chk CDmePolygonMeshDataStream "$EXPECT_STREAM"
+          [ "$FAIL" -eq 0 ] || exit 1
+          echo
+          echo "RESULT: a sealed room with two spawns emits, converts to"
+          echo "binary vmap 40, and survives the trip intact."
+          echo "STRUCTURALLY VALID. Not 'Hammer opens it'. Not 'it works'."
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          cp work/t1.vmap out/emitted-t1.vmap 2>/dev/null || true
+          cp work/room.vmap out/room.vmap 2>/dev/null || true
+          ls -l out || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emit-smoke
+          path: |
+            out/
+            build.txt
+          if-no-files-found: ignore

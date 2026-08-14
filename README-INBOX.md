@@ -1,62 +1,80 @@
-# Inbox drop — KV2 DMX layer + MapPlan schema (2026-08-14)
+# Inbox drop — the emitter (2026-08-14, second drop)
 
-Unzip at repo root. Nothing here replaces an existing file; all new.
+Unzip at repo root.
 
-    src/Deadlock.Format/Dmx/DmxModel.cs
-    src/Deadlock.Format/Dmx/Kv2Reader.cs
-    src/Deadlock.Format/Dmx/Kv2Writer.cs
-    src/Deadlock.Contracts/MapPlan.cs
-    src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj
-    src/Deadlock.MapSmoke/Program.cs
-    .github/workflows/map-smoke.yml
-    docs/SCHEMA-mapplan.md
-    examples/sealed-room.mapplan.json
+## NEW
 
-## NOT BUILT
+    src/Deadlock.Format/Dmx/HalfEdgeMesh.cs
+    src/Deadlock.Format/Dmx/MapEmitter.cs
+    .github/workflows/emit-smoke.yml
 
-There is no dotnet in the authoring sandbox and no network, so **the C# has
-never been compiled**. The grammar it implements WAS validated: a reference
-parser was written in Python and run against the real dmxconvert output for
-both keyvalues2 and keyvalues2_noids before any C# was typed. So the risk is
-concentrated in syntax and API details, not in the format.
+## REPLACES files from the first drop today
 
-`map-smoke` builds before it fetches the CSDK, so a typo costs seconds rather
-than a full CSDK download.
+    src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj   (adds Contracts ref)
+    src/Deadlock.MapSmoke/Program.cs                 (adds `emit` mode)
 
-## Layering
+Real extensions, because inbox needs to overwrite them.
 
-`Deadlock.Format` gains a `Dmx` namespace. It does NOT touch VRF —
-`Kv3Document` remains the only thing that does. The layering rule holds:
-KV3 and DMX are siblings, not nested.
+## NOT COMPILED
 
-`Deadlock.MapSmoke` is deliberately throwaway-shaped. It exists so map-smoke
-can run without editing the `dl` CLI, which the settled decisions keep as ONE
-binary. Folding this in as `dl map info` is a follow-up that needs the
-existing CLI source; delete this project when that lands.
+Same caveat as the first drop, same mitigation. No dotnet in the authoring
+sandbox. What WAS validated, before any C# was typed:
 
-The new projects are referenced by path in the workflow, so **no solution file
-edit is needed** to make CI work. Add them to the .sln at your leisure.
+- The half-edge construction was ported to Python and asserted: 8 verts,
+  12 edges, 24 half-edges, 6 faces; every face loop closes at length 4;
+  every directed edge appears exactly once; **no -1 in edgeFaceIndices**
+  (a sealed box, unlike the open quad in the fixture); and all six Newell
+  normals point OUTWARD from the centre.
+- Every structural value in `MapEmitter` was read off `dl_example.vmap`, not
+  invented: the stream set and its `dataStateFlags`, the `CMapMesh` defaults,
+  `CMapWorld`, `CMapRootElement`, and the text forms (`"element" ""` for a
+  null reference, `"uint64" "0x0"`).
 
-## What map-smoke proves
+`emit-smoke` builds before it fetches the CSDK, so a typo costs seconds.
 
-    dl_example.vmap (binary)
-      -> dmxconvert -> text
-      -> OUR reader + writer -> text2   (census across our own layer)
-      -> dmxconvert -> binary           (Valve accepts it, or not)
-      -> dmxconvert -> text3
-      -> OUR reader                     (census end to end)
+## No GUIDs, and why that is fragile
 
-dmxconvert in the middle is the point. A reader and writer that shared a
-misunderstanding of the grammar would cancel out in a plain read-write-read
-check and pass. Valve's binary is the independent judge.
+`keyvalues2_noids` writes an element id only where an element is referenced
+MORE THAN ONCE. Everything the emitter produces is referenced exactly once,
+so the document carries no ids at all.
 
-## Still open
+Adding groups, selection sets, paths or entity connections breaks that and
+reintroduces id generation. `docs/SCHEMA-mapplan.md` says the same thing;
+this is the second place it is written down because it is the property most
+likely to be lost by accident.
 
-- The EMITTER (MapPlan -> DMX) is not here. Next step, and the only remaining
-  hard part: box to half-edge construction, plus the exact stream set a box
-  must carry.
-- `DmxReadResult` is a local result type. If Contracts already has a Result
-  shape, merge them — failure kinds are values, per the settled convention,
-  and `DmxFailure` follows `EditFailure`.
-- Whether Hammer READS a text-encoded .vmap. Unaffected by anything here,
-  since export goes through dmxconvert to binary either way.
+## What emit-smoke proves, and what it does not
+
+    sealed-room.mapplan.json
+      -> OUR emitter  -> keyvalues2_noids text
+      -> dmxconvert   -> binary vmap 40      <-- Valve judges it
+      -> dmxconvert   -> text
+      -> OUR reader   -> census              <-- nothing lost
+
+Green means **structurally valid and accepted by dmxconvert**. It does NOT
+mean Hammer opens it, and it does not mean Deadlock loads it. The ceiling has
+not moved. Tools say "structurally valid", never "works".
+
+## Known soft spots
+
+- **Texture axes and UVs are a first cut.** Projection axes are picked by
+  dominant normal, texcoords are a 0.25 scale planar projection, tangents are
+  derived from the U axis with w=-1. Plausible and consistent, but no fixture
+  comparison was done for a BOX specifically — the fixture's smallest mesh is
+  a quad. Expect to revisit once something renders it.
+- **`smoothingAngle` is 180**, taken from the CMapMesh in the text dump. The
+  binary sample read 40. Both appear in the file; 180 was chosen because it
+  came from the fully-dumped element. Low confidence, easy to change.
+- **`editorbuild 10169` / `editorversion 400`** are copied from an October
+  2024 fixture. If Hammer or the compiler rejects the file, schema drift on
+  these is hypothesis #1, per the settled decisions.
+- **Rotated boxes are emitted but untested.** Geometry is local-space and
+  placed by `angles`, so rotation should be free, but the example uses none.
+
+## Next
+
+1. Run `emit-smoke`.
+2. The `resourcecompiler` map probe, warning-level: does a `.vmap` at
+   `content/citadel_addons/<name>/` build headlessly? Still the only external
+   judge beyond dmxconvert.
+3. The HTML viewer. Needs no CI and no Windows.

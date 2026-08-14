@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Standalone driver so map-smoke can run without touching the dl CLI.
-       Folding `dl map info` into the one dl binary is a follow-up that needs
-       the existing CLI source; this project is deliberately throwaway-shaped
-       and can be deleted the day that lands. -->
+  <!-- REPLACES the version from the 2026-08-14 KV2 drop: adds the Contracts
+       reference so `emit` can read a .mapplan.json. -->
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Deadlock.Format\Deadlock.Format.csproj" />
+    <ProjectReference Include="..\Deadlock.Contracts\Deadlock.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
