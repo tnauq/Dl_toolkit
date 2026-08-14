@@ -28,7 +28,7 @@ on: workflow_dispatch
 
 env:
   # If the fixture lands somewhere else, change this ONE line.
-  FIXTURE: tests/fixtures/dl_example.vmap
+  FIXTURE: dl_example.vmap
   # Floors, stated BEFORE any measurement is read. A probe that reports
   # "0 differences" from an empty file is the exact trap FINDINGS lesson 5
   # was written about.
@@ -47,9 +47,10 @@ jobs:
         run: |
           set -uo pipefail
           if [ ! -f "$FIXTURE" ]; then
-            echo "::error::fixture not at $FIXTURE — commit dl_example.vmap or fix env.FIXTURE"
-            echo "--- what IS in tests/ ---"
-            find tests -type f 2>/dev/null | head -40 || echo "(no tests dir)"
+            echo "::error::fixture not at $FIXTURE — fix env.FIXTURE"
+            echo "--- .vmap files anywhere in the checkout ---"
+            find . -iname '*.vmap' -not -path './.git/*' 2>/dev/null | head -40 \
+              || echo "(none — the fixture is not committed)"
             exit 3
           fi
           ls -l "$FIXTURE"
