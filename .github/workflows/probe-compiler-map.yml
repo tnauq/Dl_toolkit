@@ -1,0 +1,291 @@
+name: probe compiler map
+
+# THE LAST EXTERNAL JUDGE AVAILABLE WITHOUT HARDWARE.
+#
+# emit-smoke proved a sealed room emits and that dmxconvert accepts it.
+# dmxconvert only validates the CONTAINER, though: it will happily convert a
+# structurally-fine DMX whose contents mean nothing to Source 2. The
+# resourcecompiler is the first thing that reads the file AS A MAP.
+#
+# WARNING-LEVEL BY DECISION, NOT BY ACCIDENT. Settled 2026-08-14: "done" for
+# the maps track is layouts portable to Hammer, not compiler acceptance. So
+# this workflow REPORTS and does not gate. It exits 0 even when the compile
+# fails, because a failure here is information, not a broken build. Only the
+# emit stage can fail the job, since a broken emitter makes the rest
+# meaningless.
+#
+# WHAT IS ACTUALLY UNKNOWN. Two things, and they are separate:
+#   1. Does resourcecompiler accept a .vmap at all, headlessly?
+#   2. WHERE does map source have to live? FINDINGS says
+#      content/citadel_addons/<name>/, NOT content/citadel/. That is recorded
+#      as [I], inferred, never proven by a run.
+# So this probe tries BOTH layouts and prints what each one does. Per lesson
+# 3: probe the surface you will actually use.
+#
+# PATH RULES, carried from probe-compiler.yml where they were proven:
+#   GAMEROOT = the CURRENT WORKING DIRECTORY, so run FROM build/game
+#   GAME     = GAMEROOT + <the -game dir, which must hold gameinfo.gi>
+#   CONTENT  = GAMEROOT\..\content\<game>
+# Earlier failures were ALL working directory. `-game` names the directory
+# holding gameinfo.gi, not its parent.
+#
+# EXPECT THIS TO FAIL. A .vmap compile normally wants vrad3, a world builder
+# and a full content tree. The useful output is WHICH stage it dies at and
+# what it says about the input, not a green tick.
+
+on: workflow_dispatch
+
+env:
+  PLAN: examples/sealed-room.mapplan.json
+  ADDON: dl_toolkit_test
+  MAPNAME: sealed_room
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Build
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet build src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -c Release > build.txt 2>&1 || RC=$?
+          cat build.txt
+          [ "$RC" -eq 0 ] || exit 1
+
+      # This stage IS a gate. Everything downstream is meaningless without it.
+      - name: Emit the map
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          RC=0
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- emit "$PLAN" work/t1.vmap > out/emit.txt 2>&1 || RC=$?
+          cat out/emit.txt
+          [ "$RC" -eq 0 ] || { echo "::error::emit failed"; exit 1; }
+          [ -s work/t1.vmap ] || { echo "::error::empty emit"; exit 1; }
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          comp = conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  low = f.lower()
+                  if low == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+                  elif low == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          print("compiler:  ", comp or "NOT FOUND")
+          print("dmxconvert:", conv or "NOT FOUND")
+          if not comp or not conv:
+              print("::error::missing a tool"); sys.exit(1)
+
+          # modtools.dll is a LOOSE release asset on csdk-12, not in the
+          # Reduced CSDK bin. Without it the compiler dies with error 126
+          # (ERROR_MOD_NOT_FOUND) before doing any work.
+          loose = os.path.join('dl', 'modtools.dll')
+          if os.path.exists(loose):
+              shutil.copy(loose, os.path.join(os.path.dirname(comp), 'modtools.dll'))
+              print("placed modtools.dll")
+          else:
+              print("::warning::modtools.dll not among the release assets")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"comp={comp}\n")
+              g.write(f"conv={conv}\n")
+
+      - name: Text to binary vmap
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/t1.vmap" -ie keyvalues2_noids \
+            -o "$ROOT/work/$MAPNAME.vmap" -oe binary -of vmap \
+            > out/conv.txt 2>&1 || RC=$?
+          cat out/conv.txt
+          [ -s "work/$MAPNAME.vmap" ] || { echo "::error::no binary vmap"; exit 1; }
+          ls -l "work/$MAPNAME.vmap"
+
+      - name: Fetch the real gameinfo.gi and build both trees
+        shell: bash
+        run: |
+          set -uo pipefail
+          # From GameTracking, not written by hand. A synthesized gameinfo the
+          # compiler rejects looks identical to the compiler rejecting the
+          # flag, and those need telling apart.
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone '/**/gameinfo.gi'
+          find . -name 'gameinfo.gi' -not -path './.git/*' > ../found.txt
+          cd ..
+          cat found.txt
+          SRC=$(grep -m1 'citadel/gameinfo.gi' found.txt || head -1 found.txt)
+          echo "using: $SRC"
+
+          # LAYOUT A — the plain game dir, content/citadel/maps/
+          mkdir -p build/game/citadel build/content/citadel/maps
+          cp "gt/$SRC" build/game/citadel/gameinfo.gi
+          cp "work/$MAPNAME.vmap" "build/content/citadel/maps/$MAPNAME.vmap"
+
+          # LAYOUT B — the addon dir, content/citadel_addons/<name>/maps/
+          # This is what FINDINGS says is correct, marked [I] and never proven.
+          mkdir -p "build/game/citadel_addons/$ADDON"
+          mkdir -p "build/content/citadel_addons/$ADDON/maps"
+          cp "gt/$SRC" "build/game/citadel_addons/$ADDON/gameinfo.gi"
+          cp "work/$MAPNAME.vmap" "build/content/citadel_addons/$ADDON/maps/$MAPNAME.vmap"
+
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+            echo "copied core gameinfo too"
+          fi
+          find build -type f | head -30
+
+      # ------------------------------------------------------------------
+      # From here on NOTHING FAILS THE JOB. cat before asserting; RC captured
+      # with `|| RC=$?` because `bash -e` is not cleared by `set -uo pipefail`.
+      # ------------------------------------------------------------------
+      - name: A — content/citadel/maps
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          RC=0
+          "${{ steps.get.outputs.comp }}" -nop4 -v \
+            -game citadel \
+            -i "../content/citadel/maps/$MAPNAME.vmap" \
+            > "$ROOT/out/compile-a.txt" 2>&1 || RC=$?
+          cd "$ROOT"
+          echo "exit: $RC" | tee -a out/compile-a.txt
+          echo "--- resolved search paths ---"
+          grep -A6 '^CONTENT' out/compile-a.txt | head -12 || true
+          echo "--- tail ---"
+          tail -25 out/compile-a.txt || true
+
+      - name: B — content/citadel_addons/<name>/maps
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          RC=0
+          "${{ steps.get.outputs.comp }}" -nop4 -v \
+            -game "citadel_addons/$ADDON" \
+            -i "../content/citadel_addons/$ADDON/maps/$MAPNAME.vmap" \
+            > "$ROOT/out/compile-b.txt" 2>&1 || RC=$?
+          cd "$ROOT"
+          echo "exit: $RC" | tee -a out/compile-b.txt
+          echo "--- resolved search paths ---"
+          grep -A6 '^CONTENT' out/compile-b.txt | head -12 || true
+          echo "--- tail ---"
+          tail -25 out/compile-b.txt || true
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          {
+            echo "=== did anything compile? ==="
+            find build -name '*.vmap_c' 2>/dev/null | tee compiled.txt
+            echo "vmap_c files: $(wc -l < compiled.txt)"
+            echo
+            for f in a b; do
+              echo "=== layout $f ==="
+              if [ ! -f "out/compile-$f.txt" ]; then echo "(no log)"; continue; fi
+              echo "-- error 126 / module load --"
+              grep -i 'error 126\|Unable to load module' "out/compile-$f.txt" | head -3 || echo "none"
+              echo "-- resource compile errors --"
+              grep 'RESOURCE COMPILE ERROR' "out/compile-$f.txt" | head -5 || echo "none"
+              echo "-- gameinfo / path failures --"
+              grep -i 'gameinfo\|Failed to split\|FileExists NULL' "out/compile-$f.txt" | head -5 || echo "none"
+              echo "-- anything mentioning vmap --"
+              grep -i 'vmap' "out/compile-$f.txt" | head -8 || echo "none"
+              echo
+            done
+          } > out/summary.txt 2>&1
+          cat out/summary.txt
+          echo
+          echo "This workflow does not gate. Read out/summary.txt and the"
+          echo "two compile logs; the useful finding is WHICH stage it dies"
+          echo "at, and whether layout A or B resolves the input at all."
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-compiler-map
+          path: |
+            out/
+            build.txt
+            found.txt
+            compiled.txt
+          if-no-files-found: ignore
