@@ -460,6 +460,11 @@ function inPad(t){
 }
 
 function onStart(e){
+  // Taps on the footer controls must reach the browser. These listeners
+  // are on the DOCUMENT so the pad can receive them, which means every
+  // touch lands here first, and preventDefault on a tap targeting a
+  // <select> or <button> stops it opening. Bail out before that happens.
+  if(e.target && e.target.closest && e.target.closest('.foot')) return;
   for(const t of e.changedTouches){
     if(inPad(t)){
       touches.set(t.identifier, { zone:'pad' });
@@ -472,6 +477,7 @@ function onStart(e){
   e.preventDefault();
 }
 function onMove(e){
+  if(e.target && e.target.closest && e.target.closest('.foot')) return;
   for(const t of e.changedTouches){
     const s = touches.get(t.identifier); if(!s) continue;
     if(s.zone === 'pad'){
