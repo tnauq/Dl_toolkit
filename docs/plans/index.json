@@ -1,0 +1,6 @@
+{
+  "plans": [
+    { "name": "Sealed room",  "file": "sealed_room.json" },
+    { "name": "Two lane test", "file": "two_lane.json" }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "name": "two_lane",
+  "cell": 64,
+  "boxes": [
+    { "name": "floor",      "origin": [0, 0, 0],      "extents": [3072, 1536, 64] },
+    { "name": "wall_-x",    "origin": [-1536, 0, 288], "extents": [64, 1536, 512] },
+    { "name": "wall_+x",    "origin": [1536, 0, 288],  "extents": [64, 1536, 512] },
+    { "name": "wall_-y",    "origin": [0, -768, 288],  "extents": [3072, 64, 512] },
+    { "name": "wall_+y",    "origin": [0, 768, 288],   "extents": [3072, 64, 512] },
+    { "name": "divider",    "origin": [0, 0, 224],     "extents": [1792, 128, 384] },
+    { "name": "cover_a",    "origin": [-640, -384, 96], "extents": [256, 256, 128] },
+    { "name": "cover_b",    "origin": [640, 384, 96],   "extents": [256, 256, 128] },
+    { "name": "ledge",      "origin": [-1216, 384, 160], "extents": [512, 512, 256] },
+    { "name": "ledge_step", "origin": [-896, 384, 96],   "extents": [128, 512, 128] }
+  ],
+  "entities": [
+    { "classname": "info_team_spawn", "origin": [-1344, 0, 64], "angles": [0, 0, 0],
+      "properties": { "teamnumber": "2", "lanenum": "1", "initialspawn": "1" } },
+    { "classname": "info_team_spawn", "origin": [1344, 0, 64], "angles": [0, 180, 0],
+      "properties": { "teamnumber": "3", "lanenum": "1", "initialspawn": "1" } },
+    { "classname": "info_trooper_spawn", "origin": [-1344, -448, 64], "angles": [0, 0, 0],
+      "properties": { "teamnumber": "2", "lanenum": "1" } },
+    { "classname": "info_trooper_spawn", "origin": [1344, 448, 64], "angles": [0, 180, 0],
+      "properties": { "teamnumber": "3", "lanenum": "1" } }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "name": "sealed_room",
+  "cell": 64,
+  "boxes": [
+    { "name": "floor",   "origin": [0, 0, 0],     "extents": [1024, 1024, 64] },
+    { "name": "ceiling", "origin": [0, 0, 512],   "extents": [1024, 1024, 64] },
+    { "name": "wall_-x", "origin": [-512, 0, 256], "extents": [64, 1024, 448] },
+    { "name": "wall_+x", "origin": [512, 0, 256],  "extents": [64, 1024, 448] },
+    { "name": "wall_-y", "origin": [0, -512, 256], "extents": [1024, 64, 448] },
+    { "name": "wall_+y", "origin": [0, 512, 256],  "extents": [1024, 64, 448] }
+  ],
+  "entities": [
+    { "classname": "info_team_spawn", "origin": [-256, 0, 64], "angles": [0, 0, 0],
+      "properties": { "teamnumber": "2", "lanenum": "1", "initialspawn": "1" } },
+    { "classname": "info_team_spawn", "origin": [256, 0, 64], "angles": [0, 180, 0],
+      "properties": { "teamnumber": "3", "lanenum": "1", "initialspawn": "1" } }
+  ]
+}

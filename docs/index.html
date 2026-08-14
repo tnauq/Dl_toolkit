@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0d0e">
+<meta name="description" content="Walk through a Deadlock blockout from a .mapplan.json.">
+<title>blockout walkthrough</title>
+<style>
+  :root{
+    /* Palette taken from Source dev measure textures, not invented:
+       an orange base with alternating bands and a dark seam line. */
+    --void:      #0b0d0e;
+    --hud:       #e8b27a;
+    --hud-dim:   #8a6647;
+    --hud-rule:  #2a2320;
+    --warn:      #d9704a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;height:100dvh;overflow:hidden;background:var(--void);
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+    overscroll-behavior:none;touch-action:none}
+  canvas{display:block;width:100vw;height:100vh;height:100dvh;
+    image-rendering:auto;position:fixed;inset:0}
+
+  /* HUD: a thin instrument strip, not a panel. Monospace throughout,
+     because every number on screen is a coordinate in Source units. */
+  .hud{position:fixed;left:0;right:0;top:0;padding:
+    max(10px,env(safe-area-inset-top)) 12px 8px;
+    font:500 11px/1.35 ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    color:var(--hud);letter-spacing:.04em;
+    text-shadow:0 1px 2px rgba(0,0,0,.9);pointer-events:none;
+    display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
+  .hud b{font-weight:600;color:#fff}
+  .hud .k{color:var(--hud-dim)}
+  .foot{position:fixed;left:0;right:0;bottom:0;
+    padding:8px 12px max(10px,env(safe-area-inset-bottom));
+    font:500 11px/1.4 ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    color:var(--hud-dim);display:flex;gap:14px;align-items:center;
+    border-top:1px solid var(--hud-rule);background:linear-gradient(
+      to top,rgba(11,13,14,.92),rgba(11,13,14,0))}
+  button,label.file{pointer-events:auto;cursor:pointer;
+    font:600 11px/1 ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    letter-spacing:.06em;text-transform:lowercase;
+    color:var(--hud);background:transparent;
+    border:1px solid var(--hud-rule);padding:7px 10px;border-radius:2px}
+  button:active,label.file:active{background:#1a1512}
+  button:focus-visible,label.file:focus-within{outline:2px solid var(--hud);
+    outline-offset:2px}
+  input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+  select{pointer-events:auto;cursor:pointer;-webkit-appearance:none;
+    appearance:none;font:600 11px/1 ui-monospace,'SF Mono',Menlo,monospace;
+    letter-spacing:.06em;color:var(--hud);background:transparent;
+    border:1px solid var(--hud-rule);border-radius:2px;
+    padding:7px 22px 7px 10px;max-width:44vw;text-overflow:ellipsis;
+    background-image:linear-gradient(45deg,transparent 50%,var(--hud-dim) 50%),
+      linear-gradient(135deg,var(--hud-dim) 50%,transparent 50%);
+    background-position:calc(100% - 12px) 12px,calc(100% - 8px) 12px;
+    background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+  select:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
+  select option{background:#14100e;color:var(--hud)}
+  select:empty,select.hidden{display:none}
+  .err{position:fixed;left:12px;right:12px;top:44px;color:var(--warn);
+    font:500 12px/1.5 ui-monospace,monospace;white-space:pre-wrap}
+  /* Touch zones are invisible by design: the world is the interface.
+     A one-time hint names them, then gets out of the way. */
+  /* Directional pad. Bottom right, thumb-reachable, sized against a
+     44px touch target minimum. Eight-way: the segment is chosen by the
+     angle of the touch from the centre, so diagonals work from one
+     finger without needing two buttons pressed at once. */
+  .dpad{position:fixed;right:max(18px,env(safe-area-inset-right));
+    bottom:calc(52px + max(10px,env(safe-area-inset-bottom)));
+    width:148px;height:148px;touch-action:none;pointer-events:auto;
+    border-radius:50%;border:1px solid var(--hud-rule);
+    background:radial-gradient(circle at 50% 50%,
+      rgba(232,178,122,.06),rgba(11,13,14,.55) 70%);
+    backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+  .dpad svg{width:100%;height:100%;display:block}
+  .dpad .seg{fill:none;stroke:var(--hud-dim);stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round}
+  .dpad.on .seg{stroke:var(--hud)}
+  .dpad .nub{fill:var(--hud);opacity:.9}
+  @media (max-width:380px){.dpad{width:124px;height:124px}}
+  .hint{position:fixed;inset:auto 0 64px;text-align:center;
+    font:500 11px/1.6 ui-monospace,monospace;color:var(--hud-dim);
+    transition:opacity .6s ease}
+  @media (prefers-reduced-motion:reduce){.hint{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hud">
+  <span><span class="k">pos</span> <b id="pos">0 0 0</b></span>
+  <span><span class="k">yaw</span> <b id="yaw">0</b></span>
+  <span><span class="k">cell</span> <b id="cell">64</b></span>
+  <span><span class="k">boxes</span> <b id="nbox">0</b></span>
+  <span><span class="k">fps</span> <b id="fps">0</b></span>
+</div>
+
+<div class="hint" id="hint">drag anywhere to look &middot; pad to move</div>
+<div class="err" id="err"></div>
+
+<div class="dpad" id="dpad" aria-hidden="true">
+  <svg viewBox="0 0 100 100">
+    <g class="seg">
+      <polyline points="44,30 50,23 56,30"/>
+      <polyline points="44,70 50,77 56,70"/>
+      <polyline points="30,44 23,50 30,56"/>
+      <polyline points="70,44 77,50 70,56"/>
+    </g>
+    <circle class="nub" id="nub" cx="50" cy="50" r="7"/>
+  </svg>
+</div>
+
+<div class="foot">
+  <select id="pick" aria-label="Map"></select>
+  <button id="fs">full screen</button>
+  <label class="file" tabindex="0">open file
+    <input type="file" id="file" accept=".json,application/json">
+  </label>
+  <button id="respawn">respawn</button>
+  <button id="noclip">noclip: off</button>
+  <span id="name">sealed_room</span>
+</div>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------
+   Blockout walkthrough for .mapplan.json
+
+   Source-space conventions, matching the emitter:
+     X/Y ground plane, Z up. Box origin is the CENTRE, extents are FULL
+     size. angles are [pitch, yaw, roll] like a Source qangle.
+
+   No GPU required and no libraries. Faces are subdivided into cell-sized
+   tiles and painted back to front. The tiles ARE the dev-texture grid, so
+   the thing that makes it readable is the same thing that makes it draw:
+   every band you see is one cell of world space.
+------------------------------------------------------------------- */
+
+const DEFAULT_PLAN = {
+  version: 1, name: "sealed_room", cell: 64,
+  boxes: [
+    { name:"floor",   origin:[0,0,0],     extents:[1024,1024,64] },
+    { name:"ceiling", origin:[0,0,512],   extents:[1024,1024,64] },
+    { name:"wall_-x", origin:[-512,0,256],extents:[64,1024,448] },
+    { name:"wall_+x", origin:[512,0,256], extents:[64,1024,448] },
+    { name:"wall_-y", origin:[0,-512,256],extents:[1024,64,448] },
+    { name:"wall_+y", origin:[0,512,256], extents:[1024,64,448] }
+  ],
+  entities: [
+    { classname:"info_team_spawn", origin:[-256,0,64], angles:[0,0,0],
+      properties:{teamnumber:"2",lanenum:"1",initialspawn:"1"} },
+    { classname:"info_team_spawn", origin:[256,0,64], angles:[0,180,0],
+      properties:{teamnumber:"3",lanenum:"1",initialspawn:"1"} }
+  ]
+};
+
+const EYE = 64;        // eye height above the surface stood on
+const RADIUS = 16;     // player cylinder radius
+const STEP = 18;       // step-up height
+const NEAR = 4;
+const FOV = 75 * Math.PI / 180;
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d', { alpha:false });
+const el = id => document.getElementById(id);
+
+let plan = DEFAULT_PLAN;
+let solids = [];       // prepared geometry
+let cam = { x:0, y:0, z:EYE, yaw:0, pitch:0 };
+let noclip = false;
+let W=0, H=0, DPR=1;
+
+/* ---------- geometry preparation ---------- */
+
+function rot(anglesDeg){
+  // Source qangle: pitch about Y, yaw about Z, roll about X.
+  const [p,y,r] = (anglesDeg||[0,0,0]).map(d => d*Math.PI/180);
+  const cp=Math.cos(p),sp=Math.sin(p),cy=Math.cos(y),sy=Math.sin(y),
+        cr=Math.cos(r),sr=Math.sin(r);
+  return [
+    [cp*cy, sr*sp*cy - cr*sy, cr*sp*cy + sr*sy],
+    [cp*sy, sr*sp*sy + cr*cy, cr*sp*sy - sr*cy],
+    [-sp,   sr*cp,            cr*cp]
+  ];
+}
+const isIdentityAngles = a => !a || (a[0]===0 && a[1]===0 && a[2]===0);
+
+// Face definitions: normal axis, sign, and the two in-plane axes.
+const FACES = [
+  { n:[0,0, 1], u:0, v:1, w:2, s: 1, shade:1.00 }, // top
+  { n:[0,0,-1], u:0, v:1, w:2, s:-1, shade:0.42 }, // bottom
+  { n:[ 1,0,0], u:1, v:2, w:0, s: 1, shade:0.74 },
+  { n:[-1,0,0], u:1, v:2, w:0, s:-1, shade:0.62 },
+  { n:[0, 1,0], u:0, v:2, w:1, s: 1, shade:0.82 },
+  { n:[0,-1,0], u:0, v:2, w:1, s:-1, shade:0.54 }
+];
+
+function prepare(p){
+  const cell = p.cell || 64;
+  solids = (p.boxes||[]).map((b,i) => {
+    const o = b.origin || [0,0,0];
+    const e = b.extents || [64,64,64];
+    const h = [e[0]/2, e[1]/2, e[2]/2];
+    const R = isIdentityAngles(b.angles) ? null : rot(b.angles);
+    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell,
+             aabb:[o[0]-h[0],o[1]-h[1],o[2]-h[2],o[0]+h[0],o[1]+h[1],o[2]+h[2]] };
+  });
+  return cell;
+}
+
+function toWorld(sol, local){
+  if(!sol.R) return [sol.o[0]+local[0], sol.o[1]+local[1], sol.o[2]+local[2]];
+  const R = sol.R;
+  return [
+    sol.o[0] + R[0][0]*local[0] + R[0][1]*local[1] + R[0][2]*local[2],
+    sol.o[1] + R[1][0]*local[0] + R[1][1]*local[1] + R[1][2]*local[2],
+    sol.o[2] + R[2][0]*local[0] + R[2][1]*local[1] + R[2][2]*local[2]
+  ];
+}
+
+/* ---------- camera ---------- */
+
+function view(pt){
+  // Right-handed, Z up. yaw=0 faces +X, so +Y is to the LEFT and must
+  // land at negative screen x. Getting this backwards is silent: the
+  // world still draws, it is just mirrored.
+  const dx=pt[0]-cam.x, dy=pt[1]-cam.y, dz=pt[2]-cam.z;
+  const cy=Math.cos(cam.yaw), sy=Math.sin(cam.yaw);
+  const fwd =  dx*cy + dy*sy;
+  const lat =  dx*sy - dy*cy;        // +lat is screen-right
+  const cp=Math.cos(cam.pitch), sp=Math.sin(cam.pitch);
+  const fz = fwd*cp + dz*sp;         // depth
+  const uz = dz*cp - fwd*sp;         // up
+  return [lat, uz, fz];
+}
+function project(v, f){
+  return [ W/2 + v[0]*f/v[2], H/2 - v[1]*f/v[2] ];
+}
+function clipNear(poly){
+  const out=[];
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i], b=poly[(i+1)%poly.length];
+    const ain=a[2]>=NEAR, bin=b[2]>=NEAR;
+    if(ain) out.push(a);
+    if(ain!==bin){
+      const t=(NEAR-a[2])/(b[2]-a[2]);
+      out.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, NEAR]);
+    }
+  }
+  return out;
+}
+
+/* ---------- dev texture, drawn not loaded ---------- */
+/* Orange measure bands. Light/dark alternate on a checker so the eye can
+   count cells at a glance, and the seam lines give edges definition. */
+function tileColor(shade, gx, gy){
+  const checker = ((gx + gy) & 1) === 0;
+  const base = checker ? [198,101,42] : [154,74,29];
+  const k = shade;
+  return 'rgb(' + Math.round(base[0]*k) + ',' + Math.round(base[1]*k) + ','
+                + Math.round(base[2]*k) + ')';
+}
+
+/* ---------- render ---------- */
+
+let frames=0, lastFps=performance.now(), fps=0;
+
+function render(){
+  const f = (H/2) / Math.tan(FOV/2);
+  ctx.fillStyle = '#0b0d0e';
+  ctx.fillRect(0,0,W,H);
+
+  const quads = [];
+
+  for(const sol of solids){
+    const cell = sol.cell;
+    for(const F of FACES){
+      // Outward normal in world space; skip faces pointing away.
+      let n = F.n;
+      if(sol.R) n = [
+        sol.R[0][0]*n[0]+sol.R[0][1]*n[1]+sol.R[0][2]*n[2],
+        sol.R[1][0]*n[0]+sol.R[1][1]*n[1]+sol.R[1][2]*n[2],
+        sol.R[2][0]*n[0]+sol.R[2][1]*n[1]+sol.R[2][2]*n[2]
+      ];
+      const centre = toWorld(sol, [
+        F.w===0 ? F.s*sol.h[0] : 0,
+        F.w===1 ? F.s*sol.h[1] : 0,
+        F.w===2 ? F.s*sol.h[2] : 0
+      ]);
+      const toCam = [cam.x-centre[0], cam.y-centre[1], cam.z-centre[2]];
+      if(n[0]*toCam[0] + n[1]*toCam[1] + n[2]*toCam[2] <= 0) continue;
+
+      const uSize = sol.e[F.u], vSize = sol.e[F.v];
+      // Tile count is capped so a very large face cannot stall the frame.
+      const nu = Math.max(1, Math.min(64, Math.round(uSize/cell)));
+      const nv = Math.max(1, Math.min(64, Math.round(vSize/cell)));
+      const du = uSize/nu, dv = vSize/nv;
+
+      for(let iu=0; iu<nu; iu++){
+        for(let iv=0; iv<nv; iv++){
+          const corners = [[0,0],[1,0],[1,1],[0,1]].map(([a,b])=>{
+            const local = [0,0,0];
+            local[F.w] = F.s*sol.h[F.w];
+            local[F.u] = -uSize/2 + (iu+a)*du;
+            local[F.v] = -vSize/2 + (iv+b)*dv;
+            return view(toWorld(sol, local));
+          });
+          const clipped = clipNear(corners);
+          if(clipped.length < 3) continue;
+          let depth = 0;
+          for(const c of clipped) depth += c[2];
+          depth /= clipped.length;
+          quads.push({ depth, pts:clipped.map(v=>project(v,f)),
+                       col: tileColor(F.shade, iu, iv) });
+        }
+      }
+    }
+  }
+
+  quads.sort((a,b)=>b.depth-a.depth);   // painter's algorithm, far first
+
+  ctx.lineJoin = 'round';
+  for(const q of quads){
+    ctx.beginPath();
+    ctx.moveTo(q.pts[0][0], q.pts[0][1]);
+    for(let i=1;i<q.pts.length;i++) ctx.lineTo(q.pts[i][0], q.pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = q.col;
+    ctx.fill();
+    // Seam line: the scale marker. Only when the tile is big enough on
+    // screen to be read, otherwise it turns distant surfaces to mud.
+    const w = Math.abs(q.pts[1][0]-q.pts[0][0]) + Math.abs(q.pts[1][1]-q.pts[0][1]);
+    if(w > 9){
+      ctx.strokeStyle = 'rgba(40,18,6,.55)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // Spawns, drawn as upright markers so their facing is legible.
+  for(const e of (plan.entities||[])){
+    const o = e.origin||[0,0,0];
+    const base = view(o), top = view([o[0],o[1],o[2]+72]);
+    if(base[2] < NEAR || top[2] < NEAR) continue;
+    const p0 = project(base,f), p1 = project(top,f);
+    const team = (e.properties && e.properties.teamnumber) || '';
+    ctx.strokeStyle = team === '2' ? '#7fd4c1' : '#e8b27a';
+    ctx.lineWidth = Math.max(1.5, 220/base[2]);
+    ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke();
+    if(base[2] < 2200){
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.font = '600 11px ui-monospace,monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(e.classname.replace('info_',''), p1[0], p1[1]-6);
+    }
+  }
+
+  frames++;
+  const now = performance.now();
+  if(now - lastFps > 500){
+    fps = Math.round(frames*1000/(now-lastFps));
+    frames = 0; lastFps = now;
+    el('fps').textContent = fps;
+  }
+  el('pos').textContent =
+    Math.round(cam.x)+' '+Math.round(cam.y)+' '+Math.round(cam.z);
+  el('yaw').textContent = Math.round(((cam.yaw*180/Math.PI)%360+360)%360);
+}
+
+/* ---------- collision ---------- */
+
+function solidAt(x,y,z){
+  for(const s of solids){
+    const a = s.aabb;
+    if(x > a[0]-RADIUS && x < a[3]+RADIUS &&
+       y > a[1]-RADIUS && y < a[4]+RADIUS &&
+       z > a[2] && z < a[5]) return s;
+  }
+  return null;
+}
+function floorUnder(x,y,z){
+  let best = -1e9;
+  for(const s of solids){
+    const a = s.aabb;
+    if(x > a[0]-RADIUS && x < a[3]+RADIUS &&
+       y > a[1]-RADIUS && y < a[4]+RADIUS){
+      if(a[5] <= z + STEP && a[5] > best) best = a[5];
+    }
+  }
+  return best;
+}
+function move(dx,dy){
+  if(noclip){ cam.x+=dx; cam.y+=dy; return; }
+  // SUBSTEPPED. A single large step tunnels straight through a thin wall,
+  // because the test only samples the destination. Walls here are one
+  // cell thick, so the step must stay under the player radius.
+  const dist = Math.hypot(dx,dy);
+  const steps = Math.max(1, Math.ceil(dist / (RADIUS*0.8)));
+  const sx = dx/steps, sy = dy/steps;
+  for(let i=0;i<steps;i++){
+    const feet = cam.z - EYE;
+    // Axis-separated so sliding along a wall works instead of stopping dead.
+    if(!solidAt(cam.x+sx, cam.y, feet+STEP+1)) cam.x += sx;
+    if(!solidAt(cam.x, cam.y+sy, feet+STEP+1)) cam.y += sy;
+    const g = floorUnder(cam.x, cam.y, feet);
+    if(g > -1e8) cam.z = g + EYE;
+  }
+}
+
+/* ---------- input ---------- */
+
+const keys = Object.create(null);
+addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()] = true;
+  if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+});
+addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+const touches = new Map();
+const pad = el('dpad'), nub = el('nub');
+let padVec = { f:0, s:0 };          // forward / strafe, -1..1
+
+function padCentre(){
+  const r = pad.getBoundingClientRect();
+  return { cx: r.left + r.width/2, cy: r.top + r.height/2, r: r.width/2 };
+}
+// Eight-way: snap the touch angle to the nearest 45 degrees so the pad
+// feels like a d-pad rather than a loose thumbstick, while still giving
+// diagonals from a single finger.
+function setPad(px, py){
+  const c = padCentre();
+  const dx = px - c.cx, dy = py - c.cy;
+  const m = Math.hypot(dx, dy);
+  if(m < c.r*0.22){ clearPad(); return; }
+  const step = Math.PI/4;
+  const a = Math.round(Math.atan2(dy, dx)/step)*step;
+  const ux = Math.cos(a), uy = Math.sin(a);
+  padVec.f = -uy;                    // screen up is forward
+  padVec.s =  ux;
+  pad.classList.add('on');
+  nub.setAttribute('cx', 50 + ux*26);
+  nub.setAttribute('cy', 50 + uy*26);
+}
+function clearPad(){
+  padVec.f = 0; padVec.s = 0;
+  pad.classList.remove('on');
+  nub.setAttribute('cx', 50); nub.setAttribute('cy', 50);
+}
+
+function inPad(t){
+  const r = pad.getBoundingClientRect();
+  return t.clientX >= r.left && t.clientX <= r.right &&
+         t.clientY >= r.top  && t.clientY <= r.bottom;
+}
+
+function onStart(e){
+  for(const t of e.changedTouches){
+    if(inPad(t)){
+      touches.set(t.identifier, { zone:'pad' });
+      setPad(t.clientX, t.clientY);
+    } else {
+      touches.set(t.identifier, { zone:'look', x:t.clientX, y:t.clientY });
+    }
+  }
+  el('hint').style.opacity = '0';
+  e.preventDefault();
+}
+function onMove(e){
+  for(const t of e.changedTouches){
+    const s = touches.get(t.identifier); if(!s) continue;
+    if(s.zone === 'pad'){
+      setPad(t.clientX, t.clientY);
+    } else {
+      cam.yaw   -= (t.clientX - s.x) * 0.006;
+      cam.pitch  = Math.max(-1.35, Math.min(1.35,
+                   cam.pitch - (t.clientY - s.y)*0.006));
+      s.x = t.clientX; s.y = t.clientY;
+    }
+  }
+  e.preventDefault();
+}
+function endTouch(e){
+  for(const t of e.changedTouches){
+    const s = touches.get(t.identifier);
+    if(s && s.zone === 'pad') clearPad();
+    touches.delete(t.identifier);
+  }
+}
+// Listeners go on the document, not the canvas: the pad sits above the
+// canvas, so a touch that starts on the pad never reaches it.
+document.addEventListener('touchstart', onStart, {passive:false});
+document.addEventListener('touchmove',  onMove,  {passive:false});
+document.addEventListener('touchend',   endTouch);
+document.addEventListener('touchcancel',endTouch);
+// Mouse on the pad, for testing on desktop.
+pad.addEventListener('mousedown', e=>{ setPad(e.clientX, e.clientY); e.preventDefault(); });
+pad.addEventListener('mousemove', e=>{ if(e.buttons) setPad(e.clientX, e.clientY); });
+addEventListener('mouseup', clearPad);
+
+let dragging = false;
+cv.addEventListener('mousedown', ()=>{ dragging = true; });
+addEventListener('mouseup', ()=>{ dragging = false; });
+addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  cam.yaw   -= e.movementX * 0.004;
+  cam.pitch  = Math.max(-1.35, Math.min(1.35, cam.pitch - e.movementY*0.004));
+});
+
+/* ---------- loop ---------- */
+
+let last = performance.now();
+function tick(){
+  const now = performance.now();
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+  const speed = 320 * dt;
+
+  let fwd = 0, str = 0;
+  if(keys['w']||keys['arrowup']) fwd += 1;
+  if(keys['s']||keys['arrowdown']) fwd -= 1;
+  if(keys['d']||keys['arrowright']) str += 1;
+  if(keys['a']||keys['arrowleft']) str -= 1;
+
+  fwd += padVec.f; str += padVec.s;
+
+  if(fwd || str){
+    // forward is (cos,sin); strafe-right is (sin,-cos) in this handedness.
+    const c = Math.cos(cam.yaw), sn = Math.sin(cam.yaw);
+    move((c*fwd + sn*str)*speed, (sn*fwd - c*str)*speed);
+  }
+  if(noclip){
+    if(keys['q']) cam.z -= speed;
+    if(keys['e']) cam.z += speed;
+  }
+
+  render();
+  requestAnimationFrame(tick);
+}
+
+/* ---------- plan loading ---------- */
+
+function spawnPoint(){
+  const e = (plan.entities||[])[0];
+  if(e && e.origin){
+    cam.x = e.origin[0]; cam.y = e.origin[1]; cam.z = e.origin[2] + EYE;
+    cam.yaw = ((e.angles && e.angles[1]) || 0) * Math.PI/180;
+  } else {
+    cam.x = 0; cam.y = 0; cam.z = EYE;
+  }
+  cam.pitch = 0;
+  const g = floorUnder(cam.x, cam.y, cam.z - EYE + STEP);
+  if(g > -1e8) cam.z = g + EYE;
+}
+
+function load(p){
+  if(!p || !Array.isArray(p.boxes))
+    throw new Error('plan has no boxes array');
+  plan = p;
+  const cell = prepare(p);
+  el('cell').textContent = cell;
+  el('nbox').textContent = solids.length;
+  el('name').textContent = p.name || 'untitled';
+  spawnPoint();
+}
+
+el('file').addEventListener('change', ev=>{
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    el('err').textContent = '';
+    try {
+      load(JSON.parse(r.result));
+      const u = new URL(location.href);
+      u.searchParams.delete('plan');
+      history.replaceState(null, '', u);
+      pick.value = '';
+    }
+    catch(e){ el('err').textContent = 'could not read that plan: ' + e.message; }
+  };
+  r.onerror = () => { el('err').textContent = 'could not read that file'; };
+  r.readAsText(f);
+});
+/* Full screen.
+   iOS Safari on iPhone does not implement the Fullscreen API, so the
+   button is hidden there and the honest route is Share -> Add to Home
+   Screen: the standalone meta tags above make that launch chrome-free.
+   Everywhere else this is a real fullscreen request. */
+const fsBtn = el('fs');
+const canFs = !!(document.documentElement.requestFullscreen ||
+                 document.documentElement.webkitRequestFullscreen);
+const standalone = navigator.standalone === true ||
+  matchMedia('(display-mode: standalone)').matches;
+if(!canFs || standalone){
+  fsBtn.style.display = 'none';
+} else {
+  fsBtn.addEventListener('click', async ()=>{
+    try{
+      if(document.fullscreenElement || document.webkitFullscreenElement){
+        await (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } else {
+        const d = document.documentElement;
+        await (d.requestFullscreen || d.webkitRequestFullscreen).call(d);
+      }
+    } catch(err){
+      el('err').textContent = 'full screen was refused by the browser';
+    }
+  });
+  document.addEventListener('fullscreenchange', ()=>{
+    fsBtn.textContent = document.fullscreenElement ? 'exit full screen' : 'full screen';
+    setTimeout(resize, 60);
+  });
+}
+
+/* Hosting: plans live in plans/ beside this file, listed in
+   plans/index.json. All paths are RELATIVE, never absolute, so the page
+   works unchanged under a GitHub Pages project subpath like /Dl_toolkit/.
+   Opening this file straight off disk cannot fetch anything; the file
+   picker still works there. */
+
+const pick = el('pick');
+let manifest = [];
+
+function relativeOnly(q){
+  return !/^([a-z]+:)?\/\//i.test(q) && !q.startsWith('/');
+}
+
+async function fetchPlan(path){
+  if(!relativeOnly(path)) throw new Error('path must be relative to this page');
+  const res = await fetch(path, { cache:'no-cache' });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+async function selectPlan(path, push){
+  try{
+    load(await fetchPlan(path));
+    el('err').textContent = '';
+    if(push){
+      const u = new URL(location.href);
+      u.searchParams.set('plan', path);
+      history.replaceState(null, '', u);   // the URL stays shareable
+    }
+    if(pick.value !== path) pick.value = path;
+  } catch(err){
+    el('err').textContent = 'could not load ' + path + ' — ' + err.message;
+  }
+}
+
+/* The manifest is a plain list so adding a map is one commit:
+   drop the .json in plans/ and add a line to plans/index.json.
+     { "plans": [ { "name": "Sealed room", "file": "sealed_room.json" } ] } */
+async function buildMenu(){
+  try{
+    const res = await fetch('plans/index.json', { cache:'no-cache' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    manifest = (data.plans || []).filter(p => p && p.file);
+  } catch(err){
+    manifest = [];
+  }
+
+  if(!manifest.length){
+    // No manifest: running off disk, or none published yet. Hide the menu
+    // rather than showing an empty control that does nothing.
+    pick.classList.add('hidden');
+    return false;
+  }
+
+  pick.classList.remove('hidden');
+  pick.innerHTML = '';
+  for(const p of manifest){
+    const o = document.createElement('option');
+    o.value = 'plans/' + p.file;
+    o.textContent = p.name || p.file.replace(/\.json$/, '');
+    pick.appendChild(o);
+  }
+  pick.addEventListener('change', () => selectPlan(pick.value, true));
+  return true;
+}
+
+async function boot(){
+  const havePicker = await buildMenu();
+  const q = new URLSearchParams(location.search).get('plan');
+  if(q){ await selectPlan(q, false); return; }
+  if(havePicker){ await selectPlan(pick.value, false); }
+  // Otherwise the embedded default stays loaded.
+}
+
+el('respawn').addEventListener('click', spawnPoint);
+el('noclip').addEventListener('click', ev=>{
+  noclip = !noclip;
+  ev.target.textContent = 'noclip: ' + (noclip ? 'on' : 'off');
+});
+
+function resize(){
+  DPR = Math.min(2, devicePixelRatio||1);
+  W = Math.floor(innerWidth*DPR); H = Math.floor(innerHeight*DPR);
+  cv.width = W; cv.height = H;
+}
+addEventListener('resize', resize);
+addEventListener('orientationchange', resize);
+
+resize();
+load(DEFAULT_PLAN);
+boot();
+tick();
+setTimeout(()=>{ el('hint').style.opacity = '0'; }, 6000);
+</script>
+</body>
+</html>
