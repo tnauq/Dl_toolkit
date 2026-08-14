@@ -1,0 +1,404 @@
+name: probe compiler control
+
+# WHY THIS EXISTS
+#
+# probe-compiler-map hung on BOTH layouts: 130 lines, frozen for the full
+# 240s, killed at exit 137. No error 126, no RESOURCE COMPILE ERROR, no path
+# failure. A hang is not a failure message, so it tells us almost nothing on
+# its own.
+#
+# TWO THINGS WERE LEARNED, and both shape this workflow:
+#
+# 1. `-game` does NOT decide CONTENT. gameinfo.gi does. Layout B ran with
+#    ModGameSubdir: citadel_addons/dl_toolkit_test and STILL resolved
+#    CONTENT to build\content\citadel\ and build\content\core\, because we
+#    copied CITADEL's gameinfo in, and it declares `Game citadel` and
+#    `Game core`. The input under content/citadel_addons/ was outside every
+#    mount. This upgrades a FINDINGS line from [I] to [V-CI]: an addon needs
+#    a gameinfo that declares its OWN mount.
+#
+# 2. The last informative lines before the freeze were
+#    "Unable to find fgd file models_gamedata.fgd" (twice), plus missing
+#    soundevents_manifest.vrman_c and soundstacks. A map compile resolves
+#    entity keyvalues against FGDs in a way a vdata compile never does.
+#
+# THE POINT OF THIS RUN IS THE CONTROL, NOT A BIGGER CAP.
+#
+#   C1  real vdata, plain citadel mount   <- KNOWN GOOD from probe-compiler
+#   C2  our vmap,   plain citadel mount   <- same as before, but FGDs present
+#   C3  our vmap,   PATCHED addon mount   <- the layout that was never tested
+#
+# If C1 compiles and C2/C3 hang, the hang is vmap-specific and the FGD trail
+# is the lead. If C1 ALSO hangs, this workflow's environment regressed versus
+# probe-compiler and the vmap is innocent. Those two conclusions need
+# different work, which is the whole reason to run C1.
+#
+# NOTHING HERE GATES except the emit stage. Settled: the map compiler probe
+# is a warning, not a gate.
+#
+# ON THE ADDON GAMEINFO: it is PATCHED from the real citadel one with sed,
+# not written by hand. A synthesized gameinfo the compiler rejects looks
+# identical to the compiler rejecting the flag, and those need telling apart.
+
+on: workflow_dispatch
+
+env:
+  PLAN: examples/sealed-room.mapplan.json
+  ADDON: dl_toolkit_test
+  MAPNAME: sealed_room
+  CAP_SECONDS: 150
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Build
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet build src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -c Release > build.txt 2>&1 || RC=$?
+          cat build.txt
+          [ "$RC" -eq 0 ] || exit 1
+
+      # The only gate. Everything downstream is meaningless without it.
+      - name: Emit the map
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          RC=0
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- emit "$PLAN" work/t1.vmap > out/emit.txt 2>&1 || RC=$?
+          cat out/emit.txt
+          [ "$RC" -eq 0 ] || { echo "::error::emit failed"; exit 1; }
+          [ -s work/t1.vmap ] || { echo "::error::empty emit"; exit 1; }
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          comp = conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  low = f.lower()
+                  if low == 'resourcecompiler.exe':
+                      comp = os.path.abspath(os.path.join(root, f))
+                  elif low == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          print("compiler:  ", comp or "NOT FOUND")
+          print("dmxconvert:", conv or "NOT FOUND")
+          if not comp or not conv:
+              print("::error::missing a tool"); sys.exit(1)
+
+          loose = os.path.join('dl', 'modtools.dll')
+          if os.path.exists(loose):
+              shutil.copy(loose, os.path.join(os.path.dirname(comp), 'modtools.dll'))
+              print("placed modtools.dll")
+          else:
+              print("::warning::modtools.dll not among the release assets")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"comp={comp}\n")
+              g.write(f"conv={conv}\n")
+
+      # Cheap and never captured before. If there are map-specific flags,
+      # or a way to skip lighting or FGD loading, they are in here.
+      - name: Capture compiler usage
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          "${{ steps.get.outputs.comp }}" -help > out/usage.txt 2>&1 < /dev/null || RC=$?
+          echo "exit: $RC" >> out/usage.txt
+          echo "--- usage (first 120 lines) ---"
+          head -120 out/usage.txt || true
+          echo "--- any mention of map / vmap / lighting / fgd ---"
+          grep -i 'map\|light\|fgd\|world' out/usage.txt | head -30 || echo "none"
+
+      - name: Text to binary vmap
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/t1.vmap" -ie keyvalues2_noids \
+            -o "$ROOT/work/$MAPNAME.vmap" -oe binary -of vmap \
+            > out/conv.txt 2>&1 || RC=$?
+          cat out/conv.txt
+          [ -s "work/$MAPNAME.vmap" ] || { echo "::error::no binary vmap"; exit 1; }
+          ls -l "work/$MAPNAME.vmap"
+
+      - name: Build the trees, with FGDs and a real addon mount
+        shell: bash
+        run: |
+          set -uo pipefail
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
+          cd gt
+          git sparse-checkout init --no-cone
+          # FGDs are new here. The map compile asked for models_gamedata.fgd
+          # twice and never got it.
+          git sparse-checkout set --no-cone \
+            '/**/gameinfo.gi' '/**/*.fgd' '/**/*.vdata'
+          cd ..
+
+          find gt -name 'gameinfo.gi' -not -path './gt/.git/*' > found.txt
+          cat found.txt
+          SRC=$(grep -m1 'citadel/gameinfo.gi' found.txt || head -1 found.txt)
+          echo "gameinfo: $SRC"
+
+          find gt -name '*.fgd' -not -path './gt/.git/*' > fgds.txt
+          echo "fgd files found: $(wc -l < fgds.txt)"
+          head -20 fgds.txt
+
+          # --- plain citadel mount, used by C1 and C2 ---
+          mkdir -p build/game/citadel build/content/citadel/maps build/content/citadel/scripts
+          cp "$SRC" build/game/citadel/gameinfo.gi
+          cp "work/$MAPNAME.vmap" "build/content/citadel/maps/$MAPNAME.vmap"
+
+          if [ -f gt/game/core/gameinfo.gi ]; then
+            mkdir -p build/game/core build/content/core
+            cp gt/game/core/gameinfo.gi build/game/core/gameinfo.gi
+          fi
+
+          # FGDs go beside the game dirs. Copied to BOTH citadel and core
+          # because we do not know which mount the compiler searches; a
+          # duplicate costs nothing and a miss costs a whole run.
+          while read -r f; do
+            [ -n "$f" ] || continue
+            cp "$f" build/game/citadel/ 2>/dev/null || true
+            [ -d build/game/core ] && cp "$f" build/game/core/ 2>/dev/null || true
+          done < fgds.txt
+          echo "fgds staged in game/citadel: $(ls build/game/citadel/*.fgd 2>/dev/null | wc -l)"
+
+          # --- the addon mount, PATCHED from the real gameinfo ---
+          # The previous run proved gameinfo decides CONTENT, so an addon
+          # needs its own Game line. sed the real file rather than writing
+          # one: a synthesized gameinfo that fails looks like the flag
+          # failing, and those need telling apart.
+          mkdir -p "build/game/citadel_addons/$ADDON"
+          mkdir -p "build/content/citadel_addons/$ADDON/maps"
+          sed "s|^\([[:space:]]*\)Game\([[:space:]]\+\)citadel[[:space:]]*$|\1Game\2citadel_addons/$ADDON\n\1Game\2citadel|" \
+            "$SRC" > "build/game/citadel_addons/$ADDON/gameinfo.gi"
+          cp "work/$MAPNAME.vmap" "build/content/citadel_addons/$ADDON/maps/$MAPNAME.vmap"
+          while read -r f; do
+            [ -n "$f" ] || continue
+            cp "$f" "build/game/citadel_addons/$ADDON/" 2>/dev/null || true
+          done < fgds.txt
+          echo "--- patched addon gameinfo, Game lines ---"
+          grep -n 'Game' "build/game/citadel_addons/$ADDON/gameinfo.gi" | head -10 || true
+
+          # --- a REAL vdata for C1, the known-good control ---
+          find gt -name '*.vdata' -not -path './gt/.git/*' -printf '%s\t%p\n' \
+            | sort -n > all-vdata.txt
+          PICK=""
+          while IFS=$'\t' read -r size path; do
+            if grep -q 'generic_data_type' "$path" 2>/dev/null; then
+              PICK="$path"; PICKSZ="$size"; break
+            fi
+          done < all-vdata.txt
+          if [ -z "$PICK" ]; then
+            echo "::warning::no vdata with generic_data_type — C1 cannot run"
+            echo "" > vdata-name.txt
+          else
+            echo "vdata control: $PICK ($PICKSZ bytes)"
+            NAME=$(basename "$PICK")
+            cp "$PICK" "build/content/citadel/scripts/$NAME"
+            echo "$NAME" > vdata-name.txt
+          fi
+          find build -type f | head -40
+
+      - name: Write the watchdog
+        shell: bash
+        run: |
+          set -uo pipefail
+          cat > capped.sh <<'SH'
+          #!/usr/bin/env bash
+          # $1 log  $2 compiler  $3 -game dir  $4 input (relative)
+          set -uo pipefail
+          LOG="$1"; COMP="$2"; GAMEDIR="$3"; INPUT="$4"
+          CAP=${CAP_SECONDS:-150}
+          cd build/game || { echo "no build/game" > "$LOG"; exit 0; }
+          echo "=== -game $GAMEDIR   -i $INPUT   cap ${CAP}s ===" > "$LOG"
+          "$COMP" -nop4 -v -game "$GAMEDIR" -i "$INPUT" >> "$LOG" 2>&1 < /dev/null &
+          PID=$!
+          ELAPSED=0
+          LAST=""
+          while kill -0 "$PID" 2>/dev/null; do
+            sleep 10; ELAPSED=$((ELAPSED+10))
+            # Print the LAST LINE, not just the count. A frozen count with a
+            # changing tail means progress; both frozen means a real stall,
+            # and the last line names where.
+            CUR=$(tail -1 "$LOG" 2>/dev/null | tr -d '\r')
+            echo "  [${ELAPSED}s] $(wc -l < "$LOG") lines | ${CUR:0:90}"
+            LAST="$CUR"
+            if [ "$ELAPSED" -ge "$CAP" ]; then
+              echo "" >> "$LOG"
+              echo "=== WATCHDOG: killed after ${CAP}s ===" >> "$LOG"
+              kill -9 "$PID" 2>/dev/null || true
+              taskkill //F //IM resourcecompiler.exe 2>/dev/null || true
+              sleep 2
+              break
+            fi
+          done
+          wait "$PID" 2>/dev/null; RC=$?
+          echo "exit: $RC" >> "$LOG"
+          echo "--- last 25 lines ---"
+          tail -25 "$LOG" || true
+          exit 0
+          SH
+          sed -i 's/^          //' capped.sh
+          chmod +x capped.sh
+          head -3 capped.sh
+
+      # ------------------------------------------------------------------
+      # From here nothing fails the job. C1 first: it is the control, and if
+      # it hangs too then nothing about the vmap is implicated.
+      # ------------------------------------------------------------------
+      - name: C1 — vdata, plain citadel mount (KNOWN GOOD)
+        if: always()
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          NAME=$(cat vdata-name.txt 2>/dev/null || echo "")
+          if [ -z "$NAME" ]; then
+            echo "SKIPPED: no vdata control available" | tee out/compile-c1.txt
+            exit 0
+          fi
+          bash "$ROOT/capped.sh" "$ROOT/out/compile-c1.txt" \
+            "${{ steps.get.outputs.comp }}" "citadel" \
+            "../content/citadel/scripts/$NAME"
+
+      - name: C2 — vmap, plain citadel mount
+        if: always()
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/compile-c2.txt" \
+            "${{ steps.get.outputs.comp }}" "citadel" \
+            "../content/citadel/maps/$MAPNAME.vmap"
+
+      - name: C3 — vmap, patched addon mount
+        if: always()
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" "$ROOT/out/compile-c3.txt" \
+            "${{ steps.get.outputs.comp }}" "citadel_addons/$ADDON" \
+            "../content/citadel_addons/$ADDON/maps/$MAPNAME.vmap"
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          {
+            echo "=== compiled output ==="
+            find build -name '*_c' -newer build.txt 2>/dev/null | head -20
+            echo "vdata_c: $(find build -name '*.vdata_c' 2>/dev/null | wc -l)"
+            echo "vmap_c:  $(find build -name '*.vmap_c' 2>/dev/null | wc -l)"
+            echo
+            for f in c1 c2 c3; do
+              L="out/compile-$f.txt"
+              echo "=== $f ==="
+              if [ ! -f "$L" ]; then echo "(no log)"; echo; continue; fi
+              echo "lines: $(wc -l < "$L")"
+              grep -c 'WATCHDOG' "$L" > /dev/null 2>&1 \
+                && echo "outcome: HUNG (watchdog killed it)" \
+                || echo "outcome: exited on its own"
+              echo "-- exit --";      grep '^exit:' "$L" | tail -1 || true
+              echo "-- CONTENT --";   grep '^CONTENT' "$L" | head -4 || echo none
+              echo "-- errors --"
+              grep -i 'RESOURCE COMPILE ERROR\|error 126\|Unable to load module\|Failed to split\|FileExists NULL' "$L" | head -5 || echo none
+              echo "-- fgd --";       grep -i 'fgd' "$L" | head -4 || echo none
+              echo "-- LAST LINE (where it stalled) --"
+              tail -1 "$L" | tr -d '\r' || true
+              echo
+            done
+          } > out/summary.txt 2>&1
+          cat out/summary.txt
+          echo
+          echo "READ C1 FIRST."
+          echo "C1 compiles + C2/C3 hang -> vmap-specific, FGD trail is the lead."
+          echo "C1 hangs too            -> environment regression, vmap innocent."
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-compiler-control
+          path: |
+            out/
+            build.txt
+            found.txt
+            fgds.txt
+            vdata-name.txt
+          if-no-files-found: ignore
