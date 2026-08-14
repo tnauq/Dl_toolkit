@@ -43,6 +43,8 @@ env:
 jobs:
   probe:
     runs-on: windows-latest
+    # A hung Source tool will otherwise eat the runner's full 6 hours.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
 
@@ -211,43 +213,82 @@ jobs:
       # From here on NOTHING FAILS THE JOB. cat before asserting; RC captured
       # with `|| RC=$?` because `bash -e` is not cleared by `set -uo pipefail`.
       # ------------------------------------------------------------------
-      - name: A — content/citadel/maps
-        if: always()
+      - name: Write the watchdog
         shell: bash
         run: |
           set -uo pipefail
-          ROOT="$(pwd -W 2>/dev/null || pwd)"
-          cd build/game
-          RC=0
-          "${{ steps.get.outputs.comp }}" -nop4 -v \
-            -game citadel \
-            -i "../content/citadel/maps/$MAPNAME.vmap" \
-            > "$ROOT/out/compile-a.txt" 2>&1 || RC=$?
-          cd "$ROOT"
-          echo "exit: $RC" | tee -a out/compile-a.txt
+          cat > capped.sh <<'SH'
+          #!/usr/bin/env bash
+          # $1 log  $2 compiler  $3 -game dir  $4 input (relative)
+          set -uo pipefail
+          LOG="$1"; COMP="$2"; GAMEDIR="$3"; INPUT="$4"
+          CAP=${CAP_SECONDS:-240}
+          cd build/game || { echo "no build/game" > "$LOG"; exit 0; }
+          echo "=== -game $GAMEDIR   -i $INPUT   cap ${CAP}s ===" > "$LOG"
+          # stdin closed: a prompt then fails fast instead of blocking.
+          "$COMP" -nop4 -v -game "$GAMEDIR" -i "$INPUT" >> "$LOG" 2>&1 < /dev/null &
+          PID=$!
+          ELAPSED=0
+          while kill -0 "$PID" 2>/dev/null; do
+            sleep 10; ELAPSED=$((ELAPSED+10))
+            echo "  [${ELAPSED}s] $(wc -l < "$LOG") lines"
+            if [ "$ELAPSED" -ge "$CAP" ]; then
+              echo "=== WATCHDOG: killed after ${CAP}s ===" >> "$LOG"
+              kill -9 "$PID" 2>/dev/null || true
+              taskkill //F //IM resourcecompiler.exe 2>/dev/null || true
+              break
+            fi
+          done
+          wait "$PID" 2>/dev/null; RC=$?
+          echo "exit: $RC" >> "$LOG"
+          echo "--- last 30 lines ---"
+          tail -30 "$LOG" || true
           echo "--- resolved search paths ---"
-          grep -A6 '^CONTENT' out/compile-a.txt | head -12 || true
-          echo "--- tail ---"
-          tail -25 out/compile-a.txt || true
+          grep -A6 '^CONTENT' "$LOG" | head -12 || true
+          exit 0
+          SH
+          sed -i 's/^          //' capped.sh
+          chmod +x capped.sh
+          head -5 capped.sh
 
+      # ------------------------------------------------------------------
+      # NOTHING BELOW FAILS THE JOB.
+      #
+      # B RUNS FIRST. FINDINGS says the addon layout is the correct one, and
+      # on the first attempt A hung, so we never learned anything about B.
+      # Run the hypothesis before the control.
+      #
+      # EVERY COMPILER CALL IS CAPPED. A Source tool that hangs in CI is
+      # usually a modal assert dialog waiting on a click that never comes.
+      # stdin is closed so any prompt fails fast instead of blocking, and a
+      # watchdog kills the process after CAP_SECONDS either way. Progress is
+      # tailed while it runs, so a hang tells us WHERE it hung.
+      # ------------------------------------------------------------------
       - name: B — content/citadel_addons/<name>/maps
         if: always()
+        timeout-minutes: 8
         shell: bash
         run: |
           set -uo pipefail
           ROOT="$(pwd -W 2>/dev/null || pwd)"
-          cd build/game
-          RC=0
-          "${{ steps.get.outputs.comp }}" -nop4 -v \
-            -game "citadel_addons/$ADDON" \
-            -i "../content/citadel_addons/$ADDON/maps/$MAPNAME.vmap" \
-            > "$ROOT/out/compile-b.txt" 2>&1 || RC=$?
-          cd "$ROOT"
-          echo "exit: $RC" | tee -a out/compile-b.txt
-          echo "--- resolved search paths ---"
-          grep -A6 '^CONTENT' out/compile-b.txt | head -12 || true
-          echo "--- tail ---"
-          tail -25 out/compile-b.txt || true
+          bash "$ROOT/capped.sh" \
+            "$ROOT/out/compile-b.txt" \
+            "${{ steps.get.outputs.comp }}" \
+            "citadel_addons/$ADDON" \
+            "../content/citadel_addons/$ADDON/maps/$MAPNAME.vmap"
+
+      - name: A — content/citadel/maps
+        if: always()
+        timeout-minutes: 8
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          bash "$ROOT/capped.sh" \
+            "$ROOT/out/compile-a.txt" \
+            "${{ steps.get.outputs.comp }}" \
+            "citadel" \
+            "../content/citadel/maps/$MAPNAME.vmap"
 
       - name: What landed
         if: always()
