@@ -36,12 +36,27 @@
     display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
   .hud b{font-weight:600;color:#fff}
   .hud .k{color:var(--hud-dim)}
+  /* The control bar is a single row that SCROLLS rather than wraps.
+     Wrapping would push it up into the d-pad; overflowing silently, which
+     it did, hides whichever control happens to be last. Scrolling keeps
+     every control reachable at any width. */
   .foot{position:fixed;left:0;right:0;bottom:0;
     padding:8px 12px max(10px,env(safe-area-inset-bottom));
     font:500 11px/1.4 ui-monospace,'SF Mono',Menlo,Consolas,monospace;
-    color:var(--hud-dim);display:flex;gap:14px;align-items:center;
+    color:var(--hud-dim);display:flex;gap:10px;align-items:center;
+    flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
     border-top:1px solid var(--hud-rule);background:linear-gradient(
       to top,rgba(11,13,14,.92),rgba(11,13,14,0))}
+  .foot::-webkit-scrollbar{display:none}
+  .foot > *{flex:0 0 auto}
+  /* Leave room for the d-pad so the tail of the bar is never parked
+     under a thumb. */
+  .foot::after{content:'';flex:0 0 168px}
+  @media (max-width:380px){.foot::after{flex-basis:140px}}
+  /* The plan name is the least useful thing here on a small screen: the
+     menu already shows it. */
+  @media (max-width:560px){#name{display:none}}
   button,label.file{pointer-events:auto;cursor:pointer;
     font:600 11px/1 ui-monospace,'SF Mono',Menlo,Consolas,monospace;
     letter-spacing:.06em;text-transform:lowercase;
@@ -120,13 +135,13 @@
 
 <div class="foot">
   <select id="pick" aria-label="Map"></select>
-  <button id="fs">full screen</button>
-  <label class="file" tabindex="0">open file
+  <button id="spd">speed: walk</button>
+  <button id="noclip">fly: off</button>
+  <button id="respawn">respawn</button>
+  <button id="fs">fullscreen</button>
+  <label class="file" tabindex="0">open
     <input type="file" id="file" accept=".json,application/json">
   </label>
-  <button id="spd">speed: walk</button>
-  <button id="respawn">respawn</button>
-  <button id="noclip">fly: off</button>
   <span id="name">sealed_room</span>
 </div>
 
@@ -773,7 +788,7 @@ if(!canFs || standalone){
     }
   });
   document.addEventListener('fullscreenchange', ()=>{
-    fsBtn.textContent = document.fullscreenElement ? 'exit full screen' : 'full screen';
+    fsBtn.textContent = document.fullscreenElement ? 'exit' : 'fullscreen';
     setTimeout(resize, 60);
   });
 }
