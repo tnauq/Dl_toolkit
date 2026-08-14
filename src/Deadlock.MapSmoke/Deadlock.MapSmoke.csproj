@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Standalone driver so map-smoke can run without touching the dl CLI.
+       Folding `dl map info` into the one dl binary is a follow-up that needs
+       the existing CLI source; this project is deliberately throwaway-shaped
+       and can be deleted the day that lands. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Deadlock.MapSmoke</AssemblyName>
+    <RootNamespace>Deadlock.MapSmoke</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deadlock.Format\Deadlock.Format.csproj" />
+  </ItemGroup>
+
+</Project>

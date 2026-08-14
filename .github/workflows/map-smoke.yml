@@ -1,0 +1,235 @@
+name: map smoke
+
+# Proves the KV2 layer against the real fixture, with dmxconvert as an
+# INDEPENDENT JUDGE in the middle. That independence is the point: if the
+# reader and writer shared a misunderstanding of the grammar, a read-write-read
+# check would cancel it out and pass. Valve's binary would not.
+#
+#   dl_example.vmap (binary)
+#     -> dmxconvert -> text            (input to our reader)
+#     -> OUR reader + writer -> text2  (census asserted across our own layer)
+#     -> dmxconvert -> binary          (Valve accepts what we wrote, or not)
+#     -> dmxconvert -> text3
+#     -> OUR reader                    (census asserted end to end)
+#
+# CENSUS FLOORS, measured on this fixture 2026-08-14. Re-measure, never carry
+# over, if the fixture is ever replaced.
+#   CDmePolygonMesh 222   CMapMesh 222   CMapEntity 598   DmeConnectionData 89
+#   total elements 7071
+
+on: workflow_dispatch
+
+env:
+  FIXTURE: dl_example.vmap
+  EXPECT_HEADER: 'binary 9 format vmap 40'
+  EXPECT_TOTAL: 7071
+  EXPECT_POLYMESH: 222
+  EXPECT_MAPMESH: 222
+  EXPECT_ENTITY: 598
+  EXPECT_CONN: 89
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Confirm the fixture is present
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ ! -f "$FIXTURE" ]; then
+            echo "::error::fixture not at $FIXTURE — fix env.FIXTURE"
+            find . -iname '*.vmap' -not -path './.git/*' | head -20 || true
+            exit 3
+          fi
+          ls -l "$FIXTURE"
+
+      # Build FIRST. A 40-minute CSDK fetch that ends in a compile error is
+      # the most expensive way to find a typo.
+      - name: Build the smoke driver
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet build src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -c Release > build.txt 2>&1 || RC=$?
+          cat build.txt
+          [ "$RC" -eq 0 ] || exit 1
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+              print(f"  {a['name']} -> {os.path.getsize(dest)} bytes")
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          got = h.hexdigest()
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != got:
+                  print(f"::error::checksum mismatch, expected {want}"); sys.exit(1)
+              print("checksum OK")
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          if not conv:
+              print("::error::dmxconvert.exe missing"); sys.exit(1)
+          print("dmxconvert:", conv)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+
+      - name: Stage 1 — binary to text
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          mkdir -p work out
+          cp "$FIXTURE" work/in.vmap
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/in.vmap" -ie binary \
+            -o "$ROOT/work/t1.vmap" -oe keyvalues2_noids > out/s1.txt 2>&1 || RC=$?
+          cat out/s1.txt
+          echo "exit: $RC" | tee -a out/s1.txt
+          [ -s work/t1.vmap ] || { echo "FAIL: no text out"; exit 1; }
+          wc -c work/t1.vmap
+
+      - name: Stage 2 — OUR reader and writer
+        shell: bash
+        run: |
+          set -uo pipefail
+          RC=0
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- roundtrip work/t1.vmap work/t2.vmap > out/s2.txt 2>&1 || RC=$?
+          cat out/s2.txt
+          echo "exit: $RC" | tee -a out/s2.txt
+          [ "$RC" -eq 0 ] || exit 1
+
+      - name: Stage 2 — assert our census against the floors
+        shell: bash
+        run: |
+          set -uo pipefail
+          FAIL=0
+          chk () {
+            GOT=$(awk -v t="$1" '$2==t {print $1}' out/s2.txt | head -1)
+            GOT=${GOT:-0}
+            if [ "$GOT" != "$2" ]; then echo "MISMATCH $1: want $2 got $GOT"; FAIL=1
+            else echo "ok $1 = $GOT"; fi
+          }
+          chk CDmePolygonMesh   "$EXPECT_POLYMESH"
+          chk CMapMesh          "$EXPECT_MAPMESH"
+          chk CMapEntity        "$EXPECT_ENTITY"
+          chk DmeConnectionData "$EXPECT_CONN"
+          TOT=$(grep -m1 '^elements=' out/s2.txt | cut -d= -f2)
+          echo "total elements: ${TOT:-none} (want $EXPECT_TOTAL)"
+          [ "${TOT:-0}" = "$EXPECT_TOTAL" ] || { echo "MISMATCH total"; FAIL=1; }
+          [ "$FAIL" -eq 0 ] || exit 1
+
+      - name: Stage 3 — Valve judges what we wrote
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/t2.vmap" -ie keyvalues2_noids \
+            -o "$ROOT/work/rt.vmap" -oe binary -of vmap > out/s3.txt 2>&1 || RC=$?
+          cat out/s3.txt
+          echo "exit: $RC" | tee -a out/s3.txt
+          if [ ! -s work/rt.vmap ]; then
+            echo "FAIL: dmxconvert would not accept our text."
+            echo "This is the finding the whole workflow exists for."
+            exit 1
+          fi
+          echo -n "header: "; head -c 60 work/rt.vmap | tr -d '\0'; echo
+          RC=0
+          head -c 60 work/rt.vmap | tr -d '\0' | grep -q "$EXPECT_HEADER" || RC=$?
+          [ "$RC" -eq 0 ] || { echo "FAIL: not $EXPECT_HEADER"; exit 1; }
+          wc -c work/in.vmap work/rt.vmap
+
+      - name: Stage 4 — end to end census
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/work/rt.vmap" -ie binary \
+            -o "$ROOT/work/t3.vmap" -oe keyvalues2 > out/s4.txt 2>&1 || RC=$?
+          cat out/s4.txt
+          dotnet run --no-build -c Release \
+            --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
+            -- info work/t3.vmap > out/s4-census.txt 2>&1 || RC=$?
+          cat out/s4-census.txt
+          TOT=$(grep -m1 '^elements=' out/s4-census.txt | cut -d= -f2)
+          echo "end to end total: ${TOT:-none} (want $EXPECT_TOTAL)"
+          [ "${TOT:-0}" = "$EXPECT_TOTAL" ] || { echo "FAIL: elements lost end to end"; exit 1; }
+          echo "RESULT: KV2 read/write survives a full trip through Valve's binary."
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          ls -l work out 2>/dev/null || true
+          head -c 200000 work/t2.vmap > out/t2-head.vmap 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-smoke
+          path: |
+            out/
+            build.txt
+          if-no-files-found: ignore
