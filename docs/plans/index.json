@@ -1,6 +1,7 @@
 {
   "plans": [
-    { "name": "Sealed room",  "file": "sealed_room.json" },
-    { "name": "Two lane test", "file": "two_lane.json" }
+    { "name": "Sealed room",    "file": "sealed_room.json" },
+    { "name": "Two lane test",  "file": "two_lane.json" },
+    { "name": "dust2 half (raw)", "file": "dust2_half.json" }
   ]
 }
