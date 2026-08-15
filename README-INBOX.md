@@ -1,47 +1,56 @@
-# Inbox drop — dust2 half, walls and ceilings doubled (2026-08-14)
+# Inbox drop — arch raised (2026-08-14)
 
-REPLACES `docs/plans/dust2_half.json`. Adds `tools/walls.py`.
-**Supersedes the previous double-height drop** — that one doubled the
-floorplan's elevations too and turned 255 ramps into walls. Discard it;
-`tools/double.py` can go.
+REPLACES `docs/plans/dust2_half.json`. Adds `tools/archfix.py`.
 
-## What changed, and what deliberately did not
+## The crosshair worked, and it found a real class of bug
 
-| | count | treatment |
-|---|---|---|
-| wall | 158 | bottom stays put, height doubles upward |
-| ceiling | 9 | bottom raised so the gap beneath doubles |
-| ramp | 407 | **untouched** |
-| cover | 465 | **untouched** |
-| floor | 24 | **untouched** |
+`ramp-slab_872` is one voussoir of an actual masonry arch: a fan of 16
+wedges (`ramp-slab_861`..`876`) plus four crown slabs on two piers
+(`axis_480`, `axis_481`). Every one of them stayed put while the wall
+panels either side (`axis_482`, `axis_483`) doubled and the wall behind
+(`axis_468`) doubled. One wall assembly, scaled in pieces.
 
-Ramp pitches are unchanged, max still 58.9 degrees. Floor elevations are
-unchanged, so nothing that was walkable stopped being walkable.
+Two classifier mistakes caused it:
 
-## The classification, since it is a judgement call
+- **The voussoirs are 27 u (0.7 m) thick.** I treated anything pitched as
+  walkable terrain. You cannot walk on something 0.7 m wide — that is
+  masonry.
+- **The piers are 136 u tall**, under the 192 u wall threshold, so they
+  were called cover and left alone.
 
-All in Deadlock units, hero = 120 u:
+The arch is now scaled about z=427, the same datum the wall used, so the
+whole assembly moves together. Piers 426 -> 698, crown 853, against a wall
+top of 854. 19 boxes raised.
 
-- **ramp** — anything with a pitch. Doubling it would steepen the
-  gradient, which was the whole problem last time.
-- **cover** — under 192 u tall (about 1.6 heroes). A crate is not a wall,
-  and a 2 m box should not become 4 m.
-- **ceiling** — a broad flat slab with at least hero-height clearance
-  under it. Its bottom is raised so the gap below doubles, rather than the
-  slab getting thicker.
-- **wall** — the rest, 192 u or taller. Bottom fixed, extent doubles.
+## I could not solve this generally, and stopped trying
 
-Support height per box is found by looking for the highest overlapping top
-beneath it, which is what tells a ceiling apart from a floor.
+Four attempts, each failing for a different reason worth recording:
 
-Only 9 ceilings because most of dust2 is open to the sky — most of what
-grew is perimeter and building walls, now 32.5 m at the tallest.
+1. **Classify by width.** Swept 373 terrain wedges into "structure" —
+   dust2's sloped ground is built from narrow strips too, so a 0.7 m
+   voussoir and a 0.7 m ground strip are identical by shape.
+2. **Classify by "is it standable on top".** Left the arch alone: an
+   arch's outer curve IS standable, if you could get there.
+3. **Use reachability instead.** Better, but most terrain wedges are
+   BURIED FILL beneath the surface, so "reachable on top" is false for
+   ground too.
+4. **Classify by elevation relative to the walkable floor, then group
+   touching boxes into assemblies.** Closest yet, but the voussoirs do
+   not quite touch each other, so they landed in different assemblies and
+   the arch still fragmented.
 
-## Worth a look when you walk it
+The honest position: separating "ground" from "envelope" in a brush soup
+is not reliably automatable at this resolution, and each failed attempt
+cost a full pipeline run. Cap the yak-shave.
 
-- **Cover at 465 boxes is the biggest untouched group.** If some of what I
-  classified as cover reads as a low wall you wanted taller, the threshold
-  is one constant (`WALL_MIN`) in `tools/walls.py`.
-- **Doubling only the tops** means a wall that used to meet a ceiling now
-  overshoots it where the ceiling did not qualify as one. Sky-open areas
-  are unaffected; interiors are where to check.
+**So the workflow is now: you crosshair a broken spot, I fix that
+assembly.** `tools/archfix.py` is the pattern — a bounding region and the
+datum to scale about, about ten lines. That is cheaper and more reliable
+than another classifier, and it is exactly what the copy-pos button was
+for.
+
+## Unchanged from the last good state
+
+158 walls doubled, 9 ceilings raised, 407 ramps and 465 cover and 24
+floors untouched. Ramp pitches unchanged, max 58.9 degrees. Tallest point
+32.5 m.
