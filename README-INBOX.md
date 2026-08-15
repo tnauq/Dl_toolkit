@@ -1,53 +1,58 @@
-# Inbox drop — ground plates un-lifted (2026-08-14)
+# Inbox drop — eight doors removed (2026-08-14)
 
-REPLACES `docs/plans/dust2_half.json`. Adds `tools/unlift.py`.
-Pipeline order is now:
+REPLACES `docs/plans/dust2_half.json`. Adds `tools/remove.py`,
+`tools/unlift.py`, `tools/gapfill.py`.
 
-    final.py -> (snapshot) -> roofs.py -> archfix.py -> unlift.py -> gapfill.py
+Pipeline order, now complete:
 
-`unlift.py` needs `orig_snapshot.json`, a copy of the plan taken straight
-after `final.py`, to know where each box started.
+    final.py -> (copy to orig_snapshot.json) -> roofs.py -> archfix.py
+    -> unlift.py -> gapfill.py -> remove.py
 
-## The bug you found
+## Eight door leaves gone
 
-`roofs.py` lifts anything resting on a wall that doubled. Correct for a
-roof, wrong for a floor: **axis_199 is part of dust2's main z=128 ground
-level** (CS units), and it got carried 186 u into the air along with
-everything standing on it.
+    compound_117  compound_118      compound_196  compound_197
+    compound_201  compound_203      compound_374  compound_375
 
-Your second coordinate was the giveaway. `gapfill_39_9` tops out at 213 u,
-which is exactly 128 CS x 1.667 — the height axis_199 should have been at
-all along. The fill boxes were sitting at the right level while the plate
-they were meant to close the gap under had floated above them.
+All four openings, two leaves each. Plan 1090 -> 1082 boxes.
 
-## The rule applied
+**Why doors.py missed them.** Its shortlist required axis-aligned,
+door-shaped solids. These are `compound` brushes — angled panels that
+became bounding boxes — so they were never candidates. The wall doubling
+then stretched them to between 13 and 16 m.
 
-A box whose ORIGINAL bottom was at or below the main floor (213 u) is
-ground, not roof. Restore its height and its thickness, then bring down
-whatever was standing on it by the same amount.
+## Reachability jumped
 
-    restored  5 ground-level boxes
-      axis_199         lowered 187 u
-      axis_361         lowered 213 u
-      yaw_484 / 485    lowered 187 u
-      angled-wall_488  lowered 187 u
-    carried  16 boxes that were riding on them
+    7,320 -> 8,116 reachable cells (+796, +11%)
 
-axis_199 is now 187..213, flush with the fill, and six boxes sit on its
-surface at 213 rather than hanging in the air.
+The doors were sealing real ground. axis_199's reachable-on-top went
+34% -> 52% (after the un-lift) -> **74%** now, which is the same fix
+showing up from a different direction: with the doors gone that whole
+floor connects.
 
-## Verified
+## 18 compound brushes remain, 10 look door-shaped
 
-- reachable cells 7,320 (was 7,296 before this change; the plate rejoining
-  the floor added a little)
-- **axis_199 reachable on top went 34% -> 52%** — it is now part of the
-  walkable floor rather than an island
-- two-level spaces unaffected: axis_470 and axis_546 unchanged
-- gapfill unchanged at 480 dead cells in 27 boxes
+Not removed, because "narrow, tall, yawed" also describes an angled wall
+corner, and I cannot tell them apart from geometry:
 
-## Note on how this one was found
+| name | width | height | yaw |
+|---|---|---|---|
+| compound_757 | 1.4 m | 32.5 m | 20.0 |
+| compound_204 | 2.0 m | 32.5 m | 59.0 |
+| compound_349 | 2.4 m | 32.5 m | 32.0 |
+| compound_776 | 2.4 m | 32.5 m | 48.8 |
+| compound_266 | 2.7 m | 32.5 m | 56.3 |
+| compound_477 | 2.7 m | 21.7 m | 51.3 |
+| compound_564 | 2.7 m | 21.7 m | 51.3 |
+| compound_748 | 4.4 m | 32.5 m | 47.1 |
+| compound_478 | 4.7 m | 21.7 m | 40.6 |
+| compound_12  | 4.7 m | 16.3 m | 36.9 |
 
-Two crosshair readings, one on the broken thing and one on what it should
-line up with, pinned it in a single message. That is a much better bug
-report than a coordinate alone, and worth repeating: **point at the fault,
-then point at the reference.**
+The 32.5 m ones are full wall height, so they are probably corners rather
+than doors. `compound_477` and `compound_564` are an identical pair at the
+same yaw, which is the signature the removed ones had — worth a look.
+
+Crosshair any that are wrong and add them to the list in `remove.py`.
+
+## Still ahead
+
+No mirror, no 180-degree rotation, no 30 m band.
