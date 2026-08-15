@@ -99,6 +99,20 @@
   .dpad.on .seg{stroke:var(--hud)}
   .dpad .nub{fill:var(--hud);opacity:.9}
   @media (max-width:380px){.dpad{width:124px;height:124px}}
+  /* Crosshair. Deliberately a thin ring-gap cross rather than a dot: it
+     reads against both the orange floor and the black sky without a
+     drop shadow fighting the dev texture. */
+  .xhair{position:fixed;left:50%;top:50%;width:40px;height:40px;
+    transform:translate(-50%,-50%);pointer-events:none;opacity:.9}
+  .xhair line{stroke:#fff;stroke-width:1.4;stroke-linecap:round;
+    paint-order:stroke;filter:drop-shadow(0 0 1px rgba(0,0,0,.9))}
+  .xhair circle{fill:#fff;filter:drop-shadow(0 0 1px rgba(0,0,0,.9))}
+  /* Aim readout sits just under the crosshair, where the eye already is. */
+  .aim{position:fixed;left:0;right:0;top:calc(50% + 26px);text-align:center;
+    font:600 11px/1.4 ui-monospace,'SF Mono',Menlo,monospace;
+    color:var(--hud);letter-spacing:.03em;pointer-events:none;
+    text-shadow:0 1px 3px rgba(0,0,0,.95)}
+  .aim .n{color:var(--hud-dim);font-weight:500}
   .hint{position:fixed;inset:auto 0 64px;text-align:center;
     font:500 11px/1.6 ui-monospace,monospace;color:var(--hud-dim);
     transition:opacity .6s ease}
@@ -118,6 +132,15 @@
   <span><span class="k">fps</span> <b id="fps">0</b></span>
 </div>
 
+<svg class="xhair" id="xhair" viewBox="0 0 40 40" aria-hidden="true">
+  <line x1="20" y1="12" x2="20" y2="17"/>
+  <line x1="20" y1="23" x2="20" y2="28"/>
+  <line x1="12" y1="20" x2="17" y2="20"/>
+  <line x1="23" y1="20" x2="28" y2="20"/>
+  <circle cx="20" cy="20" r="1.1"/>
+</svg>
+<div class="aim" id="aim">--</div>
+
 <div class="hint" id="hint">drag anywhere to look &middot; pad to move</div>
 <div class="err" id="err"></div>
 
@@ -135,6 +158,7 @@
 
 <div class="foot">
   <select id="pick" aria-label="Map"></select>
+  <button id="copypos">copy pos</button>
   <button id="spd">speed: walk</button>
   <button id="noclip">fly: off</button>
   <button id="respawn">respawn</button>
@@ -519,6 +543,66 @@ function render(){
   el('yaw').textContent = Math.round(((cam.yaw*180/Math.PI)%360+360)%360);
 }
 
+/* ---------- aim raycast ---------- */
+/* Slab method against each box. Rotated boxes are handled by moving the
+   RAY into the box's local frame instead of transforming the box, which
+   keeps it a plain axis-aligned test either way. */
+
+function lookVector(){
+  const c = Math.cos(cam.yaw), s = Math.sin(cam.yaw);
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  return [c*cp, s*cp, sp];
+}
+
+function rayBox(ro, rd, sol){
+  let o = [ro[0]-sol.o[0], ro[1]-sol.o[1], ro[2]-sol.o[2]];
+  let d = rd;
+  if(sol.R){
+    const R = sol.R;                       // world -> local is the transpose
+    o = [R[0][0]*o[0]+R[1][0]*o[1]+R[2][0]*o[2],
+         R[0][1]*o[0]+R[1][1]*o[1]+R[2][1]*o[2],
+         R[0][2]*o[0]+R[1][2]*o[1]+R[2][2]*o[2]];
+    d = [R[0][0]*rd[0]+R[1][0]*rd[1]+R[2][0]*rd[2],
+         R[0][1]*rd[0]+R[1][1]*rd[1]+R[2][1]*rd[2],
+         R[0][2]*rd[0]+R[1][2]*rd[1]+R[2][2]*rd[2]];
+  }
+  let tmin = 0, tmax = 1e9;
+  for(let i=0;i<3;i++){
+    const h = sol.h[i];
+    if(Math.abs(d[i]) < 1e-9){
+      if(o[i] < -h || o[i] > h) return -1;
+    } else {
+      let t1 = (-h - o[i]) / d[i], t2 = (h - o[i]) / d[i];
+      if(t1 > t2){ const q = t1; t1 = t2; t2 = q; }
+      if(t1 > tmin) tmin = t1;
+      if(t2 < tmax) tmax = t2;
+      if(tmin > tmax) return -1;
+    }
+  }
+  return tmin > 0 ? tmin : -1;
+}
+
+let aimHit = null;
+function updateAim(){
+  const ro = [cam.x, cam.y, cam.z];
+  const rd = lookVector();
+  let best = -1, bestSol = null;
+  for(const s of solids){
+    const t = rayBox(ro, rd, s);
+    if(t > 0 && (best < 0 || t < best)){ best = t; bestSol = s; }
+  }
+  if(best < 0){ aimHit = null; el('aim').innerHTML = '<span class="n">no surface</span>'; return; }
+  aimHit = {
+    p: [ro[0]+rd[0]*best, ro[1]+rd[1]*best, ro[2]+rd[2]*best],
+    name: bestSol.name, dist: best
+  };
+  const p = aimHit.p;
+  el('aim').innerHTML =
+    `${Math.round(p[0])} ${Math.round(p[1])} ${Math.round(p[2])}` +
+    ` <span class="n">${m(p[0]).toFixed(1)} ${m(p[1]).toFixed(1)} ${m(p[2]).toFixed(1)} m` +
+    ` &middot; ${aimHit.name} &middot; ${m(best).toFixed(1)} m away</span>`;
+}
+
 /* ---------- collision ---------- */
 
 function solidAt(x,y,z){
@@ -714,6 +798,7 @@ function tick(){
   }
 
   render();
+  updateAim();
   requestAnimationFrame(tick);
 }
 
@@ -878,6 +963,37 @@ el('spd').addEventListener('click', ()=>{
   showSpeed();
 });
 showSpeed();
+
+/* Copy the aim point. Clipboard writes need a user gesture, which a
+   button click is; the textarea path is the fallback for browsers that
+   refuse the async API over http or in an iframe. */
+async function copyText(s){
+  try{
+    await navigator.clipboard.writeText(s);
+    return true;
+  } catch(err){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = s; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch(e2){ return false; }
+  }
+}
+
+el('copypos').addEventListener('click', async ev => {
+  const btn = ev.target;
+  if(!aimHit){ btn.textContent = 'nothing there'; setTimeout(()=>btn.textContent='copy pos', 1200); return; }
+  const p = aimHit.p;
+  const s = `${plan.name || 'map'} @ ${Math.round(p[0])} ${Math.round(p[1])} ${Math.round(p[2])} u`
+          + ` (${m(p[0]).toFixed(1)} ${m(p[1]).toFixed(1)} ${m(p[2]).toFixed(1)} m)`
+          + ` on ${aimHit.name}`;
+  const ok = await copyText(s);
+  btn.textContent = ok ? 'copied' : 'copy failed';
+  setTimeout(()=>btn.textContent='copy pos', 1200);
+});
 
 el('respawn').addEventListener('click', spawnPoint);
 el('noclip').addEventListener('click', ev=>{
