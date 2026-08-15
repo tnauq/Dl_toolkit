@@ -1,56 +1,61 @@
-# Inbox drop — arch raised (2026-08-14)
+# Inbox drop — dead void filled, live routes kept (2026-08-14)
 
-REPLACES `docs/plans/dust2_half.json`. Adds `tools/archfix.py`.
+REPLACES `docs/plans/dust2_half.json`. Adds `tools/gapfill.py`,
+`tools/twolevel.py`. Pipeline order: `final.py` -> `roofs.py` ->
+`archfix.py` -> `gapfill.py`.
 
-## The crosshair worked, and it found a real class of bug
+## Why a global raise was wrong
 
-`ramp-slab_872` is one voussoir of an actual masonry arch: a fan of 16
-wedges (`ramp-slab_861`..`876`) plus four crown slabs on two piers
-(`axis_480`, `axis_481`). Every one of them stayed put while the wall
-panels either side (`axis_482`, `axis_483`) doubled and the wall behind
-(`axis_468`) doubled. One wall assembly, scaled in pieces.
+You were right to push back. The base plate is not merely a floor under a
+void: **z=0 is real ground for about half the map.**
 
-Two classifier mistakes caused it:
+| | cells |
+|---|---|
+| both a z=0 floor and a z=128 floor | 1,542 |
+| **only a z=0 floor** | **1,602** |
+| only a z=128 floor | 184 |
 
-- **The voussoirs are 27 u (0.7 m) thick.** I treated anything pitched as
-  walkable terrain. You cannot walk on something 0.7 m wide — that is
-  masonry.
-- **The piers are 136 u tall**, under the 192 u wall threshold, so they
-  were called cover and left alone.
+Raising the base to 112 would have buried 1,602 cells of legitimate ground
+under a plateau. Surface area by height: z=0 at 46%, z=128 at 23%,
+z=384 at 11%.
 
-The arch is now scaled about z=427, the same datum the wall used, so the
-whole assembly moves together. Piers 426 -> 698, crown 853, against a wall
-top of 854. 19 boxes raised.
+## What was done instead
 
-## I could not solve this generally, and stopped trying
+Fill the gap under a raised floor ONLY where the gap is dead:
 
-Four attempts, each failing for a different reason worth recording:
+    cells with a gap under a raised floor : 1,671
+      LIVE  (reachable route beneath)     : 1,191  left alone
+      DEAD  (filled)                      :   480  -> 27 merged boxes
 
-1. **Classify by width.** Swept 373 terrain wedges into "structure" —
-   dust2's sloped ground is built from narrow strips too, so a 0.7 m
-   voussoir and a 0.7 m ground strip are identical by shape.
-2. **Classify by "is it standable on top".** Left the arch alone: an
-   arch's outer curve IS standable, if you could get there.
-3. **Use reachability instead.** Better, but most terrain wedges are
-   BURIED FILL beneath the surface, so "reachable on top" is false for
-   ground too.
-4. **Classify by elevation relative to the walkable floor, then group
-   touching boxes into assemblies.** Closest yet, but the voussoirs do
-   not quite touch each other, so they landed in different assemblies and
-   the arch still fragmented.
+3,525 m2 filled, in 27 boxes rather than 480, by merging runs.
 
-The honest position: separating "ground" from "envelope" in a brush soup
-is not reliably automatable at this resolution, and each failed attempt
-cost a full pipeline run. Cap the yak-shave.
+## The dilation, and the run that needed it
 
-**So the workflow is now: you crosshair a broken spot, I fix that
-assembly.** `tools/archfix.py` is the pattern — a bounding region and the
-datum to scale about, about ten lines. That is cheaper and more reliable
-than another classifier, and it is exactly what the copy-pos button was
-for.
+The first attempt filled 698 cells and **cost 465 reachable cells**.
+`gap_is_live` samples only each cell's centre column, so a cell that is
+half open corridor reads as dead, and filling it ate the edges of real
+routes.
 
-## Unchanged from the last good state
+Fixed by dilating the live mask one cell before filling. Reachable cells
+went 7,341 -> 6,876 (bad) -> **7,296** (fine, and the 45 lost are edge
+quantisation at 64 u).
 
-158 walls doubled, 9 ceilings raised, 407 ramps and 465 cover and 24
-floors untouched. Ramp pitches unchanged, max 58.9 degrees. Tallest point
-32.5 m.
+## Two-level spaces confirmed intact
+
+| plate | on top | underneath | |
+|---|---|---|---|
+| axis_470 | 79% | 86% | genuine two-level, preserved |
+| axis_546 | 77% | 100% | genuine two-level, preserved |
+| axis_355 | 0% | 64% | route beneath preserved |
+| axis_764 | 0% | 100% | route beneath preserved |
+| axis_199 | 34% | 0% | **filled**, as intended |
+
+`axis_355` briefly dropped to 45% underneath before the dilation and is
+back to 64%.
+
+## Still dead, and deliberately left
+
+`axis_42`, `axis_473`, `axis_475`, `axis_62`, `axis_63` are reachable
+from neither side. They are geometry nobody can see or touch. Deleting
+them would shrink the plan, but they cost nothing and may become
+meaningful once the map is mirrored and modified.
