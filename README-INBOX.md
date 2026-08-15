@@ -1,61 +1,53 @@
-# Inbox drop — dead void filled, live routes kept (2026-08-14)
+# Inbox drop — ground plates un-lifted (2026-08-14)
 
-REPLACES `docs/plans/dust2_half.json`. Adds `tools/gapfill.py`,
-`tools/twolevel.py`. Pipeline order: `final.py` -> `roofs.py` ->
-`archfix.py` -> `gapfill.py`.
+REPLACES `docs/plans/dust2_half.json`. Adds `tools/unlift.py`.
+Pipeline order is now:
 
-## Why a global raise was wrong
+    final.py -> (snapshot) -> roofs.py -> archfix.py -> unlift.py -> gapfill.py
 
-You were right to push back. The base plate is not merely a floor under a
-void: **z=0 is real ground for about half the map.**
+`unlift.py` needs `orig_snapshot.json`, a copy of the plan taken straight
+after `final.py`, to know where each box started.
 
-| | cells |
-|---|---|
-| both a z=0 floor and a z=128 floor | 1,542 |
-| **only a z=0 floor** | **1,602** |
-| only a z=128 floor | 184 |
+## The bug you found
 
-Raising the base to 112 would have buried 1,602 cells of legitimate ground
-under a plateau. Surface area by height: z=0 at 46%, z=128 at 23%,
-z=384 at 11%.
+`roofs.py` lifts anything resting on a wall that doubled. Correct for a
+roof, wrong for a floor: **axis_199 is part of dust2's main z=128 ground
+level** (CS units), and it got carried 186 u into the air along with
+everything standing on it.
 
-## What was done instead
+Your second coordinate was the giveaway. `gapfill_39_9` tops out at 213 u,
+which is exactly 128 CS x 1.667 — the height axis_199 should have been at
+all along. The fill boxes were sitting at the right level while the plate
+they were meant to close the gap under had floated above them.
 
-Fill the gap under a raised floor ONLY where the gap is dead:
+## The rule applied
 
-    cells with a gap under a raised floor : 1,671
-      LIVE  (reachable route beneath)     : 1,191  left alone
-      DEAD  (filled)                      :   480  -> 27 merged boxes
+A box whose ORIGINAL bottom was at or below the main floor (213 u) is
+ground, not roof. Restore its height and its thickness, then bring down
+whatever was standing on it by the same amount.
 
-3,525 m2 filled, in 27 boxes rather than 480, by merging runs.
+    restored  5 ground-level boxes
+      axis_199         lowered 187 u
+      axis_361         lowered 213 u
+      yaw_484 / 485    lowered 187 u
+      angled-wall_488  lowered 187 u
+    carried  16 boxes that were riding on them
 
-## The dilation, and the run that needed it
+axis_199 is now 187..213, flush with the fill, and six boxes sit on its
+surface at 213 rather than hanging in the air.
 
-The first attempt filled 698 cells and **cost 465 reachable cells**.
-`gap_is_live` samples only each cell's centre column, so a cell that is
-half open corridor reads as dead, and filling it ate the edges of real
-routes.
+## Verified
 
-Fixed by dilating the live mask one cell before filling. Reachable cells
-went 7,341 -> 6,876 (bad) -> **7,296** (fine, and the 45 lost are edge
-quantisation at 64 u).
+- reachable cells 7,320 (was 7,296 before this change; the plate rejoining
+  the floor added a little)
+- **axis_199 reachable on top went 34% -> 52%** — it is now part of the
+  walkable floor rather than an island
+- two-level spaces unaffected: axis_470 and axis_546 unchanged
+- gapfill unchanged at 480 dead cells in 27 boxes
 
-## Two-level spaces confirmed intact
+## Note on how this one was found
 
-| plate | on top | underneath | |
-|---|---|---|---|
-| axis_470 | 79% | 86% | genuine two-level, preserved |
-| axis_546 | 77% | 100% | genuine two-level, preserved |
-| axis_355 | 0% | 64% | route beneath preserved |
-| axis_764 | 0% | 100% | route beneath preserved |
-| axis_199 | 34% | 0% | **filled**, as intended |
-
-`axis_355` briefly dropped to 45% underneath before the dilation and is
-back to 64%.
-
-## Still dead, and deliberately left
-
-`axis_42`, `axis_473`, `axis_475`, `axis_62`, `axis_63` are reachable
-from neither side. They are geometry nobody can see or touch. Deleting
-them would shrink the plan, but they cost nothing and may become
-meaningful once the map is mirrored and modified.
+Two crosshair readings, one on the broken thing and one on what it should
+line up with, pinned it in a single message. That is a much better bug
+report than a coordinate alone, and worth repeating: **point at the fault,
+then point at the reference.**
