@@ -65,6 +65,7 @@
   button:active,label.file:active{background:#1a1512}
   button:focus-visible,label.file:focus-within{outline:2px solid var(--hud);
     outline-offset:2px}
+  button[disabled]{opacity:.4;cursor:default}
   input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   select{pointer-events:auto;cursor:pointer;-webkit-appearance:none;
     appearance:none;font:600 11px/1 ui-monospace,'SF Mono',Menlo,monospace;
@@ -158,6 +159,7 @@
 
 <div class="foot">
   <select id="pick" aria-label="Map"></select>
+  <button id="refresh">refresh</button>
   <button id="copypos">copy pos</button>
   <button id="spd">speed: walk</button>
   <button id="noclip">fly: off</button>
@@ -817,7 +819,16 @@ function spawnPoint(){
   if(g > -1e8) cam.z = g + EYE;
 }
 
-function load(p){
+/* keepCam is what makes refresh worth having. Without it every reload
+   drops you at spawn and you fly back across the map to look at a box
+   that moved by 40 units. With it the geometry is rebuilt underneath a
+   stationary camera. The camera is left exactly where it was and only
+   RESETTLED onto whatever is now below, using the same step-up rule as
+   walking, so a floor that shifted a little carries you with it. A floor
+   that moved further than one step will leave you standing in air or
+   inside the new solid; walking a pace fixes both, and seeing it is
+   usually the point. */
+function load(p, keepCam){
   if(!p || !Array.isArray(p.boxes))
     throw new Error('plan has no boxes array');
   plan = p;
@@ -826,7 +837,14 @@ function load(p){
   el('eyem').textContent = m(EYE).toFixed(2) + ' m';
   el('nbox').textContent = solids.length;
   el('name').textContent = p.name || 'untitled';
-  spawnPoint();
+  if(keepCam){
+    if(!noclip){
+      const g = floorUnder(cam.x, cam.y, cam.z - EYE);
+      if(g > -1e8) cam.z = g + EYE;
+    }
+  } else {
+    spawnPoint();
+  }
 }
 
 el('file').addEventListener('change', ev=>{
@@ -837,6 +855,11 @@ el('file').addEventListener('change', ev=>{
     el('err').textContent = '';
     try {
       load(JSON.parse(r.result));
+      // A hand-opened file has no URL behind it, so there is nothing for
+      // refresh to refetch. Say so on the button rather than silently
+      // doing nothing when it is pressed.
+      currentPath = null;
+      updateRefreshState();
       const u = new URL(location.href);
       u.searchParams.delete('plan');
       history.replaceState(null, '', u);
@@ -886,21 +909,34 @@ if(!canFs || standalone){
 
 const pick = el('pick');
 let manifest = [];
+// The plan path currently on screen, or null when the plan came from the
+// file picker or is the embedded default. Refresh needs this.
+let currentPath = null;
 
 function relativeOnly(q){
   return !/^([a-z]+:)?\/\//i.test(q) && !q.startsWith('/');
 }
 
-async function fetchPlan(path){
+/* bust adds a timestamp so a refresh cannot be answered from cache.
+   cache:'no-cache' alone only forces REVALIDATION, and a CDN in front of
+   the origin is free to answer that from its own copy. A unique query is
+   a different resource and has to be fetched. It is only used on refresh:
+   the first load of each plan is allowed to be cached normally. */
+async function fetchPlan(path, bust){
   if(!relativeOnly(path)) throw new Error('path must be relative to this page');
-  const res = await fetch(path, { cache:'no-cache' });
+  const url = bust
+    ? path + (path.includes('?') ? '&' : '?') + 'v=' + Date.now()
+    : path;
+  const res = await fetch(url, { cache:'no-cache' });
   if(!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
 
 async function selectPlan(path, push){
   try{
-    load(await fetchPlan(path));
+    load(await fetchPlan(path, false));
+    currentPath = path;
+    updateRefreshState();
     el('err').textContent = '';
     if(push){
       const u = new URL(location.href);
@@ -912,6 +948,58 @@ async function selectPlan(path, push){
     el('err').textContent = 'could not load ' + path + ' — ' + err.message;
   }
 }
+
+/* ---------- refresh ---------- */
+
+const refreshBtn = el('refresh');
+let refreshing = false;
+
+function updateRefreshState(){
+  refreshBtn.disabled = !currentPath;
+}
+
+async function refreshPlan(){
+  if(refreshing) return;
+  if(!currentPath){
+    refreshBtn.textContent = 'no source';
+    setTimeout(()=>{ refreshBtn.textContent = 'refresh'; }, 1400);
+    return;
+  }
+  refreshing = true;
+  refreshBtn.textContent = 'loading';
+  const before = solids.length;
+  try{
+    const p = await fetchPlan(currentPath, true);
+    load(p, true);                       // keepCam
+    el('err').textContent = '';
+    // Box count is the cheapest honest signal that something arrived.
+    // It does not prove the geometry changed, only that a plan did, so
+    // an unchanged count is reported as unchanged rather than as ok.
+    const after = solids.length;
+    refreshBtn.textContent = after === before
+      ? String(after) + ' boxes'
+      : (after > before ? '+' : '') + String(after - before);
+  } catch(err){
+    refreshBtn.textContent = 'failed';
+    el('err').textContent = 'could not refresh ' + currentPath + ' — '
+      + err.message + '\nGitHub Pages can lag a minute or two behind a push.';
+  } finally {
+    refreshing = false;
+    setTimeout(()=>{ refreshBtn.textContent = 'refresh'; }, 1600);
+  }
+}
+
+refreshBtn.addEventListener('click', refreshPlan);
+// R on a keyboard, for testing on desktop. Guarded so it cannot fire
+// while a form control has focus.
+addEventListener('keydown', e=>{
+  if(e.key !== 'r' && e.key !== 'R') return;
+  if(e.metaKey || e.ctrlKey) return;    // leave the browser reload alone
+  const t = document.activeElement;
+  if(t && (t.tagName === 'SELECT' || t.tagName === 'INPUT')) return;
+  refreshPlan();
+});
+updateRefreshState();
 
 /* The manifest is a plain list so adding a map is one commit:
    drop the .json in plans/ and add a line to plans/index.json.
