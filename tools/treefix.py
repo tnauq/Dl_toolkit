@@ -64,6 +64,14 @@ FIXES = {
     # clears nothing.
     'axis_761': (486.8, 700.2),
     'axis_766': (486.8, 700.2),
+
+    # Connecting roof panel, 2026-08-16. axis_762 spans exactly the run
+    # between axis_761's north edge and axis_734's south face, so it is the
+    # panel that joins them. axis_734 tops out at 640.1 and the raised
+    # axis_761 starts at 680.2, a gap of 40.1 against a panel 40.0 thick.
+    # Raised to sit in that gap, flush to both. Depends on the axis_761 lift
+    # above, so it must not be applied on its own.
+    'axis_762': (486.8, 660.2),
 }
 
 p = json.load(open('dust2_half.json'))
