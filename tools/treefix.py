@@ -232,6 +232,13 @@ FIXES = {
     # at 320.1 is what reads as the ceiling. Doubling that from the floor
     # puts the underside at 640.2 and its top at 1280.4, the wall top again.
     'axis_711': (640.2, 960.3),
+    # axis_763 and axis_768 tile the interior ceiling west of the door,
+    # axis_768 over y 3174 to 3307 and axis_763 over y 3307 to 3520. They
+    # ran 466.8 to 506.8, leaving the crown standing 80 proud of the
+    # ceiling. Raised 80.0 so their tops meet the crown at 586.8, which is
+    # how the other two doors already sit against axis_762 and axis_766.
+    'axis_763': (486.8, 566.8),
+    'axis_768': (486.8, 566.8),
     'ramp-slab_909': (384.6, 584.7),
     'ramp-slab_910': (414.2, 614.3),
     'ramp-slab_911': (440.1, 640.2),
