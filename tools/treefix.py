@@ -239,6 +239,24 @@ FIXES = {
     # how the other two doors already sit against axis_762 and axis_766.
     'axis_763': (486.8, 566.8),
     'axis_768': (486.8, 566.8),
+
+    # Interior doorframe arch at y 3161, 2026-08-16. Head raised 266.7 so
+    # its crown tops out at 586.8, level with axis_768's ceiling. Springing
+    # goes to 462.2, above the jamb tops of 426.8, so axis_717 and axis_718
+    # are extended in GROW.
+    'ramp-slab_893': (222.2, 488.9),
+    'ramp-slab_895': (276.9, 543.6),
+    'ramp-slab_906': (276.9, 543.6),
+    'ramp-slab_908': (222.2, 488.9),
+    'ramp_896': (294.2, 560.9),
+    'ramp_897': (300.9, 567.6),
+    'ramp_898': (305.9, 572.6),
+    'ramp_899': (310.1, 576.8),
+    'ramp_902': (310.1, 576.8),
+    'ramp_903': (305.9, 572.6),
+    'ramp_904': (300.9, 567.6),
+    'ramp_905': (294.2, 560.9),
+    'merged_900': (312.6, 579.3),
     'ramp-slab_909': (384.6, 584.7),
     'ramp-slab_910': (414.2, 614.3),
     'ramp-slab_911': (440.1, 640.2),
@@ -364,6 +382,13 @@ GROW = {
     # begins at y 5067.6, leaving a 106.7 opening. Lengthened to close it:
     # y extent 480.1 to 586.8. Height and thickness untouched.
     'axis_1': (4720.9, 4774.2, 480.1, 586.8, 1),
+
+    # Doorframe jambs at y 3161, 2026-08-16. Taken from 426.8 up to 586.8,
+    # level with the crown and the ceiling. NOT grown by the arch's own
+    # 266.7, which would top them at 693.5 and punch through the ceiling
+    # they stand under.
+    'axis_717': (213.4, 293.4, 426.8, 586.8),
+    'axis_718': (213.4, 293.4, 426.8, 586.8),
 
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
