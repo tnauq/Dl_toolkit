@@ -529,6 +529,24 @@ RESHAPE = {
     #
     # It now engulfs the upper part of axis_127, the pole at 0.0 to 853.6
     # whose gantry platform and braces were removed earlier.
+    # Seven walls cut back for the new arched doors, 2026-08-16. Each keeps
+    # the segment before its opening; the far panel and the header above the
+    # crown are in addbox.py.
+    'axis_462': ([-13.3, 1213.6, 640.2], [-13.3, 1029.7, 640.2],
+                 [26.7, 613.5, 1280.2], [26.7, 245.7, 1280.2]),
+    'axis_479': ([-26.7, -226.7, 640.2], [-181.8, -226.7, 640.2],
+                 [426.8, 26.7, 853.6], [116.6, 26.7, 853.6]),
+    'axis_195': ([2280.5, 1033.5, 640.2], [2280.5, 356.2, 640.2],
+                 [26.7, 2067.1, 1280.2], [26.7, 712.5, 1280.2]),
+    'axis_733': ([-520.1, 2920.6, 640.2], [-520.1, 2793.7, 640.2],
+                 [26.7, 453.4, 1280.2], [26.7, 199.5, 1280.2]),
+    'axis_191': ([2573.8, 2760.6, 640.2], [2353.7, 2760.6, 640.2],
+                 [1253.6, 26.7, 1280.2], [813.4, 26.7, 1280.2]),
+    'axis_124': ([1447.0, 1453.6, 640.2], [1037.0, 1453.6, 640.2],
+                 [946.9, 26.7, 1280.2], [127.0, 26.7, 1280.2]),
+    'axis_574': ([-613.5, 1667.0, 640.2], [-613.5, 830.1, 640.2],
+                 [26.7, 2000.4, 1280.2], [26.7, 326.7, 1280.2]),
+
     # axis_450 cut back to the north panel of the new arched door,
     # 2026-08-16. It ran y 186.7 to 906.8; it now starts at 508.5, the north
     # edge of the arch. The south panel and the header are in addbox.py.
