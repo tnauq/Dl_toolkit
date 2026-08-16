@@ -41,6 +41,15 @@ REMOVE = [
     # takes reachable cells out of the plan. Removed intentionally.
     'yaw_472',
     'yaw_474',
+    # Flattened ramp and the fill above it, 2026-08-16. simplify.py reduced
+    # this slope to a level plate (shallow_52, top 133.3) because it fell
+    # under the 10 degree cutoff, while the other half of the same slope
+    # survived as ramp-slab_53 at pitch 10.62. gapfill.py then filled the
+    # void above the flat plate to 213.4. Rebuilt as ramp-slab_9052 in
+    # addbox.py. shallow_52 is the only large shallow plate in the plan, so
+    # this is a one-off, not a class.
+    'shallow_52',
+    'gapfill_38_45',
 ]
 
 p = json.load(open('dust2_half.json'))
