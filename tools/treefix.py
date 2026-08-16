@@ -395,6 +395,11 @@ GROW = {
     # so this is a narrow join rather than a full bearing.
     'axis_719': (280.1, 340.1, 560.2, 680.2),
 
+    # axis_81 halved above axis_122, 2026-08-16. It stood 320.2 proud of
+    # axis_122's top at 213.3; that is halved to 160.1, so the wall tops out
+    # at 373.4. Base unchanged at 0.1, height 533.4 to 373.3.
+    'axis_81': (266.8, 186.8, 533.4, 373.3),
+
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
     # the top of the string course axis_83, which runs the whole length
