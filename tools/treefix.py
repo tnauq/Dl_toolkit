@@ -1,76 +1,81 @@
-#!/usr/bin/env python3
-"""Undo the roofs.py lift applied to the tree canopy near T spawn.
+"""Manual height corrections, batched.
 
-The trunk (angled-wall_488..506) is a stack of 53x53x40 blocks based at
-213.4, the main floor. roofs.py read it as a wall, doubled it, and carried
-the canopy resting on it up by one datum. One slab took the lift twice.
+Boxes named here are moved in z to a stated target. This is the list for
+lift faults found by eye in the viewer: things roofs.py carried up that
+should not have moved, and things it left behind that should have.
 
-Runs LAST in the pipeline, after remove.py. Idempotent: each box is only
-moved if it is still sitting at its lifted height.
+Each entry records the height the box is expected to be at BEFORE the fix.
+A box that is not at that height is skipped, not moved, so a rerun is a
+no-op and an upstream change is reported rather than silently compounded.
+
+Run LAST in the pipeline, after remove.py.
 """
-
 import json
-import sys
 
-DATUM = 213.4  # 128 CS units x 1.667
+TOL = 1.0  # a box must be within this of `was` to be moved
 
-# name -> number of datums to undo
-SHIFTS = {name: 1 for name in """
-    ramp-slab_499 ramp-slab_501 ramp-slab_507 ramp-slab_510
-    ramp-slab_512 ramp-slab_515 ramp-slab_526 ramp-slab_529
-    ramp-slab_531 ramp-slab_534 ramp-slab_538 ramp-slab_539
-    ramp-slab_540 ramp-slab_541 ramp-slab_542 ramp-slab_543
-    ramp-slab_544 shallow_504 shallow_521 shallow_525 shallow_532
-""".split()}
-SHIFTS["ramp-slab_503"] = 2
+# name: (was, now)  -- both are origin z
+FIXES = {
+    # Tree canopy near T spawn, 2026-08-16. The trunk (angled-wall_488..506)
+    # is a stack of 53 x 53 x 40 blocks based at 213.4, the main floor.
+    # roofs.py read the stack as a wall, doubled it, and carried the canopy
+    # resting on it up by one datum of 213.4. ramp-slab_503 took the lift
+    # twice. Lowered back onto the trunk top at 693.5.
+    'ramp-slab_499': (880.8, 667.4),
+    'ramp-slab_501': (890.0, 676.6),
+    'ramp-slab_503': (1129.6, 702.8),
+    'ramp-slab_507': (890.3, 676.9),
+    'ramp-slab_510': (890.3, 676.9),
+    'ramp-slab_512': (892.0, 678.6),
+    'ramp-slab_515': (893.8, 680.4),
+    'ramp-slab_526': (891.3, 677.9),
+    'ramp-slab_529': (868.8, 655.4),
+    'ramp-slab_531': (889.0, 675.6),
+    'ramp-slab_534': (892.0, 678.6),
+    'ramp-slab_538': (859.2, 645.8),
+    'ramp-slab_539': (843.7, 630.3),
+    'ramp-slab_540': (888.5, 675.1),
+    'ramp-slab_541': (855.2, 641.8),
+    'ramp-slab_542': (890.7, 677.3),
+    'ramp-slab_543': (871.2, 657.8),
+    'ramp-slab_544': (858.0, 644.6),
+    'shallow_504': (922.0, 708.6),
+    'shallow_521': (922.3, 708.9),
+    'shallow_525': (922.7, 709.3),
+    'shallow_532': (921.1, 707.7),
 
-# a box is only shifted if its z is within this of the expected lifted height
-TOL = 1.0
-
-# expected pre-fix z, recorded so a rerun cannot double-apply
-LIFTED_Z = {
-    "ramp-slab_499": 880.8, "ramp-slab_501": 890.0, "ramp-slab_503": 1129.6,
-    "ramp-slab_507": 890.3, "ramp-slab_510": 890.3, "ramp-slab_512": 892.0,
-    "ramp-slab_515": 893.8, "ramp-slab_526": 891.3, "ramp-slab_529": 868.8,
-    "ramp-slab_531": 889.0, "ramp-slab_534": 892.0, "ramp-slab_538": 859.2,
-    "ramp-slab_539": 843.7, "ramp-slab_540": 888.5, "ramp-slab_541": 855.2,
-    "ramp-slab_542": 890.7, "ramp-slab_543": 871.2, "ramp-slab_544": 858.0,
-    "shallow_504": 922.0, "shallow_521": 922.3, "shallow_525": 922.7,
-    "shallow_532": 921.1,
+    # Gantry crossbeams, 2026-08-16. Four identical 320 x 53 x 40 beams
+    # spanning the walls axis_192 and axis_195, in a row along y at
+    # y = 1293.6, 1480.3, 1653.7, 1827.0. axis_348 sits at 713.5; the other
+    # three sit 186.7 lower, which is 112 CS x 1.667, so they missed a
+    # doubling the fourth received. Raised to match axis_348. Both walls run
+    # z 0.1 to 1280.3 and their y spans cover all four beams, so nothing is
+    # left behind by the move.
+    'axis_345': (526.8, 713.5),
+    'axis_346': (526.8, 713.5),
+    'axis_347': (526.8, 713.5),
 }
 
+p = json.load(open('dust2_half.json'))
+by_name = {b['name']: b for b in p['boxes']}
 
-def main(path):
-    with open(path) as f:
-        plan = json.load(f)
+moved, skipped, missing = [], [], []
+for name, (was, now) in FIXES.items():
+    box = by_name.get(name)
+    if box is None:
+        missing.append(name)
+        continue
+    z = box['origin'][2]
+    if abs(z - was) > TOL:
+        skipped.append((name, z, was))
+        continue
+    box['origin'][2] = now
+    moved.append(name)
 
-    by_name = {b["name"]: b for b in plan["boxes"]}
-    moved, skipped, missing = 0, [], []
+json.dump(p, open('dust2_half.json', 'w'), indent=1)
 
-    for name, datums in SHIFTS.items():
-        box = by_name.get(name)
-        if box is None:
-            missing.append(name)
-            continue
-        z = box["origin"][2]
-        if abs(z - LIFTED_Z[name]) > TOL:
-            skipped.append((name, z))
-            continue
-        box["origin"][2] = round(z - datums * DATUM, 1)
-        moved += 1
-
-    with open(path, "w") as f:
-        json.dump(plan, f, indent=1)
-
-    print("treefix: moved %d of %d" % (moved, len(SHIFTS)))
-    for name, z in skipped:
-        print("  skipped %s, z=%.1f, not at its lifted height" % (name, z))
-    for name in missing:
-        print("  missing %s" % name)
-    if missing:
-        return 1
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "docs/plans/dust2_half.json"))
+print(f'moved {len(moved)} of {len(FIXES)} listed')
+for name, z, was in skipped:
+    print(f'  skipped {name}: z={z}, expected {was}')
+for name in missing:
+    print(f'  NOT FOUND (already gone or renamed): {name}')
