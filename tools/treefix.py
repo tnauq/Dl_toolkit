@@ -425,6 +425,30 @@ GROW = {
     # Base unchanged at 0.0, height 800.2 to 573.5.
     'axis_28': (400.1, 286.8, 800.2, 573.5),
 
+    # axis_30, axis_31 and axis_32, 2026-08-16. All three were identical to
+    # axis_28 before it was halved: base 0.0, height 800.2. Same treatment,
+    # topping out at 573.5 with bases unchanged. They enclose the same bay,
+    # so leaving them at 800.2 would have left axis_28 as the odd one out.
+    'axis_30': (400.1, 286.8, 800.2, 573.5),
+    'axis_31': (400.1, 286.8, 800.2, 573.5),
+    'axis_32': (400.1, 286.8, 800.2, 573.5),
+
+    # axis_267 halved above gapfill_42_27, 2026-08-16. It stood 320.1 proud
+    # of that deck's top at 213.4; halved to 160.1, topping out at 373.5.
+    'axis_267': (266.8, 186.8, 533.4, 373.4),
+    # axis_326 brought down to the same 373.5 from 640.2.
+    'axis_326': (320.1, 186.8, 640.2, 373.5),
+
+    # axis_265 and axis_264 extended to reach compound_266, 2026-08-16.
+    # That box is yawed 56.3, so its AABB touches both walls but its solid
+    # does not. Its near edge runs (2693.9, 1917.5) to (2782.7, 2050.7),
+    # sitting at y 1997 to 2038 across axis_265's width against that wall's
+    # end at 1960.4; the other edge sits at x 2647 to 2665 across axis_264's
+    # y range against its end at 2613.9. Both are extended far enough to
+    # pass THROUGH the rotated solid rather than graze its corner.
+    'axis_265': (1460.3, 1513.7, 1000.2, 1106.9, 1),
+    'axis_264': (2453.8, 2493.9, 320.1, 400.1, 0),
+
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
     # the top of the string course axis_83, which runs the whole length
