@@ -28,6 +28,78 @@ ADD = [
     # the underside stays below ground level along the whole run (-161.9 at
     # the west end, -29.0 at the east), so the space under the ramp is
     # sealed without re-running gapfill.
+    # Windows in axis_68, 2026-08-16. Copies the pattern from the x 653.5
+    # wall: solid panels separated by openings with a solid block below and
+    # above. The three openings are lined up with the existing ones at
+    # y 4187.6, 4454.2 and 4747.7, so the windows face their counterparts.
+    #
+    # Scaled to axis_68's own band of 640.1 to 933.5: sills 640.1 to 693.4,
+    # openings 693.4 to 880.2, heads 880.2 to 933.5. The wall's silhouette
+    # is unchanged. axis_68 itself is reshaped into the first panel in
+    # treefix.py; these are the other three panels and the six blocks.
+    {
+        'name': 'axis_68_p2',
+        'origin': [1480.3, 4347.5, 786.8],
+        'extents': [26.7, 213.4, 293.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_p3',
+        'origin': [1480.3, 4627.6, 786.8],
+        'extents': [26.7, 240.2, 293.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_p4',
+        'origin': [1480.3, 4934.3, 786.8],
+        'extents': [26.7, 266.8, 293.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_sill1',
+        'origin': [1480.3, 4214.2, 666.8],
+        'extents': [26.7, 53.2, 53.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_head1',
+        'origin': [1480.3, 4214.2, 906.9],
+        'extents': [26.7, 53.2, 53.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_sill2',
+        'origin': [1480.3, 4480.9, 666.8],
+        'extents': [26.7, 53.3, 53.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_head2',
+        'origin': [1480.3, 4480.9, 906.9],
+        'extents': [26.7, 53.3, 53.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_sill3',
+        'origin': [1480.3, 4774.3, 666.8],
+        'extents': [26.7, 53.2, 53.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_68_head3',
+        'origin': [1480.3, 4774.3, 906.9],
+        'extents': [26.7, 53.2, 53.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
     # Connector between merged_119 and axis_68, 2026-08-16. Both are the
     # same 26.7 wall plane at x 1467.0, stacked with 266.7 of nothing
     # between 373.4 and 640.1. This fills that over the 293.4 of y they
@@ -67,12 +139,12 @@ ADD = [
     # Riser at the merged_84 seam, 2026-08-16. axis_82 ends at y 3734.0 and
     # merged_84 begins at 3734.1, so the two decks meet edge to edge with an
     # open face between 346.8 and 640.1. This straddles the seam at 53.5
-    # thick, across the 706.8 the two decks share in x, and tops out flush
-    # with merged_84's underside.
+    # thick, and tops out flush with merged_84's underside. Extended west on
+    # 2026-08-16 to meet axis_80's east face at 666.9.
     {
         'name': 'gapfill_82_84',
-        'origin': [1113.6, 3734.1, 493.5],
-        'extents': [706.8, 53.5, 293.3],
+        'origin': [1067.0, 3734.1, 493.5],
+        'extents': [800.1, 53.5, 293.3],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },

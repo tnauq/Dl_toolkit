@@ -1071,12 +1071,12 @@
    "name": "axis_68",
    "origin": [
     1480.3,
-    4254.2,
+    3814.2,
     786.8
    ],
    "extents": [
     26.7,
-    1627.0,
+    746.9,
     293.4
    ],
    "angles": [
@@ -1374,12 +1374,12 @@
   {
    "name": "merged_84",
    "origin": [
-    1340.3,
+    1293.7,
     4400.9,
     653.5
    ],
    "extents": [
-    1160.2,
+    1253.5,
     1333.6,
     26.7
    ],
@@ -19194,6 +19194,177 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "axis_68_p2",
+   "origin": [
+    1480.3,
+    4347.5,
+    786.8
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_p3",
+   "origin": [
+    1480.3,
+    4627.6,
+    786.8
+   ],
+   "extents": [
+    26.7,
+    240.2,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_p4",
+   "origin": [
+    1480.3,
+    4934.3,
+    786.8
+   ],
+   "extents": [
+    26.7,
+    266.8,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_sill1",
+   "origin": [
+    1480.3,
+    4214.2,
+    666.8
+   ],
+   "extents": [
+    26.7,
+    53.2,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_head1",
+   "origin": [
+    1480.3,
+    4214.2,
+    906.9
+   ],
+   "extents": [
+    26.7,
+    53.2,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_sill2",
+   "origin": [
+    1480.3,
+    4480.9,
+    666.8
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_head2",
+   "origin": [
+    1480.3,
+    4480.9,
+    906.9
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_sill3",
+   "origin": [
+    1480.3,
+    4774.3,
+    666.8
+   ],
+   "extents": [
+    26.7,
+    53.2,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_68_head3",
+   "origin": [
+    1480.3,
+    4774.3,
+    906.9
+   ],
+   "extents": [
+    26.7,
+    53.2,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "gapfill_119_68",
    "origin": [
     1480.3,
@@ -19253,12 +19424,12 @@
   {
    "name": "gapfill_82_84",
    "origin": [
-    1113.6,
+    1067.0,
     3734.1,
     493.5
    ],
    "extents": [
-    706.8,
+    800.1,
     53.5,
     293.3
    ],

@@ -415,6 +415,11 @@ GROW = {
     'axis_548': (480.0, 400.1, 533.4, 373.5),
     'axis_549': (480.0, 400.1, 533.4, 373.5),
 
+    # merged_84 extended west, 2026-08-16, from x 760.2 to axis_80's east
+    # face at 666.9. Width 1160.2 to 1253.5. gapfill_82_84 gets the same
+    # treatment, but in addbox.py where it is defined.
+    'merged_84': (1340.3, 1293.7, 1160.2, 1253.5, 0),
+
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
     # the top of the string course axis_83, which runs the whole length
@@ -438,6 +443,13 @@ RESHAPE = {
     # ramp-slab_90, both of which were already buried.
     'axis_77': ([1813.7, 3227.3, 293.4], [1693.7, 3440.7, 293.4],
                 [160.0, 160.0, 160.0], [400.2, 586.8, 160.0]),
+
+    # axis_68 cut down to the first window panel, 2026-08-16. It ran the
+    # whole 1627.0 from y 3440.7 to 5067.7; it now ends at 4187.6, the start
+    # of the first opening. The remaining panels and the sill and head
+    # blocks are added in addbox.py.
+    'axis_68': ([1480.3, 4254.2, 786.8], [1480.3, 3814.2, 786.8],
+                [26.7, 1627.0, 293.4], [26.7, 746.9, 293.4]),
 }
 
 p = json.load(open('dust2_half.json'))
