@@ -95,6 +95,15 @@ FIXES = {
     # axis_42 starts at y 5121.1, so the two already overlap by 17.9.
     # Lowered so the plate top sits at 401.1 and the ramp runs onto it.
     'axis_42': (760.1, 387.8),
+
+    # Floor panel, 2026-08-16. axis_63 sits edge to edge in x with axis_41
+    # at the same 26.7 thickness, one datum of 213.4 above it. Lowered to
+    # match, which makes the two continuous. The crates axis_54 and yaw_55
+    # already rest on axis_41's top at 346.8, so that is the floor level.
+    # Second of the five plates the handoff lists as dead geometry to come
+    # back into use. axis_62 butts onto axis_63's west edge, same thickness,
+    # also still at 546.8, and is likely the third panel of the same floor.
+    'axis_63': (546.8, 333.4),
 }
 
 p = json.load(open('dust2_half.json'))
