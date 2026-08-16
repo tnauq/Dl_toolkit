@@ -12,6 +12,9 @@ GROW changes a box's extent as well as its origin, for cases where a lift
 is not enough on its own. It defaults to the z axis; pass a fifth element
 of 0 or 1 to grow along x or y instead.
 
+RESHAPE is the general case: it sets origin and extents on all three axes
+at once, for boxes that change on more than one.
+
 Run LAST in the pipeline, after remove.py.
 """
 import json
@@ -425,6 +428,18 @@ GROW = {
     'merged_98': (640.1, 800.2, 586.8, 266.6),
 }
 
+
+# name: (was_origin, now_origin, was_extents, now_extents) -- all 3-vectors
+RESHAPE = {
+    # axis_77 expanded horizontally, 2026-08-16. Height untouched at 213.4
+    # to 373.4. Grown to fill from gapfill_119_68's east face at x 1493.6
+    # across to axis_70 at 1893.8, and from its own south edge at y 3147.3
+    # up to gapfill_69_84's south face at 3734.1. It swallows axis_96 and
+    # ramp-slab_90, both of which were already buried.
+    'axis_77': ([1813.7, 3227.3, 293.4], [1693.7, 3440.7, 293.4],
+                [160.0, 160.0, 160.0], [400.2, 586.8, 160.0]),
+}
+
 p = json.load(open('dust2_half.json'))
 by_name = {b['name']: b for b in p['boxes']}
 
@@ -456,9 +471,22 @@ for name, spec in GROW.items():
     box['extents'][ax] = now_e
     moved.append(name)
 
+for name, (was_o, now_o, was_e, now_e) in RESHAPE.items():
+    box = by_name.get(name)
+    if box is None:
+        missing.append(name)
+        continue
+    if (any(abs(box['origin'][i] - was_o[i]) > TOL for i in range(3)) or
+            any(abs(box['extents'][i] - was_e[i]) > TOL for i in range(3))):
+        skipped.append((name, box['origin'][2], was_o[2]))
+        continue
+    box['origin'] = list(now_o)
+    box['extents'] = list(now_e)
+    moved.append(name)
+
 json.dump(p, open('dust2_half.json', 'w'), indent=1)
 
-print(f'moved {len(moved)} of {len(FIXES) + len(GROW)} listed')
+print(f'moved {len(moved)} of {len(FIXES) + len(GROW) + len(RESHAPE)} listed')
 for name, z, was in skipped:
     print(f'  skipped {name}: z={z}, expected {was}')
 for name in missing:
