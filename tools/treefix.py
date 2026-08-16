@@ -160,6 +160,14 @@ GROW = {
     # its new height, rather than the arch floating clear of its legs.
     'axis_18': (93.4, 253.5, 186.7, 506.8),
     'axis_2': (93.4, 253.5, 186.7, 506.8),
+
+    # Wall trim, 2026-08-16. axis_68 ran 346.7 to 933.5 through a space it
+    # should not close off, but it serves a function above, so it is
+    # shortened from below rather than moved or removed. New base is 640.1,
+    # the underside of merged_84. The top stays at 933.5 and axis_355, which
+    # crosses this footprint at 826.9 to 853.6, is well inside the surviving
+    # span. Height 586.8 to 293.4.
+    'axis_68': (640.1, 786.8, 586.8, 293.4),
 }
 
 p = json.load(open('dust2_half.json'))
