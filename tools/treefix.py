@@ -190,12 +190,97 @@ FIXES = {
     # axis_378 raised 133.5 so its top meets axis_376's at 893.6. Height
     # unchanged at 400.0.
     'axis_378': (560.1, 693.6),
-    # Two 23 x 27 x 15 strips left behind at the same wrong height of 465.1
-    # to 480.1, each abutting a 40 thick roof panel in y. Raised so their
-    # TOPS meet the panel tops, since the top is the surface that reads.
-    # The undersides do not line up: 15 against 40.
-    'shallow_885': (472.6, 712.7),
-    'shallow_916': (472.6, 672.7),
+    # Doorway arch at y 3600, 2026-08-16. Exact twin of the y 2227 doorway
+    # below: same voussoirs, axis_734 as the panel above the head at 480.1
+    # to 640.1, and axis_735 as the wall at 213.4 to 1067.0. Same delta of
+    # 426.8, putting axis_734 at 1066.9 against the wall's 1067.0.
+    #
+    # shallow_916 and shallow_917 are its two crown plates. shallow_916 was
+    # briefly raised to meet the roof panel axis_762; it is retargeted here
+    # to travel with the rest of the head.
+    'shallow_916': (472.6, 899.4),
+
+    # Doorway arch at x 200, 2026-08-16. Same construction as the other two,
+    # rotated: yaw plus and minus 90 instead of 0 and 180. The wall here is
+    # axis_128 at 0.1 to 1280.3, so its pre-doubling height is 640.1 rather
+    # than 426.8, and that is the delta. Crown goes to 918.5 to 933.5.
+    #
+    # The interior ceiling, axis_763 and axis_768, travels the same 640.1 to
+    # 1106.9 to 1146.9. That clears axis_711, the solid block at 320.1 to
+    # 960.3, which the alternative reading would have overlapped.
+    #
+    # Unlike the other three, the panel above the head (axis_130, topping
+    # out at 986.9) matches neither the old wall top of 640.2 nor the new
+    # 1280.3, so it is not evidence for the delta and it is not lifted. It
+    # is rebuilt in GROW to fill from the new head to the wall top.
+    'ramp-slab_820': (198.2, 838.3),
+    'ramp-slab_821': (227.9, 868.0),
+    'ramp-slab_822': (253.7, 893.8),
+    'ramp-slab_833': (253.7, 893.8),
+    'ramp-slab_834': (227.9, 868.0),
+    'ramp-slab_835': (198.2, 838.3),
+    'ramp_823': (267.6, 907.7),
+    'ramp_824': (274.2, 914.3),
+    'ramp_825': (279.2, 919.3),
+    'ramp_826': (283.4, 923.5),
+    'ramp_829': (283.4, 923.5),
+    'ramp_830': (279.2, 919.3),
+    'ramp_831': (274.2, 914.3),
+    'ramp_832': (267.6, 907.7),
+    'shallow_827': (285.9, 926.0),
+    'shallow_828': (285.9, 926.0),
+    'axis_763': (486.8, 1126.9),
+    'axis_768': (486.8, 1126.9),
+    'ramp-slab_909': (384.6, 811.4),
+    'ramp-slab_910': (414.2, 841.0),
+    'ramp-slab_911': (440.1, 866.9),
+    'ramp-slab_922': (440.1, 866.9),
+    'ramp-slab_923': (414.2, 841.0),
+    'ramp-slab_924': (384.6, 811.4),
+    'ramp_912': (454.3, 881.1),
+    'ramp_913': (460.9, 887.7),
+    'ramp_914': (465.9, 892.7),
+    'ramp_915': (470.1, 896.9),
+    'ramp_918': (470.1, 896.9),
+    'ramp_919': (465.9, 892.7),
+    'ramp_920': (460.9, 887.7),
+    'ramp_921': (454.3, 881.1),
+    'shallow_917': (472.6, 899.4),
+    'axis_734': (560.1, 986.9),
+
+    # Doorway arch at y 2227, 2026-08-16. axis_583, the panel above the
+    # head, tops out at 640.1, which is axis_728's pre-doubling height: that
+    # wall runs 213.4 to 1067.0, a height of 853.6. So the head and the
+    # panel stayed at the old scale when the wall doubled. Delta 426.8 puts
+    # axis_583 at 1066.9 against the wall's 1067.0.
+    #
+    # This makes the clear opening 253.4 to 906.9 rather than a literal
+    # doubling of 226.7 to 453.4, so it is 2.9x, not 2x. There are no jambs:
+    # nothing exists between the floor at 253.4 and the springing at 358.0,
+    # so the head rises and the opening below it gets taller.
+    #
+    # shallow_884 and shallow_885 are the two central crown plates, touching
+    # at x -1333.6, both 23.2 x 26.7 x 15.0 and both originally at 465.1 to
+    # 480.1. shallow_885 was briefly raised to meet the roof panel axis_766,
+    # which pulled a keystone out of this arch; it is retargeted here to
+    # travel with the rest of the head.
+    'shallow_885': (472.6, 899.4),
+    'ramp-slab_877': (384.6, 811.4),
+    'ramp-slab_878': (414.2, 841.0),
+    'ramp-slab_879': (440.1, 866.9),
+    'ramp-slab_890': (440.1, 866.9),
+    'ramp-slab_891': (414.2, 841.0),
+    'ramp-slab_892': (384.6, 811.4),
+    'ramp_880': (454.3, 881.1),
+    'ramp_881': (460.9, 887.7),
+    'ramp_882': (465.9, 892.7),
+    'ramp_883': (470.1, 896.9),
+    'ramp_886': (470.1, 896.9),
+    'ramp_887': (465.9, 892.7),
+    'ramp_888': (460.9, 887.7),
+    'ramp_889': (454.3, 881.1),
+    'shallow_884': (472.6, 899.4),
+    'axis_583': (560.1, 986.9),
     # Two 160 crates that sat at 720.2 to 880.2 with nothing under them,
     # dropped onto axis_62's floor at 346.8.
     'axis_67': (800.2, 426.8),
@@ -276,6 +361,12 @@ GROW = {
     # begins at y 5067.6, leaving a 106.7 opening. Lengthened to close it:
     # y extent 480.1 to 586.8. Height and thickness untouched.
     'axis_1': (4720.9, 4774.2, 480.1, 586.8, 1),
+
+    # Panel above the x 200 doorway, 2026-08-16. Ran 293.5 to 986.9. Rebased
+    # to the new head at 933.6 and taken up to the wall top at 1280.3, so it
+    # fills the spandrel rather than keeping an arbitrary 986.9 ceiling.
+    # Height 693.4 to 346.7.
+    'axis_130': (640.2, 1107.0, 693.4, 346.7),
 
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
