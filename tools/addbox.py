@@ -28,15 +28,46 @@ ADD = [
     # the underside stays below ground level along the whole run (-161.9 at
     # the west end, -29.0 at the east), so the space under the ramp is
     # sealed without re-running gapfill.
+    # Wall above the arcade, 2026-08-16, connecting axis_80 to axis_61.
+    # axis_80 stops at y 3867.4 and axis_61 begins at 5067.6. Extending
+    # axis_80 bodily in y would swallow the whole arcade, arch B included,
+    # so this is the wall ABOVE the window band only: from the panel tops at
+    # 933.5 up to 1280.3, axis_61's height. The heads axis_109, axis_111 and
+    # axis_113 poke into its underside, which is harmless, and it overlaps
+    # axis_371 over the last 160 of the run.
+    {
+        'name': 'gapfill_80_61',
+        'origin': [653.5, 4467.5, 1106.9],
+        'extents': [26.7, 1200.2, 346.8],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Wall above axis_68, 2026-08-16, bringing it to axis_61's height. Same
+    # treatment: one box from the panel tops at 933.5 to 1280.3, running the
+    # full length so the window bays are closed above their heads.
+    {
+        'name': 'axis_68_upper',
+        'origin': [1480.3, 4254.3, 1106.9],
+        'extents': [26.7, 1626.9, 346.8],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
     # Windows in axis_68, 2026-08-16. Copies the pattern from the x 653.5
     # wall: solid panels separated by openings with a solid block below and
     # above. The three openings are lined up with the existing ones at
     # y 4187.6, 4454.2 and 4747.7, so the windows face their counterparts.
     #
-    # Scaled to axis_68's own band of 640.1 to 933.5: sills 640.1 to 693.4,
-    # openings 693.4 to 880.2, heads 880.2 to 933.5. The wall's silhouette
-    # is unchanged. axis_68 itself is reshaped into the first panel in
-    # treefix.py; these are the other three panels and the six blocks.
+    # The aperture is IDENTICAL to the source at 720.1 to 880.2, 160.1 tall.
+    # Heads run 880.2 to 960.2 like axis_109, axis_111 and axis_113, so they
+    # stand 26.7 proud of the panel tops exactly as those do.
+    #
+    # Below the aperture this uses a single block from 640.1 to 720.1 rather
+    # than the source's two-part stack of axis_83's course at 640.1 to 666.9
+    # plus a sill at 666.9 to 720.1, because axis_68 has no course under it
+    # and the joint line would be invisible in a blockout.
+    #
+    # axis_68 itself is reshaped into the first panel in treefix.py; these
+    # are the other three panels and the six blocks.
     {
         'name': 'axis_68_p2',
         'origin': [1480.3, 4347.5, 786.8],
@@ -60,43 +91,43 @@ ADD = [
     },
     {
         'name': 'axis_68_sill1',
-        'origin': [1480.3, 4214.2, 666.8],
-        'extents': [26.7, 53.2, 53.3],
+        'origin': [1480.3, 4214.2, 680.1],
+        'extents': [26.7, 53.2, 80.0],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
     {
         'name': 'axis_68_head1',
-        'origin': [1480.3, 4214.2, 906.9],
-        'extents': [26.7, 53.2, 53.3],
+        'origin': [1480.3, 4214.2, 920.2],
+        'extents': [26.7, 53.2, 80.0],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
     {
         'name': 'axis_68_sill2',
-        'origin': [1480.3, 4480.9, 666.8],
-        'extents': [26.7, 53.3, 53.3],
+        'origin': [1480.3, 4480.9, 680.1],
+        'extents': [26.7, 53.3, 80.0],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
     {
         'name': 'axis_68_head2',
-        'origin': [1480.3, 4480.9, 906.9],
-        'extents': [26.7, 53.3, 53.3],
+        'origin': [1480.3, 4480.9, 920.2],
+        'extents': [26.7, 53.3, 80.0],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
     {
         'name': 'axis_68_sill3',
-        'origin': [1480.3, 4774.3, 666.8],
-        'extents': [26.7, 53.2, 53.3],
+        'origin': [1480.3, 4774.3, 680.1],
+        'extents': [26.7, 53.2, 80.0],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
     {
         'name': 'axis_68_head3',
-        'origin': [1480.3, 4774.3, 906.9],
-        'extents': [26.7, 53.2, 53.3],
+        'origin': [1480.3, 4774.3, 920.2],
+        'extents': [26.7, 53.2, 80.0],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
