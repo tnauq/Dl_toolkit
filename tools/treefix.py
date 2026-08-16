@@ -86,6 +86,15 @@ FIXES = {
     # neighbour by 6.6 and sealing both seams. Overlap blocks rather than
     # opens. Depends on the axis_766 lift above.
     'axis_767': (486.8, 666.9),
+
+    # Ramp landing, 2026-08-16. axis_42 is a 26.7 thick plate that sat at
+    # 760.1 with nothing under it, one of the five plates the handoff lists
+    # as reachable from neither side. ramp-slab_26 has yaw -90 and pitch
+    # 15.64, so once the yaw is applied its footprint is x 3200.7 to 3734.1
+    # and y 4450.6 to 5139.0, reaching 401.1 at its high edge to the north.
+    # axis_42 starts at y 5121.1, so the two already overlap by 17.9.
+    # Lowered so the plate top sits at 401.1 and the ramp runs onto it.
+    'axis_42': (760.1, 387.8),
 }
 
 p = json.load(open('dust2_half.json'))
