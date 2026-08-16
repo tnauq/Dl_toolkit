@@ -57,10 +57,11 @@ REMOVE = [
     # up, it just reads as floating from underneath.
     'yaw_21',
     # Batch, 2026-08-16.
-    # merged_97 and merged_98: full-height walls, 346.7 to 933.5, beside
-    # arch B.
-    'merged_97',
-    'merged_98',
+    # merged_97 and merged_98 were removed here on 2026-08-16 and put back
+    # the same day: they are the panels between axis_80 / axis_109 and
+    # axis_109 / axis_111, and were wanted after all. Left OUT of this list
+    # rather than re-added under new names, so nothing in the pipeline
+    # removes and recreates the same geometry on every run.
     # yaw_353 and yaw_354: full-height yawed piers, 213.4 to 1067.0.
     'yaw_353',
     'yaw_354',
@@ -84,6 +85,24 @@ REMOVE = [
     'axis_93',
     'axis_94',
     'axis_95',
+    # Batch, 2026-08-16. Four yawed plates at 320.0 to 346.8 and 613.4 to
+    # 640.1, in two stacked pairs.
+    'yaw_356',
+    'yaw_357',
+    'yaw_358',
+    'yaw_359',
+    # ramp-slab_92, one of the pair that flanked the removed stairs.
+    # ramp-slab_90 is its twin at the same 229.5 to 282.8 and is left in.
+    'ramp-slab_92',
+    # Six angled blocks floating above axis_48, starting just over its top
+    # at 1280.3 with nothing under them between 800 and 1280. Same cluster
+    # as ramp-slab_181, removed earlier.
+    'ramp-slab_147',
+    'ramp-slab_149',
+    'ramp-slab_169',
+    'ramp-slab_182',
+    'ramp-slab_184',
+    'shallow_180',
 ]
 
 p = json.load(open('dust2_half.json'))

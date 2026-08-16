@@ -390,6 +390,11 @@ GROW = {
     'axis_717': (213.4, 293.4, 426.8, 586.8),
     'axis_718': (213.4, 293.4, 426.8, 586.8),
 
+    # axis_719 grown 120.0, 2026-08-16, from 560.2 up to axis_766's
+    # underside at 680.2. The two overlap in only a 26.8 wide strip in x,
+    # so this is a narrow join rather than a full bearing.
+    'axis_719': (280.1, 340.1, 560.2, 680.2),
+
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
     # the top of the string course axis_83, which runs the whole length
