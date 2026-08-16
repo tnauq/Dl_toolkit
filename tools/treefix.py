@@ -8,8 +8,9 @@ Each entry records the height the box is expected to be at BEFORE the fix.
 A box that is not at that height is skipped, not moved, so a rerun is a
 no-op and an upstream change is reported rather than silently compounded.
 
-GROW changes a box's z extent as well as its origin, for cases where a
-lift is not enough on its own.
+GROW changes a box's extent as well as its origin, for cases where a lift
+is not enough on its own. It defaults to the z axis; pass a fifth element
+of 0 or 1 to grow along x or y instead.
 
 Run LAST in the pipeline, after remove.py.
 """
@@ -184,6 +185,21 @@ FIXES = {
     # Piers are rebased to 213.4 in GROW. New crown top is 1067.1 against
     # axis_468's 1067.0.
     'axis_483': (853.2, 640.2),
+
+    # Batch, 2026-08-16.
+    # axis_378 raised 133.5 so its top meets axis_376's at 893.6. Height
+    # unchanged at 400.0.
+    'axis_378': (560.1, 693.6),
+    # Two 23 x 27 x 15 strips left behind at the same wrong height of 465.1
+    # to 480.1, each abutting a 40 thick roof panel in y. Raised so their
+    # TOPS meet the panel tops, since the top is the surface that reads.
+    # The undersides do not line up: 15 against 40.
+    'shallow_885': (472.6, 712.7),
+    'shallow_916': (472.6, 672.7),
+    # Two 160 crates that sat at 720.2 to 880.2 with nothing under them,
+    # dropped onto axis_62's floor at 346.8.
+    'axis_67': (800.2, 426.8),
+    'axis_65': (800.2, 426.8),
     'ramp-slab_861': (693.2, 907.0),
     'ramp-slab_862': (733.2, 947.0),
     'ramp-slab_863': (770.2, 984.0),
@@ -230,7 +246,7 @@ FIXES = {
 }
 
 
-# name: (was_origin_z, now_origin_z, was_extent_z, now_extent_z)
+# name: (was_origin, now_origin, was_extent, now_extent[, axis=2])
 GROW = {
     # Arch piers, 2026-08-16. See the arch note in FIXES. Both run from 0.1
     # and are lengthened by 320.1 so the arch curve lands on top of them at
@@ -255,6 +271,11 @@ GROW = {
     # curve landing on them rather than floating clear.
     'axis_480': (562.2, 562.6, 271.6, 698.4),
     'axis_481': (562.2, 562.6, 271.6, 698.4),
+
+    # axis_1 extended along Y, 2026-08-16. It ended at y 4960.9 and axis_61
+    # begins at y 5067.6, leaving a 106.7 opening. Lengthened to close it:
+    # y extent 480.1 to 586.8. Height and thickness untouched.
+    'axis_1': (4720.9, 4774.2, 480.1, 586.8, 1),
 }
 
 p = json.load(open('dust2_half.json'))
@@ -273,17 +294,19 @@ for name, (was, now) in FIXES.items():
     box['origin'][2] = now
     moved.append(name)
 
-for name, (was_z, now_z, was_e, now_e) in GROW.items():
+for name, spec in GROW.items():
+    was_o, now_o, was_e, now_e = spec[:4]
+    ax = spec[4] if len(spec) > 4 else 2
     box = by_name.get(name)
     if box is None:
         missing.append(name)
         continue
-    z, e = box['origin'][2], box['extents'][2]
-    if abs(z - was_z) > TOL or abs(e - was_e) > TOL:
-        skipped.append((name, z, was_z))
+    o, e = box['origin'][ax], box['extents'][ax]
+    if abs(o - was_o) > TOL or abs(e - was_e) > TOL:
+        skipped.append((name, o, was_o))
         continue
-    box['origin'][2] = now_z
-    box['extents'][2] = now_e
+    box['origin'][ax] = now_o
+    box['extents'][ax] = now_e
     moved.append(name)
 
 json.dump(p, open('dust2_half.json', 'w'), indent=1)

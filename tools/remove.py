@@ -56,6 +56,34 @@ REMOVE = [
     # top at 653.5 and is left unsupported along that edge. Nothing opens
     # up, it just reads as floating from underneath.
     'yaw_21',
+    # Batch, 2026-08-16.
+    # merged_97 and merged_98: full-height walls, 346.7 to 933.5, beside
+    # arch B.
+    'merged_97',
+    'merged_98',
+    # yaw_353 and yaw_354: full-height yawed piers, 213.4 to 1067.0.
+    'yaw_353',
+    'yaw_354',
+    # ramp_818: gantry platform. Its braces went earlier; axis_363 rested on
+    # its top at 660.1 and is left floating, leaving axis_80 as the only
+    # thing standing there.
+    'ramp_818',
+    'ramp-slab_181',
+    # Four overlapping angled strips at 213.3 to 253.4, same 33.7 yaw
+    # family, spanning the same run.
+    'compound_589',
+    'compound_590',
+    'yaw_587',
+    'yaw_588',
+    # axis_355: 800 x 1520 plate at 826.9 to 853.6. It crossed axis_68's
+    # footprint, which was the reference for that wall's trim; the trim
+    # stands on its own and is unaffected.
+    'axis_355',
+    # Stairs, three treads rising to 266.6, 293.4 and 320.1. ramp-slab_90
+    # and ramp-slab_92 flank them at 229.5 to 282.8 and are left in place.
+    'axis_93',
+    'axis_94',
+    'axis_95',
 ]
 
 p = json.load(open('dust2_half.json'))
