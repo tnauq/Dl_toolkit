@@ -1448,6 +1448,44 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "merged_97",
+   "origin": [
+    653.5,
+    4027.5,
+    800.2
+   ],
+   "extents": [
+    26.7,
+    320.1,
+    266.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "merged_98",
+   "origin": [
+    653.5,
+    4347.5,
+    800.2
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    266.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "merged_99",
    "origin": [
     653.5,

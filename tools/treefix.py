@@ -276,6 +276,18 @@ GROW = {
     # begins at y 5067.6, leaving a 106.7 opening. Lengthened to close it:
     # y extent 480.1 to 586.8. Height and thickness untouched.
     'axis_1': (4720.9, 4774.2, 480.1, 586.8, 1),
+
+    # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
+    # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
+    # the top of the string course axis_83, which runs the whole length
+    # under them and itself sits on the lintel axis_19 at 613.4 to 640.1.
+    # Top unchanged at 933.5, height 586.8 to 266.6.
+    #
+    # merged_99 is deliberately NOT here. It sits past the pier axis_4 at
+    # y 4507.6 to 4747.6, over the solid wall axis_3, so its low edge is
+    # buried rather than hanging.
+    'merged_97': (640.1, 800.2, 586.8, 266.6),
+    'merged_98': (640.1, 800.2, 586.8, 266.6),
 }
 
 p = json.load(open('dust2_half.json'))
