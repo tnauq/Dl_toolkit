@@ -477,6 +477,17 @@ RESHAPE = {
     # whole 1627.0 from y 3440.7 to 5067.7; it now ends at 4187.6, the start
     # of the first opening. The remaining panels and the sill and head
     # blocks are added in addbox.py.
+    # axis_337 extended and raised, 2026-08-16. Grown in x to fill between
+    # axis_265's east face at 2773.9 and axis_333's west face at 3974.2, and
+    # raised from 533.5 to their shared 1280.3. Width in y untouched at
+    # 26.7.
+    #
+    # It now subsumes axis_558 entirely and parts of axis_557 and axis_361,
+    # all on the same wall line running west, plus part of the floor slab
+    # gapfill_50_20. Those become redundant but harmless.
+    'axis_337': ([3600.7, 1346.9, 266.8], [3374.1, 1346.9, 640.2],
+                 [746.8, 26.7, 533.4], [1200.3, 26.7, 1280.2]),
+
     'axis_68': ([1480.3, 4254.2, 786.8], [1480.3, 3814.2, 786.8],
                 [26.7, 1627.0, 293.4], [26.7, 746.9, 293.4]),
 }
