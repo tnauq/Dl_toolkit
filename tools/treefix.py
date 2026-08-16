@@ -72,6 +72,20 @@ FIXES = {
     # Raised to sit in that gap, flush to both. Depends on the axis_761 lift
     # above, so it must not be applied on its own.
     'axis_762': (486.8, 660.2),
+
+    # Roof panel continuation, 2026-08-16. axis_765 butts onto axis_764's
+    # north edge at y 3174 with the same 40 thickness, so it takes the same
+    # lift and the two end up flush.
+    'axis_765': (486.8, 700.2),
+
+    # Step panel, 2026-08-16. axis_767 sits edge to edge in x between
+    # axis_766 and axis_769, so the gap is a vertical step at each seam
+    # rather than a slot. axis_769 tops out at 653.5 and axis_766 starts at
+    # 680.2, a span of 26.7 against a panel 40 thick, so it cannot be flush
+    # with both. Centred instead: 646.9 to 686.9, overlapping each
+    # neighbour by 6.6 and sealing both seams. Overlap blocks rather than
+    # opens. Depends on the axis_766 lift above.
+    'axis_767': (486.8, 666.9),
 }
 
 p = json.load(open('dust2_half.json'))
