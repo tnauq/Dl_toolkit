@@ -28,6 +28,30 @@ ADD = [
     # the underside stays below ground level along the whole run (-161.9 at
     # the west end, -29.0 at the east), so the space under the ramp is
     # sealed without re-running gapfill.
+    # Fill under axis_82, 2026-08-16. axis_69's deck tops out at 213.3 and
+    # axis_82 starts at 320.0 directly above it, leaving a 106.7 void.
+    # Filled across axis_82's whole footprint. It engulfs the thin walls
+    # axis_80 and merged_119 that pass through, and buries ramp-slab_90,
+    # the leftover stair stringer.
+    {
+        'name': 'gapfill_69_82',
+        'origin': [1066.9, 3640.7, 266.7],
+        'extents': [800.2, 186.7, 106.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Riser at the merged_84 seam, 2026-08-16. axis_82 ends at y 3734.0 and
+    # merged_84 begins at 3734.1, so the two decks meet edge to edge with an
+    # open face between 346.8 and 640.1. This straddles the seam at 53.5
+    # thick, across the 706.8 the two decks share in x, and tops out flush
+    # with merged_84's underside.
+    {
+        'name': 'gapfill_82_84',
+        'origin': [1113.6, 3734.1, 493.5],
+        'extents': [706.8, 53.5, 293.3],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
     {
         'name': 'ramp-slab_9052',
         'origin': [2346.0, 4280.9, -14.5],

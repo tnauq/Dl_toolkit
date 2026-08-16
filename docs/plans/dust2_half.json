@@ -19194,6 +19194,44 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "gapfill_69_82",
+   "origin": [
+    1066.9,
+    3640.7,
+    266.7
+   ],
+   "extents": [
+    800.2,
+    186.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "gapfill_82_84",
+   "origin": [
+    1113.6,
+    3734.1,
+    493.5
+   ],
+   "extents": [
+    706.8,
+    53.5,
+    293.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "ramp-slab_9052",
    "origin": [
     2346.0,
