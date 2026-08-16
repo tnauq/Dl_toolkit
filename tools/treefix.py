@@ -150,6 +150,77 @@ FIXES = {
     'ramp-slab_1087': (201.5, 521.6),
     'ramp-slab_1088': (188.9, 509.0),
     'axis_20': (306.7, 626.8),
+
+    # Arch B, 2026-08-16. Identical in construction to the arch above:
+    # piers axis_4 and axis_5 at 186.7 tall, crown at 320.1, and the walls
+    # beside it (axis_7, axis_16) already doubled to 640.2. Same delta of
+    # 320.1, same treatment: piers lengthened in GROW, curve and lintel
+    # lifted intact.
+    'ramp-slab_801': (192.7, 512.8),
+    'ramp-slab_802': (219.2, 539.3),
+    'ramp-slab_803': (244.2, 564.3),
+    'ramp-slab_804': (288.4, 608.5),
+    'ramp-slab_805': (282.1, 602.2),
+    'ramp-slab_806': (289.6, 609.7),
+    'ramp-slab_811': (289.6, 609.7),
+    'ramp-slab_812': (282.1, 602.2),
+    'ramp-slab_813': (288.4, 608.5),
+    'ramp-slab_814': (244.2, 564.3),
+    'ramp-slab_815': (219.2, 539.3),
+    'ramp-slab_816': (192.7, 512.8),
+    'shallow_807': (283.4, 603.5),
+    'shallow_810': (283.4, 603.5),
+    'merged_808': (285.9, 606.0),
+    'axis_19': (306.7, 626.8),
+
+    # Arch A, 2026-08-16. Sits on a base at 426.4 rather than on the floor.
+    # The wall beside it, axis_483, runs 426.4 to 1280.0, which is exactly
+    # twice the arch's height, so the delta here is 426.8. Piers axis_480
+    # and axis_481 are lengthened in GROW. New crown top is 1280.1 against
+    # the wall's 1280.0.
+    'ramp-slab_861': (693.2, 1120.0),
+    'ramp-slab_862': (733.2, 1160.0),
+    'ramp-slab_863': (770.2, 1197.0),
+    'ramp-slab_864': (837.0, 1263.8),
+    'ramp-slab_865': (828.0, 1254.8),
+    'ramp-slab_866': (839.2, 1266.0),
+    'ramp-slab_871': (839.2, 1266.0),
+    'ramp-slab_872': (828.0, 1254.8),
+    'ramp-slab_873': (837.0, 1263.8),
+    'ramp-slab_874': (770.2, 1197.0),
+    'ramp-slab_875': (733.2, 1160.0),
+    'ramp-slab_876': (693.2, 1120.0),
+    'shallow_867': (838.8, 1265.6),
+    'shallow_868': (842.4, 1269.2),
+    'shallow_869': (842.4, 1269.2),
+    'shallow_870': (838.8, 1265.6),
+
+    # Arch C, 2026-08-16. Not several arches: one barrel vault extruded 800
+    # units along y, which is why it reads as a tunnel. Every element shares
+    # y 506.8 and an 800 y-extent.
+    #
+    # No pier work here. It springs off axis_454 and axis_457, which are
+    # already doubled to 213.4 through 1067.0, so this is a pure lift of
+    # 426.8. axis_456, the deck resting on the vault, is included: it tops
+    # out at 640.1, the walls' pre-doubling height, and lands at 1066.9,
+    # the doubled wall top. Leaving it behind would strand it.
+    'ramp-slab_845': (491.3, 918.1),
+    'ramp-slab_846': (520.9, 947.7),
+    'ramp-slab_847': (546.8, 973.6),
+    'ramp-slab_858': (546.8, 973.6),
+    'ramp-slab_859': (520.9, 947.7),
+    'ramp-slab_860': (491.3, 918.1),
+    'ramp_848': (560.9, 987.7),
+    'ramp_849': (567.6, 994.4),
+    'ramp_850': (572.6, 999.4),
+    'ramp_851': (576.8, 1003.6),
+    'ramp_854': (576.8, 1003.6),
+    'ramp_855': (572.6, 999.4),
+    'ramp_856': (567.6, 994.4),
+    'ramp_857': (560.9, 987.7),
+    'shallow_852': (579.3, 1006.1),
+    'shallow_853': (579.3, 1006.1),
+    'axis_456': (613.5, 1040.3),
 }
 
 
@@ -168,6 +239,15 @@ GROW = {
     # crosses this footprint at 826.9 to 853.6, is well inside the surviving
     # span. Height 586.8 to 293.4.
     'axis_68': (640.1, 786.8, 586.8, 293.4),
+
+    # Arch B piers, 2026-08-16. Same dimensions as the first arch's piers.
+    'axis_4': (93.4, 253.5, 186.7, 506.8),
+    'axis_5': (93.4, 253.5, 186.7, 506.8),
+
+    # Arch A piers, 2026-08-16. Base stays at 426.4, top goes 698.0 to
+    # 1124.8, so the lifted curve lands on them rather than floating clear.
+    'axis_480': (562.2, 775.6, 271.6, 698.4),
+    'axis_481': (562.2, 775.6, 271.6, 698.4),
 }
 
 p = json.load(open('dust2_half.json'))
