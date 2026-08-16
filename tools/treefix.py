@@ -420,6 +420,11 @@ GROW = {
     # treatment, but in addbox.py where it is defined.
     'merged_84': (1340.3, 1293.7, 1160.2, 1253.5, 0),
 
+    # axis_28 halved above axis_41, 2026-08-16. It stood 453.4 proud of
+    # axis_41's top at 346.8; halved to 226.7, so it tops out at 573.5.
+    # Base unchanged at 0.0, height 800.2 to 573.5.
+    'axis_28': (400.1, 286.8, 800.2, 573.5),
+
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
     # the top of the string course axis_83, which runs the whole length
