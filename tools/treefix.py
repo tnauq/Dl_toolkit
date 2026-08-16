@@ -54,6 +54,16 @@ FIXES = {
     'axis_345': (526.8, 713.5),
     'axis_346': (526.8, 713.5),
     'axis_347': (526.8, 713.5),
+
+    # Roof panels, 2026-08-16. axis_761, axis_764 and axis_766 are three
+    # 40 thick panels tiling side by side in x from -2134 to -960, over the
+    # same bay. axis_764 sits at 700.2; the other two sit 213.4 lower, which
+    # is exactly one main floor datum, so they missed a lift axis_764
+    # received. Raised to match. The walls carrying them (axis_729, _730,
+    # _732, _738, _744) top out at 1067.0, so the higher position still
+    # clears nothing.
+    'axis_761': (486.8, 700.2),
+    'axis_766': (486.8, 700.2),
 }
 
 p = json.load(open('dust2_half.json'))
