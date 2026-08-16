@@ -50,6 +50,12 @@ REMOVE = [
     # this is a one-off, not a class.
     'shallow_52',
     'gapfill_38_45',
+    # Angled wall, 2026-08-16. Full height, 0 to 640.2, 853.5 long and 26.7
+    # thick at 26.6 degrees yaw. This is a route change, not clutter: the
+    # whole span opens. merged_84, a 1160 x 1334 roof plate, rested on its
+    # top at 653.5 and is left unsupported along that edge. Nothing opens
+    # up, it just reads as floating from underneath.
+    'yaw_21',
 ]
 
 p = json.load(open('dust2_half.json'))
