@@ -104,6 +104,12 @@ FIXES = {
     # back into use. axis_62 butts onto axis_63's west edge, same thickness,
     # also still at 546.8, and is likely the third panel of the same floor.
     'axis_63': (546.8, 333.4),
+
+    # Floor panel, 2026-08-16. axis_62 butts onto axis_63's west edge at
+    # x 2347, same 26.7 thickness, same 213.4 datum above it. Third panel of
+    # the same floor, lowered to match. Third of the five plates the handoff
+    # lists as dead geometry to come back into use.
+    'axis_62': (546.8, 333.4),
 }
 
 p = json.load(open('dust2_half.json'))
