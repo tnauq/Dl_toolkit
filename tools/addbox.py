@@ -28,14 +28,212 @@ ADD = [
     # the underside stays below ground level along the whole run (-161.9 at
     # the west end, -29.0 at the east), so the space under the ramp is
     # sealed without re-running gapfill.
+    # New arched door in axis_450, 2026-08-16. A copy of the x 200 doorway
+    # arch. Both walls are 26.7 thick and run in y, so it is a pure
+    # translation with no rotation: x +1280.3, y -2945.3 to centre it on
+    # y 382, and z +213.4 to stand it on axis_450's floor rather than
+    # sinking it below, since the original springs off z 0.
+    #
+    # The arch occupies y 255.4 to 508.5, so axis_450 is split: it becomes the
+    # north panel in treefix.py, and the south panel and the header above
+    # the crown are added here.
+    {
+        'name': 'ramp-slab_820_a450',
+        'origin': [1480.3, 493.1, 705.0],
+        'extents': [44.5, 26.7, 53.3],
+        'angles': [40.71, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp-slab_821_a450',
+        'origin': [1480.3, 495.2, 734.7],
+        'extents': [55.3, 26.7, 53.3],
+        'angles': [54.61, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp-slab_822_a450',
+        'origin': [1480.3, 492.6, 760.5],
+        'extents': [73.7, 26.7, 53.3],
+        'angles': [58.86, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp-slab_833_a450',
+        'origin': [1480.3, 271.5, 760.5],
+        'extents': [73.7, 26.7, 53.3],
+        'angles': [58.86, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp-slab_834_a450',
+        'origin': [1480.3, 268.8, 734.7],
+        'extents': [55.3, 26.7, 53.3],
+        'angles': [54.61, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp-slab_835_a450',
+        'origin': [1480.3, 271.0, 705.0],
+        'extents': [44.5, 26.7, 53.3],
+        'angles': [40.69, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_823_a450',
+        'origin': [1480.3, 464.4, 774.4],
+        'extents': [26.7, 42.0, 51.7],
+        'angles': [50.90, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_824_a450',
+        'origin': [1480.3, 443.9, 781.0],
+        'extents': [26.7, 29.0, 38.3],
+        'angles': [52.88, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_825_a450',
+        'origin': [1480.3, 427.9, 786.0],
+        'extents': [26.7, 25.0, 28.3],
+        'angles': [48.54, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_826_a450',
+        'origin': [1480.3, 410.9, 790.2],
+        'extents': [26.7, 23.2, 20.0],
+        'angles': [40.74, -90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_829_a450',
+        'origin': [1480.3, 353.2, 790.2],
+        'extents': [26.7, 23.2, 20.0],
+        'angles': [40.74, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_830_a450',
+        'origin': [1480.3, 336.1, 786.0],
+        'extents': [26.7, 25.0, 28.3],
+        'angles': [48.54, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_831_a450',
+        'origin': [1480.3, 320.1, 781.0],
+        'extents': [26.7, 29.0, 38.3],
+        'angles': [52.88, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'ramp_832_a450',
+        'origin': [1480.3, 299.7, 774.4],
+        'extents': [26.7, 42.0, 51.7],
+        'angles': [50.90, 90.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'shallow_827_a450',
+        'origin': [1480.3, 393.3, 792.7],
+        'extents': [26.7, 22.5, 15.0],
+        'angles': [0.00, 0.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'shallow_828_a450',
+        'origin': [1480.3, 370.8, 792.7],
+        'extents': [26.7, 22.5, 15.0],
+        'angles': [0.00, 0.00, 0.00],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_450_south',
+        'origin': [1480.3, 221.1, 640.2],
+        'extents': [26.7, 68.7, 853.6],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'axis_450_header',
+        'origin': [1480.3, 382.0, 933.6],
+        'extents': [26.7, 253.1, 266.8],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Ceiling of the axis_192 / axis_195 bay, 2026-08-16. Sits inside all
+    # four walls: x 1947.0 to 2267.2 and y 1153.6 to 2015.4, the latter
+    # measured to the inner faces of the raised axis_202 and axis_198.
+    # 26.7 thick, flush with their tops at 1280.3.
+    {
+        'name': 'ceiling_192_bay',
+        'origin': [2107.1, 1584.5, 1267.0],
+        'extents': [320.2, 861.8, 26.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Connector between axis_378 and axis_366, 2026-08-16. Spans ONLY the
+    # portion axis_378 gained when it was raised: y 4054.2 to 4494.2 at
+    # z 893.6 to 1280.3. The existing run below is deliberately untouched,
+    # axis_376 topping out at 893.6 and ramp_843 at 853.5 to 873.5, both
+    # clear of this box.
+    {
+        'name': 'gapfill_378_366',
+        'origin': [-986.9, 4274.2, 1087.0],
+        'extents': [53.3, 440.0, 386.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Fills between the axis_64/65/66/67 cubes, 2026-08-16. They form a 2x2
+    # of 160 cubes with two gaps: 26.7 in x between the columns at 2133.7 to
+    # 2160.4, and 53.4 in z between the levels at 506.8 to 560.2. These two
+    # slots fill both, and their union with the four cubes is the complete
+    # 2x2 volume. Done as two slots rather than one solid block so the cubes
+    # stay distinct boxes instead of being buried inside it.
+    {
+        'name': 'gapfill_cubes_x',
+        'origin': [2147.1, 5041.0, 533.5],
+        'extents': [26.7, 160.0, 373.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    {
+        'name': 'gapfill_cubes_z',
+        'origin': [2147.1, 5041.0, 533.5],
+        'extents': [346.7, 160.0, 53.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Box on the axis_82 step, 2026-08-16. Height is half of
+    # gapfill_82_84's 293.3, so 146.7, sitting on the step's top at 346.8
+    # and reaching 493.5. Footprint matches the step exactly, x 666.8 to
+    # 1467.0 and y 3547.3 to 3734.0.
+    #
+    # Note this covers the WHOLE ledge, so the walkable step surface becomes
+    # the top of this box instead. At 146.7 it is taller than the 120 hero,
+    # so it reads as full cover rather than something to vault.
+    {
+        'name': 'cover_82',
+        'origin': [1066.9, 3640.7, 420.2],
+        'extents': [800.2, 186.7, 146.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
     # Ceiling of the building, 2026-08-16. The sixteen walls raised in
     # treefix.py enclose x -2133.8 to -626.8 and y 2240.4 to 3587.3 measured
-    # to their INNER faces, so this sits inside all of them with nothing
-    # overhanging, capped flush with the new wall tops at 1280.3.
+    # to their INNER faces, capped flush with the new wall tops at 1280.3.
+    #
+    # Extended east on 2026-08-16 to axis_733's inner face at -533.5. The
+    # east boundary is not straight: axis_733 only runs y 2693.9 to 3147.3,
+    # so south of that the ceiling projects 66.6 past axis_574's east face
+    # at -600.1 over the strip y 2240.4 to 2667.2, and north of it the
+    # corner is buried inside axis_711, which spans 640.2 to 1280.4 there.
     {
         'name': 'ceiling_553_block',
-        'origin': [-1380.3, 2913.9, 1267.0],
-        'extents': [1507.0, 1346.9, 26.7],
+        'origin': [-1333.7, 2913.9, 1267.0],
+        'extents': [1600.3, 1346.9, 26.7],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },

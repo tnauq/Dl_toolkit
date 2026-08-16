@@ -425,6 +425,27 @@ GROW = {
     # Base unchanged at 0.0, height 800.2 to 573.5.
     'axis_28': (400.1, 286.8, 800.2, 573.5),
 
+    # axis_116 and gapfill_25_36 swapped, 2026-08-16. They overlap rather
+    # than sit side by side, with identical y, so the swap is 26.7 in x
+    # each. z is deliberately NOT swapped: they are different heights and
+    # both sit at 0.0, so exchanging origin z would leave axis_116 floating
+    # 26.7 and gapfill_25_36 sunk 26.7 below ground.
+    # axis_378 raised to axis_366's top, 2026-08-16. Base kept at 493.6,
+    # top 893.6 to 1280.3, height 400.0 to 786.7. The connector between the
+    # two is added in addbox.py and covers only this NEW portion.
+    'axis_378': (693.6, 887.0, 400.0, 786.7),
+
+    # axis_202 and axis_198 raised to axis_192's top, 2026-08-16. Two beams
+    # spanning x 1947.0 to 2267.2, the same run as the gantry crossbeams.
+    # Both keep their bases, 770.4 and 757.0, and rise to 1280.3, making
+    # them the south and north walls of a bay already closed east and west
+    # by axis_192 and axis_195. The ceiling is added in addbox.py.
+    'axis_202': (840.3, 1025.4, 139.8, 509.9),
+    'axis_198': (830.4, 1018.7, 146.7, 523.3),
+
+    'axis_116': (560.1, 533.4, 160.0, 160.0, 0),
+    'gapfill_25_36': (533.4, 560.1, 106.7, 106.7, 0),
+
     # axis_30, axis_31 and axis_32, 2026-08-16. All three were identical to
     # axis_28 before it was halved: base 0.0, height 800.2. Same treatment,
     # topping out at 573.5 with bases unchanged. They enclose the same bay,
@@ -500,6 +521,23 @@ RESHAPE = {
     # whole 1627.0 from y 3440.7 to 5067.7; it now ends at 4187.6, the start
     # of the first opening. The remaining panels and the sill and head
     # blocks are added in addbox.py.
+    # axis_363 raised and stretched, 2026-08-16. It was an 86.7 tall lintel
+    # at 660.1 to 746.9. Raised to top out at 1280.3, matching axis_80 and
+    # axis_128, with its base kept at 660.1, and stretched in x from
+    # axis_128's east face at 213.3 across to axis_80's west face at 640.1.
+    # Height 86.7 to 620.2, width 360.1 to 426.8.
+    #
+    # It now engulfs the upper part of axis_127, the pole at 0.0 to 853.6
+    # whose gantry platform and braces were removed earlier.
+    # axis_450 cut back to the north panel of the new arched door,
+    # 2026-08-16. It ran y 186.7 to 906.8; it now starts at 508.5, the north
+    # edge of the arch. The south panel and the header are in addbox.py.
+    'axis_450': ([1480.3, 546.8, 640.2], [1480.3, 707.7, 640.2],
+                 [26.7, 720.1, 853.6], [26.7, 398.3, 853.6]),
+
+    'axis_363': ([460.1, 3601.1, 703.5], [426.7, 3601.1, 970.2],
+                 [360.1, 53.3, 86.7], [426.8, 53.3, 620.2]),
+
     # axis_337 extended and raised, 2026-08-16. Grown in x to fill between
     # axis_265's east face at 2773.9 and axis_333's west face at 3974.2, and
     # raised from 533.5 to their shared 1280.3. Width in y untouched at
