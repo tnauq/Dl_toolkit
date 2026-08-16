@@ -173,27 +173,33 @@ FIXES = {
     'merged_808': (285.9, 606.0),
     'axis_19': (306.7, 626.8),
 
-    # Arch A, 2026-08-16. Sits on a base at 426.4 rather than on the floor.
-    # The wall beside it, axis_483, runs 426.4 to 1280.0, which is exactly
-    # twice the arch's height, so the delta here is 426.8. Piers axis_480
-    # and axis_481 are lengthened in GROW. New crown top is 1280.1 against
-    # the wall's 1280.0.
-    'ramp-slab_861': (693.2, 1120.0),
-    'ramp-slab_862': (733.2, 1160.0),
-    'ramp-slab_863': (770.2, 1197.0),
-    'ramp-slab_864': (837.0, 1263.8),
-    'ramp-slab_865': (828.0, 1254.8),
-    'ramp-slab_866': (839.2, 1266.0),
-    'ramp-slab_871': (839.2, 1266.0),
-    'ramp-slab_872': (828.0, 1254.8),
-    'ramp-slab_873': (837.0, 1263.8),
-    'ramp-slab_874': (770.2, 1197.0),
-    'ramp-slab_875': (733.2, 1160.0),
-    'ramp-slab_876': (693.2, 1120.0),
-    'shallow_867': (838.8, 1265.6),
-    'shallow_868': (842.4, 1269.2),
-    'shallow_869': (842.4, 1269.2),
-    'shallow_870': (838.8, 1265.6),
+    # Arch A, 2026-08-16, corrected. axis_483 was NOT a safe reference: it
+    # is itself 213.0 too high. axis_468, the long wall running along the
+    # map edge, is the datum, at 213.4 to 1067.0, and axis_483 shares its
+    # 853.6 height but starts at 426.4. Lowered onto it here.
+    #
+    # The arch went up with it, so the whole assembly comes down the same
+    # 213.0. Net against the original plan the curve moves +213.8: up 426.8
+    # for the doubling it missed, down 213.0 for the base that was wrong.
+    # Piers are rebased to 213.4 in GROW. New crown top is 1067.1 against
+    # axis_468's 1067.0.
+    'axis_483': (853.2, 640.2),
+    'ramp-slab_861': (693.2, 907.0),
+    'ramp-slab_862': (733.2, 947.0),
+    'ramp-slab_863': (770.2, 984.0),
+    'ramp-slab_864': (837.0, 1050.8),
+    'ramp-slab_865': (828.0, 1041.8),
+    'ramp-slab_866': (839.2, 1053.0),
+    'ramp-slab_871': (839.2, 1053.0),
+    'ramp-slab_872': (828.0, 1041.8),
+    'ramp-slab_873': (837.0, 1050.8),
+    'ramp-slab_874': (770.2, 984.0),
+    'ramp-slab_875': (733.2, 947.0),
+    'ramp-slab_876': (693.2, 907.0),
+    'shallow_867': (838.8, 1052.6),
+    'shallow_868': (842.4, 1056.2),
+    'shallow_869': (842.4, 1056.2),
+    'shallow_870': (838.8, 1052.6),
 
     # Arch C, 2026-08-16. Not several arches: one barrel vault extruded 800
     # units along y, which is why it reads as a tunnel. Every element shares
@@ -244,10 +250,11 @@ GROW = {
     'axis_4': (93.4, 253.5, 186.7, 506.8),
     'axis_5': (93.4, 253.5, 186.7, 506.8),
 
-    # Arch A piers, 2026-08-16. Base stays at 426.4, top goes 698.0 to
-    # 1124.8, so the lifted curve lands on them rather than floating clear.
-    'axis_480': (562.2, 775.6, 271.6, 698.4),
-    'axis_481': (562.2, 775.6, 271.6, 698.4),
+    # Arch A piers, 2026-08-16. Rebased from 426.4 to 213.4, the foot of
+    # axis_468, and lengthened so they top out at 911.8 with the lifted
+    # curve landing on them rather than floating clear.
+    'axis_480': (562.2, 562.6, 271.6, 698.4),
+    'axis_481': (562.2, 562.6, 271.6, 698.4),
 }
 
 p = json.load(open('dust2_half.json'))
