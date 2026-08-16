@@ -19194,6 +19194,44 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "gapfill_119_68",
+   "origin": [
+    1480.3,
+    3587.4,
+    506.8
+   ],
+   "extents": [
+    26.7,
+    293.4,
+    266.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "gapfill_69_84",
+   "origin": [
+    1327.0,
+    3800.8,
+    426.7
+   ],
+   "extents": [
+    1133.6,
+    133.4,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "gapfill_69_82",
    "origin": [
     1066.9,

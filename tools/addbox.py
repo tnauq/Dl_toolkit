@@ -28,6 +28,30 @@ ADD = [
     # the underside stays below ground level along the whole run (-161.9 at
     # the west end, -29.0 at the east), so the space under the ramp is
     # sealed without re-running gapfill.
+    # Connector between merged_119 and axis_68, 2026-08-16. Both are the
+    # same 26.7 wall plane at x 1467.0, stacked with 266.7 of nothing
+    # between 373.4 and 640.1. This fills that over the 293.4 of y they
+    # share. The volume was completely empty.
+    {
+        'name': 'gapfill_119_68',
+        'origin': [1480.3, 3587.4, 506.8],
+        'extents': [26.7, 293.4, 266.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Fill between axis_69 and merged_84, 2026-08-16. Unlike the seam these
+    # two overlap in plan: merged_84 starts at y 3734.1 and axis_69 runs to
+    # 3867.5, a 133.4 band, and the gap is the full 426.8 between the low
+    # deck's top and the high deck's underside. It subsumes part of
+    # gapfill_82_84 below, which is redundant but harmless, and it buries
+    # axis_121.
+    {
+        'name': 'gapfill_69_84',
+        'origin': [1327.0, 3800.8, 426.7],
+        'extents': [1133.6, 133.4, 426.8],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
     # Fill under axis_82, 2026-08-16. axis_69's deck tops out at 213.3 and
     # axis_82 starts at 320.0 directly above it, leaving a 106.7 void.
     # Filled across axis_82's whole footprint. It engulfs the thin walls
