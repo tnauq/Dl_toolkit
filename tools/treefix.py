@@ -8,6 +8,9 @@ Each entry records the height the box is expected to be at BEFORE the fix.
 A box that is not at that height is skipped, not moved, so a rerun is a
 no-op and an upstream change is reported rather than silently compounded.
 
+GROW changes a box's z extent as well as its origin, for cases where a
+lift is not enough on its own.
+
 Run LAST in the pipeline, after remove.py.
 """
 import json
@@ -110,6 +113,53 @@ FIXES = {
     # the same floor, lowered to match. Third of the five plates the handoff
     # lists as dead geometry to come back into use.
     'axis_62': (546.8, 333.4),
+
+    # Arch, 2026-08-16. The arch pierces axis_22, which roofs.py doubled
+    # from 320.1 to 640.2. The arch itself was left at its original height,
+    # so the opening was half the wall.
+    #
+    # The voussoirs are rotated boxes and a rotated box cannot be stretched
+    # in z within an origin/extents/angles representation, so the arch is
+    # not scaled. Instead the two piers are lengthened by 320.1 in GROW
+    # below and the whole curve, crown and lintel are lifted by the same
+    # amount, intact. The opening doubles, the arch keeps its radius, and
+    # the springing line moves up. New crown top is 640.2, flush with the
+    # top of axis_22.
+    #
+    # Note: axis_23, the platform above, has its underside at 666.9, so 26.7
+    # remains between the crown and the platform. If flush to the platform
+    # is wanted instead of flush to the wall, the delta is 346.8 throughout,
+    # here and in GROW.
+    'ramp-slab_1070': (188.2, 508.3),
+    'ramp-slab_1071': (217.0, 537.1),
+    'ramp-slab_1072': (243.9, 564.0),
+    'ramp-slab_1073': (291.2, 611.3),
+    'ramp-slab_1074': (284.6, 604.7),
+    'ramp-slab_1075': (292.6, 612.7),
+    'shallow_1076': (282.7, 602.8),
+    'shallow_1077': (285.4, 605.5),
+    'shallow_1078': (285.4, 605.5),
+    'shallow_1079': (282.7, 602.8),
+    'ramp-slab_1080': (292.6, 612.7),
+    'ramp-slab_1081': (284.6, 604.7),
+    'ramp_1082': (275.1, 595.2),
+    'ramp-slab_1083': (263.2, 583.3),
+    'ramp-slab_1084': (253.1, 573.2),
+    'ramp-slab_1085': (225.5, 545.6),
+    'ramp-slab_1086': (218.7, 538.8),
+    'ramp-slab_1087': (201.5, 521.6),
+    'ramp-slab_1088': (188.9, 509.0),
+    'axis_20': (306.7, 626.8),
+}
+
+
+# name: (was_origin_z, now_origin_z, was_extent_z, now_extent_z)
+GROW = {
+    # Arch piers, 2026-08-16. See the arch note in FIXES. Both run from 0.1
+    # and are lengthened by 320.1 so the arch curve lands on top of them at
+    # its new height, rather than the arch floating clear of its legs.
+    'axis_18': (93.4, 253.5, 186.7, 506.8),
+    'axis_2': (93.4, 253.5, 186.7, 506.8),
 }
 
 p = json.load(open('dust2_half.json'))
@@ -128,9 +178,22 @@ for name, (was, now) in FIXES.items():
     box['origin'][2] = now
     moved.append(name)
 
+for name, (was_z, now_z, was_e, now_e) in GROW.items():
+    box = by_name.get(name)
+    if box is None:
+        missing.append(name)
+        continue
+    z, e = box['origin'][2], box['extents'][2]
+    if abs(z - was_z) > TOL or abs(e - was_e) > TOL:
+        skipped.append((name, z, was_z))
+        continue
+    box['origin'][2] = now_z
+    box['extents'][2] = now_e
+    moved.append(name)
+
 json.dump(p, open('dust2_half.json', 'w'), indent=1)
 
-print(f'moved {len(moved)} of {len(FIXES)} listed')
+print(f'moved {len(moved)} of {len(FIXES) + len(GROW)} listed')
 for name, z, was in skipped:
     print(f'  skipped {name}: z={z}, expected {was}')
 for name in missing:
