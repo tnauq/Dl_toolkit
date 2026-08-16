@@ -439,6 +439,29 @@ GROW = {
     # axis_326 brought down to the same 373.5 from 640.2.
     'axis_326': (320.1, 186.8, 640.2, 373.5),
 
+    # Building walls raised to axis_553's top, 2026-08-16. Sixteen walls
+    # enclosing the block from x -2133.8 to -626.8 and y 2240.4 to 3587.3.
+    # Each keeps its own base and rises to 1280.3. Bases differ, 213.4 for
+    # most and 253.3 for the three shorter ones, which is correct: they
+    # stand on the floor while axis_553 runs down to 0.1. The ceiling is
+    # added in addbox.py.
+    'axis_738': (640.2, 746.9, 853.6, 1066.9),
+    'axis_744': (640.2, 746.9, 853.6, 1066.9),
+    'axis_743': (680.2, 766.9, 853.6, 1026.9),
+    'axis_732': (640.2, 746.9, 853.6, 1066.9),
+    'axis_581': (640.2, 746.9, 853.6, 1066.9),
+    'axis_582': (640.2, 746.9, 853.6, 1066.9),
+    'axis_728': (640.2, 746.9, 853.6, 1066.9),
+    'axis_731': (640.2, 746.9, 853.6, 1066.9),
+    'axis_730': (640.2, 746.9, 853.6, 1066.9),
+    'axis_729': (640.2, 746.9, 853.6, 1066.9),
+    'axis_735': (640.2, 746.9, 853.6, 1066.9),
+    'axis_736': (640.2, 746.9, 853.6, 1066.9),
+    'axis_740': (640.2, 746.9, 853.6, 1066.9),
+    'axis_742': (560.0, 766.8, 613.4, 1027.0),
+    'axis_741': (560.0, 766.8, 613.4, 1027.0),
+    'axis_739': (560.0, 766.8, 613.4, 1027.0),
+
     # axis_265 and axis_264 extended to reach compound_266, 2026-08-16.
     # That box is yawed 56.3, so its AABB touches both walls but its solid
     # does not. Its near edge runs (2693.9, 1917.5) to (2782.7, 2050.7),

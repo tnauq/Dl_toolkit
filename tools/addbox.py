@@ -28,6 +28,42 @@ ADD = [
     # the underside stays below ground level along the whole run (-161.9 at
     # the west end, -29.0 at the east), so the space under the ramp is
     # sealed without re-running gapfill.
+    # Ceiling of the building, 2026-08-16. The sixteen walls raised in
+    # treefix.py enclose x -2133.8 to -626.8 and y 2240.4 to 3587.3 measured
+    # to their INNER faces, so this sits inside all of them with nothing
+    # overhanging, capped flush with the new wall tops at 1280.3.
+    {
+        'name': 'ceiling_553_block',
+        'origin': [-1380.3, 2913.9, 1267.0],
+        'extents': [1507.0, 1346.9, 26.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Connector between axis_377 and axis_378, 2026-08-16. Both are on the
+    # same wall plane at x -1013.5 to -960.2, with a 133.6 void between
+    # axis_377's top at 360.0 and axis_378's base at 493.6. This fills that
+    # over the 253.4 of y they share.
+    {
+        'name': 'gapfill_377_378',
+        'origin': [-986.9, 4620.9, 426.8],
+        'extents': [53.3, 253.4, 133.6],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Floor of the alcove bounded by axis_265, axis_337, axis_557 and
+    # axis_339, 2026-08-16. It had no floor at all: nothing between the
+    # ground plane's top at -0.1 and 213.4, so it read as a hole you drop
+    # into. Everything around it is floored, axis_193 to the south at 213.3
+    # and gapfill_50_21 to the east at 213.4. Filled to 213.4 to match the
+    # neighbouring gapfills; the 0.1 lip against axis_193 is far under the
+    # 30 step height.
+    {
+        'name': 'gapfill_337_339',
+        'origin': [2894.0, 1426.9, 106.7],
+        'extents': [240.1, 133.4, 213.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
     # Wall above the arcade, 2026-08-16, connecting axis_80 to axis_61.
     # axis_80 stops at y 3867.4 and axis_61 begins at 5067.6. Extending
     # axis_80 bodily in y would swallow the whole arcade, arch B included,
