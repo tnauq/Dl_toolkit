@@ -22,6 +22,25 @@ REMOVE = [
     'compound_117',
     'compound_374',
     'compound_375',
+    # Gantry braces, 2026-08-16. Four facing pairs of 45 deg slabs with a
+    # 53 x 53 cross section, flanking a pole that carries a platform
+    # (ramp_818, ramp_837, ramp_840, ramp_843). Three of the four pairs sit
+    # 72 to 125 u above the main floor, so with hero at 120 u they were
+    # head-height clutter under an overhead structure. No other box in the
+    # plan matches this signature.
+    'ramp-slab_817',
+    'ramp-slab_819',
+    'ramp-slab_836',
+    'ramp-slab_838',
+    'ramp-slab_839',
+    'ramp-slab_841',
+    'ramp-slab_842',
+    'ramp-slab_844',
+    # Two flat plates at z 613 to 640, 26.7 thick, yawed 63.4 and 32.0.
+    # Unlike the braces these were standable surface, so removing them
+    # takes reachable cells out of the plan. Removed intentionally.
+    'yaw_472',
+    'yaw_474',
 ]
 
 p = json.load(open('dust2_half.json'))
