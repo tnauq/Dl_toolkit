@@ -400,6 +400,18 @@ GROW = {
     # at 373.4. Base unchanged at 0.1, height 533.4 to 373.3.
     'axis_81': (266.8, 186.8, 533.4, 373.3),
 
+    # axis_482, 2026-08-16. Had both faults its neighbour axis_483 had: a
+    # base at 426.7, which is the same 213 error, and a height of 426.8,
+    # which is the missing doubling. Set to 213.4 to 1067.0, matching
+    # axis_468 and axis_483 exactly. Height 426.8 to 853.6.
+    'axis_482': (640.1, 640.2, 426.8, 853.6),
+
+    # axis_548 and axis_549 halved above axis_546, 2026-08-16. Both stood
+    # 319.9 proud of axis_546's top at 426.8; halved to 160.0, so both top
+    # out at 586.8. Bases unchanged at 213.3, height 533.4 to 373.5.
+    'axis_548': (480.0, 400.1, 533.4, 373.5),
+    'axis_549': (480.0, 400.1, 533.4, 373.5),
+
     # Arcade infill panels, 2026-08-16. merged_97 and merged_98 ran 346.7 to
     # 933.5 and hung below the arch head into the opening. Rebased to 666.9,
     # the top of the string course axis_83, which runs the whole length
