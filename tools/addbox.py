@@ -1238,6 +1238,25 @@ ADD = [
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
+    # Diagonal wall closing the south-east corner of the axis_195 bay,
+    # 2026-08-17. Runs at 45 degrees from the south end of axis_265 at
+    # y 960.2 down to axis_195, meeting its centreline at y 480.2. Same
+    # 26.7 thickness and same full height as both walls it joins, 0.1 to
+    # 1280.3.
+    #
+    # The d195 arch, opening y 712.5 to 965.5, is NORTH of where this meets
+    # axis_195, so the door is on the inside of the enclosure.
+    #
+    # Yaw only, no extent swap: extents are the local frame and the 45 in
+    # angles does the mapping. Length is 705.6 against a centreline run of
+    # 678.9, so it overlaps 13.35 into each wall and the corners close.
+    {
+        'name': 'axis_265_195_diag',
+        'origin': [2520.5, 720.2, 640.2],
+        'extents': [705.6, 26.7, 1280.2],
+        'angles': [0.0, 45.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
 ]
 
 p = json.load(open('dust2_half.json'))

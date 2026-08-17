@@ -19933,6 +19933,25 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_265_195_diag",
+   "origin": [
+    2520.5,
+    720.2,
+    640.2
+   ],
+   "extents": [
+    705.6,
+    26.7,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    45.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
