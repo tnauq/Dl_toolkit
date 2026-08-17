@@ -20203,14 +20203,52 @@
   {
    "name": "axis_551_ext",
    "origin": [
-    -66.7,
+    -160.1,
     2853.9,
     200.0
    ],
    "extents": [
-    506.7,
+    693.5,
     586.6,
     26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_129_corner_block",
+   "origin": [
+    86.7,
+    1807.0,
+    313.4
+   ],
+   "extents": [
+    200.0,
+    200.0,
+    200.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_769_wall_s",
+   "origin": [
+    -420.1,
+    2253.8,
+    860.2
+   ],
+   "extents": [
+    360.1,
+    26.7,
+    413.5
    ],
    "angles": [
     0.0,

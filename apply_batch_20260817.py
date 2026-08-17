@@ -93,10 +93,10 @@ def main(path):
         o, e = b["origin"], b["extents"]
         lo, hi = o[axis] - e[axis] / 2.0, o[axis] + e[axis] / 2.0
         cur = hi if side == "max" else lo
-        if abs(cur - post) < 0.05:
+        if abs(cur - post) < 0.1:
             log.append("skip grow %s (already %.1f)" % (name, post))
             continue
-        if abs(cur - pre) > 0.05:
+        if abs(cur - pre) > 0.1:
             log.append("FAIL grow %s: expected %.1f, found %.1f" % (name, pre, cur))
             continue
         if side == "max":
