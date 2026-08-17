@@ -1286,18 +1286,18 @@ ADD = [
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
-    # Jump box in the axis_195 bay, 2026-08-17. Against the door wall, at
-    # the far end from the 45, so the north-west corner of the bay: it sits
-    # on axis_195's east face at 2293.8 and runs to the bay's open north
-    # edge at 1493.6, where floor2_195_bay and ceiling_195_bay stop.
+    # Jump box, 2026-08-17. Moved to the corner where axis_264 meets
+    # axis_195_far: against axis_195_far's east face at 2293.8 and
+    # axis_264's south face at 2040.3. That is a real two-wall junction,
+    # unlike its first position, which was an open edge.
     #
-    # 160 square in plan, matching the axis_64/65/66/67 cubes. Height 186.8,
-    # half the 373.55 from the ground floor top at 213.4 to the second
-    # level's underside at 586.95, so it tops out at 400.2. That leaves
-    # 186.75 still to climb, which is a second hop, not a step.
+    # It now stands on axis_193 at 213.3, NOT in the bay: the bay's floor,
+    # second level and ceiling all stop at y 1493.6, 546.7 to the south.
+    # 160 square in plan, matching the axis_64/65/66/67 cubes. Height 186.8
+    # as asked, so it tops out at 400.1.
     {
         'name': 'jump_195_bay',
-        'origin': [2373.8, 1413.6, 306.8],
+        'origin': [2373.8, 1960.3, 306.7],
         'extents': [160.0, 160.0, 186.8],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
