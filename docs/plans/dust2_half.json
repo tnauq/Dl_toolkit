@@ -5324,25 +5324,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "axis_476",
-   "origin": [
-    1933.7,
-    2947.3,
-    626.8
-   ],
-   "extents": [
-    26.7,
-    346.7,
-    26.7
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "compound_477",
    "origin": [
     493.4,
@@ -6105,12 +6086,12 @@
   {
    "name": "axis_551",
    "origin": [
-    -453.4,
+    -333.4,
     1547.0,
     200.0
    ],
    "extents": [
-    800.2,
+    1040.2,
     2027.1,
     26.7
    ],
@@ -20097,6 +20078,139 @@
     53.4,
     1680.2,
     1280.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_473_block",
+   "origin": [
+    1413.6,
+    2293.8,
+    1266.9
+   ],
+   "extents": [
+    1067.0,
+    1707.1,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "level_473_east",
+   "origin": [
+    2073.7,
+    3347.4,
+    748.0
+   ],
+   "extents": [
+    253.3,
+    1146.9,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "level_473_bridge",
+   "origin": [
+    1933.7,
+    2947.3,
+    748.0
+   ],
+   "extents": [
+    26.7,
+    346.8,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_479_sill1",
+   "origin": [
+    3.0,
+    -226.7,
+    320.1
+   ],
+   "extents": [
+    253.0,
+    26.7,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_479_down_a",
+   "origin": [
+    -13.3,
+    333.4,
+    303.3
+   ],
+   "extents": [
+    1110.3,
+    400.0,
+    53.3
+   ],
+   "angles": [
+    10.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_479_down_b",
+   "origin": [
+    -120.0,
+    938.8,
+    196.6
+   ],
+   "extents": [
+    119.2,
+    186.7,
+    53.3
+   ],
+   "angles": [
+    10.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_551_ext",
+   "origin": [
+    -66.7,
+    2853.9,
+    200.0
+   ],
+   "extents": [
+    506.7,
+    586.6,
+    26.6
    ],
    "angles": [
     0.0,
