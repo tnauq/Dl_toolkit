@@ -20047,6 +20047,63 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_42_27_down",
+   "origin": [
+    2904.0,
+    3344.7,
+    80.5
+   ],
+   "extents": [
+    1118.9,
+    253.0,
+    53.3
+   ],
+   "angles": [
+    11.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_29_22_down",
+   "origin": [
+    1387.0,
+    2518.2,
+    80.4
+   ],
+   "extents": [
+    1171.6,
+    960.1,
+    53.3
+   ],
+   "angles": [
+    10.5,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_192_face",
+   "origin": [
+    1893.7,
+    1933.7,
+    640.2
+   ],
+   "extents": [
+    53.4,
+    1680.2,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [

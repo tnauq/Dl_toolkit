@@ -1342,6 +1342,57 @@ ADD = [
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
+    # Ramp from gapfill_42_27 down to the ground plane, 2026-08-17.
+    # Reshallowed from 30 to 11 degrees. 10 does NOT fit: the rise is 213.5
+    # so 10 needs 1210.8 of run, and axis_24 blocks at y 3920.8, which
+    # leaves 1120.2 from the deck's north face at 2800.6. 11 uses 1098.4
+    # and puts the toe at 3899.0, 21.8 clear of the wall.
+    #
+    # 253.0 wide, the standard door opening. Thickness 53.3, so the
+    # underside stays inside the ground plane and there is no void to fill.
+    {
+        'name': 'ramp_42_27_down',
+        'origin': [2904.0, 3344.7, 80.5],
+        'extents': [1118.9, 253.0, 53.3],
+        'angles': [11.0, 90.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Ramp from gapfill_29_22 down to the ground plane, 2026-08-17.
+    # Reshallowed from 30 to 10.5 degrees. 10 does not fit here either:
+    # axis_79 blocks at y 3120.7, leaving 1173.6 of run against the 1210.8
+    # that 10 needs. 10.5 uses 1151.9 and puts the toe at 3099.0, 21.7
+    # clear of the wall.
+    #
+    # Width is the room, x 906.9 to 1867.0, which is 960.1: axis_123's east
+    # face to gapfill_38_26's west face. NOT to axis_192's face at 1920.4,
+    # because gapfill_38_26 is already solid floor at 213.4 over that last
+    # 53.4 and the ramp would run into it.
+    #
+    # It clips ramp-slab_126, a shallow ground ramp, on the west side.
+    {
+        'name': 'ramp_29_22_down',
+        'origin': [1387.0, 2518.2, 80.4],
+        'extents': [1171.6, 960.1, 53.3],
+        'angles': [10.5, 90.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Thickening of axis_192, 2026-08-17. The wall is 26.6 thick at x 1920.4
+    # to 1947.0; this faces it west out to 1867.0, gapfill_38_26's west
+    # face, giving a total of 80.0. Full height and full length of the
+    # wall, 0.1 to 1280.3 and y 1093.6 to 2773.8.
+    #
+    # Added as a facing slab rather than a treefix GROW because axis_192 is
+    # an upstream box and this keeps the change in one file.
+    #
+    # It buries the west 53.5 of axis_473, the east end of axis_124_far and
+    # part of compound_204. All three were already meeting the wall.
+    {
+        'name': 'axis_192_face',
+        'origin': [1893.7, 1933.7, 640.2],
+        'extents': [53.4, 1680.2, 1280.2],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
 ]
 
 p = json.load(open('dust2_half.json'))
