@@ -1276,22 +1276,13 @@ ADD = [
     # with its top flush at 1280.3, matching axis_195 and axis_265 and the
     # other ceilings in the map.
     #
-    # Extended north on 2026-08-17 from 1493.6 to axis_264's south face at
-    # 2040.3, so it also covers the jump_195_bay corner. The ground floor
-    # runs continuously under all of it, gapfill_195_193 at 213.4 meeting
-    # axis_193 at 213.3, so this is one space. floor2_195_bay still stops
-    # at 1493.6, which means the north end is open to full height.
-    #
-    # It clips compound_266, a full-height yawed column at the north-east
-    # corner, which just passes through it.
-    #
     # Floor to ceiling on the second level is 666.7, about 17 m. Same
     # reservation as the western block and the axis_192 bay: it reads as a
     # hall, not a room.
     {
         'name': 'ceiling_195_bay',
-        'origin': [2520.5, 1033.5, 1267.0],
-        'extents': [453.4, 2013.7, 26.7],
+        'origin': [2520.5, 760.1, 1267.0],
+        'extents': [453.4, 1467.0, 26.7],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
@@ -1308,6 +1299,27 @@ ADD = [
         'name': 'jump_195_bay',
         'origin': [2373.8, 1960.3, 306.7],
         'extents': [160.0, 160.0, 186.8],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # North half of the same ceiling, 2026-08-17. Covers y 1493.6 to
+    # axis_264's south face at 2040.3, over the jump_195_bay corner, at the
+    # same 1253.7 to 1280.3 as ceiling_195_bay so the two read as one slab.
+    #
+    # Deliberately a SECOND box rather than growing ceiling_195_bay: that
+    # edit left the box count unchanged at 1053, so there was no way to
+    # tell a stale plan from a missing ceiling. This one moves it to 1054.
+    #
+    # The ground floor runs continuously underneath, gapfill_195_193 at
+    # 213.4 meeting axis_193 at 213.3. floor2_195_bay still stops at
+    # 1493.6, so this stretch is open from the floor to the ceiling.
+    #
+    # It clips compound_266, a full-height yawed column at the north-east
+    # corner, which passes through it.
+    {
+        'name': 'ceiling_195_north',
+        'origin': [2520.5, 1767.0, 1267.0],
+        'extents': [453.4, 546.7, 26.7],
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
