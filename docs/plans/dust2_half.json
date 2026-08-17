@@ -22023,6 +22023,82 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "gapfill_363_127",
+   "origin": [
+    273.6,
+    3661.2,
+    653.5
+   ],
+   "extents": [
+    227.1,
+    66.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_473_bridge_wall_w",
+   "origin": [
+    1080.2,
+    3294.0,
+    960.2
+   ],
+   "extents": [
+    26.7,
+    293.4,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_473_bridge_wall_e",
+   "origin": [
+    1359.8,
+    3294.0,
+    960.2
+   ],
+   "extents": [
+    26.7,
+    293.4,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_473_bridge_roof",
+   "origin": [
+    1220.0,
+    3294.0,
+    1267.0
+   ],
+   "extents": [
+    306.4,
+    293.4,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
