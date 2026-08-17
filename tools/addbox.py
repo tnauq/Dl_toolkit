@@ -1257,6 +1257,21 @@ ADD = [
         'angles': [0.0, 45.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
+    # Second level over the axis_195 bay, 2026-08-17. A 26.7 plate with its
+    # underside at 586.95, which is 0.05 above the d195 arch crown at
+    # 586.9, so the doorway below stays clear at full height. Same
+    # footprint as gapfill_195_193 below it, x 2293.8 to 2747.2 and y 26.6
+    # to 1493.6, so it ends south at the same y the ground floor starts.
+    #
+    # It has no access of its own yet and axis_265_195_diag passes through
+    # it, since that wall runs the full 0.1 to 1280.3.
+    {
+        'name': 'floor2_195_bay',
+        'origin': [2520.5, 760.1, 600.3],
+        'extents': [453.4, 1467.0, 26.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
 ]
 
 p = json.load(open('dust2_half.json'))

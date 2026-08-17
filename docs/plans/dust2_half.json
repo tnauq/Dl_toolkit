@@ -19952,6 +19952,25 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "floor2_195_bay",
+   "origin": [
+    2520.5,
+    760.1,
+    600.3
+   ],
+   "extents": [
+    453.4,
+    1467.0,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
