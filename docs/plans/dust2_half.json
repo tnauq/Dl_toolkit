@@ -16879,12 +16879,12 @@
    "name": "gapfill_39_44",
    "origin": [
     2400.5,
-    3920.8,
+    3894.1,
     106.7
    ],
    "extents": [
     853.5,
-    106.7,
+    53.3,
     213.4
    ],
    "angles": [
@@ -20629,6 +20629,63 @@
     53.8,
     53.8,
     266.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_80_cross",
+   "origin": [
+    1067.0,
+    3454.1,
+    746.8
+   ],
+   "extents": [
+    800.1,
+    26.7,
+    1067.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_80_fill",
+   "origin": [
+    1067.0,
+    3600.8,
+    440.1
+   ],
+   "extents": [
+    800.1,
+    266.7,
+    453.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_24_block",
+   "origin": [
+    2533.8,
+    3627.4,
+    190.3
+   ],
+   "extents": [
+    586.7,
+    586.7,
+    380.8
    ],
    "angles": [
     0.0,
