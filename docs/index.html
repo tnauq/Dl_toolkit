@@ -29,12 +29,25 @@
   /* HUD: a thin instrument strip, not a panel. Monospace throughout,
      because every number on screen is a coordinate in Source units. */
   .hud{position:fixed;left:0;right:0;top:0;padding:
-    max(10px,env(safe-area-inset-top)) 12px 8px;
+    max(10px,env(safe-area-inset-top)) 12px 8px 84px;
     font:500 11px/1.35 ui-monospace,'SF Mono',Menlo,Consolas,monospace;
     color:var(--hud);letter-spacing:.04em;
     text-shadow:0 1px 2px rgba(0,0,0,.9);pointer-events:none;
     display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
   .hud b{font-weight:600;color:#fff}
+  /* Compass. Axis labels, not N/E/S/W: every fault is reported against
+     the plan's x and y, so a cardinal rose would be one more thing to
+     translate. The ring turns, the tick at the top does not, so the
+     label under the tick is the axis you are facing. */
+  .compass{position:fixed;top:max(6px,env(safe-area-inset-top));left:8px;
+    width:68px;height:68px;pointer-events:none;z-index:2;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.9))}
+  .compass .ring{fill:rgba(11,13,14,.55);stroke:var(--hud-rule);stroke-width:1.5}
+  .compass .tick{stroke:var(--hud);stroke-width:2}
+  .compass .spoke{stroke:var(--hud-dim);stroke-width:1}
+  .compass text{fill:var(--hud);font:600 9px ui-monospace,'SF Mono',Menlo,
+    Consolas,monospace;text-anchor:middle;dominant-baseline:middle}
+  .compass .minor{fill:var(--hud-dim)}
   .hud .k{color:var(--hud-dim)}
   /* The control bar is a single row that SCROLLS rather than wraps.
      Wrapping would push it up into the d-pad; overflowing silently, which
@@ -132,6 +145,21 @@
   <span><span class="k">boxes</span> <b id="nbox">0</b></span>
   <span><span class="k">fps</span> <b id="fps">0</b></span>
 </div>
+
+<svg class="compass" viewBox="0 0 68 68" aria-hidden="true">
+  <circle class="ring" cx="34" cy="34" r="25"/>
+  <g id="rose">
+    <line class="spoke" x1="34" y1="11" x2="34" y2="15"/>
+    <line class="spoke" x1="34" y1="53" x2="34" y2="57"/>
+    <line class="spoke" x1="11" y1="34" x2="15" y2="34"/>
+    <line class="spoke" x1="53" y1="34" x2="57" y2="34"/>
+  </g>
+  <text id="cpx" x="34" y="21">+x</text>
+  <text id="cnx" class="minor" x="34" y="47">-x</text>
+  <text id="cpy" class="minor" x="20" y="34">+y</text>
+  <text id="cny" class="minor" x="48" y="34">-y</text>
+  <line class="tick" x1="34" y1="4" x2="34" y2="10"/>
+</svg>
 
 <svg class="xhair" id="xhair" viewBox="0 0 40 40" aria-hidden="true">
   <line x1="20" y1="12" x2="20" y2="17"/>
@@ -543,6 +571,32 @@ function render(){
   el('posm').textContent =
     m(cam.x).toFixed(1)+' '+m(cam.y).toFixed(1)+' '+m(cam.z).toFixed(1)+' m';
   el('yaw').textContent = Math.round(((cam.yaw*180/Math.PI)%360+360)%360);
+  compass();
+}
+
+/* ---------- compass ---------- */
+/* A world direction at angle a is drawn at screen bearing b = yaw - a,
+   measured clockwise from the top: facing along +x (a = 0, yaw = 0) puts
+   +x under the tick, and +y, which is 90 to the LEFT in this right-handed
+   frame, lands on the left of the dial.
+
+   The spokes are one SVG rotate. The labels are placed individually so
+   they stay upright instead of turning over when you look the other way,
+   which is the whole reason they are outside the rotating group. */
+const CLBL = [['cpx',0],['cpy',90],['cnx',180],['cny',270]];
+
+function compass(){
+  const g = el('rose');
+  if(!g) return;
+  const yawDeg = cam.yaw*180/Math.PI;
+  g.setAttribute('transform','rotate('+yawDeg.toFixed(1)+' 34 34)');
+  for(const [id, a] of CLBL){
+    const t = el(id);
+    if(!t) continue;
+    const b = (yawDeg - a) * Math.PI/180;
+    t.setAttribute('x', (34 + 17*Math.sin(b)).toFixed(1));
+    t.setAttribute('y', (34 - 17*Math.cos(b)).toFixed(1));
+  }
 }
 
 /* ---------- aim raycast ---------- */
