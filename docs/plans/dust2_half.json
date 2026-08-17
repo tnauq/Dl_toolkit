@@ -19971,6 +19971,44 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_195_bay",
+   "origin": [
+    2520.5,
+    760.1,
+    1267.0
+   ],
+   "extents": [
+    453.4,
+    1467.0,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "jump_195_bay",
+   "origin": [
+    2373.8,
+    1413.6,
+    306.8
+   ],
+   "extents": [
+    160.0,
+    160.0,
+    186.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [

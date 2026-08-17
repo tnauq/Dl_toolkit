@@ -1272,6 +1272,36 @@ ADD = [
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
+    # Ceiling over the axis_195 bay's second level, 2026-08-17. 26.7 thick
+    # with its top flush at 1280.3, matching axis_195 and axis_265 and the
+    # other ceilings in the map. Same footprint as floor2_195_bay below it.
+    #
+    # Floor to ceiling on the second level is 666.7, about 17 m. Same
+    # reservation as the western block and the axis_192 bay: it reads as a
+    # hall, not a room.
+    {
+        'name': 'ceiling_195_bay',
+        'origin': [2520.5, 760.1, 1267.0],
+        'extents': [453.4, 1467.0, 26.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
+    # Jump box in the axis_195 bay, 2026-08-17. Against the door wall, at
+    # the far end from the 45, so the north-west corner of the bay: it sits
+    # on axis_195's east face at 2293.8 and runs to the bay's open north
+    # edge at 1493.6, where floor2_195_bay and ceiling_195_bay stop.
+    #
+    # 160 square in plan, matching the axis_64/65/66/67 cubes. Height 186.8,
+    # half the 373.55 from the ground floor top at 213.4 to the second
+    # level's underside at 586.95, so it tops out at 400.2. That leaves
+    # 186.75 still to climb, which is a second hop, not a step.
+    {
+        'name': 'jump_195_bay',
+        'origin': [2373.8, 1413.6, 306.8],
+        'extents': [160.0, 160.0, 186.8],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
 ]
 
 p = json.load(open('dust2_half.json'))
