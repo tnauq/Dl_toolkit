@@ -20028,6 +20028,25 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_467_room",
+   "origin": [
+    960.3,
+    560.1,
+    1053.7
+   ],
+   "extents": [
+    1013.5,
+    1067.0,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [

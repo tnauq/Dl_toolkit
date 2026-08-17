@@ -1323,6 +1323,25 @@ ADD = [
         'angles': [0.0, 0.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
+    # Ceiling of the axis_467 / axis_449 room, 2026-08-17. Four straight
+    # walls with all four corners cut by diagonals: axis_467 south at
+    # y 26.6, axis_449 north at 1093.6, axis_454 west at 453.5, axis_450
+    # east at 1467.0, with yaw_453, yaw_455, compound_477 and compound_478
+    # across the corners. All eight top out at 1067.0.
+    #
+    # One rectangle over the whole bounding box rather than an octagon: the
+    # four corner overlaps are into walls, which is the harmless direction,
+    # and it is one box instead of five.
+    #
+    # 26.7 thick, top flush at 1067.0. The a450 arch below crowns at 800.2,
+    # so the doorway is clear. Floor to ceiling is 826.9, about 21 m.
+    {
+        'name': 'ceiling_467_room',
+        'origin': [960.3, 560.1, 1053.7],
+        'extents': [1013.5, 1067.0, 26.7],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
 ]
 
 p = json.load(open('dust2_half.json'))
