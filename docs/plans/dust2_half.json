@@ -22308,6 +22308,63 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_565_571_bulb",
+   "origin": [
+    -626.8,
+    506.8,
+    1053.7
+   ],
+   "extents": [
+    213.3,
+    266.6,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_565_571_stem",
+   "origin": [
+    -380.1,
+    506.8,
+    1053.7
+   ],
+   "extents": [
+    280.1,
+    160.0,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_565_571_seam",
+   "origin": [
+    -483.2,
+    506.8,
+    1053.7
+   ],
+   "extents": [
+    73.8,
+    266.6,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
