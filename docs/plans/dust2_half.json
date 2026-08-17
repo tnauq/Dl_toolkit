@@ -22213,6 +22213,101 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_547_129_a",
+   "origin": [
+    -120.0,
+    1213.5,
+    1267.0
+   ],
+   "extents": [
+    186.7,
+    666.8,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_547_129_b",
+   "origin": [
+    -53.3,
+    1627.0,
+    1267.0
+   ],
+   "extents": [
+    320.0,
+    160.1,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_547_129_c",
+   "origin": [
+    -13.3,
+    2133.8,
+    1267.0
+   ],
+   "extents": [
+    400.0,
+    853.6,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_547_129_d",
+   "origin": [
+    -373.5,
+    2413.9,
+    1267.0
+   ],
+   "extents": [
+    320.3,
+    293.4,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ceiling_547_129_e",
+   "origin": [
+    -173.5,
+    2853.9,
+    1267.0
+   ],
+   "extents": [
+    720.3,
+    586.6,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
