@@ -6,15 +6,15 @@ Runs after apply_batch_20260817n.py. Name-keyed and idempotent.
 Ceiling over the keyhole-shaped room west of axis_547, traced by
 rasterising solidity at z = 1053. Two slabs: the wide western bulb between
 axis_568 and axis_567, and the narrower eastern stem between axis_571 and
-axis_572. Height matches the 1067.0 walls that bound it, same band as the
-existing ceiling_467_room.
+axis_572. Height is the full-map ceiling band; the bounding walls are raised to
+match in apply_batch_20260817p.py.
 
 Usage:  python3 apply_batch_20260817o.py docs/plans/dust2_half.json
 """
 import json, sys
 
 MAT = "materials/dev/reflectivity_30.vmat"
-CEIL = (1040.4, 1067.0)
+CEIL = (1253.7, 1280.3)
 
 def box(name, x, y, z):
     return {"name": name,
