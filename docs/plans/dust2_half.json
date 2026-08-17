@@ -6524,12 +6524,12 @@
    "name": "axis_574",
    "origin": [
     -613.5,
-    1667.0,
+    926.1,
     640.2
    ],
    "extents": [
     26.7,
-    2000.4,
+    518.7,
     1280.2
    ],
    "angles": [
@@ -20249,6 +20249,386 @@
     360.1,
     26.7,
     413.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_574_far",
+   "origin": [
+    -613.5,
+    2052.8,
+    640.2
+   ],
+   "extents": [
+    26.7,
+    1228.7,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_574_low",
+   "origin": [
+    -613.5,
+    1312.0,
+    106.7
+   ],
+   "extents": [
+    26.7,
+    253.0,
+    213.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_574_hdr",
+   "origin": [
+    -613.5,
+    1312.0,
+    1040.2
+   ],
+   "extents": [
+    26.7,
+    253.0,
+    480.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp-slab_820_d574",
+   "origin": [
+    -613.5,
+    1423.1,
+    704.9
+   ],
+   "extents": [
+    44.5,
+    26.7,
+    53.3
+   ],
+   "angles": [
+    40.71,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp-slab_821_d574",
+   "origin": [
+    -613.5,
+    1425.2,
+    734.6
+   ],
+   "extents": [
+    55.3,
+    26.7,
+    53.3
+   ],
+   "angles": [
+    54.61,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp-slab_822_d574",
+   "origin": [
+    -613.5,
+    1422.6,
+    760.4
+   ],
+   "extents": [
+    73.7,
+    26.7,
+    53.3
+   ],
+   "angles": [
+    58.86,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp-slab_833_d574",
+   "origin": [
+    -613.5,
+    1201.5,
+    760.4
+   ],
+   "extents": [
+    73.7,
+    26.7,
+    53.3
+   ],
+   "angles": [
+    58.86,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp-slab_834_d574",
+   "origin": [
+    -613.5,
+    1198.8,
+    734.6
+   ],
+   "extents": [
+    55.3,
+    26.7,
+    53.3
+   ],
+   "angles": [
+    54.61,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp-slab_835_d574",
+   "origin": [
+    -613.5,
+    1201.0,
+    704.9
+   ],
+   "extents": [
+    44.5,
+    26.7,
+    53.3
+   ],
+   "angles": [
+    40.69,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_823_d574",
+   "origin": [
+    -613.5,
+    1394.4,
+    774.3
+   ],
+   "extents": [
+    26.7,
+    42.0,
+    51.7
+   ],
+   "angles": [
+    50.9,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_824_d574",
+   "origin": [
+    -613.5,
+    1373.9,
+    780.9
+   ],
+   "extents": [
+    26.7,
+    29.0,
+    38.3
+   ],
+   "angles": [
+    52.88,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_825_d574",
+   "origin": [
+    -613.5,
+    1357.9,
+    785.9
+   ],
+   "extents": [
+    26.7,
+    25.0,
+    28.3
+   ],
+   "angles": [
+    48.54,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_826_d574",
+   "origin": [
+    -613.5,
+    1340.9,
+    790.1
+   ],
+   "extents": [
+    26.7,
+    23.2,
+    20.0
+   ],
+   "angles": [
+    40.74,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_829_d574",
+   "origin": [
+    -613.5,
+    1283.2,
+    790.1
+   ],
+   "extents": [
+    26.7,
+    23.2,
+    20.0
+   ],
+   "angles": [
+    40.74,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_830_d574",
+   "origin": [
+    -613.5,
+    1266.1,
+    785.9
+   ],
+   "extents": [
+    26.7,
+    25.0,
+    28.3
+   ],
+   "angles": [
+    48.54,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_831_d574",
+   "origin": [
+    -613.5,
+    1250.1,
+    780.9
+   ],
+   "extents": [
+    26.7,
+    29.0,
+    38.3
+   ],
+   "angles": [
+    52.88,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "ramp_832_d574",
+   "origin": [
+    -613.5,
+    1229.7,
+    774.3
+   ],
+   "extents": [
+    26.7,
+    42.0,
+    51.7
+   ],
+   "angles": [
+    50.9,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "shallow_827_d574",
+   "origin": [
+    -613.5,
+    1323.3,
+    792.6
+   ],
+   "extents": [
+    26.7,
+    22.5,
+    15.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "shallow_828_d574",
+   "origin": [
+    -613.5,
+    1300.8,
+    792.6
+   ],
+   "extents": [
+    26.7,
+    22.5,
+    15.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_721_block",
+   "origin": [
+    -1744.0,
+    1168.0,
+    346.7
+   ],
+   "extents": [
+    53.8,
+    53.8,
+    266.8
    ],
    "angles": [
     0.0,
