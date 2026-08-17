@@ -1214,6 +1214,30 @@ ADD = [
         'angles': [8.866, 180.0, 0.0],
         'material': 'materials/dev/reflectivity_30.vmat',
     },
+    # Floor east of axis_195, 2026-08-17. The arched door d195 in that wall,
+    # opening y 712.5 to 965.5, led onto nothing: east of the wall's face at
+    # 2293.8 there was no geometry at all between y 133.3 and axis_193's
+    # south edge at 1493.6. The only floor over there was gapfill_39_8,
+    # which reaches x 2400.5 because a solid fill overshot THROUGH the wall,
+    # not because there is a route.
+    #
+    # This fills the bay from gapfill_39_8's south face at 26.6 north to
+    # axis_193, and east to 2747.2, the west face of axis_265, so the space
+    # is bounded rather than ending in air. Solid from z 0 like the
+    # neighbouring gapfills rather than a 26.7 plate, so there is no void
+    # underneath. Top at 213.4 against axis_193's 213.3, a 0.1 lip, far
+    # under the 30 step height.
+    #
+    # Checked against the whole plan: the only box it intersects is
+    # gapfill_39_8, which is intended. Nothing is buried by it. The d195
+    # arch springs at 465.1 and clears it entirely.
+    {
+        'name': 'gapfill_195_193',
+        'origin': [2520.5, 760.1, 106.7],
+        'extents': [453.4, 1467.0, 213.4],
+        'angles': [0.0, 0.0, 0.0],
+        'material': 'materials/dev/reflectivity_30.vmat',
+    },
 ]
 
 p = json.load(open('dust2_half.json'))

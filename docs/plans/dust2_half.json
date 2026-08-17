@@ -19914,6 +19914,25 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "gapfill_195_193",
+   "origin": [
+    2520.5,
+    760.1,
+    106.7
+   ],
+   "extents": [
+    453.4,
+    1467.0,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
