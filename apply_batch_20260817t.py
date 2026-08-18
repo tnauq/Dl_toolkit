@@ -72,17 +72,40 @@ def build(src):
     out = []
     half = R / 2.0 + WALL_T
 
-    def shell(name, cx, cy, length, yaw, sill_z, floor_top, with_floor=True):
+    def mitre_ends(bx, by, yaw1, yaw2, off):
+        """Where the two offset wall lines of a bend meet, per side.
+        Returns [(t1, t2), ...] for side +1 then -1, measured from the bend
+        along each leg. Positive is past the bend."""
+        res = []
+        u1 = (math.cos(rad(yaw1)), math.sin(rad(yaw1)))
+        u2 = (math.cos(rad(yaw2)), math.sin(rad(yaw2)))
+        p1 = (-u1[1], u1[0])
+        p2 = (-u2[1], u2[0])
+        for sg in (1.0, -1.0):
+            a0 = (bx + sg * off * p1[0], by + sg * off * p1[1])
+            b0 = (bx + sg * off * p2[0], by + sg * off * p2[1])
+            det = u1[0] * (-u2[1]) - u1[1] * (-u2[0])
+            if abs(det) < 1e-9:
+                res.append((0.0, 0.0))
+                continue
+            rx, ry = b0[0] - a0[0], b0[1] - a0[1]
+            t1 = (rx * (-u2[1]) - ry * (-u2[0])) / det
+            t2 = (u1[0] * ry - u1[1] * rx) / det
+            res.append((t1, t2))
+        return res
+
+    def shell(name, cx, cy, length, yaw, sill_z, floor_top, with_floor=True, walls=True):
         px, py = -math.sin(rad(yaw)), math.cos(rad(yaw))
         off = BORE / 2.0 + WALL_T / 2.0
         base = sill_z - 26.8
         if with_floor:
             out.append(yawbox(name + "_floor", cx, cy, floor_top - 13.4,
                               length, BORE, 26.8, yaw))
-        out.append(yawbox(name + "_wall_l", cx + px * off, cy + py * off,
-                          (base + TOP) / 2.0, length, WALL_T, TOP - base, yaw))
-        out.append(yawbox(name + "_wall_r", cx - px * off, cy - py * off,
-                          (base + TOP) / 2.0, length, WALL_T, TOP - base, yaw))
+        if walls:
+            out.append(yawbox(name + "_wall_l", cx + px * off, cy + py * off,
+                              (base + TOP) / 2.0, length, WALL_T, TOP - base, yaw))
+            out.append(yawbox(name + "_wall_r", cx - px * off, cy - py * off,
+                              (base + TOP) / 2.0, length, WALL_T, TOP - base, yaw))
         out.append(yawbox(name + "_roof", cx, cy, (ROOF[0] + ROOF[1]) / 2.0,
                           length, BORE + 2 * WALL_T, ROOF[1] - ROOF[0], yaw))
 
@@ -126,9 +149,10 @@ def build(src):
             lcx = ax + ux * (la / 2.0 - ext_a)
             lcy = ay + uy * (la / 2.0 - ext_a)
             if sill == SILL:
-                shell("hex_tun_%s" % tag, lcx, lcy, la, yaw, SILL, FLOOR[1])
+                shell("hex_tun_%s" % tag, lcx, lcy, la, yaw, SILL, FLOOR[1], walls=False)
             else:
-                shell("hex_tun_%s" % tag, lcx, lcy, la, yaw, sill, FLOOR[1], with_floor=False)
+                shell("hex_tun_%s" % tag, lcx, lcy, la, yaw, sill, FLOOR[1],
+                      with_floor=False, walls=False)
                 run = (SILL - sill) / math.tan(rad(GRADE))
                 flat = LA - run
                 out.append(yawbox("hex_tun_%s_pad" % tag,
@@ -149,7 +173,30 @@ def build(src):
             scx = bx + nx * (mitre / 2.0) - nx * (ls / 2.0 - mitre / 2.0 - mitre / 2.0)
             scx = fx + nx * ((STUB + mitre) / 2.0 - (WALL_T + 26.8) / 2.0)
             scy = fy + ny * ((STUB + mitre) / 2.0 - (WALL_T + 26.8) / 2.0)
-            shell("hex_tun_%s_stub" % tag, scx, scy, ls, normal - 180.0, SILL, FLOOR[1])
+            shell("hex_tun_%s_stub" % tag, scx, scy, ls, normal - 180.0, SILL, FLOOR[1], walls=False)
+
+            # side walls, each ending where it meets its opposite number so
+            # neither leg's wall runs on past the other's
+            off = BORE / 2.0 + WALL_T / 2.0
+            yaw2 = normal - 180.0
+            u2 = (math.cos(rad(yaw2)), math.sin(rad(yaw2)))
+            p1 = (-uy, ux)
+            p2 = (-u2[1], u2[0])
+            base = min(sill, SILL) - 26.8
+            stub_end = STUB + WALL_T + 26.8
+            for k, (t1, t2) in enumerate(mitre_ends(bx, by, yaw, yaw2, off)):
+                sg = 1.0 if k == 0 else -1.0
+                side = "l" if sg > 0 else "r"
+                lw = LA + t1 + ext_a
+                s0 = ax + ux * (lw / 2.0 - ext_a) + sg * off * p1[0]
+                s1_ = ay + uy * (lw / 2.0 - ext_a) + sg * off * p1[1]
+                out.append(yawbox("hex_tun_%s_wall_%s" % (tag, side), s0, s1_,
+                                  (base + TOP) / 2.0, lw, WALL_T, TOP - base, yaw))
+                sw = stub_end - t2
+                q0 = bx + u2[0] * (t2 + sw / 2.0) + sg * off * p2[0]
+                q1 = by + u2[1] * (t2 + sw / 2.0) + sg * off * p2[1]
+                out.append(yawbox("hex_tun_%s_stub_wall_%s" % (tag, side), q0, q1,
+                                  (SILL - 26.8 + TOP) / 2.0, sw, WALL_T, TOP - SILL + 26.8, yaw2))
 
     # ---- perimeter walls and arches --------------------------------------
     for normal, tag in ((FACE_N, "n"), (FACE_NE, "ne"), (FACE_SE, "se"),

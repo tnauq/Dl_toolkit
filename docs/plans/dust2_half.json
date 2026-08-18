@@ -23982,44 +23982,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_tun_ne_wall_l",
-   "origin": [
-    1746.0,
-    -1942.4,
-    626.8
-   ],
-   "extents": [
-    2313.7,
-    26.7,
-    880.4
-   ],
-   "angles": [
-    0.0,
-    -93.447,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_tun_ne_wall_r",
-   "origin": [
-    1320.0,
-    -1916.7,
-    626.8
-   ],
-   "extents": [
-    2313.7,
-    26.7,
-    880.4
-   ],
-   "angles": [
-    0.0,
-    -93.447,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "hex_tun_ne_roof",
    "origin": [
     1533.0,
@@ -24115,44 +24077,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_tun_ne_stub_wall_l",
-   "origin": [
-    1483.4,
-    -3189.6,
-    733.5
-   ],
-   "extents": [
-    488.0,
-    26.7,
-    667.0
-   ],
-   "angles": [
-    0.0,
-    -150.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_tun_ne_stub_wall_r",
-   "origin": [
-    1270.0,
-    -2819.9,
-    733.5
-   ],
-   "extents": [
-    488.0,
-    26.7,
-    667.0
-   ],
-   "angles": [
-    0.0,
-    -150.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "hex_tun_ne_stub_roof",
    "origin": [
     1376.7,
@@ -24172,6 +24096,82 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "hex_tun_ne_wall_l",
+   "origin": [
+    1746.6,
+    -1932.5,
+    626.8
+   ],
+   "extents": [
+    2294.0,
+    26.7,
+    880.4
+   ],
+   "angles": [
+    0.0,
+    -93.447,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_ne_stub_wall_l",
+   "origin": [
+    1474.9,
+    -3194.5,
+    733.5
+   ],
+   "extents": [
+    468.3,
+    26.7,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    -150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_ne_wall_r",
+   "origin": [
+    1327.5,
+    -1792.3,
+    626.8
+   ],
+   "extents": [
+    2064.4,
+    26.7,
+    880.4
+   ],
+   "angles": [
+    0.0,
+    -93.447,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_ne_stub_wall_r",
+   "origin": [
+    1162.1,
+    -2882.3,
+    733.5
+   ],
+   "extents": [
+    238.7,
+    26.7,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    -150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "hex_tun_nw_floor",
    "origin": [
     -1533.0,
@@ -24182,44 +24182,6 @@
     2313.7,
     400.1,
     26.8
-   ],
-   "angles": [
-    0.0,
-    -86.553,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_tun_nw_wall_l",
-   "origin": [
-    -1320.0,
-    -1916.7,
-    733.5
-   ],
-   "extents": [
-    2313.7,
-    26.7,
-    667.0
-   ],
-   "angles": [
-    0.0,
-    -86.553,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_tun_nw_wall_r",
-   "origin": [
-    -1746.0,
-    -1942.4,
-    733.5
-   ],
-   "extents": [
-    2313.7,
-    26.7,
-    667.0
    ],
    "angles": [
     0.0,
@@ -24267,44 +24229,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_tun_nw_stub_wall_l",
-   "origin": [
-    -1270.0,
-    -2819.9,
-    733.5
-   ],
-   "extents": [
-    488.0,
-    26.7,
-    667.0
-   ],
-   "angles": [
-    0.0,
-    -30.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_tun_nw_stub_wall_r",
-   "origin": [
-    -1483.4,
-    -3189.6,
-    733.5
-   ],
-   "extents": [
-    488.0,
-    26.7,
-    667.0
-   ],
-   "angles": [
-    0.0,
-    -30.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "hex_tun_nw_stub_roof",
    "origin": [
     -1376.7,
@@ -24315,6 +24239,82 @@
     488.0,
     453.5,
     26.6
+   ],
+   "angles": [
+    0.0,
+    -30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_nw_wall_l",
+   "origin": [
+    -1327.5,
+    -1792.3,
+    733.5
+   ],
+   "extents": [
+    2064.4,
+    26.7,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    -86.553,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_nw_stub_wall_l",
+   "origin": [
+    -1162.1,
+    -2882.3,
+    733.5
+   ],
+   "extents": [
+    238.7,
+    26.7,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    -30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_nw_wall_r",
+   "origin": [
+    -1746.6,
+    -1932.5,
+    733.5
+   ],
+   "extents": [
+    2294.0,
+    26.7,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    -86.553,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_tun_nw_stub_wall_r",
+   "origin": [
+    -1474.9,
+    -3194.5,
+    733.5
+   ],
+   "extents": [
+    468.3,
+    26.7,
+    667.0
    ],
    "angles": [
     0.0,
