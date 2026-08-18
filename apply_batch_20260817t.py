@@ -40,6 +40,7 @@ JAMB_OUT, JAMB_IN = 200.05, 165.2
 SPRING = 911.8
 LOW_SILL = 213.4
 GRADE = 10.0
+STUB = 300.0                         # square approach length at each face
 
 FACE_N, FACE_NE, FACE_SE, FACE_S, FACE_SW, FACE_NW = 90, 30, -30, -90, -150, 150
 WALL_DIST = A + WALL_T / 2.0
@@ -69,7 +70,21 @@ def facebox(name, normal, s0, s1, dist, thick, z0, z1):
 
 def build(src):
     out = []
-    TUN = {}
+    half = R / 2.0 + WALL_T
+
+    def shell(name, cx, cy, length, yaw, sill_z, floor_top, with_floor=True):
+        px, py = -math.sin(rad(yaw)), math.cos(rad(yaw))
+        off = BORE / 2.0 + WALL_T / 2.0
+        base = sill_z - 26.8
+        if with_floor:
+            out.append(yawbox(name + "_floor", cx, cy, floor_top - 13.4,
+                              length, BORE, 26.8, yaw))
+        out.append(yawbox(name + "_wall_l", cx + px * off, cy + py * off,
+                          (base + TOP) / 2.0, length, WALL_T, TOP - base, yaw))
+        out.append(yawbox(name + "_wall_r", cx - px * off, cy - py * off,
+                          (base + TOP) / 2.0, length, WALL_T, TOP - base, yaw))
+        out.append(yawbox(name + "_roof", cx, cy, (ROOF[0] + ROOF[1]) / 2.0,
+                          length, BORE + 2 * WALL_T, ROOF[1] - ROOF[0], yaw))
 
     # ---- floor: three rectangles, union is exactly the hexagon ------------
     for i, yaw in enumerate((0.0, 60.0, 120.0)):
@@ -77,84 +92,76 @@ def build(src):
                           R, 2 * A, FLOOR[1] - FLOOR[0], yaw))
 
     # ---- tunnels ----------------------------------------------------------
-    def tunnel(tag, ax, ay, normal, sill):
-        fx = CX + WALL_DIST * math.cos(rad(normal))
-        fy = CY + WALL_DIST * math.sin(rad(normal))
-        dx, dy = fx - ax, fy - ay
-        L = math.hypot(dx, dy)
-        ux, uy = dx / L, dy / L
-        yaw = math.degrees(math.atan2(uy, ux))
-        px, py = -uy, ux
-        base = min(sill, SILL) - 26.8
-        # A tunnel that meets a wall obliquely leaves a wedge at the mouth:
-        # one corner stops short of the wall plane by (BORE/2)*tan(skew).
-        # Run the shell past both wall planes by that much plus the wall
-        # thickness so nothing stops short and no floor is missing.
-        def skew(axis_yaw, wall_normal):
-            d = abs(((axis_yaw - wall_normal + 180.0) % 360.0) - 180.0)
-            return 180.0 - d if d > 90.0 else d
-        skew_f = skew(yaw, normal)
-        skew_a = skew(yaw, 90.0)
-        ext_f = BORE / 2.0 * math.tan(rad(min(skew_f, 70.0))) + WALL_T / math.cos(rad(min(skew_f, 70.0)))
-        ext_a = BORE / 2.0 * math.tan(rad(min(skew_a, 70.0))) + WALL_T / math.cos(rad(min(skew_a, 70.0)))
-        L_ext = L + ext_f + ext_a
-        mx = (ax + fx) / 2.0 + ux * (ext_f - ext_a) / 2.0
-        my = (ay + fy) / 2.0 + uy * (ext_f - ext_a) / 2.0
-        if sill == SILL:
-            out.append(yawbox("hex_tun_%s_floor" % tag, mx, my, (FLOOR[0] + FLOOR[1]) / 2.0,
-                              L_ext, BORE, FLOOR[1] - FLOOR[0], yaw))
+    # Every tunnel meets its face dead square, so the arch can sit flush in
+    # the wall and the bore lines up with the jambs exactly. The flank runs
+    # cannot do that in one straight line, so each is a long angled leg plus
+    # a short square stub, mitred at the bend.
+    for tag, ax, normal, sill in (("n", 0.0, FACE_N, SILL),
+                                  ("ne", SPACING, FACE_NE, LOW_SILL),
+                                  ("nw", -SPACING, FACE_NW, SILL)):
+        n = rad(normal)
+        nx, ny = math.cos(n), math.sin(n)
+        fx, fy = CX + WALL_DIST * nx, CY + WALL_DIST * ny
+        ay = WALL_Y
+
+        if tag == "n":
+            # already square: one straight leg from the arch to the face
+            L = math.hypot(fx - ax, fy - ay) + WALL_T + 26.8
+            cy_ = (ay + fy) / 2.0 + 13.4
+            shell("hex_tun_n", ax, cy_, L, -90.0, SILL, FLOOR[1])
         else:
-            run = (SILL - sill) / math.tan(rad(GRADE))
-            flat = L - run
-            pad0 = -ext_a
-            out.append(yawbox("hex_tun_%s_pad" % tag,
-                              ax + ux * (pad0 + flat) / 2.0, ay + uy * (pad0 + flat) / 2.0,
-                              sill - 13.4, flat - pad0, BORE, 26.8, yaw))
-            out.append(yawbox("hex_tun_%s_mouth" % tag,
-                              fx + ux * ext_f / 2.0, fy + uy * ext_f / 2.0,
-                              (FLOOR[0] + FLOOR[1]) / 2.0, ext_f, BORE,
-                              FLOOR[1] - FLOOR[0], yaw))
-            cz = (SILL + sill) / 2.0 - (53.3 / 2.0) / math.cos(rad(GRADE))
-            ramp = yawbox("hex_tun_%s_ramp" % tag, ax + ux * (flat + run / 2.0),
-                          ay + uy * (flat + run / 2.0), cz,
-                          run / math.cos(rad(GRADE)), BORE, 53.3, yaw + 180.0)
-            ramp["angles"][0] = GRADE
-            out.append(ramp)
-        off = BORE / 2.0 + WALL_T / 2.0
-        out.append(yawbox("hex_tun_%s_wall_l" % tag, mx + px * off, my + py * off,
-                          (base + TOP) / 2.0, L_ext, WALL_T, TOP - base, yaw))
-        out.append(yawbox("hex_tun_%s_wall_r" % tag, mx - px * off, my - py * off,
-                          (base + TOP) / 2.0, L_ext, WALL_T, TOP - base, yaw))
-        out.append(yawbox("hex_tun_%s_roof" % tag, mx, my, (ROOF[0] + ROOF[1]) / 2.0,
-                          L_ext, BORE + 2 * WALL_T, ROOF[1] - ROOF[0], yaw))
-        return {"yaw": yaw, "u": (ux, uy), "skew": skew_f,
-                "arch": (fx + ux * ext_f, fy + uy * ext_f)}
+            bx, by = fx + STUB * nx, fy + STUB * ny        # bend point
+            dx, dy = bx - ax, by - ay
+            LA = math.hypot(dx, dy)
+            ux, uy = dx / LA, dy / LA
+            yaw = math.degrees(math.atan2(uy, ux))
+            turn = abs(((yaw - (normal + 180.0) + 180.0) % 360.0) - 180.0)
+            mitre = BORE / 2.0 * math.tan(rad(turn / 2.0)) * 1.25
+            skew_a = abs(((yaw - 90.0 + 180.0) % 360.0) - 180.0)
+            skew_a = 180.0 - skew_a if skew_a > 90.0 else skew_a
+            ext_a = BORE / 2.0 * math.tan(rad(skew_a)) + WALL_T / math.cos(rad(skew_a))
 
-    TUN["n"] = tunnel("n", 0.0, WALL_Y, FACE_N, SILL)
-    TUN["ne"] = tunnel("ne", SPACING, WALL_Y, FACE_NE, LOW_SILL)
-    TUN["nw"] = tunnel("nw", -SPACING, WALL_Y, FACE_NW, SILL)
+            # angled leg, from inside the axis_468 wall to past the bend
+            la = LA + ext_a + mitre
+            lcx = ax + ux * (la / 2.0 - ext_a)
+            lcy = ay + uy * (la / 2.0 - ext_a)
+            if sill == SILL:
+                shell("hex_tun_%s" % tag, lcx, lcy, la, yaw, SILL, FLOOR[1])
+            else:
+                shell("hex_tun_%s" % tag, lcx, lcy, la, yaw, sill, FLOOR[1], with_floor=False)
+                run = (SILL - sill) / math.tan(rad(GRADE))
+                flat = LA - run
+                out.append(yawbox("hex_tun_%s_pad" % tag,
+                                  ax + ux * (flat - ext_a) / 2.0, ay + uy * (flat - ext_a) / 2.0,
+                                  sill - 13.4, flat + ext_a, BORE, 26.8, yaw))
+                cz = (SILL + sill) / 2.0 - (53.3 / 2.0) / math.cos(rad(GRADE))
+                ramp = yawbox("hex_tun_%s_ramp" % tag,
+                              ax + ux * (flat + run / 2.0), ay + uy * (flat + run / 2.0),
+                              cz, run / math.cos(rad(GRADE)), BORE, 53.3, yaw + 180.0)
+                ramp["angles"][0] = GRADE
+                out.append(ramp)
+                out.append(yawbox("hex_tun_%s_mitre" % tag,
+                                  bx + ux * mitre / 2.0, by + uy * mitre / 2.0,
+                                  FLOOR[1] - 13.4, mitre, BORE, 26.8, yaw))
 
-    # ---- perimeter walls, built from the tunnel geometry -----------------
-    half = R / 2.0 + WALL_T
+            # square stub, from past the bend through the face wall
+            ls = STUB + mitre + WALL_T + 26.8
+            scx = bx + nx * (mitre / 2.0) - nx * (ls / 2.0 - mitre / 2.0 - mitre / 2.0)
+            scx = fx + nx * ((STUB + mitre) / 2.0 - (WALL_T + 26.8) / 2.0)
+            scy = fy + ny * ((STUB + mitre) / 2.0 - (WALL_T + 26.8) / 2.0)
+            shell("hex_tun_%s_stub" % tag, scx, scy, ls, normal - 180.0, SILL, FLOOR[1])
+
+    # ---- perimeter walls and arches --------------------------------------
     for normal, tag in ((FACE_N, "n"), (FACE_NE, "ne"), (FACE_SE, "se"),
                         (FACE_S, "s"), (FACE_SW, "sw"), (FACE_NW, "nw")):
-        if tag in TUN:
-            t = TUN[tag]
-            # opening in the face plane is the bore stretched by the skew, so
-            # the wall closes flush against the tunnel's inner faces
-            oh = BORE / 2.0 / math.cos(rad(t["skew"]))
-            out.append(facebox("hex_wall_%s_l" % tag, normal, -half, -oh, WALL_DIST, WALL_T, SILL, TOP))
-            out.append(facebox("hex_wall_%s_r" % tag, normal, oh, half, WALL_DIST, WALL_T, SILL, TOP))
-            # arch square to the tunnel, marking its end
-            th = t["yaw"] - 90.0
-            tx, ty = t["arch"]
-            ux, uy = t["u"]
-            px, py = -uy, ux
-            for sgn in (-1.0, 1.0):
-                so = sgn * (JAMB_IN + JAMB_OUT) / 2.0
-                out.append(yawbox("hex_arch_%s_jamb%s" % (tag, "r" if sgn > 0 else "l"),
-                                  tx + px * so, ty + py * so, (SILL + SPRING) / 2.0,
-                                  WALL_T, JAMB_OUT - JAMB_IN, SPRING - SILL, t["yaw"]))
+        if tag in ("n", "ne", "nw"):
+            out.append(facebox("hex_wall_%s_l" % tag, normal, -half, -JAMB_OUT, WALL_DIST, WALL_T, SILL, TOP))
+            out.append(facebox("hex_wall_%s_r" % tag, normal, JAMB_OUT, half, WALL_DIST, WALL_T, SILL, TOP))
+            out.append(facebox("hex_wall_%s_jl" % tag, normal, -JAMB_OUT, -JAMB_IN, WALL_DIST, WALL_T, SILL, SPRING))
+            out.append(facebox("hex_wall_%s_jr" % tag, normal, JAMB_IN, JAMB_OUT, WALL_DIST, WALL_T, SILL, SPRING))
+            th = normal - 90.0
+            tx = CX + WALL_DIST * math.cos(rad(normal))
+            ty = CY + WALL_DIST * math.sin(rad(normal))
             for b in src:
                 nb = json.loads(json.dumps(b))
                 nb["name"] = b["name"][: -len(SRC_TAG)] + "_hex" + tag
@@ -177,19 +184,17 @@ def build(src):
     # ---- short link from the axis_468_far arch up to the axis_562 arch ----
     ly = (-800.1, -586.8)
     lx = (SPACING - BORE / 2.0, SPACING + BORE / 2.0)
-    out.append({"name": "hex_link_wall_w",
-                "origin": [round(lx[0] - WALL_T / 2.0, 1), round(sum(ly) / 2.0, 1), round((LOW_SILL + TOP) / 2.0, 1)],
-                "extents": [WALL_T, round(ly[1] - ly[0], 1), round(TOP - LOW_SILL, 1)],
-                "angles": [0.0, 0.0, 0.0], "material": MAT})
-    out.append({"name": "hex_link_wall_e",
-                "origin": [round(lx[1] + WALL_T / 2.0, 1), round(sum(ly) / 2.0, 1), round((LOW_SILL + TOP) / 2.0, 1)],
-                "extents": [WALL_T, round(ly[1] - ly[0], 1), round(TOP - LOW_SILL, 1)],
-                "angles": [0.0, 0.0, 0.0], "material": MAT})
+    for nm, cx in (("hex_link_wall_w", lx[0] - WALL_T / 2.0), ("hex_link_wall_e", lx[1] + WALL_T / 2.0)):
+        out.append({"name": nm,
+                    "origin": [round(cx, 1), round(sum(ly) / 2.0, 1), round((LOW_SILL + TOP) / 2.0, 1)],
+                    "extents": [WALL_T, round(ly[1] - ly[0], 1), round(TOP - LOW_SILL, 1)],
+                    "angles": [0.0, 0.0, 0.0], "material": MAT})
     out.append({"name": "hex_link_roof",
                 "origin": [round(SPACING, 1), round(sum(ly) / 2.0, 1), round(sum(ROOF) / 2.0, 1)],
                 "extents": [round(BORE + 2 * WALL_T, 1), round(ly[1] - ly[0], 1), round(ROOF[1] - ROOF[0], 1)],
                 "angles": [0.0, 0.0, 0.0], "material": MAT})
     return out
+
 
 def main(path):
     plan = json.load(open(path))
