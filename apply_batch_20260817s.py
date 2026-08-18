@@ -20,7 +20,7 @@ Z_BOT, Z_TOP = 213.4, 1067.0
 SPRING = 911.8
 JAMB_OUT, JAMB_IN = 200.05, 165.2
 SUFFIX = "_d468c"
-ARCH_X = (WALL_X[0] + WALL_X[1]) / 2.0        # 1060.2
+ARCH_X = 1600.25      # aligned under the axis_562 arch for a straight link
 
 def box(name, x, y, z):
     return {"name": name,
