@@ -27,8 +27,8 @@ JAMB_OUT, JAMB_IN = 200.05, 165.2
 # arch 2: middle of axis_562
 A2_X = (1280.2 + 1920.3) / 2.0        # 1600.25
 A2_WALL_Y = -573.4
-# arch 3: same x distance the other side of arch 1
-A3_X = SRC_ARCH_X - (A2_X - SRC_ARCH_X)   # -1600.25
+# arch 3: mirrors the lower arch in axis_468_far, which stays put
+A3_X = -(200.0 + 1920.4) / 2.0            # -1060.2
 
 # wall, x span, wall y centre, arch centre x, sill (None = no sill block),
 # suffix, kept-segment side
