@@ -897,63 +897,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "axis_59",
-   "origin": [
-    2560.5,
-    5161.0,
-    640.2
-   ],
-   "extents": [
-    426.8,
-    186.7,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "axis_60",
-   "origin": [
-    2133.8,
-    5121.0,
-    640.2
-   ],
-   "extents": [
-    426.8,
-    53.3,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "axis_61",
-   "origin": [
-    80.0,
-    5161.0,
-    640.2
-   ],
-   "extents": [
-    3680.7,
-    186.7,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "axis_62",
    "origin": [
     2133.8,
@@ -34318,63 +34261,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_axis_59",
-   "origin": [
-    -1640.3,
-    7009.1,
-    640.2
-   ],
-   "extents": [
-    426.8,
-    186.7,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_axis_60",
-   "origin": [
-    -1213.6,
-    7049.1,
-    640.2
-   ],
-   "extents": [
-    426.8,
-    53.3,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_axis_61",
-   "origin": [
-    840.2,
-    7009.1,
-    640.2
-   ],
-   "extents": [
-    3680.7,
-    186.7,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "m_axis_62",
    "origin": [
     -1213.6,
@@ -66841,6 +66727,25 @@
    "angles": [
     0.0,
     30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "stitch_ground",
+   "origin": [
+    460.1,
+    6085.05,
+    -26.7
+   ],
+   "extents": [
+    7028.0,
+    1661.4,
+    53.3
+   ],
+   "angles": [
+    0.0,
+    0.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
