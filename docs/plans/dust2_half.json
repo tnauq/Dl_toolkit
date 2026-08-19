@@ -4207,12 +4207,12 @@
    "origin": [
     -986.9,
     4700.9,
-    286.7
+    406.7
    ],
    "extents": [
     53.3,
     413.4,
-    146.7
+    386.7
    ],
    "angles": [
     0.0,
@@ -25144,12 +25144,12 @@
    "name": "hex_plat_s",
    "origin": [
     0.0,
-    -5518.9,
+    -5839.0,
     1053.7
    ],
    "extents": [
     2354.9,
-    640.2,
+    1280.4,
     26.6
    ],
    "angles": [
@@ -30689,63 +30689,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "axis_377_jamb0",
-   "origin": [
-    -986.9,
-    4761.0,
-    480.0
-   ],
-   "extents": [
-    53.3,
-    26.8,
-    240.1
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "axis_377_jamb1",
-   "origin": [
-    -986.9,
-    4901.0,
-    480.0
-   ],
-   "extents": [
-    53.3,
-    13.2,
-    240.1
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "axis_377_cap",
-   "origin": [
-    -986.9,
-    4827.6,
-    793.5
-   ],
-   "extents": [
-    53.3,
-    160.0,
-    200.1
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "hex_par_se",
    "origin": [
     1683.4,
@@ -31501,6 +31444,82 @@
    "angles": [
     0.0,
     -270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_par_s_ext_w",
+   "origin": [
+    -1190.8,
+    -6185.8,
+    1387.1
+   ],
+   "extents": [
+    26.7,
+    640.2,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_par_s_ext_e",
+   "origin": [
+    1190.8,
+    -6185.8,
+    1387.1
+   ],
+   "extents": [
+    26.7,
+    640.2,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_par_s_ext_s",
+   "origin": [
+    0.0,
+    -6492.6,
+    1387.1
+   ],
+   "extents": [
+    2408.3,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_par_s_ext_roof",
+   "origin": [
+    0.0,
+    -6185.8,
+    1693.9
+   ],
+   "extents": [
+    2408.3,
+    640.2,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"

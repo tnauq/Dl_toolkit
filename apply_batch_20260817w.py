@@ -3,10 +3,10 @@
 Manual tail step: twenty-third batch from the 2026-08-17 crosshair session.
 Runs after apply_batch_20260817v.py. Name-keyed and idempotent.
 
-op 1: double the height of the axis_377 opening, measured from the
-      merged_721 floor. The arch band is raised rather than rebuilt, the
-      jambs are filled in under it, and the pre-existing void above it up
-      to gapfill_378_366 is closed at the same time.
+op 1: move the whole axis_377 opening up by its own height above the
+      merged_721 floor. The arch band is raised rather than rebuilt and the
+      axis_377 sill grows up to meet it, so the aperture keeps its original
+      93.4 form and simply sits 240.1 higher.
 op 2: parapet walls along the outer edge of the three southern hexagon
       platforms, height equal to the platform width, with two big arch
       doors at the two corners of the southernmost one.
@@ -25,6 +25,7 @@ HEAD_377 = 453.4             # current arch cap
 RISE_377 = (HEAD_377 - FLOOR_377)          # 240.1, the amount to grow by
 NEW_HEAD = HEAD_377 + RISE_377             # 693.5
 VOID_TOP = 893.6             # gapfill_378_366 underside
+SILL_NEW = SILL_377 + RISE_377             # 600.1, sill grows to meet the arch
 RAISE_377 = ["ramp-slab_380", "ramp-slab_381", "ramp-slab_383",
              "angled-wall_379", "angled-wall_384", "shallow_382"]
 JAMBS_377 = [(4747.6, 4774.4), (4894.4, 4907.6)]
@@ -94,9 +95,20 @@ def main(path):
             continue
         b["origin"][2] = round(z + RISE_377, 1)
         log.append("raise %s z %.1f -> %.1f" % (name, z, b["origin"][2]))
-    for i, (y0, y1) in enumerate(JAMBS_377):
-        add(box("axis_377_jamb%d" % i, A377_X, (y0, y1), (SILL_377, SILL_377 + RISE_377)))
-    add(box("axis_377_cap", A377_X, APERTURE_377, (NEW_HEAD, VOID_TOP)))
+    if "axis_377" in idx:
+        b = boxes[idx["axis_377"]]
+        lo = b["origin"][2] - b["extents"][2] / 2.0
+        hi = b["origin"][2] + b["extents"][2] / 2.0
+        if abs(hi - SILL_NEW) < 0.1:
+            log.append("skip grow axis_377 (already %.1f)" % SILL_NEW)
+        elif abs(hi - SILL_377) > 0.1:
+            log.append("FAIL grow axis_377: expected z max %.1f, found %.1f" % (SILL_377, hi))
+        else:
+            b["origin"][2] = round((lo + SILL_NEW) / 2.0, 1)
+            b["extents"][2] = round(SILL_NEW - lo, 1)
+            log.append("grow axis_377 z max %.1f -> %.1f" % (hi, SILL_NEW))
+    else:
+        log.append("FAIL axis_377 absent")
 
     # ---- op 2 -------------------------------------------------------------
     src = [b for b in boxes if b["name"].endswith(SRC_TAG)]
@@ -135,6 +147,28 @@ def main(path):
                             round(b["origin"][2] + PLAT_TOP - SRC_SILL, 1)]
             nb["angles"] = [b["angles"][0], round(b["angles"][1] + th, 3), b["angles"][2]]
             add(nb)
+    # extend the southern platform to twice its reach and close in the strip
+    # south of the two arches
+    if "hex_plat_s" in idx:
+        b = boxes[idx["hex_plat_s"]]
+        w = b["extents"][1]
+        if abs(w - 2 * PLAT_D) < 0.1:
+            log.append("skip extend hex_plat_s (already %.1f)" % (2 * PLAT_D))
+        elif abs(w - PLAT_D) > 0.1:
+            log.append("FAIL extend hex_plat_s: expected width %.1f, found %.1f" % (PLAT_D, w))
+        else:
+            b["extents"][1] = round(2 * PLAT_D, 1)
+            b["origin"][1] = round(b["origin"][1] - PLAT_D / 2.0, 1)
+            log.append("extend hex_plat_s width %.1f -> %.1f" % (w, 2 * PLAT_D))
+    PAR_Y = CY - (A + WALL_T / 2.0 + PLAT_D + WALL_T)      # parapet outer face
+    SY = CY - (A + WALL_T / 2.0 + PLAT_D) - PLAT_D          # new platform south edge
+    XE = OUTER_SIDE / 2.0
+    add(box("hex_par_s_ext_w", (-XE - WALL_T, -XE), (SY - WALL_T, PAR_Y), (PLAT_TOP, PAR_TOP)))
+    add(box("hex_par_s_ext_e", (XE, XE + WALL_T), (SY - WALL_T, PAR_Y), (PLAT_TOP, PAR_TOP)))
+    add(box("hex_par_s_ext_s", (-XE - WALL_T, XE + WALL_T), (SY - WALL_T, SY), (PLAT_TOP, PAR_TOP)))
+    add(box("hex_par_s_ext_roof", (-XE - WALL_T, XE + WALL_T), (SY - WALL_T, PAR_Y),
+            (PAR_TOP - 26.6, PAR_TOP)))
+
     add(facebox("hex_par_s_mid", FACE_S,
                 -(half - 2 * JAMB_OUT), (half - 2 * JAMB_OUT),
                 PAR_DIST, WALL_T, PLAT_TOP, PAR_TOP))
