@@ -33385,6 +33385,44 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_par_se_end",
+   "origin": [
+    1901.5,
+    -3974.6,
+    1387.1
+   ],
+   "extents": [
+    663.8,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    -30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_par_sw_end",
+   "origin": [
+    -1901.5,
+    -3974.6,
+    1387.1
+   ],
+   "extents": [
+    663.8,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    210.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
