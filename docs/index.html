@@ -144,6 +144,7 @@
   <span><span class="k">speed</span> <b id="spdm">walk</b></span>
   <span><span class="k">boxes</span> <b id="nbox">0</b></span>
   <span><span class="k">drawn</span> <b id="ndrawn">0</b> <span class="k" id="nquad">0 q</span></span>
+  <span><span class="k">bucket</span> <b id="nbucket">0</b></span>
   <span><span class="k">fps</span> <b id="fps">0</b></span>
 </div>
 
@@ -445,7 +446,86 @@ function prepare(p){
     return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad,
              aabb:[o[0]-h[0],o[1]-h[1],o[2]-h[2],o[0]+h[0],o[1]+h[1],o[2]+h[2]] };
   });
+  buildGrid();
   return cell;
+}
+
+/* ---------- collision broadphase ----------
+   `solidAt` and `floorUnder` used to walk every box in the plan, and
+   `move` calls both once per movement substep. At 1759 boxes that was
+   already the largest fixed cost per frame; the mirror doubled it to
+   3518 and it would double again on the next one.
+
+   A uniform grid over the XY footprint fixes it, and XY alone is enough:
+   both queries are point-in-column tests, and Z is checked afterwards on
+   the handful of boxes that share the column. Boxes are inserted into
+   every column their AABB touches, GROWN BY RADIUS, so a query is a
+   single column lookup with no neighbour scan. That is the same margin
+   the two tests already apply to the AABB, so the bucket cannot miss a
+   box the old full scan would have found.
+
+   Note the AABBs are computed from the box half-extents WITHOUT the
+   rotation, which is what the existing collision already assumed. A
+   rotated box is therefore treated as its unrotated footprint here.
+   This changes nothing about that: it is the same set of boxes, found
+   faster. Fixing it would change where you can walk, which is a separate
+   decision.
+
+   Rebuilt on every load, thrown away with the rest of the derived state.
+   Nothing here touches `plan`. */
+
+const EMPTY = [];
+let grid = null;
+let lastBucket = 0;    // reported in the HUD, so a bad grid is visible
+
+function buildGrid(){
+  grid = null;
+  if(!solids.length) return;
+  let mnx=1e9, mny=1e9, mxx=-1e9, mxy=-1e9;
+  for(const s of solids){
+    const a = s.aabb;
+    if(a[0]<mnx) mnx=a[0];
+    if(a[1]<mny) mny=a[1];
+    if(a[3]>mxx) mxx=a[3];
+    if(a[4]>mxy) mxy=a[4];
+  }
+  mnx -= RADIUS; mny -= RADIUS; mxx += RADIUS; mxy += RADIUS;
+  const spanX = Math.max(1, mxx-mnx), spanY = Math.max(1, mxy-mny);
+  /* Column size. Aim for about 96 columns across the long axis, with a
+     floor of 256 units so a small plan does not build thousands of empty
+     columns. On the full mirrored map that is columns of roughly 260 u,
+     which is a couple of wall thicknesses: fine enough that a column
+     holds a handful of boxes, coarse enough that a map-spanning ground
+     plate does not explode the insert count. */
+  const size = Math.max(256, Math.max(spanX,spanY)/96);
+  let nx = Math.ceil(spanX/size), ny = Math.ceil(spanY/size);
+  // Hard cap, so a stray box at 1e6 cannot allocate a giant array.
+  if(nx*ny > 200000){ nx = Math.min(nx,447); ny = Math.min(ny,447); }
+  const cells = new Array(nx*ny);
+  let inserts = 0;
+  for(const s of solids){
+    const a = s.aabb;
+    let x0 = Math.floor((a[0]-RADIUS-mnx)/size), x1 = Math.floor((a[3]+RADIUS-mnx)/size);
+    let y0 = Math.floor((a[1]-RADIUS-mny)/size), y1 = Math.floor((a[4]+RADIUS-mny)/size);
+    if(x0<0) x0=0; if(y0<0) y0=0;
+    if(x1>nx-1) x1=nx-1; if(y1>ny-1) y1=ny-1;
+    for(let iy=y0; iy<=y1; iy++){
+      for(let ix=x0; ix<=x1; ix++){
+        const k = iy*nx + ix;
+        (cells[k] || (cells[k] = [])).push(s);
+        inserts++;
+      }
+    }
+  }
+  grid = { mnx, mny, size, nx, ny, cells, inserts };
+}
+
+function bucketAt(x, y){
+  if(!grid) return solids;
+  const ix = Math.floor((x-grid.mnx)/grid.size);
+  const iy = Math.floor((y-grid.mny)/grid.size);
+  if(ix < 0 || iy < 0 || ix >= grid.nx || iy >= grid.ny) return EMPTY;
+  return grid.cells[iy*grid.nx + ix] || EMPTY;
 }
 
 function toWorld(sol, local){
@@ -647,6 +727,10 @@ function render(){
     // phone is noisy, quad count is not.
     el('ndrawn').textContent = drawnBoxes;
     el('nquad').textContent = drawnQuads + ' q';
+    // Boxes in the column you are standing in, which is what the two
+    // collision tests actually walk. If this ever reads in the hundreds
+    // the grid is not doing its job.
+    el('nbucket').textContent = lastBucket;
   }
   el('pos').textContent =
     Math.round(cam.x)+' '+Math.round(cam.y)+' '+Math.round(cam.z);
@@ -684,7 +768,13 @@ function compass(){
 /* ---------- aim raycast ---------- */
 /* Slab method against each box. Rotated boxes are handled by moving the
    RAY into the box's local frame instead of transforming the box, which
-   keeps it a plain axis-aligned test either way. */
+   keeps it a plain axis-aligned test either way.
+
+   This one still walks every box. It cannot use the collision grid: a
+   ray crosses columns rather than sitting in one, so it would need a DDA
+   march instead of a lookup. The sphere reject below already makes it
+   cheap, and unlike the collision tests it runs once per frame, not once
+   per movement substep. */
 
 function lookVector(){
   const c = Math.cos(cam.yaw), s = Math.sin(cam.yaw);
@@ -751,9 +841,14 @@ function updateAim(){
 }
 
 /* ---------- collision ---------- */
+/* Both of these now walk one grid column instead of the whole plan. The
+   test inside the loop is unchanged, so behaviour is identical; only the
+   candidate set is smaller. */
 
 function solidAt(x,y,z){
-  for(const s of solids){
+  const list = bucketAt(x,y);
+  lastBucket = list.length;
+  for(const s of list){
     const a = s.aabb;
     if(x > a[0]-RADIUS && x < a[3]+RADIUS &&
        y > a[1]-RADIUS && y < a[4]+RADIUS &&
@@ -763,7 +858,9 @@ function solidAt(x,y,z){
 }
 function floorUnder(x,y,z){
   let best = -1e9;
-  for(const s of solids){
+  const list = bucketAt(x,y);
+  lastBucket = list.length;
+  for(const s of list){
     const a = s.aabb;
     if(x > a[0]-RADIUS && x < a[3]+RADIUS &&
        y > a[1]-RADIUS && y < a[4]+RADIUS){
