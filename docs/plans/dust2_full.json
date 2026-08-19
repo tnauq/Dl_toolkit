@@ -66635,6 +66635,1108 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_floor_a",
+   "origin": [
+    1066.95,
+    5776.4,
+    653.5
+   ],
+   "extents": [
+    800.0,
+    1417.4,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_floor_a",
+   "origin": [
+    -146.75,
+    6393.7,
+    653.5
+   ],
+   "extents": [
+    800.0,
+    1417.4,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_ceil_a",
+   "origin": [
+    1066.95,
+    5776.4,
+    1267.0
+   ],
+   "extents": [
+    800.0,
+    1417.4,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_ceil_a",
+   "origin": [
+    -146.75,
+    6393.7,
+    1267.0
+   ],
+   "extents": [
+    800.0,
+    1417.4,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_ceil_b_e",
+   "origin": [
+    963.525,
+    6085.05,
+    1267.0
+   ],
+   "extents": [
+    1006.85,
+    800.1,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_ceil_b_e",
+   "origin": [
+    -43.325,
+    6085.05,
+    1267.0
+   ],
+   "extents": [
+    1006.85,
+    800.1,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_floor_b_e",
+   "origin": [
+    1030.2,
+    6085.05,
+    653.5
+   ],
+   "extents": [
+    873.5,
+    800.1,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_floor_b_e",
+   "origin": [
+    -110.0,
+    6085.05,
+    653.5
+   ],
+   "extents": [
+    873.5,
+    800.1,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_floor_b_s",
+   "origin": [
+    460.1,
+    5818.35,
+    653.5
+   ],
+   "extents": [
+    266.7,
+    266.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_floor_b_s",
+   "origin": [
+    460.1,
+    6351.75,
+    653.5
+   ],
+   "extents": [
+    266.7,
+    266.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_pier0",
+   "origin": [
+    1480.3,
+    5174.4,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_pier0",
+   "origin": [
+    -560.1,
+    6995.7,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_sill0",
+   "origin": [
+    1480.3,
+    5307.75,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_sill0",
+   "origin": [
+    -560.1,
+    6862.35,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_head0",
+   "origin": [
+    1480.3,
+    5307.75,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_head0",
+   "origin": [
+    -560.1,
+    6862.35,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_pier1",
+   "origin": [
+    1480.3,
+    5441.1,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_pier1",
+   "origin": [
+    -560.1,
+    6729.0,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_sill1",
+   "origin": [
+    1480.3,
+    5574.45,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_sill1",
+   "origin": [
+    -560.1,
+    6595.65,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_head1",
+   "origin": [
+    1480.3,
+    5574.45,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_head1",
+   "origin": [
+    -560.1,
+    6595.65,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_pier2",
+   "origin": [
+    1480.3,
+    5707.8,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_pier2",
+   "origin": [
+    -560.1,
+    6462.3,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_sill2",
+   "origin": [
+    1480.3,
+    5841.15,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_sill2",
+   "origin": [
+    -560.1,
+    6328.95,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_head2",
+   "origin": [
+    1480.3,
+    5841.15,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_head2",
+   "origin": [
+    -560.1,
+    6328.95,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_pier3",
+   "origin": [
+    1480.3,
+    5974.5,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_pier3",
+   "origin": [
+    -560.1,
+    6195.6,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_sill3",
+   "origin": [
+    1480.3,
+    6107.85,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_sill3",
+   "origin": [
+    -560.1,
+    6062.25,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_head3",
+   "origin": [
+    1480.3,
+    6107.85,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_head3",
+   "origin": [
+    -560.1,
+    6062.25,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_pier4",
+   "origin": [
+    1480.3,
+    6241.2,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_pier4",
+   "origin": [
+    -560.1,
+    5928.9,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_sill4",
+   "origin": [
+    1480.3,
+    6374.55,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_sill4",
+   "origin": [
+    -560.1,
+    5795.55,
+    680.15
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_head4",
+   "origin": [
+    1480.3,
+    6374.55,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_head4",
+   "origin": [
+    -560.1,
+    5795.55,
+    1080.25
+   ],
+   "extents": [
+    26.7,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_e_pier5",
+   "origin": [
+    1480.3,
+    6443.15,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    83.9,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_e_pier5",
+   "origin": [
+    -560.1,
+    5726.95,
+    960.225
+   ],
+   "extents": [
+    26.7,
+    83.9,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_pier0",
+   "origin": [
+    653.55,
+    5174.4,
+    960.225
+   ],
+   "extents": [
+    26.8,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_pier0",
+   "origin": [
+    266.65,
+    6995.7,
+    960.225
+   ],
+   "extents": [
+    26.8,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_sill0",
+   "origin": [
+    653.55,
+    5307.75,
+    680.15
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_sill0",
+   "origin": [
+    266.65,
+    6862.35,
+    680.15
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_head0",
+   "origin": [
+    653.55,
+    5307.75,
+    1080.25
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_head0",
+   "origin": [
+    266.65,
+    6862.35,
+    1080.25
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_pier1",
+   "origin": [
+    653.55,
+    5441.1,
+    960.225
+   ],
+   "extents": [
+    26.8,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_pier1",
+   "origin": [
+    266.65,
+    6729.0,
+    960.225
+   ],
+   "extents": [
+    26.8,
+    213.4,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_sill1",
+   "origin": [
+    653.55,
+    5574.45,
+    680.15
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_sill1",
+   "origin": [
+    266.65,
+    6595.65,
+    680.15
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    80.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_head1",
+   "origin": [
+    653.55,
+    5574.45,
+    1080.25
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_head1",
+   "origin": [
+    266.65,
+    6595.65,
+    1080.25
+   ],
+   "extents": [
+    26.8,
+    53.3,
+    400.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_w_pier2",
+   "origin": [
+    653.55,
+    5643.05,
+    960.225
+   ],
+   "extents": [
+    26.8,
+    83.9,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_w_pier2",
+   "origin": [
+    266.65,
+    6527.05,
+    960.225
+   ],
+   "extents": [
+    26.8,
+    83.9,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bridge_wall_n",
+   "origin": [
+    873.45,
+    6498.45,
+    960.225
+   ],
+   "extents": [
+    1240.4,
+    26.7,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_bridge_wall_n",
+   "origin": [
+    46.75,
+    5671.65,
+    960.225
+   ],
+   "extents": [
+    1240.4,
+    26.7,
+    640.15
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
