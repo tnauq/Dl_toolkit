@@ -26397,13 +26397,13 @@
   {
    "name": "bay_tun_landing1",
    "origin": [
-    4127.3,
-    1207.1,
+    4380.3,
+    954.1,
     463.4
    ],
    "extents": [
-    253.0,
-    253.0,
+    759.0,
+    759.0,
     26.8
    ],
    "angles": [
@@ -26454,12 +26454,88 @@
   {
    "name": "bay_tun_wall_s",
    "origin": [
-    3527.2,
+    3387.4,
     1067.2,
     720.2
    ],
    "extents": [
-    1506.6,
+    1226.9,
+    26.7,
+    960.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bay_room_wall_s",
+   "origin": [
+    4380.3,
+    561.2,
+    720.2
+   ],
+   "extents": [
+    812.4,
+    26.7,
+    960.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bay_room_wall_w",
+   "origin": [
+    3987.5,
+    814.2,
+    720.2
+   ],
+   "extents": [
+    26.7,
+    532.7,
+    960.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bay_room_wall_e",
+   "origin": [
+    4773.1,
+    954.1,
+    720.2
+   ],
+   "extents": [
+    26.7,
+    812.4,
+    960.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bay_room_wall_n",
+   "origin": [
+    4520.1,
+    1346.9,
+    720.2
+   ],
+   "extents": [
+    532.7,
     26.7,
     960.4
    ],
@@ -26474,12 +26550,12 @@
    "name": "bay_tun_wall_e",
    "origin": [
     4267.1,
-    1853.8,
+    1993.6,
     720.2
    ],
    "extents": [
     26.7,
-    1599.8,
+    1320.1,
     960.4
    ],
    "angles": [
@@ -26511,13 +26587,32 @@
   {
    "name": "bay_tun_roof1",
    "origin": [
-    3527.2,
+    3387.4,
     1207.1,
     1187.1
    ],
    "extents": [
-    1506.6,
+    1226.9,
     306.4,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "bay_room_roof",
+   "origin": [
+    4380.3,
+    954.1,
+    1187.1
+   ],
+   "extents": [
+    812.4,
+    812.4,
     26.6
    ],
    "angles": [

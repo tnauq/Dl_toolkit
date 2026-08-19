@@ -41,6 +41,9 @@ X0, X1 = 2773.9, 4000.8        # leg 1, from the axis_265 face to axis_333
 Y0 = 1080.6                    # tunnel south edge, arch A opening
 Y1 = Y0 + BORE                 # 1333.6, flush under axis_337
 XL0, XL1 = X1, X1 + BORE       # leg 2 band, east of axis_333
+ROOM = 3.0 * BORE              # corner landing grown into a small room
+RX0, RX1 = X1, X1 + ROOM       # room x span, inside corner held at (X1, Y1)
+RY0, RY1 = Y1 - ROOM, Y1       # room y span
 YB0, YB1 = 2374.0, 2627.0      # arch B opening
 RUN2 = YB0 - Y1                # leg 2 ramp run
 DROP2 = RUN2 * math.tan(math.radians(GRADE))
@@ -122,8 +125,9 @@ def main(path):
     # leg 1: flat off the axis_265 door, then ramp down to the corner
     add(box("bay_tun_pad", (X0, XR), (Y0, Y1), (A_SILL - 26.8, A_SILL)))
     add(ramp("bay_tun_ramp1", (XR, X1), (Y0, Y1), A_SILL, MID, 0))
-    # flat landing at the exterior corner
-    add(box("bay_tun_landing1", (XL0, XL1), (Y0, Y1), (MID - 26.8, MID)))
+    # flat landing at the exterior corner, grown south and east into a room
+    # with its inside corner still on (X1, Y1)
+    add(box("bay_tun_landing1", (RX0, RX1), (RY0, RY1), (MID - 26.8, MID)))
     # leg 2: ramp north along axis_333
     add(ramp("bay_tun_ramp2", (XL0, XL1), (Y1, YB0), MID, B_SILL, 90))
     # flat landing at the axis_333 door
@@ -131,10 +135,15 @@ def main(path):
 
     # shell: axis_337 and axis_333 are the inner walls, so only the outer
     # faces are new
-    add(box("bay_tun_wall_s", (X0, XL1 + WALL_T), (Y0 - WALL_T, Y0), (WALL_BASE, CEIL_TOP)))
-    add(box("bay_tun_wall_e", (XL1, XL1 + WALL_T), (Y0 - WALL_T, YB1 + WALL_T), (WALL_BASE, CEIL_TOP)))
+    add(box("bay_tun_wall_s", (X0, X1), (Y0 - WALL_T, Y0), (WALL_BASE, CEIL_TOP)))
+    add(box("bay_room_wall_s", (X1 - WALL_T, RX1 + WALL_T), (RY0 - WALL_T, RY0), (WALL_BASE, CEIL_TOP)))
+    add(box("bay_room_wall_w", (X1 - WALL_T, X1), (RY0 - WALL_T, Y0), (WALL_BASE, CEIL_TOP)))
+    add(box("bay_room_wall_e", (RX1, RX1 + WALL_T), (RY0 - WALL_T, Y1 + WALL_T), (WALL_BASE, CEIL_TOP)))
+    add(box("bay_room_wall_n", (XL1, RX1 + WALL_T), (Y1, Y1 + WALL_T), (WALL_BASE, CEIL_TOP)))
+    add(box("bay_tun_wall_e", (XL1, XL1 + WALL_T), (Y1, YB1 + WALL_T), (WALL_BASE, CEIL_TOP)))
     add(box("bay_tun_wall_n", (XL0, XL1 + WALL_T), (YB1, YB1 + WALL_T), (WALL_BASE, CEIL_TOP)))
-    add(box("bay_tun_roof1", (X0, XL1 + WALL_T), (Y0 - WALL_T, Y1 + WALL_T), ROOF))
+    add(box("bay_tun_roof1", (X0, X1), (Y0 - WALL_T, Y1 + WALL_T), ROOF))
+    add(box("bay_room_roof", (X1 - WALL_T, RX1 + WALL_T), (RY0 - WALL_T, Y1 + WALL_T), ROOF))
     add(box("bay_tun_roof2", (XL0, XL1 + WALL_T), (Y1, YB1 + WALL_T), ROOF))
 
     json.dump(plan, open(path, "w"), indent=1)
