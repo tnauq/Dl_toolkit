@@ -24328,12 +24328,12 @@
    "origin": [
     -513.4,
     -2400.4,
-    746.9
+    1067.0
    ],
    "extents": [
     626.8,
     26.7,
-    640.2
+    1280.4
    ],
    "angles": [
     0.0,
@@ -24347,12 +24347,12 @@
    "origin": [
     513.4,
     -2400.4,
-    746.9
+    1067.0
    ],
    "extents": [
     626.8,
     26.7,
-    640.2
+    1280.4
    ],
    "angles": [
     0.0,
@@ -24708,12 +24708,12 @@
    "origin": [
     955.0,
     -2655.4,
-    746.9
+    1067.0
    ],
    "extents": [
     626.8,
     26.7,
-    640.2
+    1280.4
    ],
    "angles": [
     0.0,
@@ -24727,12 +24727,12 @@
    "origin": [
     1468.5,
     -3544.7,
-    746.9
+    1067.0
    ],
    "extents": [
     626.8,
     26.7,
-    640.2
+    1280.4
    ],
    "angles": [
     0.0,
@@ -25202,12 +25202,12 @@
    "origin": [
     -1468.5,
     -3544.7,
-    746.9
+    1067.0
    ],
    "extents": [
     626.8,
     26.7,
-    640.2
+    1280.4
    ],
    "angles": [
     0.0,
@@ -25221,12 +25221,12 @@
    "origin": [
     -955.0,
     -2655.4,
-    746.9
+    1067.0
    ],
    "extents": [
     626.8,
     26.7,
-    640.2
+    1280.4
    ],
    "angles": [
     0.0,
@@ -28983,7 +28983,7 @@
    "origin": [
     -3693.5,
     2913.9,
-    853.6
+    1440.4
    ],
    "extents": [
     1385.8,
@@ -29002,7 +29002,7 @@
    "origin": [
     -3693.5,
     2913.9,
-    853.6
+    1440.4
    ],
    "extents": [
     1385.8,
@@ -29021,7 +29021,7 @@
    "origin": [
     -3693.5,
     2913.9,
-    853.6
+    1440.4
    ],
    "extents": [
     1385.8,
@@ -29040,12 +29040,12 @@
    "origin": [
     -2987.2,
     3190.5,
-    573.5
+    866.9
    ],
    "extents": [
     300.2,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -29059,12 +29059,12 @@
    "origin": [
     -2987.2,
     2637.3,
-    573.5
+    866.9
    ],
    "extents": [
     300.2,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -29477,12 +29477,12 @@
    "origin": [
     -3579.9,
     3663.8,
-    573.5
+    866.9
    ],
    "extents": [
     300.2,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -29496,12 +29496,12 @@
    "origin": [
     -3100.8,
     3387.2,
-    573.5
+    866.9
    ],
    "extents": [
     300.2,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -30047,12 +30047,12 @@
    "origin": [
     -3100.8,
     2440.6,
-    573.5
+    866.9
    ],
    "extents": [
     300.2,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -30066,12 +30066,12 @@
    "origin": [
     -3579.9,
     2164.0,
-    573.5
+    866.9
    ],
    "extents": [
     300.2,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -30636,12 +30636,12 @@
    "origin": [
     -4046.6,
     3525.5,
-    573.5
+    866.9
    ],
    "extents": [
     853.5,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -30655,12 +30655,12 @@
    "origin": [
     -4399.7,
     2913.9,
-    573.5
+    866.9
    ],
    "extents": [
     853.5,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -30674,12 +30674,12 @@
    "origin": [
     -4046.6,
     2302.3,
-    573.5
+    866.9
    ],
    "extents": [
     853.5,
     26.7,
-    586.8
+    1173.6
    ],
    "angles": [
     0.0,
@@ -33040,6 +33040,348 @@
    "angles": [
     0.0,
     0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_wall_n_hdr",
+   "origin": [
+    0.0,
+    -2400.4,
+    1387.1
+   ],
+   "extents": [
+    400.1,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_wall_ne_hdr",
+   "origin": [
+    1211.7,
+    -3100.0,
+    1387.1
+   ],
+   "extents": [
+    400.1,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    -60,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_wall_nw_hdr",
+   "origin": [
+    -1211.7,
+    -3100.0,
+    1387.1
+   ],
+   "extents": [
+    400.1,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    60,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_wall_e_hdr",
+   "origin": [
+    -2987.2,
+    2913.9,
+    1160.3
+   ],
+   "extents": [
+    253.0,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    0.0,
+    -90,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_wall_ne_hdr",
+   "origin": [
+    -3340.3,
+    3525.5,
+    1160.3
+   ],
+   "extents": [
+    253.0,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    0.0,
+    -30,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_wall_se_hdr",
+   "origin": [
+    -3340.3,
+    2302.3,
+    1160.3
+   ],
+   "extents": [
+    253.0,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    0.0,
+    210,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_roof_0",
+   "origin": [
+    0.0,
+    -3799.6,
+    1693.9
+   ],
+   "extents": [
+    1600.2,
+    2771.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_roof_1",
+   "origin": [
+    0.0,
+    -3799.6,
+    1693.9
+   ],
+   "extents": [
+    1600.2,
+    2771.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    60.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_roof_2",
+   "origin": [
+    0.0,
+    -3799.6,
+    1693.9
+   ],
+   "extents": [
+    1600.2,
+    2771.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    120.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_roof_plat_se",
+   "origin": [
+    1394.6,
+    -4822.6,
+    1693.9
+   ],
+   "extents": [
+    1977.6,
+    640.2,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    -120,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_roof_plat_s",
+   "origin": [
+    0.0,
+    -5518.9,
+    1693.9
+   ],
+   "extents": [
+    2354.9,
+    640.2,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    -180,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_roof_plat_sw",
+   "origin": [
+    -1394.6,
+    -4822.6,
+    1693.9
+   ],
+   "extents": [
+    1977.6,
+    640.2,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    -240,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_dais0_0",
+   "origin": [
+    -3693.5,
+    2913.9,
+    426.8
+   ],
+   "extents": [
+    400.1,
+    692.9,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_dais0_1",
+   "origin": [
+    -3693.5,
+    2913.9,
+    426.8
+   ],
+   "extents": [
+    400.1,
+    692.9,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    60.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_dais0_2",
+   "origin": [
+    -3693.5,
+    2913.9,
+    426.8
+   ],
+   "extents": [
+    400.1,
+    692.9,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    120.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_dais1_0",
+   "origin": [
+    -3693.5,
+    2913.9,
+    720.2
+   ],
+   "extents": [
+    213.4,
+    369.6,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_dais1_1",
+   "origin": [
+    -3693.5,
+    2913.9,
+    720.2
+   ],
+   "extents": [
+    213.4,
+    369.6,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    60.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex2_dais1_2",
+   "origin": [
+    -3693.5,
+    2913.9,
+    720.2
+   ],
+   "extents": [
+    213.4,
+    369.6,
+    293.4
+   ],
+   "angles": [
+    0.0,
+    120.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
