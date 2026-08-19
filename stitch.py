@@ -37,8 +37,21 @@ import json
 import sys
 
 REMOVE = [
+    # The seam wall behind CT spawn.
     "axis_59", "axis_60", "axis_61",
     "m_axis_59", "m_axis_60", "m_axis_61",
+    # Second pass: the remaining barriers along the seam.
+    #   axis_371  x -1013.5..640.2   y 4907.7..5067.7  z 0.1..1280.3
+    #             a SOLID block, not a wall, sitting behind axis_61
+    #   axis_44   x  2800.6..3760.8  y 5441.2..5494.4  z 0.1..1280.3
+    #             the north wall of the CT spawn box
+    #   axis_782  x -2133.8..-1653.7 y 5254.5..5267.8  z 0.1..1280.3
+    #             thin wall at the north edge, west side
+    # All three are removed WHOLE.  Several smaller boxes are embedded in
+    # them; those are left alone rather than trimmed, so they now stand
+    # proud into the open.  Listed in the notes delivered with this file.
+    "axis_44", "axis_371", "axis_782",
+    "m_axis_44", "m_axis_371", "m_axis_782",
 ]
 
 ADDS = [

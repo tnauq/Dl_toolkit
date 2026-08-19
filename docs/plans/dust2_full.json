@@ -650,25 +650,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "axis_44",
-   "origin": [
-    3280.7,
-    5467.8,
-    640.2
-   ],
-   "extents": [
-    960.2,
-    53.3,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "axis_45",
    "origin": [
     3747.4,
@@ -4079,25 +4060,6 @@
    "extents": [
     26.7,
     213.4,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "axis_371",
-   "origin": [
-    -186.7,
-    4987.7,
-    640.2
-   ],
-   "extents": [
-    1653.7,
-    160.0,
     1280.2
    ],
    "angles": [
@@ -9020,25 +8982,6 @@
     106.7,
     106.7,
     106.7
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "axis_782",
-   "origin": [
-    -1893.7,
-    5261.1,
-    640.2
-   ],
-   "extents": [
-    480.1,
-    13.3,
-    1280.2
    ],
    "angles": [
     0.0,
@@ -34014,25 +33957,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_axis_44",
-   "origin": [
-    -2360.5,
-    6702.3,
-    640.2
-   ],
-   "extents": [
-    960.2,
-    53.3,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "m_axis_45",
    "origin": [
     -2827.2,
@@ -37443,25 +37367,6 @@
    "extents": [
     26.7,
     213.4,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_axis_371",
-   "origin": [
-    1106.9,
-    7182.4,
-    640.2
-   ],
-   "extents": [
-    1653.7,
-    160.0,
     1280.2
    ],
    "angles": [
@@ -42384,25 +42289,6 @@
     106.7,
     106.7,
     106.7
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_axis_782",
-   "origin": [
-    2813.9,
-    6909.0,
-    640.2
-   ],
-   "extents": [
-    480.1,
-    13.3,
-    1280.2
    ],
    "angles": [
     0.0,
