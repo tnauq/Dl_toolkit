@@ -9,9 +9,13 @@ op 1: drop shaft from the spawn room floor into a tunnel at pit level. The
 op 2: pit cover, following the Patron pit references: a low central dais,
       a ring wall inboard of the perimeter broken by six gaps, and six
       chunky blocks outboard of the gaps.
-op 3: flanking stairs down the SE and SW faces, both descending toward the
-      S face so they land either side of the tunnel mouth.
-op 4: shop block, centred on the spawn room's north wall.
+op 3: flanking descents down the SE and SW faces, both stepping down
+      toward the S face so they land either side of the tunnel mouth.
+      Three large steps rather than a ramp: a ramp over the available run
+      came out at 21.8 degrees, which reads too steep, so the drop is taken
+      as three 213.4 platform steps instead.
+op 4: railing along the inner edge of the three southern platforms, open
+      at the head of each descent, plus scattered crates on the deck.
 
 Usage:  python3 apply_batch_20260817y.py docs/plans/dust2_half.json
 """
@@ -56,14 +60,27 @@ BLK_D, BLK_L, BLK_W = 1150.0, 320.1, 213.4
 BLK_TOP = PIT + 213.4
 NORMALS = (90, 30, -30, -90, -150, 150)
 
-# stairs
-STEPS = 12
-RISE = (PLAT_TOP - PIT) / STEPS   # 53.35
-TREAD = 106.7
-STAIR_IN, STAIR_OUT = A - BORE, A # band hugging the perimeter wall
+# flanking descents
+STAIR_IN, STAIR_OUT = A - BORE, A     # band hugging the perimeter wall
+NSTEP = 3
+STEP_RISE = (PLAT_TOP - PIT) / (NSTEP + 1)   # 160.05 per level... see below
+STEP_RISE = (PLAT_TOP - PIT) / NSTEP         # 213.4, a jump-up per step
+STEP_TREAD = R / NSTEP                       # 533.4
 
-# shop, a large van at map scale
-SHOP_L, SHOP_W, SHOP_H = 400.1, 160.1, 186.7
+# railing, height taken from axis_548 measured off the axis_546 deck
+RAIL_H = 160.1
+RAIL_T = 26.7
+RAIL_HALF = R / 2.0 + WALL_T
+RAIL_GAP = BORE                        # opening at the head of each descent
+
+# crates, duplicates of axis_585
+CRATE = (120.0, 120.0, 106.7)
+CRATE_SPOTS = [(-30, -520.0, 200.0, 12.0), (-30, 40.0, 430.0, -25.0),
+               (-30, 610.0, 250.0, 40.0),
+               (-90, -430.0, 180.0, -15.0), (-90, 110.0, 420.0, 30.0),
+               (-90, 620.0, 300.0, -40.0),
+               (-150, -600.0, 260.0, 20.0), (-150, -60.0, 430.0, -35.0),
+               (-150, 500.0, 190.0, 8.0)]
 
 def rad(d):
     return math.radians(d)
@@ -188,22 +205,35 @@ def main(path):
                    CX + BLK_D * math.cos(rad(ang)), CY + BLK_D * math.sin(rad(ang)),
                    (PIT + BLK_TOP) / 2.0, BLK_L, BLK_W, BLK_TOP - PIT, ang - 90))
 
-    # ---- op 3: flanking stairs --------------------------------------------
-    # Both run in the band just inside the perimeter wall and both descend
+    # ---- op 3: flanking descents -----------------------------------------
+    # Both sit in the band just inside the perimeter wall and both step down
     # TOWARDS the S face, so they arrive either side of the tunnel mouth.
     mid = (STAIR_IN + STAIR_OUT) / 2.0
     for normal, tag, sgn in ((-30, "se", 1.0), (-150, "sw", -1.0)):
-        for k in range(STEPS):
-            s = sgn * (-(STEPS * TREAD) / 2.0 + (k + 0.5) * TREAD)
-            top = PLAT_TOP - (k + 1) * RISE
-            add(facebox("hex_stair_%s_%02d" % (tag, k), normal, s, mid,
-                        TREAD, STAIR_OUT - STAIR_IN, PIT - 26.8, top))
+        for k in range(NSTEP):
+            sc = sgn * (-R / 2.0 + (k + 0.5) * STEP_TREAD)
+            add(facebox("hex_step_%s_%d" % (tag, k), normal, sc, mid,
+                        STEP_TREAD, STAIR_OUT - STAIR_IN,
+                        PIT - 26.8, PLAT_TOP - k * STEP_RISE))
 
-    # ---- op 4: shop --------------------------------------------------------
-    # Against the spawn room's north wall, which is the hex_par_s outer face.
-    shop_y1 = CY - (A + WALL_T / 2.0 + (PLAT_TOP - PIT) + WALL_T)
-    add(box("hex_shop", (-SHOP_L / 2.0, SHOP_L / 2.0),
-            (shop_y1 - SHOP_W, shop_y1), (PLAT_TOP, PLAT_TOP + SHOP_H)))
+    # ---- op 4: railing and crates -----------------------------------------
+    # Open for one bore width at the head of each descent, which is the far
+    # end of the SE face and the far end of the SW face.
+    for normal, tag, s0, s1 in (
+            (-30,  "se", -RAIL_HALF + RAIL_GAP, RAIL_HALF),
+            (-90,  "s",  -RAIL_HALF, RAIL_HALF),
+            (-150, "sw", -RAIL_HALF, RAIL_HALF - RAIL_GAP)):
+        add(facebox("hex_rail_%s" % tag, normal, (s0 + s1) / 2.0, WALL_DIST,
+                    s1 - s0, RAIL_T, PLAT_TOP, PLAT_TOP + RAIL_H))
+    for i, (normal, sc, out, yaw) in enumerate(CRATE_SPOTS):
+        n = rad(normal)
+        t = rad(normal - 90)
+        d = WALL_DIST + out
+        add(yawbox("hex_crate_%d" % i,
+                   CX + d * math.cos(n) + sc * math.cos(t),
+                   CY + d * math.sin(n) + sc * math.sin(t),
+                   PLAT_TOP + CRATE[2] / 2.0,
+                   CRATE[0], CRATE[1], CRATE[2], normal - 90 + yaw))
 
     json.dump(plan, open(path, "w"), indent=1)
     for line in log:

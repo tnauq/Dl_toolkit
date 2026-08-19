@@ -32665,16 +32665,16 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_se_00",
+   "name": "hex_step_se_0",
    "origin": [
-    1320.4,
-    -3884.3,
-    706.8
+    1293.6,
+    -3930.6,
+    733.5
    ],
    "extents": [
-    106.7,
+    533.4,
     400.1,
-    613.6
+    667.0
    ],
    "angles": [
     0.0,
@@ -32684,52 +32684,14 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_se_01",
+   "name": "hex_step_se_1",
    "origin": [
-    1267.0,
-    -3976.7,
-    680.1
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    560.3
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_02",
-   "origin": [
-    1213.7,
-    -4069.1,
-    653.5
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    507.0
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_03",
-   "origin": [
-    1160.3,
-    -4161.5,
+    1026.9,
+    -4392.5,
     626.8
    ],
    "extents": [
-    106.7,
+    533.4,
     400.1,
     453.6
    ],
@@ -32741,71 +32703,14 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_se_04",
+   "name": "hex_step_se_2",
    "origin": [
-    1107.0,
-    -4253.9,
-    600.1
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    400.2
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_05",
-   "origin": [
-    1053.6,
-    -4346.3,
-    573.5
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    346.9
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_06",
-   "origin": [
-    1000.3,
-    -4438.7,
-    546.8
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    293.5
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_07",
-   "origin": [
-    946.9,
-    -4531.1,
+    760.2,
+    -4854.5,
     520.1
    ],
    "extents": [
-    106.7,
+    533.4,
     400.1,
     240.2
    ],
@@ -32817,92 +32722,16 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_se_08",
+   "name": "hex_step_sw_0",
    "origin": [
-    893.6,
-    -4623.5,
-    493.4
+    -1293.6,
+    -3930.6,
+    733.5
    ],
    "extents": [
-    106.7,
+    533.4,
     400.1,
-    186.8
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_09",
-   "origin": [
-    840.2,
-    -4715.9,
-    466.8
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    133.5
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_10",
-   "origin": [
-    786.9,
-    -4808.3,
-    440.1
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    80.1
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_se_11",
-   "origin": [
-    733.5,
-    -4900.7,
-    413.4
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    26.8
-   ],
-   "angles": [
-    0.0,
-    -120,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_sw_00",
-   "origin": [
-    -1320.4,
-    -3884.3,
-    706.8
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    613.6
+    667.0
    ],
    "angles": [
     0.0,
@@ -32912,52 +32741,14 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_sw_01",
+   "name": "hex_step_sw_1",
    "origin": [
-    -1267.0,
-    -3976.7,
-    680.1
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    560.3
-   ],
-   "angles": [
-    0.0,
-    -240,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_sw_02",
-   "origin": [
-    -1213.7,
-    -4069.1,
-    653.5
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    507.0
-   ],
-   "angles": [
-    0.0,
-    -240,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_sw_03",
-   "origin": [
-    -1160.3,
-    -4161.5,
+    -1026.9,
+    -4392.5,
     626.8
    ],
    "extents": [
-    106.7,
+    533.4,
     400.1,
     453.6
    ],
@@ -32969,71 +32760,14 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_sw_04",
+   "name": "hex_step_sw_2",
    "origin": [
-    -1107.0,
-    -4253.9,
-    600.1
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    400.2
-   ],
-   "angles": [
-    0.0,
-    -240,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_sw_05",
-   "origin": [
-    -1053.6,
-    -4346.3,
-    573.5
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    346.9
-   ],
-   "angles": [
-    0.0,
-    -240,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_sw_06",
-   "origin": [
-    -1000.3,
-    -4438.7,
-    546.8
-   ],
-   "extents": [
-    106.7,
-    400.1,
-    293.5
-   ],
-   "angles": [
-    0.0,
-    -240,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_stair_sw_07",
-   "origin": [
-    -946.9,
-    -4531.1,
+    -760.2,
+    -4854.5,
     520.1
    ],
    "extents": [
-    106.7,
+    533.4,
     400.1,
     240.2
    ],
@@ -33045,16 +32779,54 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_sw_08",
+   "name": "hex_rail_se",
    "origin": [
-    -893.6,
-    -4623.5,
-    493.4
+    1111.7,
+    -4672.5,
+    1147.0
    ],
    "extents": [
-    106.7,
-    400.1,
-    186.8
+    1253.6,
+    26.7,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    -120,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_rail_s",
+   "origin": [
+    0.0,
+    -5198.8,
+    1147.0
+   ],
+   "extents": [
+    1653.7,
+    26.7,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    -180,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_rail_sw",
+   "origin": [
+    -1111.7,
+    -4672.5,
+    1147.0
+   ],
+   "extents": [
+    1253.6,
+    26.7,
+    160.1
    ],
    "angles": [
     0.0,
@@ -33064,77 +32836,172 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_sw_09",
+   "name": "hex_crate_0",
    "origin": [
-    -840.2,
-    -4715.9,
-    466.8
+    1645.0,
+    -4148.9,
+    1120.3
    ],
    "extents": [
-    106.7,
-    400.1,
-    133.5
+    120.0,
+    120.0,
+    106.7
    ],
    "angles": [
     0.0,
-    -240,
+    -108.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_sw_10",
+   "name": "hex_crate_1",
    "origin": [
-    -786.9,
-    -4808.3,
-    440.1
+    1564.1,
+    -4748.9,
+    1120.3
    ],
    "extents": [
-    106.7,
-    400.1,
-    80.1
+    120.0,
+    120.0,
+    106.7
    ],
    "angles": [
     0.0,
-    -240,
+    -145.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_stair_sw_11",
+   "name": "hex_crate_2",
    "origin": [
-    -733.5,
-    -4900.7,
-    413.4
+    1123.3,
+    -5152.5,
+    1120.3
    ],
    "extents": [
-    106.7,
-    400.1,
-    26.8
+    120.0,
+    120.0,
+    106.7
    ],
    "angles": [
     0.0,
-    -240,
+    -80.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_shop",
+   "name": "hex_crate_3",
    "origin": [
-    0.0,
-    -5945.8,
-    1160.3
+    430.0,
+    -5378.8,
+    1120.3
    ],
    "extents": [
-    400.1,
-    160.1,
-    186.7
+    120.0,
+    120.0,
+    106.7
    ],
    "angles": [
     0.0,
+    -195.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_crate_4",
+   "origin": [
+    -110.0,
+    -5618.8,
+    1120.3
+   ],
+   "extents": [
+    120.0,
+    120.0,
+    106.7
+   ],
+   "angles": [
     0.0,
+    -150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_crate_5",
+   "origin": [
+    -620.0,
+    -5498.8,
+    1120.3
+   ],
+   "extents": [
+    120.0,
+    120.0,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    -220.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_crate_6",
+   "origin": [
+    -1136.9,
+    -5148.8,
+    1120.3
+   ],
+   "extents": [
+    120.0,
+    120.0,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    -220.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_crate_7",
+   "origin": [
+    -1554.1,
+    -4766.2,
+    1120.3
+   ],
+   "extents": [
+    120.0,
+    120.0,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    -275.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "hex_crate_8",
+   "origin": [
+    -1626.3,
+    -4161.2,
+    1120.3
+   ],
+   "extents": [
+    120.0,
+    120.0,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    -232.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
