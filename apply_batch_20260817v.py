@@ -44,10 +44,14 @@ FACE_E, FACE_NE, FACE_NW, FACE_W, FACE_SW, FACE_SE = 0, 60, 120, 180, 240, 300
 WALL_DIST = A + WALL_T / 2.0
 
 # name, wall x span, arch centre y, sill, suffix, copies, wall z top
+# name, wall x span, arch centre y, sill, suffix, copies, wall z top, head
+# head None means the standard DOOR_H above the sill. The middle door is
+# capped at the axis_761 underside instead, which shortens the opening
+# without touching the arch profile.
 DOORS = [
-    ("d553n", (-2187.1, -2133.8), 4627.6, 280.1, "_d553n", 2, 1280.3),
-    ("d553s", (-2187.1, -2133.8), 2913.9, 253.4, "_d553s", 2, 1280.3),
-    ("d552",  (-2000.4, -1920.4), 1434.9, 213.3, "_d552",  3, 1067.0),
+    ("d553n", (-2187.1, -2133.8), 4627.6, 280.1, "_d553n", 2, 1280.3, None),
+    ("d553s", (-2187.1, -2133.8), 2913.9, 253.4, "_d553s", 2, 1280.3, 680.2),
+    ("d552",  (-2000.4, -1920.4), 1434.9, 213.3, "_d552",  3, 1067.0, None),
 ]
 
 def box(name, x, y, z):
@@ -121,9 +125,9 @@ def main(path):
         log.append("FAIL axis_552 absent")
 
     # ---- door low blocks, headers and arch copies -------------------------
-    for tag, wx, cy, sill, suffix, copies, wtop in DOORS:
+    for tag, wx, cy, sill, suffix, copies, wtop, head in DOORS:
         o_lo, o_hi = cy - DOOR_W / 2.0, cy + DOOR_W / 2.0
-        hdr = sill + DOOR_H
+        hdr = head if head else sill + DOOR_H
         wbot = 213.4 if tag == "d552" else 0.1
         if sill - wbot > 1.0:
             add(box("axis" + suffix + "_low", wx, (o_lo, o_hi), (wbot, sill)))
@@ -185,62 +189,49 @@ def main(path):
                        length, BORE + 2 * WALL_T, CEIL[1] - CEIL[0], yaw))
 
         def polywalls(name, pts):
-            """Side walls along a centreline polyline, each segment ending
-            where its own offset line meets the next one, so the inner wall
-            of a bend stops short instead of running through the bore."""
+            """Side walls along a centreline polyline. Each segment ends where
+            its own offset line meets the next one, so at a bend the outer wall
+            runs to the outer corner and the inner wall stops short of the bore."""
             off = BORE / 2.0 + WALL_T / 2.0
             k = len(pts) - 1
-            us, ls = [], []
+            us, lens = [], []
             for i in range(k):
-                dxs = pts[i + 1][0] - pts[i][0]
-                dys = pts[i + 1][1] - pts[i][1]
-                Ls = math.hypot(dxs, dys)
-                us.append((dxs / Ls, dys / Ls))
-                ls.append(Ls)
+                ddx = pts[i + 1][0] - pts[i][0]
+                ddy = pts[i + 1][1] - pts[i][1]
+                Ls = math.hypot(ddx, ddy)
+                us.append((ddx / Ls, ddy / Ls))
+                lens.append(Ls)
             for sgn in (1.0, -1.0):
                 side = "l" if sgn > 0 else "r"
-                cuts = [0.0] * (k + 1)
-                cuts[k] = ls[k - 1]
+                starts = [0.0] * k
+                ends = list(lens)
                 for i in range(k - 1):
                     u1, u2 = us[i], us[i + 1]
-                    p1 = (-u1[1] * sgn * off, u1[0] * sgn * off)
-                    p2 = (-u2[1] * sgn * off, u2[0] * sgn * off)
-                    a0 = (pts[i + 1][0] + p1[0], pts[i + 1][1] + p1[1])
-                    b0 = (pts[i + 1][0] + p2[0], pts[i + 1][1] + p2[1])
+                    p1 = (-u1[1], u1[0])
+                    p2 = (-u2[1], u2[0])
+                    vx, vy = pts[i + 1]
+                    a0 = (vx + sgn * off * p1[0], vy + sgn * off * p1[1])
+                    b0 = (vx + sgn * off * p2[0], vy + sgn * off * p2[1])
                     det = u1[0] * (-u2[1]) - u1[1] * (-u2[0])
                     if abs(det) < 1e-9:
                         continue
                     rx, ry = b0[0] - a0[0], b0[1] - a0[1]
                     t1 = (rx * (-u2[1]) - ry * (-u2[0])) / det
                     t2 = (u1[0] * ry - u1[1] * rx) / det
-                    cuts[i + 1] = t1
-                    if i + 1 < k:
-                        ls[i + 1] = ls[i + 1] - t2
-                        pts_next_start = t2
-                        us[i + 1] = us[i + 1]
-                        globals().setdefault("_", None)
-                    # store start offset for the next segment
-                    if not hasattr(polywalls, "starts"):
-                        polywalls.starts = {}
-                    polywalls.starts[(side, i + 1)] = t2
+                    ends[i] = lens[i] + t1
+                    starts[i + 1] = t2
                 for i in range(k):
-                    st = getattr(polywalls, "starts", {}).get((side, i), 0.0)
-                    en = cuts[i + 1] if i < k - 1 else ls[i]
-                    if i < k - 1:
-                        en = cuts[i + 1]
-                    length = (en - st) if i < k - 1 else (math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) - st)
+                    length = ends[i] - starts[i]
                     if length <= 1.0:
                         continue
                     u = us[i]
                     px, py = -u[1], u[0]
-                    mid = st + length / 2.0
-                    cx0 = pts[i][0] + u[0] * mid + sgn * off * px
-                    cy0 = pts[i][1] + u[1] * mid + sgn * off * py
-                    add(yawbox("%s_wall_%s%d" % (name, side, i), cx0, cy0,
+                    mid = starts[i] + length / 2.0
+                    add(yawbox("%s_wall_%s%d" % (name, side, i),
+                               pts[i][0] + u[0] * mid + sgn * off * px,
+                               pts[i][1] + u[1] * mid + sgn * off * py,
                                (WALL_BASE + TOP) / 2.0, length, WALL_T, TOP - WALL_BASE,
                                math.degrees(math.atan2(u[1], u[0]))))
-                if hasattr(polywalls, "starts"):
-                    polywalls.starts = {}
 
         if straight:
             L = abs(fx - dx) + WALL_T
@@ -281,8 +272,9 @@ def main(path):
             polywalls("hex2_tun_%s" % tag,
                       [(dx, dy), (bdx, bdy), (bfx, bfy), (fx, fy)])
 
-        # arch in the face, flush
-        th = normal - 90.0
+        # arch in the face, flush. The d195 source wall normal is +x, so the
+        # rotation is the face normal itself, not the face normal minus 90.
+        th = normal
         for b in src:
             nb = copy.deepcopy(b)
             nb["name"] = b["name"][: -len(SRC)] + "_hx2" + tag
