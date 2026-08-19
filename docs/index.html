@@ -143,6 +143,7 @@
   <span><span class="k">eye</span> <b id="eyem">2.44 m</b></span>
   <span><span class="k">speed</span> <b id="spdm">walk</b></span>
   <span><span class="k">boxes</span> <b id="nbox">0</b></span>
+  <span><span class="k">drawn</span> <b id="ndrawn">0</b> <span class="k" id="nquad">0 q</span></span>
   <span><span class="k">fps</span> <b id="fps">0</b></span>
 </div>
 
@@ -191,6 +192,7 @@
   <button id="copypos">copy pos</button>
   <button id="spd">speed: walk</button>
   <button id="noclip">fly: off</button>
+  <button id="detail">detail: normal</button>
   <button id="respawn">respawn</button>
   <button id="fs">fullscreen</button>
   <label class="file" tabindex="0">open
@@ -208,10 +210,14 @@
      X/Y ground plane, Z up. Box origin is the CENTRE, extents are FULL
      size. angles are [pitch, yaw, roll] like a Source qangle.
 
-   No GPU required and no libraries. Faces are subdivided into cell-sized
-   tiles and painted back to front. The tiles ARE the dev-texture grid, so
-   the thing that makes it readable is the same thing that makes it draw:
-   every band you see is one cell of world space.
+   No GPU required and no libraries. Faces are subdivided into tiles and
+   painted back to front. The tiles ARE the dev-texture grid, so the thing
+   that makes it readable is the same thing that makes it draw.
+
+   The plan is READ ONLY. Nothing in here mutates or writes back the JSON,
+   so none of the performance work below can affect what the Hammer
+   conversion chain sees. Everything is derived into `solids` at load and
+   thrown away on the next load.
 ------------------------------------------------------------------- */
 
 const DEFAULT_PLAN = {
@@ -364,6 +370,33 @@ const m = u => (u / U_PER_M);
 const NEAR = 4;
 const FOV = 75 * Math.PI / 180;
 
+/* ---------- level of detail ----------
+   The old renderer tiled every face by WORLD size: nu = uSize/cell, capped
+   at 64. A ground plate 5700 units across therefore emitted 64x64 = 4096
+   quads whether it filled the screen or was a smudge on the horizon, and
+   each quad cost a path, a fill, a stroke and an entry in the global sort.
+   That, not the box count, is what put this at single-digit fps.
+
+   Tiles are now sized in SCREEN space instead. A face picks a tile size
+   such that one tile lands near TARGET_PX device pixels, so a distant wall
+   collapses to a handful of quads and a wall you are standing against
+   still shows its grid. The tile size is quantised to powers of two times
+   the cell so the banding steps in discrete jumps as you walk rather than
+   crawling continuously, and so it always stays a whole number of cells.
+
+   DETAIL scales TARGET_PX. Coarser is faster; 'fine' restores something
+   close to the old density up close, without the horizon cost. */
+const DETAIL = [
+  { name:'coarse', px:30 },
+  { name:'normal', px:18 },
+  { name:'fine',   px:11 }
+];
+let detailIx = 1;
+/* Anything past this is not drawn. The map is roughly 14000 units corner
+   to corner, so this only bites on the very longest sightlines, and the
+   screen-space tiling has already made those nearly free. */
+const FAR = 20000;
+
 const cv = document.getElementById('c');
 const ctx = cv.getContext('2d', { alpha:false });
 const el = id => document.getElementById(id);
@@ -406,7 +439,10 @@ function prepare(p){
     const e = b.extents || [64,64,64];
     const h = [e[0]/2, e[1]/2, e[2]/2];
     const R = isIdentityAngles(b.angles) ? null : rot(b.angles);
-    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell,
+    // Bounding sphere radius, used by the cull. Rotation does not change
+    // it, which is exactly why the cull uses a sphere and not the AABB.
+    const rad = Math.hypot(h[0], h[1], h[2]);
+    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad,
              aabb:[o[0]-h[0],o[1]-h[1],o[2]-h[2],o[0]+h[0],o[1]+h[1],o[2]+h[2]] };
   });
   return cell;
@@ -468,15 +504,41 @@ function tileColor(shade, gx, gy){
 /* ---------- render ---------- */
 
 let frames=0, lastFps=performance.now(), fps=0;
+let drawnBoxes=0, drawnQuads=0;
 
 function render(){
   const f = (H/2) / Math.tan(FOV/2);
   ctx.fillStyle = '#0b0d0e';
   ctx.fillRect(0,0,W,H);
 
+  // Frustum half-angles as tangents, for the sphere cull below. The
+  // horizontal one has to account for the aspect ratio: the projection
+  // uses the same f for both axes, so the horizontal field is wider by
+  // exactly W/H.
+  const tanV = Math.tan(FOV/2);
+  const tanH = tanV * W / H;
+  const secV = Math.sqrt(1 + tanV*tanV);
+  const secH = Math.sqrt(1 + tanH*tanH);
+  const targetPx = DETAIL[detailIx].px * DPR;
+
   const quads = [];
+  let nbox = 0;
 
   for(const sol of solids){
+    /* Sphere cull, once per box, BEFORE any face or tile work. This is
+       what stops an off-screen ground plate from costing anything at all.
+       A sphere is used rather than the AABB because it is rotation-proof
+       and the whole test is four comparisons. */
+    const vo = view(sol.o);
+    const r = sol.rad;
+    if(vo[2] + r < NEAR) continue;         // fully behind the camera
+    if(vo[2] - r > FAR) continue;          // past the draw distance
+    if(vo[2] > 0){
+      if(Math.abs(vo[0]) - r*secH > vo[2]*tanH) continue;   // off to a side
+      if(Math.abs(vo[1]) - r*secV > vo[2]*tanV) continue;   // above or below
+    }
+    nbox++;
+
     const cell = sol.cell;
     for(const F of FACES){
       // Outward normal in world space; skip faces pointing away.
@@ -495,9 +557,21 @@ function render(){
       if(n[0]*toCam[0] + n[1]*toCam[1] + n[2]*toCam[2] <= 0) continue;
 
       const uSize = sol.e[F.u], vSize = sol.e[F.v];
-      // Tile count is capped so a very large face cannot stall the frame.
-      const nu = Math.max(1, Math.min(64, Math.round(uSize/cell)));
-      const nv = Math.max(1, Math.min(64, Math.round(vSize/cell)));
+
+      /* Tile size chosen in screen space. `want` is the world size that
+         projects to targetPx at this face's depth; the tile is the next
+         power-of-two multiple of the cell at or above it, so the grid
+         stays a whole number of cells and the LOD steps in visible,
+         stable jumps instead of sliding. */
+      const depth = Math.max(NEAR, view(centre)[2]);
+      let tile = cell;
+      const want = targetPx * depth / f;
+      if(want > cell){
+        const k = Math.min(10, Math.ceil(Math.log2(want / cell)));
+        tile = cell * Math.pow(2, k);
+      }
+      const nu = Math.max(1, Math.min(64, Math.round(uSize/tile)));
+      const nv = Math.max(1, Math.min(64, Math.round(vSize/tile)));
       const du = uSize/nu, dv = vSize/nv;
 
       for(let iu=0; iu<nu; iu++){
@@ -511,10 +585,10 @@ function render(){
           });
           const clipped = clipNear(corners);
           if(clipped.length < 3) continue;
-          let depth = 0;
-          for(const c of clipped) depth += c[2];
-          depth /= clipped.length;
-          quads.push({ depth, pts:clipped.map(v=>project(v,f)),
+          let depth2 = 0;
+          for(const c of clipped) depth2 += c[2];
+          depth2 /= clipped.length;
+          quads.push({ depth:depth2, pts:clipped.map(v=>project(v,f)),
                        col: tileColor(F.shade, iu, iv) });
         }
       }
@@ -541,6 +615,9 @@ function render(){
     }
   }
 
+  drawnBoxes = nbox;
+  drawnQuads = quads.length;
+
   // Spawns, drawn as upright markers so their facing is legible.
   for(const e of (plan.entities||[])){
     const o = e.origin||[0,0,0];
@@ -565,6 +642,11 @@ function render(){
     fps = Math.round(frames*1000/(now-lastFps));
     frames = 0; lastFps = now;
     el('fps').textContent = fps;
+    // Boxes surviving the cull and quads actually painted. These two are
+    // the numbers to watch when judging whether a change helped: fps on a
+    // phone is noisy, quad count is not.
+    el('ndrawn').textContent = drawnBoxes;
+    el('nquad').textContent = drawnQuads + ' q';
   }
   el('pos').textContent =
     Math.round(cam.x)+' '+Math.round(cam.y)+' '+Math.round(cam.z);
@@ -644,8 +726,17 @@ function updateAim(){
   const rd = lookVector();
   let best = -1, bestSol = null;
   for(const s of solids){
-    const t = rayBox(ro, rd, s);
-    if(t > 0 && (best < 0 || t < best)){ best = t; bestSol = s; }
+    /* Reject on the bounding sphere before the slab test. The ray only
+       needs the perpendicular distance from the centre; if that exceeds
+       the radius the box cannot be hit, and that is one dot product
+       instead of six divisions. */
+    const ox = s.o[0]-ro[0], oy = s.o[1]-ro[1], oz = s.o[2]-ro[2];
+    const t = ox*rd[0] + oy*rd[1] + oz*rd[2];
+    if(best > 0 && t - s.rad > best) continue;   // already have a nearer hit
+    const px = ox - rd[0]*t, py = oy - rd[1]*t, pz = oz - rd[2]*t;
+    if(px*px + py*py + pz*pz > s.rad*s.rad) continue;
+    const h = rayBox(ro, rd, s);
+    if(h > 0 && (best < 0 || h < best)){ best = h; bestSol = s; }
   }
   if(best < 0){ aimHit = null; el('aim').innerHTML = '<span class="n">no surface</span>'; return; }
   aimHit = {
@@ -1106,6 +1197,18 @@ el('spd').addEventListener('click', ()=>{
 });
 showSpeed();
 
+/* Detail cycles the screen-space tile target. It changes nothing but how
+   finely faces are subdivided, so it is safe to leave on coarse while
+   walking a big layout and flick to fine to read a specific surface. */
+function showDetail(){
+  el('detail').textContent = 'detail: ' + DETAIL[detailIx].name;
+}
+el('detail').addEventListener('click', ()=>{
+  detailIx = (detailIx + 1) % DETAIL.length;
+  showDetail();
+});
+showDetail();
+
 /* Copy the aim point. Clipboard writes need a user gesture, which a
    button click is; the textarea path is the fallback for browsers that
    refuse the async API over http or in an iframe. */
@@ -1150,7 +1253,12 @@ el('noclip').addEventListener('click', ev=>{
 });
 
 function resize(){
-  DPR = Math.min(2, devicePixelRatio||1);
+  /* Capped at 1.5 rather than 2. This is a software rasteriser: every
+     pixel is filled by canvas 2D on the CPU, so the cost is proportional
+     to the backing-store area. At devicePixelRatio 3 on an iPhone, 2
+     meant filling 1.8x the pixels of 1.5 for a difference that is barely
+     visible on flat orange tiles. */
+  DPR = Math.min(1.5, devicePixelRatio||1);
   W = Math.floor(innerWidth*DPR); H = Math.floor(innerHeight*DPR);
   cv.width = W; cv.height = H;
 }
