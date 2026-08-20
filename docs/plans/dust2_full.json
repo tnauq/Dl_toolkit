@@ -68537,53 +68537,53 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "walk_ramp_s",
+   "name": "t1_ramp1",
    "origin": [
-    3267.3,
-    5566.3538,
-    365.8422
+    3480.985,
+    5745.9585,
+    357.0621
    ],
    "extents": [
-    258.8032,
-    933.5,
+    615.3816,
+    506.13,
     26.7
    ],
    "angles": [
     0.0,
     90.0,
-    9.8606
+    5.7457
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_walk_ramp_s",
+   "name": "m_t1_ramp1",
    "origin": [
-    -2347.1,
-    6603.7462,
-    365.8422
+    -2560.785,
+    6424.1415,
+    357.0621
    ],
    "extents": [
-    258.8032,
-    933.5,
+    615.3816,
+    506.13,
     26.7
    ],
    "angles": [
     0.0,
     -90.0,
-    9.8606
+    5.7457
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "walk_pad_c",
+   "name": "t1_pad1",
    "origin": [
-    2835.225,
-    6085.055,
-    343.49
+    3480.985,
+    6269.27,
+    326.19
    ],
    "extents": [
-    1797.65,
-    777.85,
+    506.13,
+    431.66,
     26.7
    ],
    "angles": [
@@ -68594,15 +68594,15 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_walk_pad_c",
+   "name": "m_t1_pad1",
    "origin": [
-    -1915.025,
-    6085.045,
-    343.49
+    -2560.785,
+    5900.83,
+    326.19
    ],
    "extents": [
-    1797.65,
-    777.85,
+    506.13,
+    431.66,
     26.7
    ],
    "angles": [
@@ -68613,78 +68613,534 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "walk_ramp_n",
+   "name": "t1_ramp2",
    "origin": [
-    2493.85,
-    6692.5538,
-    305.2922
+    3148.9215,
+    6269.27,
+    318.1721
    ],
    "extents": [
-    448.3432,
-    1114.9,
+    161.4813,
+    431.66,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_t1_ramp2",
+   "origin": [
+    -2228.7215,
+    5900.83,
+    318.1721
+   ],
+   "extents": [
+    161.4813,
+    431.66,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "t1_pad2",
+   "origin": [
+    2754.655,
+    6269.27,
+    310.02
+   ],
+   "extents": [
+    625.19,
+    431.66,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_t1_pad2",
+   "origin": [
+    -1834.455,
+    5900.83,
+    310.02
+   ],
+   "extents": [
+    625.19,
+    431.66,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "t1_ramp3",
+   "origin": [
+    2754.655,
+    6699.0635,
+    288.4271
+   ],
+   "extents": [
+    432.7742,
+    625.19,
     26.7
    ],
    "angles": [
     0.0,
     90.0,
-    9.8606
+    5.7457
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_walk_ramp_n",
+   "name": "m_t1_ramp3",
    "origin": [
-    -1573.65,
-    5477.5462,
-    305.2922
+    -1834.455,
+    5471.0365,
+    288.4271
    ],
    "extents": [
-    448.3432,
-    1114.9,
+    432.7742,
+    625.19,
     26.7
    ],
    "angles": [
     0.0,
     -90.0,
-    9.8606
+    5.7457
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "walk_spur_w",
+   "name": "t3_ramp1",
    "origin": [
-    2175.125,
-    7105.2788,
-    233.5472
+    3000.885,
+    5561.6131,
+    374.4453
    ],
    "extents": [
-    389.4837,
-    477.45,
+    245.3254,
+    400.67,
     26.7
    ],
    "angles": [
     0.0,
     90.0,
-    9.8606
+    6.2869
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_walk_spur_w",
+   "name": "m_t3_ramp1",
    "origin": [
-    -1254.925,
-    5064.8212,
-    233.5472
+    -2080.685,
+    6608.4869,
+    374.4453
    ],
    "extents": [
-    389.4837,
-    477.45,
+    245.3254,
+    400.67,
     26.7
    ],
    "angles": [
     0.0,
     -90.0,
-    9.8606
+    6.2869
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "t3_pad1",
+   "origin": [
+    3000.885,
+    5855.87,
+    360.93
+   ],
+   "extents": [
+    400.67,
+    341.74,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_t3_pad1",
+   "origin": [
+    -2080.685,
+    6314.23,
+    360.93
+   ],
+   "extents": [
+    400.67,
+    341.74,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "t3_ramp2",
+   "origin": [
+    2609.4169,
+    5855.87,
+    339.7903
+   ],
+   "extents": [
+    387.5206,
+    341.74,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    6.2869
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_t3_ramp2",
+   "origin": [
+    -1689.2169,
+    6314.23,
+    339.7903
+   ],
+   "extents": [
+    387.5206,
+    341.74,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    6.2869
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "t3_pad2",
+   "origin": [
+    2167.905,
+    5855.87,
+    318.49
+   ],
+   "extents": [
+    494.91,
+    341.74,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_t3_pad2",
+   "origin": [
+    -1247.705,
+    6314.23,
+    318.49
+   ],
+   "extents": [
+    494.91,
+    341.74,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "t3_ramp3",
+   "origin": [
+    2167.905,
+    6563.0831,
+    259.3253
+   ],
+   "extents": [
+    1082.1179,
+    494.91,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    6.2869
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_t3_ramp3",
+   "origin": [
+    -1247.705,
+    5607.0169,
+    259.3253
+   ],
+   "extents": [
+    1082.1179,
+    494.91,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    6.2869
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "rail_s",
+   "origin": [
+    3214.57,
+    5741.954,
+    357.263
+   ],
+   "extents": [
+    615.3816,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_rail_s",
+   "origin": [
+    -2294.37,
+    6428.146,
+    357.263
+   ],
+   "extents": [
+    615.3816,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "rail_c_ramp",
+   "origin": [
+    3152.926,
+    6040.09,
+    318.373
+   ],
+   "extents": [
+    161.4813,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_rail_c_ramp",
+   "origin": [
+    -2232.726,
+    6130.01,
+    318.373
+   ],
+   "extents": [
+    161.4813,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "rail_c_flat",
+   "origin": [
+    2741.305,
+    6040.09,
+    310.02
+   ],
+   "extents": [
+    651.89,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_rail_c_flat",
+   "origin": [
+    -1821.105,
+    6130.01,
+    310.02
+   ],
+   "extents": [
+    651.89,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "rail_n_pad",
+   "origin": [
+    2428.71,
+    6269.27,
+    310.02
+   ],
+   "extents": [
+    26.7,
+    431.66,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_rail_n_pad",
+   "origin": [
+    -1508.51,
+    5900.83,
+    310.02
+   ],
+   "extents": [
+    26.7,
+    431.66,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "rail_n_ramp",
+   "origin": [
+    2428.71,
+    6695.059,
+    288.628
+   ],
+   "extents": [
+    432.7742,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_rail_n_ramp",
+   "origin": [
+    -1508.51,
+    5475.041,
+    288.628
+   ],
+   "extents": [
+    432.7742,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    5.7457
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "rail_n_end",
+   "origin": [
+    2428.71,
+    7009.05,
+    266.7
+   ],
+   "extents": [
+    26.7,
+    186.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_rail_n_end",
+   "origin": [
+    -1508.51,
+    5161.05,
+    266.7
+   ],
+   "extents": [
+    26.7,
+    186.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
   }
