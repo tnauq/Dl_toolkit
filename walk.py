@@ -1,52 +1,42 @@
 #!/usr/bin/env python3
-"""Two parallel tracks carried around the S corridor, extending
-m_axis_790 (deck 1) and m_merged_721 (deck 3) south to axis_42, with
-m_axis_786 (the railing) carried along on deck 1's profile.
+"""Two parallel tracks carried around the S, extending m_axis_790
+(deck 1) and m_merged_721 (deck 3) south to axis_42, with m_axis_786
+(the railing) carried along on deck 1's profile.
 
     mirror.py -> stitch.py -> bridge.py -> seam.py -> walk.py
 
-WHAT THE SOURCE LOOKS LIKE
---------------------------
-The three are side by side, not stacked:
-    deck 3   x 1880.40..2387.15   top 213.35
-    railing  x 2387.15..2413.85   top 320.05   (106.7 tall)
-    deck 1   x 2413.85..3053.95   top 280.05
-Total 1173.55, and the railing top is exactly 40.00 above deck 1.
+ANGLE ORDER.  angles is [PITCH, YAW, ROLL].  ramp-slab_383 in the source
+plan is [23.96, 90.0, 0.0] and the viewer reads index 0 as pitch, so the
+grade goes in index 0.  An earlier version of this file put it in index
+2, which is roll: every ramp tilted sideways across its width instead of
+falling along its run, and every check agreed with itself because it
+read the same wrong index back.
 
-WIDTH
------
-Corridor interiors, wall face to wall face:
-    south leg  933.50   cross leg  800.10   north leg  1146.80
-The railing keeps its 26.70 on every leg; the rest is split between the
-two tracks in the source ratio 640.10 : 506.75.
+SQUARE PADS, at the cost of the per-leg ratio.  A corner pad can only be
+square if the track is the same width on both legs it joins, so each
+track now holds ONE width all the way round.  The narrowest leg is the
+cross leg at 800.10, so the band is sized to that:
 
-              track 1    railing    track 3
-    south      506.13      26.70      400.67
-    cross      431.66      26.70      341.74
-    north      625.19      26.70      494.91
+    track 1  431.66     railing  26.70     track 3  341.74
 
-Track 1 is on the right hand of travel throughout: east in the south
-leg, north in the cross leg, east again in the north leg.  That keeps
-the railing between the two tracks the whole way round.
+That still splits in the source ratio 640.10 : 506.75, so the ratio
+survives; what is given up is filling the wider legs.  The south leg has
+133.40 of slack and the north leg 346.70, both left on the LEFT hand of
+travel, since track 1 rides the right hand throughout.
 
-GRADE
------
-Each track gets two pads, one per corner, each covering the full corner
-rectangle, with three sloped runs: start to pad 1, pad 1 to pad 2, pad 2
-to finish.  Track 3 climbs more over a longer path, so it is the steeper
-of the two, as expected:
+The north leg band is anchored so track 3's east edge lands on 2413.85,
+which is deck 1's west edge.  That keeps track 3 clear of deck 1
+entirely; anchoring it any further east would run track 3 underneath
+deck 1's lip on its way down to 213.35.
 
-    track 1   rise 121.10 over 1203.56 of slope   5.7455 deg
-    track 3   rise 187.80 over 1704.64 of slope   6.2871 deg
+GRADES.  Two square pads per track, three sloped runs each:
 
-Both are inside 10 degrees and there is no step anywhere on either.
+    track 1   rise 121.10 over 1473.07 of slope   4.7009 deg
+    track 3   rise 187.80 over 1839.66 of slope   5.8296 deg
 
-A note on "square" pads: they cannot be square.  A corner pad has to
-span its track's width on BOTH legs it joins, and the width ratio makes
-those two widths different (506.13 by 431.66 at corner 1 for track 1,
-625.19 by 431.66 at corner 2).  The pads below are the full corner
-rectangles, which is the only shape that covers the turn without
-leaving a crease.
+RAILING.  Track 1's profile plus 40.00 everywhere, including at the
+axis_42 end, where track 1 finishes at 401.15 and the railing therefore
+finishes at 441.15, not flat at 401.15.
 """
 
 import json
@@ -59,99 +49,90 @@ T = 26.7
 RAIL_T = 106.7
 RAIL_RISE = 40.00
 
-# ---- strip boundaries, from the wall faces outward ------------------
-S_E, S_W = 3734.05, 2800.55          # south leg interior
-C_N, C_S = 6485.10, 5685.00          # cross leg interior
-N_E, N_W = 3067.25, 1920.45          # north leg interior
+W1, WR, W3 = 431.66, 26.70, 341.74
 
-T1_S = (3227.92, 3734.05)            # track 1, south leg
-R_S = (3201.22, 3227.92)
-T3_S = (2800.55, 3201.22)
+# south leg, band pushed against the east wall at 3734.05
+T1_S = (3734.05 - W1, 3734.05)
+R_S = (T1_S[0] - WR, T1_S[0])
+T3_S = (R_S[0] - W3, R_S[0])
+# cross leg, band fills it exactly, track 1 on the north
+T1_C = (6485.10 - W1, 6485.10)
+R_C = (T1_C[0] - WR, T1_C[0])
+T3_C = (R_C[0] - W3, R_C[0])
+# north leg, track 3's east edge on deck 1's west edge at 2413.85
+T3_N = (2413.85 - W3, 2413.85)
+R_N = (2413.85, 2413.85 + WR)
+T1_N = (R_N[1], R_N[1] + W1)
 
-T1_C = (6053.44, 6485.10)            # track 1, cross leg (north strip)
-R_C = (6026.74, 6053.44)
-T3_C = (5685.00, 6026.74)
-
-T1_N = (2442.06, 3067.25)            # track 1, north leg
-R_N = (2415.36, 2442.06)
-T3_N = (1920.45, 2415.36)
-
-START_Y = 5441.15                    # axis_42 north edge
-TOP_42 = 401.15
+START_Y, TOP_42 = 5441.15, 401.15
 END1_Y, TOP_790 = 6915.70, 280.05
 END3_Y, TOP_721 = 7102.35, 213.35
 
-G1 = math.degrees(math.atan2(121.10, 1203.56))
-G3 = math.degrees(math.atan2(187.80, 1704.64))
+# run lengths, slope only: start->pad1, pad1->pad2, pad2->finish
+R1 = (T1_C[0] - START_Y, T1_S[0] - T1_N[1], END1_Y - T1_C[1])
+R3 = (T3_C[0] - START_Y, T3_S[0] - T3_N[1], END3_Y - T3_C[1])
+G1 = math.degrees(math.atan2(TOP_42 - TOP_790, sum(R1)))
+G3 = math.degrees(math.atan2(TOP_42 - TOP_721, sum(R3)))
+K1 = (TOP_42 - TOP_790) / sum(R1)
+K3 = (TOP_42 - TOP_721) / sum(R3)
 
-# track 1 pad heights
-T1_P1 = 339.54
-T1_P2 = 323.37
-# track 3 pad heights
-T3_P1 = 374.28
-T3_P2 = 331.84
+T1_P1 = TOP_42 - R1[0]*K1
+T1_P2 = T1_P1 - R1[1]*K1
+T3_P1 = TOP_42 - R3[0]*K3
+T3_P2 = T3_P1 - R3[1]*K3
 
 
 def flat(name, x, y, top, thick=T):
-    return {
-        "name": name,
-        "origin": [round((x[0]+x[1])/2, 4), round((y[0]+y[1])/2, 4),
-                   round(top - thick/2, 4)],
-        "extents": [round(x[1]-x[0], 4), round(y[1]-y[0], 4), thick],
-        "angles": [0.0, 0.0, 0.0],
-        "material": MAT,
-    }
+    return {"name": name,
+            "origin": [round((x[0]+x[1])/2, 4), round((y[0]+y[1])/2, 4),
+                       round(top - thick/2, 4)],
+            "extents": [round(x[1]-x[0], 4), round(y[1]-y[0], 4), thick],
+            "angles": [0.0, 0.0, 0.0], "material": MAT}
 
 
 def ramp(name, x, y, top_hi, top_lo, yaw, grade, thick=T):
-    """Slab descending along `yaw` (90 = toward +y, 180 = toward -x).
-    Positive pitch descends along local +x, and local +z works out to
-    (cos yaw * sin, sin yaw * sin, cos), so the box centre is the top
+    """Slab falling along `yaw`: 90 is toward +y, 180 is toward -x.
+    Local +x is the run and positive pitch descends along it, so pitch
+    goes in angles[0].  Local +z is then
+    (cos yaw sin p, sin yaw sin p, cos p), and the box centre is the top
     surface midpoint pushed back half a thickness along that."""
     th = math.radians(grade)
     run = (y[1]-y[0]) if yaw == 90 else (x[1]-x[0])
-    length = run / math.cos(th)
-    cx, cy = (x[0]+x[1])/2.0, (y[0]+y[1])/2.0
-    tz = (top_hi + top_lo)/2.0
-    lz = [math.cos(math.radians(yaw))*math.sin(th),
-          math.sin(math.radians(yaw))*math.sin(th),
-          math.cos(th)]
     width = (x[1]-x[0]) if yaw == 90 else (y[1]-y[0])
-    return {
-        "name": name,
-        "origin": [round(cx - (thick/2)*lz[0], 4),
-                   round(cy - (thick/2)*lz[1], 4),
-                   round(tz - (thick/2)*lz[2], 4)],
-        "extents": [round(length, 4), round(width, 4), thick],
-        "angles": [0.0, float(yaw), round(grade, 4)],
-        "material": MAT,
-    }
+    lz = [math.cos(math.radians(yaw))*math.sin(th),
+          math.sin(math.radians(yaw))*math.sin(th), math.cos(th)]
+    return {"name": name,
+            "origin": [round((x[0]+x[1])/2 - (thick/2)*lz[0], 4),
+                       round((y[0]+y[1])/2 - (thick/2)*lz[1], 4),
+                       round((top_hi+top_lo)/2 - (thick/2)*lz[2], 4)],
+            "extents": [round(run/math.cos(th), 4), round(width, 4), thick],
+            "angles": [round(grade, 4), float(yaw), 0.0], "material": MAT}
 
 
 def seeds():
     b = []
-    # ---- track 1 -----------------------------------------------------
     b.append(ramp("t1_ramp1", T1_S, (START_Y, T1_C[0]), TOP_42, T1_P1, 90, G1))
     b.append(flat("t1_pad1", T1_S, T1_C, T1_P1))
-    b.append(ramp("t1_ramp2", (N_E, T1_S[0]), T1_C, T1_P1, T1_P2, 180, G1))
+    b.append(ramp("t1_ramp2", (T1_N[1], T1_S[0]), T1_C, T1_P1, T1_P2, 180, G1))
     b.append(flat("t1_pad2", T1_N, T1_C, T1_P2))
     b.append(ramp("t1_ramp3", T1_N, (T1_C[1], END1_Y), T1_P2, TOP_790, 90, G1))
-    # ---- track 3 -----------------------------------------------------
+
     b.append(ramp("t3_ramp1", T3_S, (START_Y, T3_C[0]), TOP_42, T3_P1, 90, G3))
     b.append(flat("t3_pad1", T3_S, T3_C, T3_P1))
     b.append(ramp("t3_ramp2", (T3_N[1], T3_S[0]), T3_C, T3_P1, T3_P2, 180, G3))
     b.append(flat("t3_pad2", T3_N, T3_C, T3_P2))
     b.append(ramp("t3_ramp3", T3_N, (T3_C[1], END3_Y), T3_P2, TOP_721, 90, G3))
-    # ---- railing: track 1's profile, plus 40.00, 106.7 tall ----------
+
+    RR = RAIL_RISE
     b.append(ramp("rail_s", R_S, (START_Y, T1_C[0]),
-                  TOP_42+RAIL_RISE, T1_P1+RAIL_RISE, 90, G1, RAIL_T))
-    b.append(ramp("rail_c_ramp", (N_E, T1_S[0]), R_C,
-                  T1_P1+RAIL_RISE, T1_P2+RAIL_RISE, 180, G1, RAIL_T))
-    b.append(flat("rail_c_flat", (R_N[0], N_E), R_C, T1_P2+RAIL_RISE, RAIL_T))
-    b.append(flat("rail_n_pad", R_N, T1_C, T1_P2+RAIL_RISE, RAIL_T))
+                  TOP_42+RR, T1_P1+RR, 90, G1, RAIL_T))
+    b.append(ramp("rail_c_ramp", (T1_N[1], T1_S[0]), R_C,
+                  T1_P1+RR, T1_P2+RR, 180, G1, RAIL_T))
+    b.append(flat("rail_c_flat", (R_N[0], T1_N[1]), R_C, T1_P2+RR, RAIL_T))
+    b.append(flat("rail_n_pad", R_N, T1_C, T1_P2+RR, RAIL_T))
     b.append(ramp("rail_n_ramp", R_N, (T1_C[1], END1_Y),
-                  T1_P2+RAIL_RISE, TOP_790+RAIL_RISE, 90, G1, RAIL_T))
-    b.append(flat("rail_n_end", R_N, (END1_Y, 7102.40), TOP_790+RAIL_RISE, RAIL_T))
+                  T1_P2+RR, TOP_790+RR, 90, G1, RAIL_T))
+    b.append(flat("rail_n_end", R_N, (END1_Y, 7102.40), TOP_790+RR, RAIL_T))
     return b
 
 
@@ -175,7 +156,6 @@ def main(path):
     for s in seeds():
         for bx in (s, rotate(s)):
             if bx["name"] in have:
-                print("SKIP add %s (already present)" % bx["name"])
                 continue
             plan["boxes"].append(bx)
             have.add(bx["name"])
@@ -183,8 +163,9 @@ def main(path):
     with open(path, "w") as f:
         json.dump(plan, f, indent=1)
         f.write("\n")
-    print("track1 %.4f deg, track3 %.4f deg; added %d, plan now %d boxes"
-          % (G1, G3, added, len(plan["boxes"])))
+    print("track1 %.4f deg pads %.2f %.2f | track3 %.4f deg pads %.2f %.2f"
+          % (G1, T1_P1, T1_P2, G3, T3_P1, T3_P2))
+    print("added %d, plan now %d boxes" % (added, len(plan["boxes"])))
 
 
 if __name__ == "__main__":
