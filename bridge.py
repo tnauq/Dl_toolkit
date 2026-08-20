@@ -77,6 +77,7 @@ HY = (YP - HOLE/2, YP + HOLE/2)
 WIN_LEN = 53.3
 PITCH = 266.7
 FIRST = 5281.10                 # 213.4 of pier after the room mouth
+PIER = 213.4
 
 
 def box(name, x, y, z):
@@ -91,24 +92,50 @@ def box(name, x, y, z):
     }
 
 
-def windowed_wall(tag, x, y0, y1):
-    """A north-south wall carrying the room's window pattern."""
-    out = []
+def openings(lo, hi, first=None, from_high=False):
+    """Opening spans along a wall, at the room's pitch.
+
+    Anchored either from `first` going up, or from the high end going
+    back down, which is what puts a full 213.4 pier in the corner where
+    the cross leg meets leg A rather than a sliced one."""
     runs = []
-    t = FIRST
-    while t + WIN_LEN <= y1:
-        if t >= y0:
+    if from_high:
+        t = hi - PIER - WIN_LEN
+        while t >= lo:
             runs.append((t, t + WIN_LEN))
-        t += PITCH
-    cur = y0
+            t -= PITCH
+        runs.reverse()
+    else:
+        t = first
+        while t + WIN_LEN <= hi:
+            if t >= lo:
+                runs.append((t, t + WIN_LEN))
+            t += PITCH
+    return runs
+
+
+def windowed_wall(tag, fixed, lo, hi, axis=1, first=None, from_high=False):
+    """A wall carrying the room's window pattern.
+
+    axis=1 runs north-south and `fixed` is the x span; axis=0 runs
+    east-west and `fixed` is the y span."""
+    def spans(a, b):
+        return (fixed, (a, b)) if axis == 1 else ((a, b), fixed)
+
+    out = []
+    runs = openings(lo, hi, first, from_high)
+    cur = lo
     for i, (a, b) in enumerate(runs):
         if a > cur:
-            out.append(box("%s_pier%d" % (tag, i), x, (cur, a), WALL))
-        out.append(box("%s_sill%d" % (tag, i), x, (a, b), SILL))
-        out.append(box("%s_head%d" % (tag, i), x, (a, b), HEAD))
+            x, y = spans(cur, a)
+            out.append(box("%s_pier%d" % (tag, i), x, y, WALL))
+        x, y = spans(a, b)
+        out.append(box("%s_sill%d" % (tag, i), x, y, SILL))
+        out.append(box("%s_head%d" % (tag, i), x, y, HEAD))
         cur = b
-    if cur < y1:
-        out.append(box("%s_pier%d" % (tag, len(runs)), x, (cur, y1), WALL))
+    if cur < hi:
+        x, y = spans(cur, hi)
+        out.append(box("%s_pier%d" % (tag, len(runs)), x, y, WALL))
     return out
 
 
@@ -123,11 +150,13 @@ def seeds():
     b.append(box("bridge_floor_b_e", (HX[1], BX[1]), BY, FLOOR))
     b.append(box("bridge_floor_b_s", HX, (BY[0], HY[0]), FLOOR))
     # walls
-    b += windowed_wall("bridge_wall_e", W_EAST, AY[0], AY[1])
-    b += windowed_wall("bridge_wall_w", W_WEST, AY[0], BY[0])
+    b += windowed_wall("bridge_wall_e", W_EAST, AY[0], AY[1], first=FIRST)
+    b += windowed_wall("bridge_wall_w", W_WEST, AY[0], BY[0], first=FIRST)
     # north wall of the cross leg: from leg C's east wall across to the
-    # outside of leg A's east wall, so both corners are closed
-    b.append(box("bridge_wall_n", (2*XP - AX[0], W_EAST[1]), W_NORTH, WALL))
+    # outside of leg A's east wall, so both corners are closed.  Its
+    # windows run in x, anchored from the leg A corner going west.
+    b += windowed_wall("bridge_wall_n", W_NORTH, 2*XP - AX[0], W_EAST[1],
+                       axis=0, from_high=True)
     return b
 
 
