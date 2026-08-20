@@ -68535,6 +68535,158 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "walk_ramp_s",
+   "origin": [
+    3267.3,
+    5566.3538,
+    365.8422
+   ],
+   "extents": [
+    258.8032,
+    933.5,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    9.8606
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_walk_ramp_s",
+   "origin": [
+    -2347.1,
+    6603.7462,
+    365.8422
+   ],
+   "extents": [
+    258.8032,
+    933.5,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    9.8606
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "walk_pad_c",
+   "origin": [
+    2835.225,
+    6085.055,
+    343.49
+   ],
+   "extents": [
+    1797.65,
+    777.85,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_walk_pad_c",
+   "origin": [
+    -1915.025,
+    6085.045,
+    343.49
+   ],
+   "extents": [
+    1797.65,
+    777.85,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "walk_ramp_n",
+   "origin": [
+    2493.85,
+    6692.5538,
+    305.2922
+   ],
+   "extents": [
+    448.3432,
+    1114.9,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    9.8606
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_walk_ramp_n",
+   "origin": [
+    -1573.65,
+    5477.5462,
+    305.2922
+   ],
+   "extents": [
+    448.3432,
+    1114.9,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    9.8606
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "walk_spur_w",
+   "origin": [
+    2175.125,
+    7105.2788,
+    233.5472
+   ],
+   "extents": [
+    389.4837,
+    477.45,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    9.8606
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_walk_spur_w",
+   "origin": [
+    -1254.925,
+    5064.8212,
+    233.5472
+   ],
+   "extents": [
+    389.4837,
+    477.45,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    9.8606
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
