@@ -103,6 +103,19 @@ def seeds():
     PZ = (-0.05, 640.15)
     b.append(box("bridge_pillar_ne", (1466.95-P, 1466.95), (6485.10-P, 6485.10), PZ))
     b.append(box("bridge_pillar_sw", (666.95, 666.95+P), (5685.00, 5685.00+P), PZ))
+    # 4. axis_34's east end to bridge_pillar_ne.  Both already stand on
+    #    x 1200.2 / 1200.25, so the link is a straight north-south wall on
+    #    that line, z 0..640.2 to match axis_34.  It runs directly under
+    #    the bridge floor, whose underside is 640.15.
+    b.append(box("link_34_pillar", (1200.20, 1226.90), (5067.65, 6218.40),
+                 (0.0, 640.2)))
+    # 5. axis_16 extended east to compound_12.  compound_12 is at yaw
+    #    36.9, so its face is not axis-aligned: solving where axis_16's
+    #    centreline y 4467.6 first enters that oriented box gives
+    #    x 1016.9, and the extension runs to 1030.0 so it buries 13.1 in
+    #    rather than stopping on the skin.
+    b.append(box("axis_16_ext", (826.80, 1030.00), (4454.25, 4480.95),
+                 (0.0, 640.2)))
     return b
 
 

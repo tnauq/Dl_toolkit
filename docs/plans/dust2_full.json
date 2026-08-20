@@ -68499,6 +68499,82 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "link_34_pillar",
+   "origin": [
+    1213.55,
+    5643.025,
+    320.1
+   ],
+   "extents": [
+    26.7,
+    1150.75,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_link_34_pillar",
+   "origin": [
+    -293.35,
+    6527.075,
+    320.1
+   ],
+   "extents": [
+    26.7,
+    1150.75,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_16_ext",
+   "origin": [
+    928.4,
+    4467.6,
+    320.1
+   ],
+   "extents": [
+    203.2,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_axis_16_ext",
+   "origin": [
+    -8.2,
+    7702.5,
+    320.1
+   ],
+   "extents": [
+    203.2,
+    26.7,
+    640.2
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "t1_ramp1",
    "origin": [
     3467.64,
