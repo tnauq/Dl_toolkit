@@ -51,18 +51,26 @@ RAIL_RISE = 40.00
 
 W1, WR, W3 = 431.66, 26.70, 341.74
 
-# south leg, band pushed against the east wall at 3734.05
-T1_S = (3734.05 - W1, 3734.05)
-R_S = (T1_S[0] - WR, T1_S[0])
-T3_S = (R_S[0] - W3, R_S[0])
-# cross leg, band fills it exactly, track 1 on the north
+# Band anchoring, from the crosshairs.  The band is 800.10 and only the
+# cross leg is that wide, so the slack in the other two legs has to be
+# pushed to one side.  It goes to the INSIDE of each turn, which is what
+# puts each square pad's corner on the corresponding wall corner:
+#   south leg  flush WEST  against seam_w_a at 2800.55
+#   north leg  flush EAST  against seam_e_c at 3067.25
+T3_S = (2800.55, 2800.55 + W3)
+R_S = (T3_S[1], T3_S[1] + WR)
+T1_S = (R_S[1], R_S[1] + W1)
+
 T1_C = (6485.10 - W1, 6485.10)
 R_C = (T1_C[0] - WR, T1_C[0])
 T3_C = (R_C[0] - W3, R_C[0])
-# north leg, track 3's east edge on deck 1's west edge at 2413.85
-T3_N = (2413.85 - W3, 2413.85)
-R_N = (2413.85, 2413.85 + WR)
-T1_N = (R_N[1], R_N[1] + W1)
+
+T1_N = (3067.25 - W1, 3067.25)
+R_N = (T1_N[0] - WR, T1_N[0])
+T3_N = (R_N[0] - W3, R_N[0])
+
+# m_axis_786's own line, which the railing has to finish on
+SRC_RAIL = (2387.15, 2413.85)
 
 START_Y, TOP_42 = 5441.15, 401.15
 END1_Y, TOP_790 = 6915.70, 280.05
@@ -132,7 +140,14 @@ def seeds():
     b.append(flat("rail_n_pad", R_N, T1_C, T1_P2+RR, RAIL_T))
     b.append(ramp("rail_n_ramp", R_N, (T1_C[1], END1_Y),
                   T1_P2+RR, TOP_790+RR, 90, G1, RAIL_T))
-    b.append(flat("rail_n_end", R_N, (END1_Y, 7102.40), TOP_790+RR, RAIL_T))
+    # Terminus.  The corridor railing line and m_axis_786's line are
+    # 221.74 apart in x, so the railing dog-legs west along deck 1's
+    # south edge and then runs north ON m_axis_786's own line, flat at
+    # 320.05, which is deck 1's 280.05 plus the same 40.00.
+    b.append(flat("rail_n_jog", (SRC_RAIL[0], R_N[1]),
+                  (END1_Y, END1_Y+WR), TOP_790+RR, RAIL_T))
+    b.append(flat("rail_n_end", SRC_RAIL, (END1_Y+WR, 7102.40),
+                  TOP_790+RR, RAIL_T))
     return b
 
 
