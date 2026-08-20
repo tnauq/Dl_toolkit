@@ -1,90 +1,71 @@
 #!/usr/bin/env python3
-"""Put a big arch through seam_w_c, centred on t3_pad2, and the same on
-the mirrored side.
+"""Put a door arch through seam_w_c, sized to hex2_tun_ne_dstub and
+centred on bridge_pillar_sw, plus the mirrored twin.
 
     mirror.py -> stitch.py -> bridge.py -> seam.py -> walk.py -> arch.py
 
-THE ARCH.  Cloned from the _d468b assembly, which is the big arch
-family: 400.1 at the springing, 330.5 clear between the jambs, 586.8
-tall, springing 485.0 above the sill.  Measured off the source, the
-sill top is 426.8 (jamb tops land on 911.8, which is 426.8 + 485.0).
+SIZE.  hex2_tun_ne_dstub_floor is 253.0 wide, which is the STANDARD DOOR
+family, not the big arch: 253.0 by 586.8.  So this clones _d195, not
+_d468b.  Measured off the source, that opening runs y 712.50..965.50
+between axis_195 and axis_195_far, and z 0.10 up to axis_195_hdr's
+underside at 586.95, which is 253.00 by 586.85.
 
-The source sits in a Y-NORMAL wall and seam_w_c is X-NORMAL, so per the
-established rule the clone rotates by normal - 90: every part's offset
-along the wall becomes an offset in y, and every part's yaw gains 90.
-Pitch and roll are untouched, which is what keeps the 12 ramp-slabs of
-the arch ring at their original angles.
+ROTATION.  _d195 already sits in an X-NORMAL wall and seam_w_c is
+x-normal, so the clone rotates by `normal`, meaning not at all.  Offsets
+along the source wall are already in y and every yaw carries over
+unchanged.  That is the opposite of the _d468 case, where the source is
+y-normal and the clone has to turn 90.
 
-PLACEMENT.  Wall centreline x 1907.1, centred on t3_pad2 at y 5855.87,
-sill on that pad's floor at 344.55.
+PLACEMENT.  Wall centreline x 1907.1.  Centred on bridge_pillar_sw at
+y 5818.35, sill on t3_pad2's floor at 344.55.
 
-CUTTING THE WALL.  An arch is only an arch if there is a hole, so
-seam_w_c is replaced by:
-    seam_w_c_n       the wall north of the opening
-    seam_w_c_under   below the sill, z 0.1..131.15
-    seam_w_c_span    the spandrel above the arch, z 1037.99..1280.3
-The opening band is the nominal 400.1, y 5655.82..6055.92.  There is no
-piece south of it: the opening reaches 2.48 past the wall's own south
-end, so the assembly closes that side itself.
+CUTTING THE WALL.  seam_w_c is replaced by four pieces:
+    seam_w_c_s      south of the opening, y 5658.30..5691.85
+    seam_w_c_n      north of it,          y 5944.85..7262.45
+    seam_w_c_under  below the sill,       z 0.10..344.55
+    seam_w_c_hdr    the header,           z 931.40..1280.30
 """
 
 import json
-import math
 import sys
 
 XP, YP = 460.1, 6085.05
 WALL_X = 1907.1
-CEN_Y = 5855.87
-SILL = 344.55
-HALF = 200.05
-Y0, Y1 = CEN_Y - HALF, CEN_Y + HALF
-WALL_N = 7262.45
-WALL_Z = (0.1, 1280.3)
-LOW_DROP = 213.4                      # sill top down to the low block's base
-RING_TOP = 693.44                     # highest point of the ring, above sill
 THICK = 26.7
+CEN_Y = 5818.35                       # bridge_pillar_sw's centre
+SILL = 344.55                         # t3_pad2's floor
+HALF = 126.5                          # half of the 253.0 opening
+Y0, Y1 = CEN_Y - HALF, CEN_Y + HALF
+WALL_S, WALL_N = 5658.30, 7262.45
+WALL_Z = (0.1, 1280.3)
+HEAD = 586.85                         # sill to header underside
 
-SRC_CX, SRC_S, SRC_Y = -1600.25, 426.8, -813.5
+SRC_X, SRC_CY, SRC_SILL = 2280.5, 839.00, 0.10
 MAT = "materials/dev/reflectivity_30.vmat"
 
 
-def flat(name, x, y, z):
+def flat(name, y, z):
     return {"name": name,
-            "origin": [round((x[0]+x[1])/2, 4), round((y[0]+y[1])/2, 4),
-                       round((z[0]+z[1])/2, 4)],
-            "extents": [round(x[1]-x[0], 4), round(y[1]-y[0], 4),
-                        round(z[1]-z[0], 4)],
+            "origin": [WALL_X, round((y[0]+y[1])/2, 4), round((z[0]+z[1])/2, 4)],
+            "extents": [THICK, round(y[1]-y[0], 4), round(z[1]-z[0], 4)],
             "angles": [0.0, 0.0, 0.0], "material": MAT}
 
 
-def load_assembly(half_path):
+def load_ring(half_path):
     with open(half_path) as f:
         plan = json.load(f)
-    out = []
-    for b in plan["boxes"]:
-        n = b["name"]
-        if not (n.endswith("_d468b") or n.startswith("axis_468_d468b")):
-            continue
-        if n.endswith("_far"):          # flanking wall, not the arch
-            continue
-        out.append(b)
-    return out
+    return [b for b in plan["boxes"] if b["name"].endswith("_d195")]
 
 
 def place(b):
-    """Rotate the source part 90 degrees about z and drop it on the sill."""
+    """No rotation: source and target walls share the same normal."""
     o = b["origin"]
-    d = o[0] - SRC_CX                  # offset along the source wall
-    h = o[2] - SRC_S                   # height above the source sill
-    a = b["angles"]
-    yaw = a[1] + 90.0
-    while yaw > 180.0:
-        yaw -= 360.0
-    tag = b["name"].replace("_d468b", "").replace("axis_468", "j")
-    return {"name": "arch_w_" + tag,
-            "origin": [WALL_X, round(CEN_Y + d, 4), round(SILL + h, 4)],
+    return {"name": "arch_w_" + b["name"].replace("_d195", ""),
+            "origin": [round(WALL_X + (o[0] - SRC_X), 4),
+                       round(CEN_Y + (o[1] - SRC_CY), 4),
+                       round(SILL + (o[2] - SRC_SILL), 4)],
             "extents": list(b["extents"]),
-            "angles": [a[0], round(yaw, 4), a[2]],
+            "angles": list(b["angles"]),
             "material": b.get("material", MAT)}
 
 
@@ -103,22 +84,25 @@ def rotate(bx):
 def main(path, half="docs/plans/dust2_half.json"):
     with open(path) as f:
         plan = json.load(f)
-
     boxes = plan["boxes"]
     before = len(boxes)
-    kill = {"seam_w_c", "m_seam_w_c"} & {b["name"] for b in boxes}
+
+    names = {b["name"] for b in boxes}
+    kill = {n for n in names
+            if n in ("seam_w_c", "m_seam_w_c")
+            or n.startswith(("seam_w_c_", "m_seam_w_c_",
+                             "arch_w_", "m_arch_w_"))}
     for n in sorted(kill):
         print("DEL  %s" % n)
     boxes = [b for b in boxes if b["name"] not in kill]
 
     seeds = [
-        flat("seam_w_c_n", (WALL_X-THICK/2, WALL_X+THICK/2), (Y1, WALL_N), WALL_Z),
-        flat("seam_w_c_under", (WALL_X-THICK/2, WALL_X+THICK/2), (Y0, Y1),
-             (WALL_Z[0], SILL-LOW_DROP)),
-        flat("seam_w_c_span", (WALL_X-THICK/2, WALL_X+THICK/2), (Y0, Y1),
-             (SILL+RING_TOP, WALL_Z[1])),
+        flat("seam_w_c_s", (WALL_S, Y0), WALL_Z),
+        flat("seam_w_c_n", (Y1, WALL_N), WALL_Z),
+        flat("seam_w_c_under", (Y0, Y1), (WALL_Z[0], SILL)),
+        flat("seam_w_c_hdr", (Y0, Y1), (SILL + HEAD, WALL_Z[1])),
     ]
-    seeds += [place(b) for b in load_assembly(half)]
+    seeds += [place(b) for b in load_ring(half)]
 
     have = {b["name"] for b in boxes}
     added = 0
@@ -134,8 +118,8 @@ def main(path, half="docs/plans/dust2_half.json"):
     with open(path, "w") as f:
         json.dump(plan, f, indent=1)
         f.write("\n")
-    print("opening y %.2f..%.2f, sill %.2f, clear 330.5 by 586.8"
-          % (Y0, Y1, SILL))
+    print("opening y %.2f..%.2f (253.0), sill %.2f, head %.2f"
+          % (Y0, Y1, SILL, SILL + HEAD))
     print("%d -> %d boxes (added %d)" % (before, len(boxes), added))
 
 
