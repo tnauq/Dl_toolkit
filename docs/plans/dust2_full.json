@@ -68388,12 +68388,12 @@
    "name": "seam_wall_restore",
    "origin": [
     2133.75,
-    5161.0,
+    5080.95,
     640.2
    ],
    "extents": [
     1280.2,
-    186.8,
+    26.7,
     1280.2
    ],
    "angles": [
@@ -68401,18 +68401,30 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_thin_pre": {
+    "origin": [
+     2133.75,
+     5161.0,
+     640.2
+    ],
+    "extents": [
+     1280.2,
+     186.8,
+     1280.2
+    ]
+   }
   },
   {
    "name": "m_seam_wall_restore",
    "origin": [
     -1213.55,
-    7009.1,
+    7089.15,
     640.2
    ],
    "extents": [
     1280.2,
-    186.8,
+    26.7,
     1280.2
    ],
    "angles": [
@@ -68420,7 +68432,19 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_thin_pre": {
+    "origin": [
+     -1213.55,
+     7009.1,
+     640.2
+    ],
+    "extents": [
+     1280.2,
+     186.8,
+     1280.2
+    ]
+   }
   },
   {
    "name": "bridge_pillar_ne",
