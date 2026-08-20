@@ -49,28 +49,44 @@ T = 26.7
 RAIL_T = 106.7
 RAIL_RISE = 40.00
 
-W1, WR, W3 = 431.66, 26.70, 341.74
+# All four outer corners of the S are pinned to wall corners, so every
+# leg is flush on BOTH sides and the band fills it.  That forces the
+# track width to change leg by leg, and a corner pad therefore cannot be
+# square: it spans its track's width on both legs it joins, and those
+# two widths differ.  The pads below are the full corner rectangles,
+# which is the only shape that closes the turn with no hole and no
+# crease.  The railing keeps its 26.70 and the rest splits in the source
+# ratio 640.10 : 506.75.
+RATIO1 = 640.10 / (640.10 + 506.75)
+WR = 26.70
 
-# Band anchoring, from the crosshairs.  The band is 800.10 and only the
-# cross leg is that wide, so the slack in the other two legs has to be
-# pushed to one side.  It goes to the INSIDE of each turn, which is what
-# puts each square pad's corner on the corresponding wall corner:
-#   south leg  flush WEST  against seam_w_a at 2800.55
-#   north leg  flush EAST  against seam_e_c at 3067.25
-T3_S = (2800.55, 2800.55 + W3)
-R_S = (T3_S[1], T3_S[1] + WR)
-T1_S = (R_S[1], R_S[1] + W1)
+# leg interiors, wall face to wall face
+LEG_S = (2800.55, 3734.05)          # 933.50
+LEG_C = (5685.00, 6485.10)          # 800.10
+LEG_N = (1920.45, 3067.25)          # 1146.80
 
-T1_C = (6485.10 - W1, 6485.10)
-R_C = (T1_C[0] - WR, T1_C[0])
-T3_C = (R_C[0] - W3, R_C[0])
 
-T1_N = (3067.25 - W1, 3067.25)
-R_N = (T1_N[0] - WR, T1_N[0])
-T3_N = (R_N[0] - W3, R_N[0])
+def split(lo, hi, one_high):
+    """Divide a leg into track 3, railing, track 1.  Track 1 rides the
+    right hand of travel, so it takes the HIGH side in the south and
+    north legs and the high (north) side of the cross leg too."""
+    w1 = (hi - lo - WR) * RATIO1
+    if one_high:
+        t1 = (hi - w1, hi)
+        r = (t1[0] - WR, t1[0])
+        t3 = (lo, r[0])
+    else:
+        t1 = (lo, lo + w1)
+        r = (t1[1], t1[1] + WR)
+        t3 = (r[1], hi)
+    return t1, r, t3
 
-# m_axis_786's own line, which the railing has to finish on
-SRC_RAIL = (2387.15, 2413.85)
+
+T1_S, R_S, T3_S = split(LEG_S[0], LEG_S[1], True)
+T1_C, R_C, T3_C = split(LEG_C[0], LEG_C[1], True)
+T1_N, R_N, T3_N = split(LEG_N[0], LEG_N[1], True)
+
+SRC_RAIL = (2387.15, 2413.85)       # m_axis_786's own line
 
 START_Y, TOP_42 = 5441.15, 401.15
 END1_Y, TOP_790 = 6915.70, 280.05
@@ -144,7 +160,7 @@ def seeds():
     # 221.74 apart in x, so the railing dog-legs west along deck 1's
     # south edge and then runs north ON m_axis_786's own line, flat at
     # 320.05, which is deck 1's 280.05 plus the same 40.00.
-    b.append(flat("rail_n_jog", (SRC_RAIL[0], R_N[1]),
+    b.append(flat("rail_n_jog", (min(SRC_RAIL[0], R_N[0]), R_N[1]),
                   (END1_Y, END1_Y+WR), TOP_790+RR, RAIL_T))
     b.append(flat("rail_n_end", SRC_RAIL, (END1_Y+WR, 7102.40),
                   TOP_790+RR, RAIL_T))
