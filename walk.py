@@ -57,43 +57,24 @@ RAIL_RISE = 40.00
 # which is the only shape that closes the turn with no hole and no
 # crease.  The railing keeps its 26.70 and the rest splits in the source
 # ratio 640.10 : 506.75.
-RATIO1 = 640.10 / (640.10 + 506.75)
 WR = 26.70
 
-# leg interiors, wall face to wall face
-LEG_S = (2800.55, 3734.05)          # 933.50
-LEG_C = (5685.00, 6485.10)          # 800.10
-LEG_N = (1920.45, 3067.25)          # 1146.80
+# Leg interiors, wall face to wall face.  All four outer corners stay
+# pinned, so every leg is flush both sides.
+LEG_S = (2800.55, 3734.05)
+LEG_C = (5685.00, 6485.10)
+LEG_N = (1920.45, 3067.25)
 
-
-def split(lo, hi, one_high):
-    """Divide a leg into track 3, railing, track 1.  Track 1 rides the
-    right hand of travel, so it takes the HIGH side in the south and
-    north legs and the high (north) side of the cross leg too."""
-    w1 = (hi - lo - WR) * RATIO1
-    if one_high:
-        t1 = (hi - w1, hi)
-        r = (t1[0] - WR, t1[0])
-        t3 = (lo, r[0])
-    else:
-        t1 = (lo, lo + w1)
-        r = (t1[1], t1[1] + WR)
-        t3 = (r[1], hi)
-    return t1, r, t3
-
-
-T1_S, R_S, T3_S = split(LEG_S[0], LEG_S[1], True)
-T1_C, R_C, T3_C = split(LEG_C[0], LEG_C[1], True)
-# North leg is NOT split by ratio: the railing is placed on
-# m_axis_786's own line so the two run as one, which is what kills the
-# dog-leg.  Both walls stay flush, so the two tracks simply take what is
-# left either side (653.40 and 466.70 rather than the ratio's 625.17 and
-# 494.93).
+# The railing now exists ONLY in the north leg, on m_axis_786's own
+# line, and fades to flush by the first landing.  In the south and cross
+# legs the two tracks butt directly against each other on the line the
+# railing used to occupy, so there is no slot left behind.
+SPLIT_S, SPLIT_C = 3201.23, 6026.74
 R_N = (2387.15, 2413.85)
-T1_N = (R_N[1], LEG_N[1])
-T3_N = (LEG_N[0], R_N[0])
 
-SRC_RAIL = (2387.15, 2413.85)       # m_axis_786's own line
+T3_S, T1_S = (LEG_S[0], SPLIT_S), (SPLIT_S, LEG_S[1])
+T3_C, T1_C = (LEG_C[0], SPLIT_C), (SPLIT_C, LEG_C[1])
+T3_N, T1_N = (LEG_N[0], R_N[0]), (R_N[1], LEG_N[1])
 
 START_Y, TOP_42 = 5441.15, 401.15
 END1_Y, TOP_790 = 6915.70, 280.05
@@ -107,16 +88,20 @@ G3 = math.degrees(math.atan2(TOP_42 - TOP_721, sum(R3)))
 K1 = (TOP_42 - TOP_790) / sum(R1)
 K3 = (TOP_42 - TOP_721) / sum(R3)
 
-# Pad heights are now SET, not derived from one grade: the pad nearest
-# the deck sits at 33% of that track's total rise and the next at 66%.
-T1_P2 = TOP_790 + 0.33*(TOP_42 - TOP_790)
-T1_P1 = TOP_790 + 0.66*(TOP_42 - TOP_790)
-T3_P2 = TOP_721 + 0.33*(TOP_42 - TOP_721)
-T3_P1 = TOP_721 + 0.66*(TOP_42 - TOP_721)
+# BOTH tracks share the two landing heights, so from the first landing
+# onward they read as one surface and the railing has nothing left to
+# separate.  The binding chain is track 1's north leg, track 1's cross
+# leg and track 3's south leg, which are the three shortest runs on the
+# route; solving those at one grade fixes everything else below it.
+CHAIN = R1[2] + R1[1] + R3[0]
+K = (TOP_42 - TOP_790) / CHAIN
+T1_P2 = T3_P2 = TOP_790 + R1[2]*K        # first landing, nearest the decks
+T1_P1 = T3_P1 = T1_P2 + R1[1]*K          # second landing
 
-# Each ramp therefore gets its OWN grade, from its own run and rise.
+
 def grade(rise, run):
     return math.degrees(math.atan2(rise, run))
+
 
 G1A = grade(TOP_42 - T1_P1, R1[0])
 G1B = grade(T1_P1 - T1_P2, R1[1])
@@ -168,17 +153,18 @@ def seeds():
     b.append(ramp("t3_ramp3", T3_N, (T3_C[1], END3_Y), T3_P2, TOP_721, 90, G3C))
 
     RR = RAIL_RISE
-    b.append(ramp("rail_s", R_S, (START_Y, T1_C[0]),
-                  TOP_42+RR, T1_P1+RR, 90, G1A, RAIL_T))
-    b.append(ramp("rail_c_ramp", (T1_N[1], T1_S[0]), R_C,
-                  T1_P1+RR, T1_P2+RR, 180, G1B, RAIL_T))
-    b.append(flat("rail_c_flat", (R_N[0], T1_N[1]), R_C, T1_P2+RR, RAIL_T))
-    b.append(flat("rail_n_pad", R_N, T1_C, T1_P2+RR, RAIL_T))
-    b.append(ramp("rail_n_ramp", R_N, (T1_C[1], END1_Y),
-                  T1_P2+RR, TOP_790+RR, 90, G1C, RAIL_T))
-    # Terminus: the railing is already on m_axis_786's line, so it just
-    # runs straight on to meet it.  No dog-leg.
-    b.append(flat("rail_n_end", R_N, (END1_Y, 7102.40), TOP_790+RR, RAIL_T))
+    # Railing: north leg only.  Its top runs from 320.05 at m_axis_786,
+    # which is deck 1 plus 40.00, up to the first landing height, where
+    # it is exactly flush with the deck and stops being a feature.  The
+    # 106.7 thickness is the source railing's own, and it reaches down to
+    # track 3 the whole way.
+    b.append(flat("rail_n_end", R_N, (END1_Y, 7102.40), TOP_790+RAIL_RISE, RAIL_T))
+    b.append(ramp("rail_n_fade", R_N, (T1_C[1], END1_Y),
+                  T1_P2, TOP_790+RAIL_RISE, 90,
+                  grade(T1_P2 - TOP_790 - RAIL_RISE, R1[2]), RAIL_T))
+    # The railing line still crosses the cross leg, where both tracks are
+    # on their landings at the same height, so one flat filler closes it.
+    b.append(flat("rail_c_fill", R_N, (T3_C[0], T1_C[1]), T1_P2))
     return b
 
 
@@ -209,10 +195,10 @@ def main(path):
     with open(path, "w") as f:
         json.dump(plan, f, indent=1)
         f.write("\n")
-    print("track1 pads %.2f %.2f  grades %.4f %.4f %.4f"
-          % (T1_P1, T1_P2, G1A, G1B, G1C))
-    print("track3 pads %.2f %.2f  grades %.4f %.4f %.4f"
-          % (T3_P1, T3_P2, G3A, G3B, G3C))
+    print("landings %.2f (first) %.2f (second), shared by both tracks"
+          % (T1_P2, T1_P1))
+    print("track1 grades %.4f %.4f %.4f" % (G1A, G1B, G1C))
+    print("track3 grades %.4f %.4f %.4f" % (G3A, G3B, G3C))
     print("added %d, plan now %d boxes" % (added, len(plan["boxes"])))
 
 
