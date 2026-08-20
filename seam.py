@@ -11,27 +11,28 @@ Runs LAST:
 Everything is authored once and emitted with its 180 degree twin about
 (460.1, 6085.05), so the map stays rotationally symmetric.
 
-1. ANGLED CONNECTORS across the open ground band.  Both run from the
-   north end of a CT spawn side wall to the south end of its opposite
-   number on the mirrored side, on the wall CENTRELINES, extended 13.35
-   into each neighbour so no joint can open:
+1. S CORRIDOR across the open ground band, replacing the earlier pair
+   of angled walls.  Six axis-aligned segments, 26.7 thick, z 0.1..1280.3
+   to match axis_43/45.  It links the same four things:
 
-     seam_wall_e   axis_45 (3747.4, 5441.10) -> m_axis_553_far (3080.6, 6915.75)
-     seam_wall_w   axis_43 (2787.2, 5494.50) -> m_gapfill_378_366 (1907.1, 7262.45)
+     east side  axis_45 (3747.4) -> m_axis_553_far (3080.6)
+     west side  axis_43 (2787.2) -> m_gapfill_378_366 (1907.1)
 
-   Both are 26.7 thick and run z 0.1..1280.3, matching axis_43/45.  Note
-   m_gapfill_378_366 only occupies z 893.65..1280.35; seam_wall_w is
-   carried full height anyway, because the band below it is open ground
-   and a wall starting at 893 would float.
+   The cross leg sits on y 5685.00..6485.10, which is the windowed
+   bridge's cross leg exactly, so both middle runs share the centreline
+   y 6085.05.  Note m_gapfill_378_366 only occupies z 893.65..1280.35;
+   seam_w_c is carried full height anyway, because the band below it is
+   open ground and a wall starting at 893 would float.
 
 2. RESTORED WALL between axis_43 and the bridge's east wall.  This is
    the stretch of the old axis_61/60/59 line east of the bridge, put
    back as ONE box on the axis_61 footprint, x 1493.65..2773.85.  It
    butts the outer face of bridge_wall_e and the west face of axis_43.
 
-3. PILLARS in the bridge, 266.7 square, the same width as the floor
+3. PILLARS under the bridge, 266.7 square, the same width as the floor
    hole, one in each of the four corners of the S, flush into the
-   corner.  They run floor top 666.85 to ceiling underside 1253.70.
+   corner.  They stand on stitch_ground at -0.05 and carry up to the
+   underside of the bridge floor at 640.15, a 640.2 rise.
 """
 
 import json
@@ -74,14 +75,32 @@ def link(name, a, b, z, thick=THICK):
 
 def seeds():
     b = []
-    # 1. angled connectors
-    b.append(link("seam_wall_e", (3747.40, 5441.10), (3080.60, 6915.75), FULL_Z))
-    b.append(link("seam_wall_w", (2787.20, 5494.50), (1907.10, 7262.45), FULL_Z))
+    # 1. the S corridor across the ground band.  Same handedness as the
+    #    windowed bridge: north, west, north.  Its cross leg occupies
+    #    y 5685.00..6485.10, EXACTLY the bridge's cross leg, so the two
+    #    middle runs are aligned and share a centreline at y 6085.05.
+    #
+    #    Interior rectangles:
+    #      south channel  x 2787.2..3747.4  y 5494.50..6485.10
+    #      cross leg      x 1907.1..3747.4  y 5685.00..6485.10
+    #      north channel  x 1907.1..3080.6  y 5685.00..7262.45
+    #
+    #    Wall centrelines are the neighbours' own centrelines, so the
+    #    east wall lands on the axis_45 footprint to the unit and the
+    #    west wall on axis_43.
+    b.append(box("seam_e_a", (3734.05, 3760.75), (5441.10, 6498.45), FULL_Z))
+    b.append(box("seam_e_n", (3067.25, 3760.75), (6485.10, 6511.80), FULL_Z))
+    b.append(box("seam_e_c", (3067.25, 3093.95), (6485.10, 6915.75), FULL_Z))
+    b.append(box("seam_w_a", (2773.85, 2800.55), (5494.50, 5685.00), FULL_Z))
+    b.append(box("seam_w_s", (1893.75, 2800.55), (5658.30, 5685.00), FULL_Z))
+    b.append(box("seam_w_c", (1893.75, 1920.45), (5658.30, 7262.45), FULL_Z))
     # 2. restored wall, on the old axis_61 footprint
     b.append(box("seam_wall_restore", (1493.65, 2773.85), (5067.60, 5254.40), FULL_Z))
-    # 3. bridge pillars, 266.7 square, flush into two corners of the S
+    # 3. bridge pillars, 266.7 square, the hole width, one flush into
+    #    each corner of the S.  They stand ON stitch_ground (top -0.05)
+    #    and carry up to the underside of the bridge floor at 640.15.
     P = 266.7
-    PZ = (666.85, 1253.70)
+    PZ = (-0.05, 640.15)
     b.append(box("bridge_pillar_ne", (1466.95-P, 1466.95), (6485.10-P, 6485.10), PZ))
     b.append(box("bridge_pillar_sw", (666.95, 666.95+P), (5685.00, 5685.00+P), PZ))
     return b
