@@ -51,6 +51,13 @@ GAP_WALL = dict(
 
 # ------------------------------------------------------------- changes 2-4
 BAY_X = (2507.15, 2773.85)  # 266.7 deep, hard against the axis_43 wall face
+
+# Each ledge is centred on the length of the wall it sits on, not on the
+# platform bay. seam_wall_restore runs x 1493.65..2773.85, centre 2133.75.
+# seam_w_s runs x 1893.75..2800.55, centre 2347.15. Both ledges are 266.70
+# wide.
+LEDGE_25_X = (2000.40, 2267.10)
+LEDGE_50_X = (2213.80, 2480.50)
 CENTRE_Y = 5376.30          # midpoint of seam_wall_restore 5094.30
                             # and seam_w_s 5658.30
 PLATFORM_W = 400.10
@@ -130,23 +137,31 @@ def main(path):
           % (LEVEL_75, py0, py1, BAY_X[1] - BAY_X[0]))
 
     # -------------------------------------------------------- changes 3/4
-    l25 = box("jump_ledge_25", BAY_X,
+    l25 = box("jump_ledge_25", LEDGE_25_X,
               (SEAM_RESTORE_N, SEAM_RESTORE_N + LEDGE_D),
               (LEVEL_25 - THICK, LEVEL_25))
-    l50 = box("jump_ledge_50", BAY_X,
+    l50 = box("jump_ledge_50", LEDGE_50_X,
               (SEAM_W_S_S - LEDGE_D, SEAM_W_S_S),
               (LEVEL_50 - THICK, LEVEL_50))
     made.extend([l25, l50])
-    print("LEDGE jump_ledge_25: top %.2f on seam_wall_restore, y %.2f..%.2f"
-          % (LEVEL_25, SEAM_RESTORE_N, SEAM_RESTORE_N + LEDGE_D))
-    print("LEDGE jump_ledge_50: top %.2f on seam_w_s, y %.2f..%.2f"
-          % (LEVEL_50, SEAM_W_S_S - LEDGE_D, SEAM_W_S_S))
+    print("LEDGE jump_ledge_25: top %.2f on seam_wall_restore, "
+          "x %.2f..%.2f, y %.2f..%.2f"
+          % (LEVEL_25, LEDGE_25_X[0], LEDGE_25_X[1],
+             SEAM_RESTORE_N, SEAM_RESTORE_N + LEDGE_D))
+    print("LEDGE jump_ledge_50: top %.2f on seam_w_s, "
+          "x %.2f..%.2f, y %.2f..%.2f"
+          % (LEVEL_50, LEDGE_50_X[0], LEDGE_50_X[1],
+             SEAM_W_S_S - LEDGE_D, SEAM_W_S_S))
 
     gap_y = (SEAM_W_S_S - LEDGE_D) - (SEAM_RESTORE_N + LEDGE_D)
-    print("     ledge to ledge: rise %.2f, horizontal gap %.2f"
-          % (LEVEL_50 - LEVEL_25, gap_y))
-    print("     ledge_50 to platform: rise %.2f, horizontal gap %.2f"
-          % (LEVEL_75 - LEVEL_50, (SEAM_W_S_S - LEDGE_D) - py1))
+    x_off = abs((LEDGE_50_X[0] + LEDGE_50_X[1]) / 2.0
+                - (LEDGE_25_X[0] + LEDGE_25_X[1]) / 2.0)
+    print("     ledge to ledge: rise %.2f, y gap %.2f, x offset %.2f"
+          % (LEVEL_50 - LEVEL_25, gap_y, x_off))
+    print("     ledge_50 to platform: rise %.2f, y gap %.2f, x offset %.2f"
+          % (LEVEL_75 - LEVEL_50, (SEAM_W_S_S - LEDGE_D) - py1,
+             abs((BAY_X[0] + BAY_X[1]) / 2.0
+                 - (LEDGE_50_X[0] + LEDGE_50_X[1]) / 2.0)))
 
     twins = [mirror_box(b, "m_" + b["name"]) for b in made]
     boxes.extend(made)

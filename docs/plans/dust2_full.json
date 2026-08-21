@@ -631,25 +631,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "axis_43",
-   "origin": [
-    2787.2,
-    5281.1,
-    640.2
-   ],
-   "extents": [
-    26.7,
-    426.8,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "axis_45",
    "origin": [
     3747.4,
@@ -33922,25 +33903,6 @@
     933.5,
     320.1,
     26.7
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_axis_43",
-   "origin": [
-    -1867.0,
-    6889.0,
-    640.2
-   ],
-   "extents": [
-    26.7,
-    426.8,
-    1280.2
    ],
    "angles": [
     0.0,
@@ -68257,44 +68219,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "seam_w_a",
-   "origin": [
-    2787.2,
-    5589.75,
-    640.2
-   ],
-   "extents": [
-    26.7,
-    190.5,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_seam_w_a",
-   "origin": [
-    -1867.0,
-    6580.35,
-    640.2
-   ],
-   "extents": [
-    26.7,
-    190.5,
-    1280.2
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "seam_w_s",
    "origin": [
     2347.15,
@@ -70601,7 +70525,7 @@
   {
    "name": "jump_ledge_25",
    "origin": [
-    2640.5,
+    2133.75,
     5160.975,
     306.7
    ],
@@ -70620,7 +70544,7 @@
   {
    "name": "jump_ledge_50",
    "origin": [
-    2640.5,
+    2347.15,
     5591.625,
     626.8
    ],
@@ -70677,7 +70601,7 @@
   {
    "name": "m_jump_ledge_25",
    "origin": [
-    -1720.3,
+    -1213.55,
     7009.125,
     306.7
    ],
@@ -70696,7 +70620,7 @@
   {
    "name": "m_jump_ledge_50",
    "origin": [
-    -1720.3,
+    -1426.95,
     6578.475,
     626.8
    ],
@@ -72262,6 +72186,386 @@
     26.7,
     22.5,
     15.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_43_s",
+   "origin": [
+    2787.2,
+    5158.75,
+    640.2
+   ],
+   "extents": [
+    26.7,
+    182.1,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_43_under",
+   "origin": [
+    2787.2,
+    5372.15,
+    480.15
+   ],
+   "extents": [
+    26.7,
+    244.7,
+    960.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "axis_43_hdr",
+   "origin": [
+    2787.2,
+    5372.15,
+    1266.95
+   ],
+   "extents": [
+    26.7,
+    244.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "seam_w_a_n",
+   "origin": [
+    2787.2,
+    5593.9,
+    640.2
+   ],
+   "extents": [
+    26.7,
+    182.2,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "seam_w_a_under",
+   "origin": [
+    2787.2,
+    5498.65,
+    480.15
+   ],
+   "extents": [
+    26.7,
+    8.3,
+    960.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "seam_w_a_hdr",
+   "origin": [
+    2787.2,
+    5498.65,
+    1266.95
+   ],
+   "extents": [
+    26.7,
+    8.3,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "balcony_75",
+   "origin": [
+    2880.575,
+    5376.3,
+    946.85
+   ],
+   "extents": [
+    160.05,
+    400.1,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "balcony_75_rail_e",
+   "origin": [
+    2947.25,
+    5376.3,
+    1013.55
+   ],
+   "extents": [
+    26.7,
+    400.1,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "balcony_75_rail_s",
+   "origin": [
+    2880.575,
+    5189.6,
+    1013.55
+   ],
+   "extents": [
+    160.05,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "balcony_75_rail_n",
+   "origin": [
+    2880.575,
+    5563.0,
+    1013.55
+   ],
+   "extents": [
+    160.05,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_axis_43_s",
+   "origin": [
+    -1867.0,
+    7011.35,
+    640.2
+   ],
+   "extents": [
+    26.7,
+    182.1,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_axis_43_under",
+   "origin": [
+    -1867.0,
+    6797.95,
+    480.15
+   ],
+   "extents": [
+    26.7,
+    244.7,
+    960.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_axis_43_hdr",
+   "origin": [
+    -1867.0,
+    6797.95,
+    1266.95
+   ],
+   "extents": [
+    26.7,
+    244.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_seam_w_a_n",
+   "origin": [
+    -1867.0,
+    6576.2,
+    640.2
+   ],
+   "extents": [
+    26.7,
+    182.2,
+    1280.2
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_seam_w_a_under",
+   "origin": [
+    -1867.0,
+    6671.45,
+    480.15
+   ],
+   "extents": [
+    26.7,
+    8.3,
+    960.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_seam_w_a_hdr",
+   "origin": [
+    -1867.0,
+    6671.45,
+    1266.95
+   ],
+   "extents": [
+    26.7,
+    8.3,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_balcony_75",
+   "origin": [
+    -1960.375,
+    6793.8,
+    946.85
+   ],
+   "extents": [
+    160.05,
+    400.1,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_balcony_75_rail_e",
+   "origin": [
+    -2027.05,
+    6793.8,
+    1013.55
+   ],
+   "extents": [
+    26.7,
+    400.1,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_balcony_75_rail_s",
+   "origin": [
+    -1960.375,
+    6980.5,
+    1013.55
+   ],
+   "extents": [
+    160.05,
+    26.7,
+    106.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_balcony_75_rail_n",
+   "origin": [
+    -1960.375,
+    6607.1,
+    1013.55
+   ],
+   "extents": [
+    160.05,
+    26.7,
+    106.7
    ],
    "angles": [
     0.0,
