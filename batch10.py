@@ -19,10 +19,11 @@ GEOMETRY
   (-0.05 + 1280.30) / 2 = 640.125, taken as 640.15 so it matches the
   bridge pillar tops and stays on the 6.67 sub-grid.
 
-  platform  266.70 square, 26.70 thick, top 640.15
-            x 1627.05..1893.75, y 6511.80..6778.50
-  rail_w    26.70 thick, full 266.70 length, top 700.15 (60 tall)
-  rail_n    26.70 thick, 240.00 long so it butts the west rail rather
+  platform  533.40 square, 26.70 thick, top 640.15
+            x 1360.35..1893.75, y 6511.80..7045.20
+            (doubled from the original 266.70 square)
+  rail_w    26.70 thick, full 533.40 length, top 700.15 (60 tall)
+  rail_n    26.70 thick, 506.70 long so it butts the west rail rather
             than overlapping it, top 700.15
 
   Nothing supports the platform from below; it is a shelf on the two
@@ -44,7 +45,7 @@ import sys
 CORNER_X = 1893.75      # seam_w_c_n west face
 CORNER_Y = 6511.80      # seam_gap_wall_n north face
 TOP = 640.15            # half of stitch_ground top to wall top
-SIZE = 266.70
+SIZE = 533.40
 SLAB = 26.70
 RAIL_H = 60.00
 
