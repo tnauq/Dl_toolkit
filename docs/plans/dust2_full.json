@@ -73546,12 +73546,12 @@
   {
    "name": "vtun_straight_wall_s",
    "origin": [
-    3880.9,
+    3836.675,
     6116.07,
     658.02
    ],
    "extents": [
-    240.3,
+    151.8499,
     26.7,
     586.8
    ],
@@ -73565,12 +73565,12 @@
   {
    "name": "vtun_straight_wall_n",
    "origin": [
-    3880.9,
+    3836.675,
     6395.77,
     658.02
    ],
    "extents": [
-    240.3,
+    151.8499,
     26.7,
     586.8
    ],
@@ -74781,12 +74781,12 @@
   {
    "name": "m_vtun_straight_wall_s",
    "origin": [
-    -2960.7,
+    -2916.475,
     6054.03,
     658.02
    ],
    "extents": [
-    240.3,
+    151.8499,
     26.7,
     586.8
    ],
@@ -74800,12 +74800,12 @@
   {
    "name": "m_vtun_straight_wall_n",
    "origin": [
-    -2960.7,
+    -2916.475,
     5774.33,
     658.02
    ],
    "extents": [
-    240.3,
+    151.8499,
     26.7,
     586.8
    ],
@@ -75001,6 +75001,1450 @@
    ],
    "angles": [
     0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_ext_floor",
+   "origin": [
+    -3912.3119,
+    6540.3031,
+    511.614
+   ],
+   "extents": [
+    1533.7744,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -12.0462,
+    150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_ext_ceil",
+   "origin": [
+    -3859.2828,
+    6509.6867,
+    798.5532
+   ],
+   "extents": [
+    1533.7744,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -12.0462,
+    150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_ext_wall_l",
+   "origin": [
+    -3939.1973,
+    6432.5034,
+    655.0836
+   ],
+   "extents": [
+    1533.7744,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -12.0462,
+    150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_ext_wall_r",
+   "origin": [
+    -3832.3973,
+    6617.4864,
+    655.0836
+   ],
+   "extents": [
+    1533.7744,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -12.0462,
+    150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_ext_floor",
+   "origin": [
+    -3778.5497,
+    5365.2846,
+    275.7648
+   ],
+   "extents": [
+    1209.4906,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    7.1824,
+    210.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_ext_ceil",
+   "origin": [
+    -3810.3183,
+    5346.943,
+    566.8625
+   ],
+   "extents": [
+    1209.4906,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    7.1824,
+    210.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_ext_wall_l",
+   "origin": [
+    -3741.034,
+    5263.6223,
+    421.3136
+   ],
+   "extents": [
+    1209.4906,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    7.1824,
+    210.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_ext_wall_r",
+   "origin": [
+    -3847.834,
+    5448.6053,
+    421.3136
+   ],
+   "extents": [
+    1209.4906,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    7.1824,
+    210.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_room_w_floor",
+   "origin": [
+    -4559.4181,
+    6913.91,
+    671.37
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_room_w_ceil",
+   "origin": [
+    -4559.4181,
+    6913.91,
+    964.77
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_room_w_floor",
+   "origin": [
+    -4299.6105,
+    5064.45,
+    200.05
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_room_w_ceil",
+   "origin": [
+    -4299.6105,
+    5064.45,
+    493.45
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_east_floor",
+   "origin": [
+    -3579.7091,
+    6913.91,
+    671.37
+   ],
+   "extents": [
+    1959.4181,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_east_ceil",
+   "origin": [
+    -3579.7091,
+    6913.91,
+    964.77
+   ],
+   "extents": [
+    1959.4181,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_east_wall_l",
+   "origin": [
+    -3579.7091,
+    7020.71,
+    818.07
+   ],
+   "extents": [
+    1959.4181,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_east_wall_r",
+   "origin": [
+    -3579.7091,
+    6807.11,
+    818.07
+   ],
+   "extents": [
+    1959.4181,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_room_n_floor",
+   "origin": [
+    -2600.0,
+    6913.91,
+    671.37
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_room_n_ceil",
+   "origin": [
+    -2600.0,
+    6913.91,
+    964.77
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_south_floor",
+   "origin": [
+    -2600.0,
+    5037.5475,
+    671.37
+   ],
+   "extents": [
+    3752.725,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_south_ceil",
+   "origin": [
+    -2600.0,
+    5037.5475,
+    964.77
+   ],
+   "extents": [
+    3752.725,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_south_wall_l",
+   "origin": [
+    -2493.2,
+    5037.5475,
+    818.07
+   ],
+   "extents": [
+    3752.725,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_south_wall_r",
+   "origin": [
+    -2706.8,
+    5037.5475,
+    818.07
+   ],
+   "extents": [
+    3752.725,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_room_s_floor",
+   "origin": [
+    -2600.0,
+    3161.185,
+    671.37
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_room_s_ceil",
+   "origin": [
+    -2600.0,
+    3161.185,
+    964.77
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_stub_floor",
+   "origin": [
+    -2392.3822,
+    3161.185,
+    689.159
+   ],
+   "extents": [
+    414.4714,
+    238.93,
+    26.7
+   ],
+   "angles": [
+    -4.9107,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_stub_ceil",
+   "origin": [
+    -2442.1056,
+    3161.185,
+    1267.8869
+   ],
+   "extents": [
+    414.4714,
+    238.93,
+    26.7
+   ],
+   "angles": [
+    -4.9107,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_stub_wall_l",
+   "origin": [
+    -2417.2439,
+    3294.0,
+    978.5229
+   ],
+   "extents": [
+    414.4714,
+    26.7,
+    554.16
+   ],
+   "angles": [
+    -4.9107,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_up_stub_wall_r",
+   "origin": [
+    -2417.2439,
+    3028.37,
+    978.5229
+   ],
+   "extents": [
+    414.4714,
+    26.7,
+    554.16
+   ],
+   "angles": [
+    -4.9107,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_north_floor",
+   "origin": [
+    -4299.6105,
+    6493.45,
+    200.05
+   ],
+   "extents": [
+    2858.0,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_north_ceil",
+   "origin": [
+    -4299.6105,
+    6493.45,
+    493.45
+   ],
+   "extents": [
+    2858.0,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_north_wall_l",
+   "origin": [
+    -4406.4105,
+    6493.45,
+    346.75
+   ],
+   "extents": [
+    2858.0,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_north_wall_r",
+   "origin": [
+    -4192.8105,
+    6493.45,
+    346.75
+   ],
+   "extents": [
+    2858.0,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_room_n_floor",
+   "origin": [
+    -4299.6105,
+    7922.45,
+    200.05
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_room_n_ceil",
+   "origin": [
+    -4299.6105,
+    7922.45,
+    493.45
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_stub_floor",
+   "origin": [
+    -3690.1302,
+    7922.45,
+    200.05
+   ],
+   "extents": [
+    1218.9605,
+    253.0,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_stub_ceil",
+   "origin": [
+    -3690.1302,
+    7922.45,
+    813.55
+   ],
+   "extents": [
+    1218.9605,
+    253.0,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_stub_wall_l",
+   "origin": [
+    -3690.1302,
+    8062.3,
+    506.8
+   ],
+   "extents": [
+    1218.9605,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "xtun_lo_stub_wall_r",
+   "origin": [
+    -3690.1302,
+    7782.6,
+    506.8
+   ],
+   "extents": [
+    1218.9605,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_ext_floor",
+   "origin": [
+    4832.5119,
+    5629.7969,
+    511.614
+   ],
+   "extents": [
+    1533.7744,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -12.0462,
+    330.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_ext_ceil",
+   "origin": [
+    4779.4828,
+    5660.4133,
+    798.5532
+   ],
+   "extents": [
+    1533.7744,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -12.0462,
+    330.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_ext_wall_l",
+   "origin": [
+    4859.3973,
+    5737.5966,
+    655.0836
+   ],
+   "extents": [
+    1533.7744,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -12.0462,
+    330.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_ext_wall_r",
+   "origin": [
+    4752.5973,
+    5552.6136,
+    655.0836
+   ],
+   "extents": [
+    1533.7744,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -12.0462,
+    330.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_ext_floor",
+   "origin": [
+    4698.7497,
+    6804.8154,
+    275.7648
+   ],
+   "extents": [
+    1209.4906,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    7.1824,
+    30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_ext_ceil",
+   "origin": [
+    4730.5183,
+    6823.157,
+    566.8625
+   ],
+   "extents": [
+    1209.4906,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    7.1824,
+    30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_ext_wall_l",
+   "origin": [
+    4661.234,
+    6906.4777,
+    421.3136
+   ],
+   "extents": [
+    1209.4906,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    7.1824,
+    30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_ext_wall_r",
+   "origin": [
+    4768.034,
+    6721.4947,
+    421.3136
+   ],
+   "extents": [
+    1209.4906,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    7.1824,
+    30.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_room_w_floor",
+   "origin": [
+    5479.6181,
+    5256.19,
+    671.37
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_room_w_ceil",
+   "origin": [
+    5479.6181,
+    5256.19,
+    964.77
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_room_w_floor",
+   "origin": [
+    5219.8105,
+    7105.65,
+    200.05
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_room_w_ceil",
+   "origin": [
+    5219.8105,
+    7105.65,
+    493.45
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_east_floor",
+   "origin": [
+    4499.9091,
+    5256.19,
+    671.37
+   ],
+   "extents": [
+    1959.4181,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_east_ceil",
+   "origin": [
+    4499.9091,
+    5256.19,
+    964.77
+   ],
+   "extents": [
+    1959.4181,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_east_wall_l",
+   "origin": [
+    4499.9091,
+    5149.39,
+    818.07
+   ],
+   "extents": [
+    1959.4181,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_east_wall_r",
+   "origin": [
+    4499.9091,
+    5362.99,
+    818.07
+   ],
+   "extents": [
+    1959.4181,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_room_n_floor",
+   "origin": [
+    3520.2,
+    5256.19,
+    671.37
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_room_n_ceil",
+   "origin": [
+    3520.2,
+    5256.19,
+    964.77
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_south_floor",
+   "origin": [
+    3520.2,
+    7132.5525,
+    671.37
+   ],
+   "extents": [
+    3752.725,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_south_ceil",
+   "origin": [
+    3520.2,
+    7132.5525,
+    964.77
+   ],
+   "extents": [
+    3752.725,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_south_wall_l",
+   "origin": [
+    3413.4,
+    7132.5525,
+    818.07
+   ],
+   "extents": [
+    3752.725,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_south_wall_r",
+   "origin": [
+    3627.0,
+    7132.5525,
+    818.07
+   ],
+   "extents": [
+    3752.725,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_room_s_floor",
+   "origin": [
+    3520.2,
+    9008.915,
+    671.37
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_room_s_ceil",
+   "origin": [
+    3520.2,
+    9008.915,
+    964.77
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_stub_floor",
+   "origin": [
+    3312.5822,
+    9008.915,
+    689.159
+   ],
+   "extents": [
+    414.4714,
+    238.93,
+    26.7
+   ],
+   "angles": [
+    -4.9107,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_stub_ceil",
+   "origin": [
+    3362.3056,
+    9008.915,
+    1267.8869
+   ],
+   "extents": [
+    414.4714,
+    238.93,
+    26.7
+   ],
+   "angles": [
+    -4.9107,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_stub_wall_l",
+   "origin": [
+    3337.4439,
+    8876.1,
+    978.5229
+   ],
+   "extents": [
+    414.4714,
+    26.7,
+    554.16
+   ],
+   "angles": [
+    -4.9107,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_up_stub_wall_r",
+   "origin": [
+    3337.4439,
+    9141.73,
+    978.5229
+   ],
+   "extents": [
+    414.4714,
+    26.7,
+    554.16
+   ],
+   "angles": [
+    -4.9107,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_north_floor",
+   "origin": [
+    5219.8105,
+    5676.65,
+    200.05
+   ],
+   "extents": [
+    2858.0,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_north_ceil",
+   "origin": [
+    5219.8105,
+    5676.65,
+    493.45
+   ],
+   "extents": [
+    2858.0,
+    186.9,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_north_wall_l",
+   "origin": [
+    5326.6105,
+    5676.65,
+    346.75
+   ],
+   "extents": [
+    2858.0,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_north_wall_r",
+   "origin": [
+    5113.0105,
+    5676.65,
+    346.75
+   ],
+   "extents": [
+    2858.0,
+    26.7,
+    266.7
+   ],
+   "angles": [
+    -0.0,
+    270.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_room_n_floor",
+   "origin": [
+    5219.8105,
+    4247.65,
+    200.05
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_room_n_ceil",
+   "origin": [
+    5219.8105,
+    4247.65,
+    493.45
+   ],
+   "extents": [
+    400.05,
+    400.05,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_stub_floor",
+   "origin": [
+    4610.3302,
+    4247.65,
+    200.05
+   ],
+   "extents": [
+    1218.9605,
+    253.0,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_stub_ceil",
+   "origin": [
+    4610.3302,
+    4247.65,
+    813.55
+   ],
+   "extents": [
+    1218.9605,
+    253.0,
+    26.7
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_stub_wall_l",
+   "origin": [
+    4610.3302,
+    4107.8,
+    506.8
+   ],
+   "extents": [
+    1218.9605,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    -0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_xtun_lo_stub_wall_r",
+   "origin": [
+    4610.3302,
+    4387.5,
+    506.8
+   ],
+   "extents": [
+    1218.9605,
+    26.7,
+    586.8
+   ],
+   "angles": [
+    -0.0,
     180.0,
     0.0
    ],

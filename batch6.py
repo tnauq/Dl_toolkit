@@ -257,13 +257,21 @@ def main(path):
                     (bore_z[0] - SHELL, bore_z[0])))
     made.append(box("vtun_straight_ceil", (sx0, sx1), (sy0, sy1),
                     (bore_z[1], bore_z[1] + SHELL)))
-    made.append(box("vtun_straight_wall_s", (sx0, sx1),
+    # The side walls must stop before the legs begin, or their tail ends sit
+    # inside a leg's bore. A leg's back plane passes through the apex at
+    # LEG_YAW, so it first reaches the wall at its outer face, half the bore
+    # plus one shell off the centreline.
+    wall_end = sx1 - (BORE_W / 2.0 + SHELL) * math.tan(math.radians(LEG_YAW))
+    made.append(box("vtun_straight_wall_s", (sx0, wall_end),
                     (sy0 - SHELL, sy0), bore_z))
-    made.append(box("vtun_straight_wall_n", (sx0, sx1),
+    made.append(box("vtun_straight_wall_n", (sx0, wall_end),
                     (sy1, sy1 + SHELL), bore_z))
     print("TUNNEL straight: x %.2f..%.2f (%.2f, %.2f m), bore %.2f wide, "
           "z %.2f..%.2f" % (sx0, sx1, STRAIGHT, STRAIGHT / UNITS_PER_M,
                             BORE_W, bore_z[0], bore_z[1]))
+    print("     side walls stop at x %.2f, %.2f short of the apex, so their "
+          "tails do not sit inside a leg bore"
+          % (wall_end, sx1 - wall_end))
 
     apex = (sx1, DOOR_CENTRE_Y)
     zc_bore = (bore_z[0] + bore_z[1]) / 2.0
