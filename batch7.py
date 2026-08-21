@@ -60,16 +60,19 @@ LO_DOOR_Y = 7922.45
 TALL = 759.00
 TALL_C = (-4200.00, 5300.00)
 TALL_BORE = 1173.60
-STEPS = 12
+STEP_FRACTIONS = (1.0 / 3.0, 2.0 / 3.0)
 
 HUG_X = -2313.55
 
-BIG_X0, BIG_X1 = -2937.43, -2187.05   # west wall outer face on -2964.13
+# Square, bounded by real geometry: hex2_tun_e_wall_r0 ends at y 3067.15
+# and hex2_tun_ne_leg_roof starts at y 3565.52, so 498.37 is the side.
 BIG_Y0, BIG_Y1 = 3067.15, 3565.52
-BIG_BORE = 347.10
-N_LANE_C, N_LANE_W = 3483.02, 165.00
-S_LANE_C, S_LANE_W = 3173.90, 213.50
-TURN_D = 164.13
+BIG_X1 = -2187.05
+BIG_X0 = BIG_X1 - (BIG_Y1 - BIG_Y0)
+WALL_TOP = 1280.30
+BIG_TOP = UP_LEVEL + BORE_H          # 1493.30, the tunnel's own ceiling
+JUMP_D = 253.00
+JUMP_TOP = 813.35                    # halfway up the 186.30 step
 
 
 def box(name, xr, yr, zr, out):
@@ -231,16 +234,24 @@ def main(path):
         (ty0 - SHELL, ty0), (START_Z, UP_LEVEL), made)
     box(PREFIX + "up_tall_s3", (TALL_C[0] - hw, TALL_C[0] + hw),
         (ty0 - SHELL, ty0), (UP_LEVEL + BORE_H, top), made)
-    rise = (UP_LEVEL - START_Z) / STEPS
-    tread = TALL / STEPS
-    for k in range(STEPS):
-        box(PREFIX + "up_step%02d" % k, (TALL_C[0] - hw, TALL_C[0] + hw),
-            (ty1 - tread * (k + 1), ty1 - tread * k),
-            (START_Z - SHELL, START_Z + rise * (k + 1)), made)
+    # Two boxes only, at a third and two thirds of the climb, so the room
+    # stays open. The lower one sits against the south wall's east jamb and
+    # the taller one in front of the opening, so the line is
+    # floor -> low box -> high box -> sill.
+    climb = UP_LEVEL - START_Z
+    depth = 253.00
+    lo_top = START_Z + climb * STEP_FRACTIONS[0]
+    hi_top = START_Z + climb * STEP_FRACTIONS[1]
+    box(PREFIX + "up_step_low", (TALL_C[0] + hw, TALL_C[0] + hw + depth),
+        (ty0, ty0 + depth), (START_Z - SHELL, lo_top), made)
+    box(PREFIX + "up_step_high", (TALL_C[0] - hw, TALL_C[0] + hw),
+        (ty0, ty0 + depth), (START_Z - SHELL, hi_top), made)
     print("TALL ROOM: %.2f square, bore %.2f (double), in north at %.2f, "
           "out south at %.2f" % (TALL, TALL_BORE, START_Z, UP_LEVEL))
-    print("     %d boxes, rise %.2f each, tread %.2f, total climb %.2f"
-          % (STEPS, rise, tread, UP_LEVEL - START_Z))
+    print("     2 boxes: low top %.2f (a third), high top %.2f (two thirds), "
+          "hops of %.2f, %.2f and %.2f"
+          % (lo_top, hi_top, lo_top - START_Z, hi_top - lo_top,
+             UP_LEVEL - hi_top))
 
     corridor(PREFIX + "up4", (C[0] - hw, C[0] + hw), (C[1] + hr, ty0),
              UP_LEVEL, BORE_H, made)
@@ -255,44 +266,53 @@ def main(path):
     print("UPPER: level at %.2f from the tall room on, crossing over the "
           "lower at (-4200.00, 4550.00)" % UP_LEVEL)
 
+    # -- the door room: a plain square at the door sill, ceiling level with
+    # the connecting tunnel's, and one box to climb back up to it.
+    box(PREFIX + "big_floor", (BIG_X0 - SHELL, BIG_X1),
+        (BIG_Y0 - SHELL, BIG_Y1 + SHELL),
+        (UP_DOOR_SILL - SHELL, UP_DOOR_SILL), made)
     box(PREFIX + "big_ceil", (BIG_X0 - SHELL, BIG_X1),
-        (BIG_Y0 - SHELL, BIG_Y1 + SHELL),
-        (UP_LEVEL + BIG_BORE, UP_LEVEL + BIG_BORE + SHELL), made)
+        (BIG_Y0 - SHELL, BIG_Y1 + SHELL), (BIG_TOP, BIG_TOP + SHELL), made)
     box(PREFIX + "big_w", (BIG_X0 - SHELL, BIG_X0),
-        (BIG_Y0 - SHELL, BIG_Y1 + SHELL),
-        (UP_DOOR_SILL - SHELL, UP_LEVEL + BIG_BORE), made)
+        (BIG_Y0 - SHELL, BIG_Y1 + SHELL), (UP_DOOR_SILL, BIG_TOP), made)
     box(PREFIX + "big_s", (BIG_X0 - SHELL, BIG_X1), (BIG_Y0 - SHELL, BIG_Y0),
-        (UP_DOOR_SILL - SHELL, UP_LEVEL + BIG_BORE), made)
+        (UP_DOOR_SILL, BIG_TOP), made)
     box(PREFIX + "big_n0", (BIG_X0 - SHELL, HUG_X - hw),
-        (BIG_Y1, BIG_Y1 + SHELL), (UP_LEVEL, UP_LEVEL + BIG_BORE), made)
+        (BIG_Y1, BIG_Y1 + SHELL), (UP_DOOR_SILL, BIG_TOP), made)
     box(PREFIX + "big_n1", (HUG_X + hw, BIG_X1), (BIG_Y1, BIG_Y1 + SHELL),
-        (UP_LEVEL, UP_LEVEL + BIG_BORE), made)
-    mid = (UP_LEVEL + UP_DOOR_SILL) / 2.0
-    p = ramp(PREFIX + "big_lane_n", (BIG_X0, BIG_X1),
-             (N_LANE_C - N_LANE_W / 2.0, N_LANE_C + N_LANE_W / 2.0),
-             mid, UP_LEVEL, BIG_BORE, made)
-    ramp(PREFIX + "big_lane_s", (BIG_X0, BIG_X1),
-         (S_LANE_C - S_LANE_W / 2.0, S_LANE_C + S_LANE_W / 2.0),
-         mid, UP_DOOR_SILL, BIG_BORE, made)
-    box(PREFIX + "big_turn", (BIG_X0, BIG_X0 + TURN_D), (BIG_Y0, BIG_Y1),
-        (mid - SHELL, mid), made)
-    box(PREFIX + "big_divider", (BIG_X0 + TURN_D, BIG_X1),
-        (S_LANE_C + S_LANE_W / 2.0, N_LANE_C - N_LANE_W / 2.0),
-        (UP_DOOR_SILL - SHELL, UP_LEVEL), made)
-    print("DOOR ROOM: x %.2f..%.2f, y %.2f..%.2f, switchback %.2f -> %.2f "
-          "-> %.2f, each leg %.2f at %.2f deg"
-          % (BIG_X0, BIG_X1, BIG_Y0, BIG_Y1, UP_LEVEL, mid, UP_DOOR_SILL,
-             BIG_X1 - BIG_X0, abs(p)))
+        (UP_DOOR_SILL, BIG_TOP), made)
+    box(PREFIX + "big_n_sill", (HUG_X - hw, HUG_X + hw),
+        (BIG_Y1, BIG_Y1 + SHELL), (UP_DOOR_SILL, UP_LEVEL), made)
+    # axis_553_mid tops out at 1280.30, so close the east side above it
+    box(PREFIX + "big_e_top", (BIG_X1, BIG_X1 + SHELL),
+        (BIG_Y0 - SHELL, BIG_Y1 + SHELL), (WALL_TOP, BIG_TOP), made)
+    box(PREFIX + "big_jump", (HUG_X - hw, BIG_X1),
+        (BIG_Y1 - JUMP_D, BIG_Y1), (UP_DOOR_SILL - SHELL, JUMP_TOP), made)
+    print("DOOR ROOM: x %.2f..%.2f, y %.2f..%.2f, %.2f square, floor on the "
+          "door sill %.2f, ceiling %.2f, level with the tunnel's"
+          % (BIG_X0, BIG_X1, BIG_Y0, BIG_Y1, BIG_X1 - BIG_X0, UP_DOOR_SILL,
+             BIG_TOP))
+    print("     tunnel enters north with its sill %.2f up; one box, top "
+          "%.2f, splits that into hops of %.2f and %.2f"
+          % (UP_LEVEL - UP_DOOR_SILL, JUMP_TOP, JUMP_TOP - UP_DOOR_SILL,
+             UP_LEVEL - JUMP_TOP))
 
     # ------------------------------------------------------------- lower
     E, F = (T_X, 4550.00), (-4900.00, 4550.00)   # clear of the tall room
-    G = (-4800.00, LO_DOOR_Y)
+    G = (-4900.00, LO_DOOR_Y)   # must match F, or the south wall goes lopsided
     q = ramp(PREFIX + "lo1", (T_X - hw, T_X + hw), (E[1] + hr, T_S),
              LO_LEVEL, START_Z, BORE_H, made, axis="y")
     box(PREFIX + "lo1_wall_w", (T_X - hw - SHELL, T_X - hw),
         (E[1] + hr, T_S), (LO_LEVEL, START_Z + BORE_H), made)
     box(PREFIX + "lo1_wall_e", (T_X + hw, T_X + hw + SHELL),
         (E[1] + hr, T_S), (LO_LEVEL, START_Z + BORE_H), made)
+    # A pitched ceiling is offset perpendicular to its floor, so it stops
+    # short of the floor's high end by (bore + shell/2) * sin(pitch). Cap
+    # that gap with a level piece so the ramp meets the T room's ceiling.
+    gap = (BORE_H + SHELL / 2.0) * math.sin(math.radians(abs(q)))
+    box(PREFIX + "lo1_cap", (T_X - hw, T_X + hw), (T_S - gap, T_S),
+        (START_Z + BORE_H, START_Z + BORE_H + SHELL), made)
+    print("     ceiling capped over the last %.2f into the T room" % gap)
     print("LOWER: drops %.2f to its sill on the first leg, pitch %.2f deg, "
           "then flat at %.2f the whole way, full bore, no pinch"
           % (START_Z - LO_LEVEL, abs(q), LO_LEVEL))
