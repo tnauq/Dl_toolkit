@@ -79,9 +79,9 @@ DOOR_SILL = 364.62
 DOOR_HEAD = 951.42
 BORE_W = 253.00
 STRAIGHT = 240.30               # 9 grid units, 6.10 m
-LEG = 280.35                    # 7.12 m
-LEG_YAW = 30.0                  # each leg off the axis, so 60 total
 SHELL = 26.70
+BORE_H = 586.80
+T_ROOM = 506.00
 
 
 def box(name, xr, yr, zr):
@@ -96,6 +96,54 @@ def box(name, xr, yr, zr):
         "angles": [0.0, 0.0, 0.0],
         "material": MAT,
     }
+
+
+def troom(spec, out):
+    """Square room: floor, ceiling and four walls, with flush openings."""
+    name, centre, z, bore_h, size, openings = spec
+    h = size / 2.0
+    outer = size + 2 * SHELL
+
+    def put(tag, ox, oy, oz, ex, ey, ez):
+        out.append({"name": "%s_%s" % (name, tag),
+                    "origin": [round(ox, 4), round(oy, 4), round(oz, 4)],
+                    "extents": [round(ex, 4), round(ey, 4), round(ez, 4)],
+                    "angles": [0.0, 0.0, 0.0], "material": MAT})
+
+    put("floor", centre[0], centre[1], z - SHELL / 2.0, outer, outer, SHELL)
+    put("ceil", centre[0], centre[1], z + bore_h + SHELL / 2.0,
+        outer, outer, SHELL)
+    for side in "nsew":
+        if side in "ns":
+            wy = centre[1] + (h + SHELL / 2.0) * (1 if side == "n" else -1)
+            lo, hi = centre[0] - h - SHELL, centre[0] + h + SHELL
+            if side in openings:
+                off, w = openings[side]
+                o0, o1 = centre[0] + off - w / 2.0, centre[0] + off + w / 2.0
+                if o0 > lo:
+                    put(side + "0", (lo + o0) / 2.0, wy, z + bore_h / 2.0,
+                        o0 - lo, SHELL, bore_h)
+                if hi > o1:
+                    put(side + "1", (o1 + hi) / 2.0, wy, z + bore_h / 2.0,
+                        hi - o1, SHELL, bore_h)
+            else:
+                put(side, centre[0], wy, z + bore_h / 2.0, outer, SHELL,
+                    bore_h)
+        else:
+            wx = centre[0] + (h + SHELL / 2.0) * (1 if side == "e" else -1)
+            lo, hi = centre[1] - h - SHELL, centre[1] + h + SHELL
+            if side in openings:
+                off, w = openings[side]
+                o0, o1 = centre[1] + off - w / 2.0, centre[1] + off + w / 2.0
+                if o0 > lo:
+                    put(side + "0", wx, (lo + o0) / 2.0, z + bore_h / 2.0,
+                        SHELL, o0 - lo, bore_h)
+                if hi > o1:
+                    put(side + "1", wx, (o1 + hi) / 2.0, z + bore_h / 2.0,
+                        SHELL, hi - o1, bore_h)
+            else:
+                put(side, wx, centre[1], z + bore_h / 2.0, SHELL, outer,
+                    bore_h)
 
 
 def rot_box(name, centre, extents, yaw):
@@ -166,7 +214,7 @@ def main(path):
 
     # ------------------------------------------------------------ cleanup
     drop = set()
-    prefixes = ["vtun_", "m_vtun_"]
+    prefixes = ["vtun_", "m_vtun_", "ttun_", "m_ttun_"]
     # Only clear the door's outputs if the source wall is still there to cut
     # again. If the wall is gone the cut already happened, and clearing would
     # delete it with nothing to rebuild from.
@@ -247,83 +295,33 @@ def main(path):
         made.extend(pieces + heads)
 
     # ---------------------------------------------------------- change 2
-    bore_z = (DOOR_SILL, DOOR_HEAD)
+    # A T fork, not a V. Every piece is axis aligned, so nothing has to be
+    # mitred and no tapers are needed: the straight run ends in a square
+    # room and the two branches leave it at right angles through flush
+    # openings in its walls.
+    bore_z0, bore_z1 = DOOR_SILL, DOOR_HEAD
     sy0 = DOOR_CENTRE_Y - BORE_W / 2.0
     sy1 = DOOR_CENTRE_Y + BORE_W / 2.0
-    sx0 = DOOR_FACE_X
-    sx1 = DOOR_FACE_X + STRAIGHT
+    room_c = (DOOR_FACE_X + STRAIGHT + T_ROOM / 2.0, DOOR_CENTRE_Y)
+    made.append(box("ttun_straight_floor", (DOOR_FACE_X, room_c[0] - T_ROOM / 2.0),
+                    (sy0, sy1), (bore_z0 - SHELL, bore_z0)))
+    made.append(box("ttun_straight_ceil", (DOOR_FACE_X, room_c[0] - T_ROOM / 2.0),
+                    (sy0, sy1), (bore_z1, bore_z1 + SHELL)))
+    made.append(box("ttun_straight_wall_s", (DOOR_FACE_X, room_c[0] - T_ROOM / 2.0),
+                    (sy0 - SHELL, sy0), (bore_z0, bore_z1)))
+    made.append(box("ttun_straight_wall_n", (DOOR_FACE_X, room_c[0] - T_ROOM / 2.0),
+                    (sy1, sy1 + SHELL), (bore_z0, bore_z1)))
+    print("T straight: x %.2f..%.2f, bore %.2f wide, z %.2f..%.2f"
+          % (DOOR_FACE_X, room_c[0] - T_ROOM / 2.0, BORE_W, bore_z0, bore_z1))
 
-    made.append(box("vtun_straight_floor", (sx0, sx1), (sy0, sy1),
-                    (bore_z[0] - SHELL, bore_z[0])))
-    made.append(box("vtun_straight_ceil", (sx0, sx1), (sy0, sy1),
-                    (bore_z[1], bore_z[1] + SHELL)))
-    # The side walls must stop before the legs begin, or their tail ends sit
-    # inside a leg's bore. A leg's back plane passes through the apex at
-    # LEG_YAW, so it first reaches the wall at its outer face, half the bore
-    # plus one shell off the centreline.
-    wall_end = sx1 - (BORE_W / 2.0 + SHELL) * math.tan(math.radians(LEG_YAW))
-    made.append(box("vtun_straight_wall_s", (sx0, wall_end),
-                    (sy0 - SHELL, sy0), bore_z))
-    made.append(box("vtun_straight_wall_n", (sx0, wall_end),
-                    (sy1, sy1 + SHELL), bore_z))
-    print("TUNNEL straight: x %.2f..%.2f (%.2f, %.2f m), bore %.2f wide, "
-          "z %.2f..%.2f" % (sx0, sx1, STRAIGHT, STRAIGHT / UNITS_PER_M,
-                            BORE_W, bore_z[0], bore_z[1]))
-    print("     side walls stop at x %.2f, %.2f short of the apex, so their "
-          "tails do not sit inside a leg bore"
-          % (wall_end, sx1 - wall_end))
-
-    apex = (sx1, DOOR_CENTRE_Y)
-    zc_bore = (bore_z[0] + bore_z[1]) / 2.0
-    bore_h = bore_z[1] - bore_z[0]
-    for tag, sign in (("n", 1.0), ("s", -1.0)):
-        yaw = LEG_YAW * sign
-        r = math.radians(yaw)
-        u = (math.cos(r), math.sin(r))            # along the leg
-        v = (-math.sin(r) * sign, math.cos(r) * sign)   # outward from apex
-
-        def at(du, dv, z):
-            return (apex[0] + u[0] * du + v[0] * dv,
-                    apex[1] + u[1] * du + v[1] * dv,
-                    z)
-
-        mid_u = LEG / 2.0
-        made.append(rot_box("vtun_leg_%s_floor" % tag,
-                            at(mid_u, BORE_W / 2.0, bore_z[0] - SHELL / 2.0),
-                            (LEG, BORE_W, SHELL), yaw))
-        made.append(rot_box("vtun_leg_%s_ceil" % tag,
-                            at(mid_u, BORE_W / 2.0, bore_z[1] + SHELL / 2.0),
-                            (LEG, BORE_W, SHELL), yaw))
-        made.append(rot_box("vtun_leg_%s_wall_out" % tag,
-                            at(mid_u, BORE_W + SHELL / 2.0, zc_bore),
-                            (LEG, SHELL, bore_h), yaw))
-        made.append(rot_box("vtun_leg_%s_wall_in" % tag,
-                            at(mid_u, -SHELL / 2.0, zc_bore),
-                            (LEG, SHELL, bore_h), yaw))
-        back = at(0.0, BORE_W, 0.0)
-        print("     back outer corner reaches x %.2f, which is %.2f behind "
-              "the apex" % (back[0], apex[0] - back[0]))
-        tip = at(LEG, BORE_W / 2.0, 0.0)
-        print("TUNNEL leg %s: yaw %+.1f, length %.2f (%.2f m), "
-              "centre of mouth ends at x %.2f y %.2f"
-              % (tag, yaw, LEG, LEG / UNITS_PER_M, tip[0], tip[1]))
-
-    # The legs are laid out from the apex, so each one's back outer corner
-    # reaches BORE_W * sin(LEG_YAW) behind the apex, outside the straight
-    # run's side walls. Without a plate under and over that flare the leg
-    # slabs there are detached fragments with holes between them and the
-    # straight run. This apron closes both, floor and ceiling alike.
-    r = math.radians(LEG_YAW)
-    flare_back = apex[0] - BORE_W * math.sin(r)
-    flare_half = BORE_W * math.cos(r)
-    fy0 = DOOR_CENTRE_Y - flare_half
-    fy1 = DOOR_CENTRE_Y + flare_half
-    made.append(box("vtun_split_floor", (flare_back, apex[0]), (fy0, fy1),
-                    (bore_z[0] - SHELL, bore_z[0])))
-    made.append(box("vtun_split_ceil", (flare_back, apex[0]), (fy0, fy1),
-                    (bore_z[1], bore_z[1] + SHELL)))
-    print("SPLIT apron: x %.2f..%.2f, y %.2f..%.2f, floor and ceiling"
-          % (flare_back, apex[0], fy0, fy1))
+    troom(("ttun_room", room_c, bore_z0, BORE_H, T_ROOM,
+           {"w": (0.0, BORE_W), "n": (0.0, BORE_W), "s": (0.0, BORE_W)}),
+          made)
+    print("T room: %.2f square, centre (%.2f, %.2f), openings west (the "
+          "straight run) and north and south (the two branches)"
+          % (T_ROOM, room_c[0], room_c[1]))
+    print("     branch faces at y %.2f and %.2f, x centre %.2f"
+          % (room_c[1] + T_ROOM / 2.0, room_c[1] - T_ROOM / 2.0, room_c[0]))
 
     twins = [mirror_box(b, "m_" + b["name"]) for b in made]
     boxes.extend(made)
