@@ -292,10 +292,30 @@ def main(path):
         made.append(rot_box("vtun_leg_%s_wall_in" % tag,
                             at(mid_u, -SHELL / 2.0, zc_bore),
                             (LEG, SHELL, bore_h), yaw))
+        back = at(0.0, BORE_W, 0.0)
+        print("     back outer corner reaches x %.2f, which is %.2f behind "
+              "the apex" % (back[0], apex[0] - back[0]))
         tip = at(LEG, BORE_W / 2.0, 0.0)
         print("TUNNEL leg %s: yaw %+.1f, length %.2f (%.2f m), "
               "centre of mouth ends at x %.2f y %.2f"
               % (tag, yaw, LEG, LEG / UNITS_PER_M, tip[0], tip[1]))
+
+    # The legs are laid out from the apex, so each one's back outer corner
+    # reaches BORE_W * sin(LEG_YAW) behind the apex, outside the straight
+    # run's side walls. Without a plate under and over that flare the leg
+    # slabs there are detached fragments with holes between them and the
+    # straight run. This apron closes both, floor and ceiling alike.
+    r = math.radians(LEG_YAW)
+    flare_back = apex[0] - BORE_W * math.sin(r)
+    flare_half = BORE_W * math.cos(r)
+    fy0 = DOOR_CENTRE_Y - flare_half
+    fy1 = DOOR_CENTRE_Y + flare_half
+    made.append(box("vtun_split_floor", (flare_back, apex[0]), (fy0, fy1),
+                    (bore_z[0] - SHELL, bore_z[0])))
+    made.append(box("vtun_split_ceil", (flare_back, apex[0]), (fy0, fy1),
+                    (bore_z[1], bore_z[1] + SHELL)))
+    print("SPLIT apron: x %.2f..%.2f, y %.2f..%.2f, floor and ceiling"
+          % (flare_back, apex[0], fy0, fy1))
 
     twins = [mirror_box(b, "m_" + b["name"]) for b in made]
     boxes.extend(made)

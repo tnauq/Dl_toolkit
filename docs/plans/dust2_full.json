@@ -73734,6 +73734,44 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
+   "name": "vtun_split_floor",
+   "origin": [
+    3937.8,
+    6255.92,
+    351.27
+   ],
+   "extents": [
+    126.5,
+    438.2089,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "vtun_split_ceil",
+   "origin": [
+    3937.8,
+    6255.92,
+    964.77
+   ],
+   "extents": [
+    126.5,
+    438.2089,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
    "name": "m_axis_553_mid_s",
    "origin": [
     3080.6,
@@ -74926,6 +74964,44 @@
    "angles": [
     0.0,
     150.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_vtun_split_floor",
+   "origin": [
+    -3017.6,
+    5914.18,
+    351.27
+   ],
+   "extents": [
+    126.5,
+    438.2089,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "m_vtun_split_ceil",
+   "origin": [
+    -3017.6,
+    5914.18,
+    964.77
+   ],
+   "extents": [
+    126.5,
+    438.2089,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
