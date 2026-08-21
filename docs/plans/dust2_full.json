@@ -12533,21 +12533,33 @@
   {
    "name": "ramp-slab_372",
    "origin": [
-    -644.8,
+    -654.156,
     4120.8,
-    278.1
+    234.0834
    ],
    "extents": [
     223.7,
     133.4,
-    53.3
+    143.3
    ],
    "angles": [
     12.0,
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch11_pre": {
+    "origin": [
+     -644.8,
+     4120.8,
+     278.1
+    ],
+    "extents": [
+     223.7,
+     133.4,
+     53.3
+    ]
+   }
   },
   {
    "name": "ramp-slab_380",
@@ -45925,21 +45937,33 @@
   {
    "name": "m_ramp-slab_372",
    "origin": [
-    1565.0,
+    1574.356,
     8049.3,
-    278.1
+    234.0834
    ],
    "extents": [
     223.7,
     133.4,
-    53.3
+    143.3
    ],
    "angles": [
     12.0,
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch11_pre": {
+    "origin": [
+     1565.0,
+     8049.3,
+     278.1
+    ],
+    "extents": [
+     223.7,
+     133.4,
+     53.3
+    ]
+   }
   },
   {
    "name": "m_ramp-slab_380",
@@ -79783,6 +79807,114 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat"
+  },
+  {
+   "name": "corner_plat_n",
+   "origin": [
+    1760.4,
+    6645.15,
+    626.8
+   ],
+   "extents": [
+    266.7,
+    266.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "corner_plat_n_rail_w",
+   "origin": [
+    1640.4,
+    6645.15,
+    670.15
+   ],
+   "extents": [
+    26.7,
+    266.7,
+    60.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "corner_plat_n_rail_n",
+   "origin": [
+    1773.75,
+    6765.15,
+    670.15
+   ],
+   "extents": [
+    240.0,
+    26.7,
+    60.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "m_corner_plat_n",
+   "origin": [
+    -840.2,
+    5524.95,
+    626.8
+   ],
+   "extents": [
+    266.7,
+    266.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ]
+  },
+  {
+   "name": "m_corner_plat_n_rail_w",
+   "origin": [
+    -720.2,
+    5524.95,
+    670.15
+   ],
+   "extents": [
+    26.7,
+    266.7,
+    60.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ]
+  },
+  {
+   "name": "m_corner_plat_n_rail_n",
+   "origin": [
+    -853.55,
+    5404.95,
+    670.15
+   ],
+   "extents": [
+    240.0,
+    26.7,
+    60.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ]
   }
  ],
  "entities": [
