@@ -27,9 +27,11 @@ cloned three times across the thickness with overlap, per the standing
 convention on thick walls.
 
 THE V TUNNEL
-1 m is 39.37 units in this plan. The straight run is 120.15 (4.5 grid
-units, 3.05 m) and each leg is 280.35 (10.5 grid units, 7.12 m), chosen
-to land on the grid rather than on the exact metric figure.
+1 m is 39.37 units in this plan. The straight run is 240.30 (9 grid
+units, 6.10 m) and each leg is 280.35 (10.5 grid units, 7.12 m), chosen
+to land on the grid rather than on the exact metric figure. The straight
+run was doubled from its original 120.15, which moves the apex and both
+legs east with it.
 
 Each leg is built from its apex outward: the inner faces of the two legs
 both start at the split point on the centreline, so the nose of the V is
@@ -76,7 +78,7 @@ DOOR_CENTRE_Y = 6255.92
 DOOR_SILL = 364.62
 DOOR_HEAD = 951.42
 BORE_W = 253.00
-STRAIGHT = 120.15               # 3.05 m
+STRAIGHT = 240.30               # 9 grid units, 6.10 m
 LEG = 280.35                    # 7.12 m
 LEG_YAW = 30.0                  # each leg off the axis, so 60 total
 SHELL = 26.70
