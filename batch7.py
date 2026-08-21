@@ -180,18 +180,63 @@ def taper(name, p0, p1, z, w0, h0, w1, h1, out):
             w0 + (w1 - w0) * f, h0 + (h1 - h0) * f, out)
 
 
-def room(name, centre, z, bore_h, out, size=None):
-    """A turnaround room: floor and ceiling only, walls left open so every
-    corridor meeting here passes straight through the opening."""
-    for tag, oz, ez in (("floor", z - SHELL / 2.0, SHELL),
-                        ("ceil", z + bore_h + SHELL / 2.0, SHELL)):
+def room(name, centre, z, bore_h, size, openings, out, walls=None):
+    """A room with a floor, a ceiling and real walls.
+
+    openings maps a side ('n','s','e','w') to (offset, width). The offset is
+    measured along that wall from the room centre, so a corridor that does
+    not line up with the centre still gets a flush opening. A side listed in
+    walls=None gets all four; pass a set to omit sides (the map's own wall
+    does the job on that side).
+    """
+    h = size / 2.0
+    outer = size + 2 * SHELL
+    sides = walls if walls is not None else set("nsew")
+
+    def put(tag, ox, oy, oz, ex, ey, ez):
         out.append({
             "name": "%s_%s" % (name, tag),
-            "origin": [round(centre[0], 4), round(centre[1], 4), round(oz, 4)],
-            "extents": [size or ROOM, size or ROOM, ez],
+            "origin": [round(ox, 4), round(oy, 4), round(oz, 4)],
+            "extents": [round(ex, 4), round(ey, 4), round(ez, 4)],
             "angles": [0.0, 0.0, 0.0],
             "material": MAT,
         })
+
+    put("floor", centre[0], centre[1], z - SHELL / 2.0, outer, outer, SHELL)
+    put("ceil", centre[0], centre[1], z + bore_h + SHELL / 2.0,
+        outer, outer, SHELL)
+
+    for side in sorted(sides):
+        if side in "ns":
+            wy = centre[1] + (h + SHELL / 2.0) * (1 if side == "n" else -1)
+            lo, hi = centre[0] - h - SHELL, centre[0] + h + SHELL
+            if side in openings:
+                off, w = openings[side]
+                o0, o1 = centre[0] + off - w / 2.0, centre[0] + off + w / 2.0
+                if o0 > lo:
+                    put(side + "0", (lo + o0) / 2.0, wy, z + bore_h / 2.0,
+                        o0 - lo, SHELL, bore_h)
+                if hi > o1:
+                    put(side + "1", (o1 + hi) / 2.0, wy, z + bore_h / 2.0,
+                        hi - o1, SHELL, bore_h)
+            else:
+                put(side, centre[0], wy, z + bore_h / 2.0, outer, SHELL,
+                    bore_h)
+        else:
+            wx = centre[0] + (h + SHELL / 2.0) * (1 if side == "e" else -1)
+            lo, hi = centre[1] - h - SHELL, centre[1] + h + SHELL
+            if side in openings:
+                off, w = openings[side]
+                o0, o1 = centre[1] + off - w / 2.0, centre[1] + off + w / 2.0
+                if o0 > lo:
+                    put(side + "0", wx, (lo + o0) / 2.0, z + bore_h / 2.0,
+                        SHELL, o0 - lo, bore_h)
+                if hi > o1:
+                    put(side + "1", wx, (o1 + hi) / 2.0, z + bore_h / 2.0,
+                        SHELL, hi - o1, bore_h)
+            else:
+                put(side, wx, centre[1], z + bore_h / 2.0, SHELL, outer,
+                    bore_h)
 
 
 def along(p, bearing, dist):
@@ -213,125 +258,123 @@ def main(path):
 
     made = []
 
-    # ---- upper: extend the north leg, climbing, full bore -------------
-    up_a = along(UP_MOUTH, UP_BEAR, UP_EXT_LEN)
-    i = seg(PREFIX + "up_ext", UP_MOUTH, up_a, MOUTH_FLOOR, UP_MID,
+    R_BIG = 652.95          # the square room that replaced the snaking bit
+    BIG_CX, BIG_CY = -2513.525, 3393.625
+    BIG_BORE = 347.10       # ceiling top lands on the wall top, 1280.30
+    LANE_S, LANE_N = 3067.15, 3280.65   # flush with hex2_tun_e_wall_r0
+
+    # ---------------------------------------------------------- upper
+    nw = (-4938.92, 6913.91)
+    sw = (-4938.92, 4900.00)
+    rn = (-2466.75, 4900.00)   # outer east face lands on -2187.05
+    BIG_ROOM = 759.00
+    RN_SIZE = 506.00
+    HUG_X = WALL_FACE - BORE_W / 2.0 - SHELL
+
+    ext_face = nw[0] + BIG_ROOM / 2.0
+    ext_end = along(UP_MOUTH, UP_BEAR,
+                    (ext_face - UP_MOUTH[0]) / math.cos(math.radians(UP_BEAR)))
+    i = seg(PREFIX + "up_ext", UP_MOUTH, ext_end, MOUTH_FLOOR, UP_MID,
             BORE_W, BORE_H, made)
     print("UPPER ext: to (%.2f, %.2f), %.2f -> %.2f, pitch %+.2f deg, "
-          "bore %.2f x %.2f (no change at the mouth)"
-          % (up_a[0], up_a[1], MOUTH_FLOOR, UP_MID, i["pitch"],
-             BORE_W, BORE_H))
-    room(PREFIX + "up_room_w", up_a, UP_MID, BORE_H, made)
+          "full bore, no change at the mouth"
+          % (ext_end[0], ext_end[1], MOUTH_FLOOR, UP_MID, i["pitch"]))
 
-    # ---- upper: connector, routed WEST of the lower's north band and
-    # SOUTH of the lower's extension, so the only place the two meet in
-    # plan is the pinch on the ext.
-    up_a2 = (UP_LINK_X, up_a[1])
-    i = seg(PREFIX + "up_link_w", up_a, up_a2, UP_MID, UP_MID,
+    room(PREFIX + "up_room_nw", nw, UP_MID, BORE_H, BIG_ROOM,
+         {"e": (0.0, 380.00), "s": (0.0, BORE_W)}, made)
+    i = seg(PREFIX + "up_link_s", (nw[0], nw[1] - BIG_ROOM / 2.0),
+            (sw[0], sw[1] + BIG_ROOM / 2.0), UP_MID, UP_LEVEL,
             BORE_W, BORE_H, made)
-    room(PREFIX + "up_room_nw", up_a2, UP_MID, BORE_H, made)
-    up_a3 = (UP_LINK_X, UP_HUG_N)
-    i = seg(PREFIX + "up_link_s", up_a2, up_a3, UP_MID, UP_LEVEL,
+    print("UPPER link south: x %.2f, %.2f -> %.2f, pitch %+.2f deg, len %.2f"
+          % (nw[0], UP_MID, UP_LEVEL, i["pitch"], i["run"]))
+
+    room(PREFIX + "up_room_sw", sw, UP_LEVEL, BORE_H, BIG_ROOM,
+         {"n": (0.0, BORE_W), "e": (0.0, BORE_W)}, made)
+    print("UPPER room_sw: %.2f square, tripled, entrances flush in its walls"
+          % BIG_ROOM)
+
+    i = seg(PREFIX + "up_link_e", (sw[0] + BIG_ROOM / 2.0, sw[1]),
+            (rn[0] - RN_SIZE / 2.0, rn[1]), UP_LEVEL, UP_LEVEL,
             BORE_W, BORE_H, made)
-    print("UPPER link south: x %.2f, y %.2f -> %.2f, %.2f -> %.2f, "
-          "pitch %+.2f deg" % (UP_LINK_X, up_a2[1], up_a3[1], UP_MID,
-                               UP_LEVEL, i["pitch"]))
-    room(PREFIX + "up_room_sw", up_a3, UP_LEVEL, BORE_H, made)
-    up_b = (UP_HUG_X, UP_HUG_N)
-    i = seg(PREFIX + "up_link_e", up_a3, up_b, UP_LEVEL, UP_LEVEL,
+    print("UPPER link east: LEVEL at %.2f, length %.2f" % (UP_LEVEL, i["run"]))
+
+    room(PREFIX + "up_room_n", rn, UP_LEVEL, BORE_H, RN_SIZE,
+         {"w": (0.0, BORE_W), "s": (HUG_X - rn[0], BORE_W)}, made)
+
+    i = seg(PREFIX + "up_wall", (HUG_X, rn[1] - RN_SIZE / 2.0),
+            (HUG_X, BIG_CY + R_BIG / 2.0), UP_LEVEL, UP_LEVEL,
             BORE_W, BORE_H, made)
-    print("UPPER link east: to (%.2f, %.2f), LEVEL at %.2f, length %.2f "
-          "(passes south of the lower band, which starts at y 5064.45)"
-          % (up_b[0], up_b[1], UP_LEVEL, i["run"]))
-    room(PREFIX + "up_room_n", up_b, UP_LEVEL, BORE_H, made)
+    print("UPPER wall run: x %.2f, LEVEL at %.2f, length %.2f, clears the "
+          "d553n voussoirs at 873.09 by %.2f"
+          % (HUG_X, UP_LEVEL, i["run"], UP_LEVEL - SHELL - HEX2_TOP))
 
-    # ---- upper: level alongside axis_553_mid_n ------------------------
-    up_c = (UP_HUG_X, UP_DOGLEG_Y)
-    i = seg(PREFIX + "up_wall", up_b, up_c, UP_LEVEL, UP_LEVEL,
-            BORE_W, BORE_H, made)
-    print("UPPER wall run: to (%.2f, %.2f), LEVEL at %.2f, length %.2f, "
-          "clears hex2 top %.2f by %.2f"
-          % (up_c[0], up_c[1], UP_LEVEL, i["run"], HEX2_TOP,
-             UP_LEVEL - SHELL - HEX2_TOP))
-    room(PREFIX + "up_room_dog", up_c, UP_LEVEL, BORE_H, made)
+    # ---- the square room, built by hand: its east side is the map's own
+    # wall, and one lane of its floor ramps down to the door sill.
+    x0, x1 = BIG_CX - R_BIG / 2.0, BIG_CX + R_BIG / 2.0
+    y0, y1 = BIG_CY - R_BIG / 2.0, BIG_CY + R_BIG / 2.0
+    room(PREFIX + "up_big", (BIG_CX, BIG_CY), UP_LEVEL, BIG_BORE, R_BIG,
+         {"n": (HUG_X - BIG_CX, BORE_W)}, made, walls={"n", "s", "w"})
+    print("BIG ROOM: x %.2f..%.2f, y %.2f..%.2f, %.2f square, floor %.2f, "
+          "ceiling top %.2f" % (x0, x1, y0, y1, R_BIG, UP_LEVEL,
+                                UP_LEVEL + BIG_BORE + SHELL))
+    # The ramp lane replaces the room floor over the door's width. Its bore
+    # is kept low and the ramp stops short of the doorway, because a pitched
+    # ceiling overshoots its floor by (bore + shell/2) * sin(pitch) and would
+    # otherwise punch east into axis_739 at -2133.70.
+    ly = (LANE_S + LANE_N) / 2.0
+    LANE_BORE = 266.70
+    LANE_END = -2300.00
+    i = seg(PREFIX + "up_lane", (x0, ly), (LANE_END, ly),
+            UP_LEVEL, UP_DOOR_SILL, LANE_N - LANE_S, LANE_BORE, made)
+    over = (LANE_BORE + SHELL / 2.0) * math.sin(math.radians(abs(i["pitch"])))
+    seg(PREFIX + "up_lane_flat", (LANE_END, ly), (UP_DOOR_FACE, ly),
+        UP_DOOR_SILL, UP_DOOR_SILL, LANE_N - LANE_S, LANE_BORE, made)
+    print("     ramp lane y %.2f..%.2f (south edge flush with "
+          "hex2_tun_e_wall_r0 at 3067.15), %.2f -> %.2f, pitch %+.2f deg, "
+          "ceiling overshoot %.2f reaching x %.2f, then level to the door"
+          % (LANE_S, LANE_N, UP_LEVEL, UP_DOOR_SILL, i["pitch"], over,
+             LANE_END + over))
 
-    up_d = (UP_APPROACH_X, UP_DOGLEG_Y)
-    i = seg(PREFIX + "up_dog", up_c, up_d, UP_LEVEL, UP_LEVEL,
-            BORE_W, BORE_H, made)
-    print("UPPER dogleg: to (%.2f, %.2f), LEVEL at %.2f, length %.2f"
-          % (up_d[0], up_d[1], UP_LEVEL, i["run"]))
-
-    # step the bore down before the squeeze, not at a cliff
-    up_e = (UP_APPROACH_X, UP_DOGLEG_Y - TAPER_LEN)
-    taper(PREFIX + "up_taper", up_d, up_e, UP_LEVEL,
-          BORE_W, BORE_H, UP_NARROW_W, UP_DOOR_H, made)
-    print("UPPER taper: %.2f x %.2f -> %.2f x %.2f in 3 steps over %.2f"
-          % (BORE_W, BORE_H, UP_NARROW_W, UP_DOOR_H, TAPER_LEN))
-
-    # Start shedding height here rather than in one steep drop at the door.
-    # A pitched corridor's ceiling is offset perpendicular to its floor, so
-    # it runs past the end of the floor by (bore_h + shell/2) * sin(pitch).
-    # A gentle pitch keeps that overshoot short of the doorway.
-    up_f = (UP_APPROACH_X, UP_APPROACH_Y)
-    mid_z = (UP_LEVEL + UP_DOOR_SILL) / 2.0
-    i = seg(PREFIX + "up_squeeze", up_e, up_f, UP_LEVEL, mid_z,
-            UP_NARROW_W, UP_DOOR_H, made)
-    print("UPPER squeeze: to (%.2f, %.2f), %.2f -> %.2f, pitch %+.2f deg"
-          % (up_f[0], up_f[1], UP_LEVEL, mid_z, i["pitch"]))
-    room(PREFIX + "up_room_s", up_f, mid_z, UP_DOOR_H, made,
-         size=UP_NARROW_W)
-
-    # Descend clear of the doorway, then meet the door dead level, so the
-    # pitched wall boxes do not overshoot through axis_553_mid into the
-    # far side.
-    up_g = (UP_RAMP_END_X, UP_APPROACH_Y)
-    i = seg(PREFIX + "up_drop", up_f, up_g, mid_z, UP_DOOR_SILL,
-            UP_NARROW_W, UP_DOOR_H, made)
-    over = (UP_DOOR_H + SHELL / 2.0) * math.sin(math.radians(abs(i["pitch"])))
-    print("UPPER drop: to x %.2f, %.2f -> %.2f, pitch %+.2f deg, ceiling "
-          "overshoot %.2f, ending at x %.2f, clear of the arch at -2194.70"
-          % (UP_RAMP_END_X, mid_z, UP_DOOR_SILL, i["pitch"], over,
-             UP_RAMP_END_X + over))
-    i = seg(PREFIX + "up_stub", up_g, (UP_DOOR_FACE, UP_APPROACH_Y),
-            UP_DOOR_SILL, UP_DOOR_SILL, UP_NARROW_W, UP_DOOR_H, made)
-    print("UPPER stub: to face %.2f, LEVEL at %.2f, length %.2f"
-          % (UP_DOOR_FACE, UP_DOOR_SILL, i["run"]))
-
-    # ---- lower: extend the south leg down to its own sill, full bore --
-    lo_a = along(LO_MOUTH, LO_BEAR, LO_EXT_LEN)
-    i = seg(PREFIX + "lo_ext", LO_MOUTH, lo_a, MOUTH_FLOOR, LO_MID,
+    # ---------------------------------------------------------- lower
+    lw = (-4299.61, 5064.45)
+    ln = (-4299.61, LO_DOOR_Y)
+    LO_SIZE = 506.00
+    lo_face = lw[0] + LO_SIZE / 2.0
+    lo_end = along(LO_MOUTH, LO_BEAR,
+                   (lo_face - LO_MOUTH[0]) / math.cos(math.radians(LO_BEAR)))
+    i = seg(PREFIX + "lo_ext", LO_MOUTH, lo_end, MOUTH_FLOOR, LO_MID,
             BORE_W, BORE_H, made)
     print("LOWER ext: to (%.2f, %.2f), %.2f -> %.2f, pitch %+.2f deg, "
-          "bore %.2f x %.2f (no change at the mouth)"
-          % (lo_a[0], lo_a[1], MOUTH_FLOOR, LO_MID, i["pitch"],
-             BORE_W, BORE_H))
-    room(PREFIX + "lo_room_w", lo_a, LO_MID, BORE_H, made)
+          "full bore, no change at the mouth"
+          % (lo_end[0], lo_end[1], MOUTH_FLOOR, LO_MID, i["pitch"]))
+    room(PREFIX + "lo_room_w", lw, LO_MID, BORE_H, LO_SIZE,
+         {"e": (0.0, 380.00), "n": (0.0, BORE_W)}, made)
 
-    # north run, pinched only where the upper passes overhead
     p0 = PINCH_Y - PINCH_LEN / 2.0
     p1 = PINCH_Y + PINCH_LEN / 2.0
-    x = lo_a[0]
-    seg(PREFIX + "lo_north_a", lo_a, (x, p0 - TAPER_LEN), LO_MID, LO_MID,
-        BORE_W, BORE_H, made)
+    x = lw[0]
+    seg(PREFIX + "lo_north_a", (x, lw[1] + LO_SIZE / 2.0),
+        (x, p0 - TAPER_LEN), LO_MID, LO_MID, BORE_W, BORE_H, made)
     taper(PREFIX + "lo_taper_in", (x, p0 - TAPER_LEN), (x, p0), LO_MID,
           BORE_W, BORE_H, BORE_W, PINCH_H, made)
     seg(PREFIX + "lo_pinch", (x, p0), (x, p1), LO_MID, LO_MID,
         BORE_W, PINCH_H, made)
     taper(PREFIX + "lo_taper_out", (x, p1), (x, p1 + TAPER_LEN), LO_MID,
           BORE_W, PINCH_H, BORE_W, BORE_H, made)
-    seg(PREFIX + "lo_north_b", (x, p1 + TAPER_LEN), (x, LO_DOOR_Y),
-        LO_MID, LO_MID, BORE_W, BORE_H, made)
-    print("LOWER north: flat at %.2f, ceiling pinched to %.2f over "
-          "y %.2f..%.2f, stepped in and out over %.2f each side"
+    seg(PREFIX + "lo_north_b", (x, p1 + TAPER_LEN),
+        (x, ln[1] - LO_SIZE / 2.0), LO_MID, LO_MID, BORE_W, BORE_H, made)
+    print("LOWER north: flat at %.2f, full bore except a pinch to %.2f over "
+          "y %.2f..%.2f, stepped in and out over %.2f"
           % (LO_MID, PINCH_H, p0, p1, TAPER_LEN))
-    print("     pinched ceiling top %.2f vs upper floor bottom 567.50 "
-          "at worst, clear by %.2f"
-          % (LO_MID + PINCH_H + SHELL, 567.50 - (LO_MID + PINCH_H + SHELL)))
-    room(PREFIX + "lo_room_n", (x, LO_DOOR_Y), LO_MID, BORE_H, made)
-
-    i = seg(PREFIX + "lo_stub", (x, LO_DOOR_Y), (LO_DOOR_FACE, LO_DOOR_Y),
-            LO_DOOR_SILL, LO_DOOR_SILL, BORE_W, BORE_H, made)
-    print("LOWER stub: to face %.2f, flat at %.2f, length %.2f, full bore"
+    print("     pinched ceiling top %.2f vs upper floor bottom 567.50, "
+          "clear by %.2f" % (LO_MID + PINCH_H + SHELL,
+                             567.50 - (LO_MID + PINCH_H + SHELL)))
+    room(PREFIX + "lo_room_n", ln, LO_MID, BORE_H, LO_SIZE,
+         {"s": (0.0, BORE_W), "e": (0.0, BORE_W)}, made)
+    i = seg(PREFIX + "lo_stub", (ln[0] + LO_SIZE / 2.0, ln[1]),
+            (LO_DOOR_FACE, ln[1]), LO_DOOR_SILL, LO_DOOR_SILL,
+            BORE_W, BORE_H, made)
+    print("LOWER stub: to face %.2f, LEVEL at %.2f, length %.2f, full bore"
           % (LO_DOOR_FACE, LO_DOOR_SILL, i["run"]))
 
     twins = [mirror_box(b, "m_" + b["name"]) for b in made]
