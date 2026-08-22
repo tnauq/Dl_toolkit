@@ -46,10 +46,34 @@ env:
   # Element types whose whole subtree gets captured verbatim.
   CAPTURE_TYPES: 'CMapEntity,CMapPath,CMapPathNode,CMapGroup,CMapInstance'
   # Classnames worth an excerpt, plus the path element types above.
-  CAPTURE_CLASSES: 'lane_marker_path,path_node_generic,citadel_zipline_path,citadel_zipline_path_node,path_simple,npc_barrack_boss,citadel_final_objective_proxy'
-  # Excerpts per kind, and lines per excerpt. Keeps the artifact readable.
+  #
+  # CHANGED 2026-08-22: swapped the path classnames, whose structure is now
+  # settled, for the BRUSH ENTITIES. trigger_item_shop and trigger_team_base
+  # carry model, local.origin and local.scales, so they are volumes rather
+  # than points, and how a volume attaches to its geometry is the one
+  # mechanism the emitter has not read. The previous run's nesting table is
+  # the hypothesis: 150 of 222 CMapMesh sit under `children` rather than at
+  # root, and `children -> CMapEntity` is 276, which is the shape of a brush
+  # entity holding its mesh INLINE. If the dump confirms that, shops cost
+  # nothing new — it is the same inline pattern already emitted for paths.
+  # If instead `children` holds a guid, brush entities need ids and are a
+  # different job.
+  #
+  # SECOND QUESTION IN THE SAME DUMP: is `model` authored or compiler-written?
+  # func_nav_markup showed model = maps\dl_streets\entities\unnamed_14650_959.vmdl,
+  # a generated name under the map's own directory, which looks baked on
+  # export rather than typed by a level designer. Six trigger_item_shop exist
+  # and only four carry a model. If the ones WITH a model differ from the ones
+  # without in whether they hold a child mesh, that answers it.
+  CAPTURE_CLASSES: 'trigger_item_shop,trigger_team_base,func_nav_markup,citadel_breakable_prop,trigger_trooper_detector,destroyable_building'
+  # Excerpts per kind, and lines per excerpt. A brush entity's subtree
+  # contains an entire CDmePolygonMesh if the mesh is inline, which is
+  # thousands of lines — the cap is deliberately BELOW that, because the
+  # question is answered by the first few lines of `children`, not by the
+  # vertex streams. A truncation notice is printed, so a truncated block is
+  # itself evidence the mesh is inline.
   MAX_EXCERPTS: 2
-  MAX_EXCERPT_LINES: 300
+  MAX_EXCERPT_LINES: 120
 
 jobs:
   survey:
