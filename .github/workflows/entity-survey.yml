@@ -1,0 +1,287 @@
+name: entity survey
+
+# WHAT SHAPE ARE DEADLOCK'S OBJECTIVES?
+#
+#   dl_example.vmap (binary, 15 MB, a REAL Deadlock map)
+#     -> dmxconvert -> keyvalues2 text
+#     -> scan       -> every classname, every keyvalue, every element type
+#
+# This decides a fork. If objectives — guardians, walkers, shops, the patron,
+# lane paths — are POINT ENTITIES with flat string keyvalues, they go in
+# MapPlan and out through the emitter that just did 4,179 boxes, all from a
+# phone. If they need shared elements (paths, node graphs, entity IO between
+# named entities), the emitter's whole simplification breaks: MapEmitter's
+# no-GUID property holds only because nothing it writes is referenced twice.
+#
+# So the report answers three questions, in order of how much they cost:
+#
+#   1. which classnames exist, how many of each, and what keys do they carry
+#   2. which element TYPES exist beyond the 14 the emitter produces
+#   3. how many elements carry an id, i.e. are referenced more than once,
+#      and do any CMapEntity carry a non-empty connectionsData or children
+#
+# Question 3 is the load-bearing one. Measured on this same fixture earlier:
+# 767 ids for 768 multiply-referenced elements. If the objective entities sit
+# outside that set, the plan route is open.
+#
+# NOTE: keyvalues2 WITH ids is used deliberately, not keyvalues2_noids. The
+# ids are the evidence for question 3.
+
+on: workflow_dispatch
+
+env:
+  FIXTURE: dl_example.vmap
+  # Keys whose values are long or noisy get counted but not sampled.
+  MAX_SAMPLES: 3
+
+jobs:
+  survey:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fixture is present and is a binary vmap
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          [ -s "$FIXTURE" ] || { echo "FAIL: no $FIXTURE"; exit 1; }
+          wc -c "$FIXTURE"
+          echo -n "header: "; head -c 60 "$FIXTURE" | tr -d '\0'; echo
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          if not conv:
+              print("::error::dmxconvert.exe missing"); sys.exit(1)
+          print("dmxconvert:", conv)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+
+      - name: Binary to keyvalues2 text, WITH ids
+        timeout-minutes: 20
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/$FIXTURE" -ie binary \
+            -o "$ROOT/work/example.txt" -oe keyvalues2 > out/conv.txt 2>&1 || RC=$?
+          cat out/conv.txt
+          echo "exit: $RC" | tee -a out/conv.txt
+          [ -s work/example.txt ] || { echo "FAIL: no text out"; exit 1; }
+          wc -c work/example.txt | tee -a out/conv.txt
+
+      - name: Survey
+        timeout-minutes: 20
+        shell: python
+        run: |
+          import re, os, collections, json
+
+          SRC = 'work/example.txt'
+          MAX = int(os.environ.get('MAX_SAMPLES', '3'))
+
+          # Line shapes in dmxconvert keyvalues2 output:
+          #   "name" "type" "value"        scalar attribute
+          #   "name" "TypeName"            inline element, next line is {
+          #   "TypeName"                   element in an array or at root
+          #   "name" "type_array"          next line is [
+          # Depth is tracked by counting braces and brackets, so an
+          # EditGameClassProps block is left exactly when its depth is closed.
+          three = re.compile(r'^\s*"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?\s*$')
+          two   = re.compile(r'^\s*"([^"]*)"\s+"([^"]*)"\s*$')
+          one   = re.compile(r'^\s*"([^"]*)"\s*,?\s*$')
+
+          types      = collections.Counter()   # element type -> count
+          classes    = collections.Counter()   # classname -> count
+          keys       = collections.defaultdict(collections.Counter)
+          samples    = collections.defaultdict(lambda: collections.defaultdict(list))
+          ids        = 0                       # elements carrying an id
+          elemrefs   = collections.Counter()   # attribute name -> ref count
+          nonempty   = collections.Counter()   # CMapEntity fields that are not empty
+
+          depth = 0
+          props_at = None          # depth at which the current classprops block sits
+          pending_type = None      # type name seen, waiting for its {
+          cur = {}
+          # The type of the element we are currently inside, innermost first.
+          stack = []
+
+          with open(SRC, 'r', encoding='utf-8', errors='replace') as fh:
+              for line in fh:
+                  s = line.strip()
+                  if not s:
+                      continue
+
+                  if s in ('{', '['):
+                      depth += 1
+                      stack.append(pending_type)
+                      if pending_type == 'EditGameClassProps' and props_at is None:
+                          props_at = depth
+                          cur = {}
+                      pending_type = None
+                      continue
+
+                  if s in ('}', ']', '},', '],'):
+                      if props_at is not None and depth == props_at:
+                          cn = cur.pop('classname', '(none)')
+                          classes[cn] += 1
+                          for k, v in cur.items():
+                              keys[cn][k] += 1
+                              lst = samples[cn][k]
+                              if len(lst) < MAX and v not in lst and len(v) <= 64:
+                                  lst.append(v)
+                          props_at = None
+                      if stack:
+                          stack.pop()
+                      depth -= 1
+                      continue
+
+                  m = three.match(s)
+                  if m:
+                      name, typ, val = m.groups()
+                      if name == 'id' and typ == 'elementid':
+                          ids += 1
+                      elif typ == 'element' and val:
+                          elemrefs[name] += 1
+                      elif props_at is not None and depth == props_at:
+                          cur[name] = val
+                      elif stack and stack[-1] == 'CMapEntity':
+                          pass
+                      continue
+
+                  m = two.match(s)
+                  if m:
+                      name, typ = m.groups()
+                      # An inline element or an array header. The type name is
+                      # the second token for inline elements only.
+                      pending_type = typ if not typ.endswith('_array') else None
+                      if pending_type:
+                          types[pending_type] += 1
+                      continue
+
+                  m = one.match(s)
+                  if m:
+                      pending_type = m.group(1)
+                      types[pending_type] += 1
+                      continue
+
+          def w(fh, s=''):
+              fh.write(s + '\n')
+              print(s)
+
+          with open('out/entity-survey.md', 'w', encoding='utf-8') as fh:
+              w(fh, '# Entity survey of dl_example.vmap')
+              w(fh)
+              w(fh, f'elements carrying an id (referenced more than once): {ids}')
+              w(fh)
+              w(fh, '## Element types')
+              w(fh)
+              w(fh, '| count | type |')
+              w(fh, '|---|---|')
+              for t, c in types.most_common():
+                  w(fh, f'| {c} | {t} |')
+              w(fh)
+              w(fh, '## Non-empty element references, by attribute')
+              w(fh)
+              if elemrefs:
+                  for n, c in elemrefs.most_common():
+                      w(fh, f'- {n}: {c}')
+              else:
+                  w(fh, '- none')
+              w(fh)
+              w(fh, '## Classnames')
+              w(fh)
+              w(fh, '| count | classname |')
+              w(fh, '|---|---|')
+              for cn, c in classes.most_common():
+                  w(fh, f'| {c} | {cn} |')
+              w(fh)
+              w(fh, '## Keys per classname')
+              for cn, _ in classes.most_common():
+                  w(fh)
+                  w(fh, f'### {cn}')
+                  for k, c in keys[cn].most_common():
+                      ex = samples[cn][k]
+                      exs = ('  e.g. ' + ', '.join(ex)) if ex else ''
+                      w(fh, f'- {k} ({c}){exs}')
+
+          json.dump({
+              'ids': ids,
+              'types': dict(types),
+              'classes': dict(classes),
+              'keys': {k: dict(v) for k, v in keys.items()},
+          }, open('out/entity-survey.json', 'w'), indent=1)
+
+          print()
+          print(f'{len(classes)} distinct classnames, {len(types)} element types')
+
+      - name: What landed
+        if: always()
+        shell: bash
+        run: |
+          # The text conversion is very large; the reports are the artifact.
+          ls -l out || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: entity-survey
+          path: out/
+          if-no-files-found: ignore
