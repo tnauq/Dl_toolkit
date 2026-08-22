@@ -7,6 +7,8 @@ info_team_spawn entities.
 
 MODEL
   voxel          26.70 on all three axes, matching the plan grid
+  thin plates    a box thinner than one voxel on an axis is treated as one
+                 voxel thick on that axis, so 13.30 stair treads register
   player height  98.00 (gen_man), 4 voxels of headroom
   step up        26.70, one voxel
   drop           400.50 max, 15 voxels
@@ -64,8 +66,8 @@ def box_range(box, lo, dims):
                            for i in range(3)])
     clo = [min(c[i] for c in cs) for i in range(3)]
     chi = [max(c[i] for c in cs) for i in range(3)]
-    i0 = [max(0, int((clo[i] - lo[i]) / VOX)) for i in range(3)]
-    i1 = [min(dims[i] - 1, int((chi[i] - lo[i]) / VOX) + 1) for i in range(3)]
+    i0 = [max(0, int((clo[i] - VOX - lo[i]) / VOX)) for i in range(3)]
+    i1 = [min(dims[i] - 1, int((chi[i] + VOX - lo[i]) / VOX) + 1) for i in range(3)]
     if any(i1[i] < i0[i] for i in range(3)):
         return None, None, None
     xs = lo[0] + (np.arange(i0[0], i1[0] + 1) + 0.5) * VOX
@@ -75,7 +77,13 @@ def box_range(box, lo, dims):
     inside = np.ones(X.shape, dtype=bool)
     for k in range(3):
         local = X * R[0][k] + Y * R[1][k] + Z * R[2][k]
-        inside &= np.abs(local) <= e[k] / 2
+        # A voxel is solid when its CENTRE is inside the box, which misses a
+        # plate thinner than a voxel unless a centre happens to land in it.
+        # Half the 13.30 stair treads disappeared that way. So the half-extent
+        # is floored at half a voxel on any axis thinner than one voxel, and
+        # left alone on every other axis, which captures thin plates without
+        # inflating real geometry or closing a gap.
+        inside &= np.abs(local) <= max(e[k] / 2, VOX / 2)
     return i0, i1, inside
 
 
