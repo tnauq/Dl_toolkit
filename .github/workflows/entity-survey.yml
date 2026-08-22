@@ -65,7 +65,32 @@ env:
   # export rather than typed by a level designer. Six trigger_item_shop exist
   # and only four carry a model. If the ones WITH a model differ from the ones
   # without in whether they hold a child mesh, that answers it.
-  CAPTURE_CLASSES: 'trigger_item_shop,trigger_team_base,func_nav_markup,citadel_breakable_prop,trigger_trooper_detector,destroyable_building'
+  # CHANGED 2026-08-22 (third pass). The brush question is settled for shops;
+  # this pass covers everything ELSE the map needs placing, to learn which are
+  # POINTS and which are VOLUMES before writing tables for them. Anything
+  # named trigger_* is probably a volume and needs a child mesh; the spawners
+  # and ropes may be points.
+  #
+  # Known roles, from the user 2026-08-22:
+  #   citadel_trigger_idol_return  urn dropoff AND spawn; the 2 alternate
+  #   trigger_midboss_shield       the midboss pit
+  #   citadel_item_powerup_spawner bridge buff; rolls one of 4; 2 on the map
+  #   citadel_trigger_climb_rope   climbable rope
+  #   trigger_catapult             jump pad, probably
+  #   citadel_trigger_push         teleporter, probably
+  #   func_regenerate              spawn-room regeneration
+  #   trigger_tier3phase2_shield   patron phase 2
+  #   citadel_trigger_speed_boost  zipline boost — believed GLOBAL, not placed
+  #   citadel_zap_trigger          knocked off the zipline — same
+  #
+  # The last two are the interesting ones: if their subtrees show a real
+  # volume with extents they are placed after all; if they are bare points
+  # with empty children they are demo markers or global toggles.
+  #
+  # NOTE ON COUNTS: dl_example is a GYM, not a layout. It shows one of each
+  # mechanism (1 powerup spawner, 1 rope, 1 catapult) where the real map has
+  # more. Do not read its counts as a template for how many to place.
+  CAPTURE_CLASSES: 'citadel_trigger_idol_return,trigger_midboss_shield,citadel_item_powerup_spawner,citadel_trigger_climb_rope,trigger_catapult,citadel_trigger_push,func_regenerate,trigger_tier3phase2_shield,citadel_trigger_speed_boost,citadel_zap_trigger,trigger_neutral_shield'
   # Property TUPLES to tabulate, as classname:key,key;classname:key
   #
   # THE QUESTION: is a lane_marker_path SHARED between the teams or one per
@@ -89,7 +114,7 @@ env:
   # question is answered by the first few lines of `children`, not by the
   # vertex streams. A truncation notice is printed, so a truncated block is
   # itself evidence the mesh is inline.
-  MAX_EXCERPTS: 2
+  MAX_EXCERPTS: 1
   MAX_EXCERPT_LINES: 120
 
 jobs:
