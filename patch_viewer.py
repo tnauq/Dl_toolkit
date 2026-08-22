@@ -35,7 +35,40 @@ Usage:
 import os
 import sys
 
-MARK = "function tileColor(shade, gx, gy, floor)"
+# A v2 patch is identified by the seam-line edit, which only v2 has. The
+# old marker was the tileColor signature, which v1 ALSO has, so a v1 file
+# was reported as already patched and never upgraded. That is what left
+# the viewer testing for reflectivity_50 after the material became
+# dev_measuregeneric01: patched, reading the material, matching nothing.
+MARK = "q.floor ? 'rgba(176,180,184,.42)'"
+
+# v1 text -> the original text it replaced, so a v1 file can be put back
+# to stock and then re-patched with the current EDITS below.
+REVERTS = [
+    (
+        "    // Floors are told apart by material, set by floormat.py. Any of the\n"
+        "    // brighter dev greys counts, so switching the constant in that script\n"
+        "    // does not need a matching edit here.\n"
+        "    const floor = typeof b.material === 'string' &&\n"
+        "                  /reflectivity_(50|70|90)/.test(b.material);\n"
+        "    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad, floor,",
+        "    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad,",
+    ),
+    (
+        "function tileColor(shade, gx, gy, floor){\n"
+        "  const checker = ((gx + gy) & 1) === 0;\n"
+        "  // Grey for anything a player stands on, orange for everything else.\n"
+        "  const base = floor ? (checker ? [166,168,170] : [124,126,128])\n"
+        "                     : (checker ? [198,101,42]  : [154,74,29]);",
+        "function tileColor(shade, gx, gy){\n"
+        "  const checker = ((gx + gy) & 1) === 0;\n"
+        "  const base = checker ? [198,101,42] : [154,74,29];",
+    ),
+    (
+        "                       col: tileColor(F.shade, iu, iv, sol.floor) });",
+        "                       col: tileColor(F.shade, iu, iv) });",
+    ),
+]
 
 EDITS = [
     (
@@ -106,8 +139,17 @@ def main():
             text = f.read()
 
         if MARK in text:
-            print("%s already patched" % path)
+            print("%s already patched (current version)" % path)
             continue
+
+        reverted = 0
+        for old, orig in REVERTS:
+            if old in text:
+                text = text.replace(old, orig, 1)
+                reverted += 1
+        if reverted:
+            print("%s had an older patch, reverting %d edits first"
+                  % (path, reverted))
 
         missing = [old for old, _ in EDITS if text.count(old) != 1]
         if missing:
