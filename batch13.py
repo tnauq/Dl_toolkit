@@ -12,8 +12,16 @@ WHAT IT ADDS
     paths     lane_marker_path, one per lane per LaneSlot
               citadel_zipline_path, same machinery
 
-MIRRORING. Same proper rotation as mirror.py, about the vertical line through
-(460.1, 6085.05):
+LANE PATHS ARE NOT MIRRORED. Read out of dl_example 2026-08-22: its 16
+lane_marker_path are 4 lanes x 4 slots, each (lanenum, LaneSlot) pair exactly
+ONCE, and the class carries no teamnumber while every team-owned entity in the
+map carries one. One path spans the WHOLE lane and both teams walk it in
+opposite directions. So a lane route is authored base to base, not base to
+middle, and mirroring it would lay a second full-length route on top of the
+first. Ziplines ARE per team (2 per lane in dl_example) and do mirror.
+
+MIRRORING, for everything else. Same proper rotation as mirror.py, about the
+vertical line through (460.1, 6085.05):
 
     x' = 920.2   - x
     y' = 12170.1 - y
@@ -98,17 +106,24 @@ def flip_team(props):
 # TODO: every coordinate below is a placeholder.
 # ---------------------------------------------------------------------------
 SLOT_OFFSET = 96.0          # units between parallel trooper files
-SLOTS = (0, 1, 2)
+# FOUR slots, read from dl_example, not three. A wave is 4 troopers.
+# Offsets are centred on the authored route: -1.5, -0.5, +0.5, +1.5 x
+# SLOT_OFFSET, so the drawn line is the centre of the lane and no file
+# walks exactly on it.
+SLOTS = (0, 1, 2, 3)
 
 LANES = [
     {
         "lane": "1",
-        # TODO placeholder route: straight north from the team-2 spawn.
+        # TODO placeholder route. BASE TO BASE: from the team-2 spawn all
+        # the way to the team-3 spawn, through the mirror point. As many
+        # nodes as the shape needs — dl_example's lane paths carry 17.
         "route": [
             [25.0, -530.0, 435.0],
-            [25.0, 1500.0, 435.0],
-            [25.0, 3500.0, 435.0],
-            [25.0, 5500.0, 435.0],
+            [25.0, 3000.0, 435.0],
+            [25.0, 6085.05, 435.0],
+            [25.0, 9000.0, 435.0],
+            [895.2, 12700.1, 435.0],
         ],
     },
 ]
@@ -504,16 +519,14 @@ def make_path(name, lane, slot, route):
 
 
 def build_paths():
+    """One path per lane per slot. NOT mirrored — see the docstring."""
     out = []
     for spec in LANES:
         lane = spec["lane"]
         for slot in SLOTS:
             route = offset_route(spec["route"], slot)
-            name = "lane%s_slot%d" % (lane, slot)
-            out.append(make_path(name, lane, slot, route))
-
-            mirrored = [mirror_point(p) for p in route]
-            out.append(make_path(PREFIX + name, lane, slot, mirrored))
+            out.append(make_path("lane%s_slot%d" % (lane, slot),
+                                 lane, slot, route))
     return out
 
 
@@ -531,16 +544,79 @@ def check(plan):
         print("FAIL duplicate names: %s" % sorted(dupes))
         bad += 1
 
-    # Symmetry: every authored thing must have exactly one twin.
+    # Symmetry: every authored thing must have exactly one twin, EXCEPT the
+    # shared lane paths, which are single by design.
     for coll in ("entities", "paths"):
-        mine = [x for x in plan[coll] if x.get(MARK)]
+        mine = [x for x in plan[coll] if x.get(MARK)
+                and x.get("classname") != "lane_marker_path"]
         half = {x["name"] for x in mine if not x["name"].startswith(PREFIX)}
         twin = {x["name"][len(PREFIX):] for x in mine
                 if x["name"].startswith(PREFIX)}
         if half != twin:
             print("FAIL %s asymmetric: %s" % (coll, sorted(half ^ twin)))
             bad += 1
+
+    # A shared lane path must not have acquired a twin.
+    for p in plan["paths"]:
+        if p.get("classname") == "lane_marker_path" and \
+                p["name"].startswith(PREFIX):
+            print("FAIL %s: lane paths are shared and must not be mirrored"
+                  % p["name"])
+            bad += 1
     return bad
+
+
+# Trooper ground speed, in units per second. UNVERIFIED: not found in the
+# vdata searched so far, so this is a placeholder used only to turn lane
+# lengths into a rough time. The LENGTHS are exact; the times are not.
+TROOPER_SPEED = 0.0          # set from npc_units.vdata when known
+UNITS_PER_M = 39.37
+
+
+def route_length(route):
+    total = 0.0
+    for a, b in zip(route, route[1:]):
+        dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+        total += (dx * dx + dy * dy + dz * dz) ** 0.5
+    return total
+
+
+def report_lengths(paths):
+    """Lane lengths, and the distance to the mirror point.
+
+    Troopers from both sides walk the SAME path in opposite directions, so
+    the waves meet near the middle. The number that matters for lane parity
+    is the distance from each base to the mirror point: if the three lanes
+    differ there, one lane's wave arrives before the others and the map is
+    unfair in a way no amount of geometry symmetry fixes.
+    """
+    print("\nlane lengths")
+    for p in paths:
+        if p.get("classname") != "lane_marker_path":
+            continue
+        route = [n["origin"] for n in p["nodes"]]
+        total = route_length(route)
+
+        # Split at the node nearest the mirror point.
+        best, at = None, 0
+        for i, q in enumerate(route):
+            d = ((q[0] - X_PLANE) ** 2 + (q[1] - Y_PLANE) ** 2) ** 0.5
+            if best is None or d < best:
+                best, at = d, i
+        first = route_length(route[:at + 1])
+        second = total - first
+
+        line = ("  %-16s %8.1f u (%6.1f m)   to midpoint %7.1f / %7.1f"
+                % (p["name"], total, total / UNITS_PER_M, first, second))
+        if TROOPER_SPEED > 0:
+            line += "   %5.1f s" % (first / TROOPER_SPEED)
+        print(line)
+        if best is not None and best > 500.0:
+            print("    NOTE nearest node is %.0f u from the mirror point; the"
+                  % best)
+            print("    split above is approximate. Add a node near the middle.")
+    if TROOPER_SPEED <= 0:
+        print("  (no trooper speed known, so no times — see TROOPER_SPEED)")
 
 
 def main(path):
@@ -573,6 +649,7 @@ def main(path):
     print("  entities %d (+%d, of which %d brush volumes)"
           % (len(plan["entities"]), len(ents), brush))
     print("  paths    %d (+%d), %d nodes" % (len(plan["paths"]), len(paths), nodes))
+    report_lengths(paths)
     print("\nEVERY COORDINATE IN THIS RUN IS A PLACEHOLDER. See the module")
     print("docstring. Replace with viewer `copy pos` readings before use.")
     return 0
