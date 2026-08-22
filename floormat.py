@@ -48,6 +48,22 @@ MAX_STEP_RISE = 48.0    # anything taller than this is not a step
 # m_ twins are added automatically, so name the half-side box only.
 NOT_FLOOR = [
     "step_seam_w_c",
+    "axis_799",
+    "axis_787",
+    "ramp-slab_372",
+    "axis_373",
+    "gapfill_15_53",
+    "axis_388",
+    "axis_51",
+    "axis_385",
+    "axis_386",
+    "yaw_58",
+    "axis_335",
+    "xtun_big_jump",
+    "xtun_up_step_high",
+    "xtun_up_step_low",
+    "gapfill_25_36",
+    "axis_116",
 ]
 
 # Narrowest a top face may be and still count as a floor. A 26.70 railing
