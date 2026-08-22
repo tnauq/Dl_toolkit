@@ -106,7 +106,22 @@ env:
   # TWICE, they are per-team and the mirroring is right.
   #
   # The slot count falls out of the same table: distinct LaneSlot values.
-  TUPLE_SPECS: 'lane_marker_path:lanenum,LaneSlot;citadel_zipline_path:lane_number;citadel_zipline_path_node:teamnumber;info_trooper_spawn:teamnumber,lanenum;info_team_spawn:teamnumber,lanenum;npc_barrack_boss:teamnumber,lanenum,LaneSide;npc_boss_tier2:teamnumber,lanenum'
+  # ZIPLINE NODE OWNERSHIP, the open question 2026-08-22. Nodes carry
+  # teamnumber 2, 3 and 4 (38 of 270 at 4). Ownership is DYNAMIC in game —
+  # a team that pushes can zip most of the map — so the authored value
+  # cannot be the runtime state. Two readings:
+  #
+  #   a STARTING state, split near the middle and moved from there, or
+  #   a fixed property, where 4 marks permanently neutral segments.
+  #
+  # `capturable` is the discriminator. If the 4s are capturable and the 2/3s
+  # are not, ownership is a fixed property of the node. If everything is
+  # capturable, it is a starting state. `corner_node`, `one_way` and
+  # `always_usable` come along in the same table since they are free.
+  # ONE SPEC PER CLASSNAME. The parser keys on classname, so a repeated one
+  # silently overwrites the earlier — hence the single wide tuple below
+  # rather than three narrow ones.
+  TUPLE_SPECS: 'citadel_zipline_path_node:teamnumber,capturable,corner_node,one_way,always_usable,enabled,disable_zipping_to;lane_marker_path:lanenum,LaneSlot;citadel_zipline_path:lane_number,start_active;info_trooper_spawn:teamnumber,lanenum'
 
   # Excerpts per kind, and lines per excerpt. A brush entity's subtree
   # contains an entire CDmePolygonMesh if the mesh is inline, which is
