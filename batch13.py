@@ -116,6 +116,16 @@ def flip_team(props):
 #
 # TODO: every coordinate below is a placeholder.
 # ---------------------------------------------------------------------------
+# Height of a zipline above the lane floor, in units. The transit line runs
+# overhead, not along the ground, and without this a zip that follows the
+# trooper route inherits the route's floor z.
+#
+# 300 u is 7.6 m. PROVISIONAL: chosen to clear the 98 u figure with room to
+# spare, not read from anything. Applied only to points taken from the lane
+# route; points authored explicitly in ZIPLINES keep their own z, so a
+# doorway passage can be given real readings later without changing this.
+ZIP_HEIGHT = 300.0
+
 SLOT_OFFSET = 96.0          # units between parallel trooper files
 # FOUR slots, read from dl_example, not three. A wave is 4 troopers.
 # Offsets are centred on the authored route: -1.5, -0.5, +0.5, +1.5 x
@@ -155,13 +165,29 @@ LANES = [
             [X_PLANE, Y_PLANE, 0.0],      # snapped from stitch_ground
         ],
     },
-    # TODO: side lanes not yet surveyed. Placeholders — do not trust.
+    # WEST SIDE LANE. Crosshair readings 2026-08-22. The last two raw
+    # readings, (-1467, 6131) on m_t3_ramp3 and (-2241, 6159) on m_t3_pad1,
+    # were PAST the mirror point and on m_ boxes, i.e. the far half — an
+    # overshoot. They are dropped and the route is closed on the mirror
+    # point instead. Under a 180 degree rotation only the centre maps to
+    # itself, so a half route that ends anywhere else generates a straight
+    # jump from that point to its mirror: ending on (-2241, 6159) would have
+    # put a 5,400 u line straight across the map.
     {
         "lane": "3",
         "half_route": [
-            [-1500.0, -530.0, 435.0],
-            [-1500.0, 3000.0, 435.0],
-            [X_PLANE, Y_PLANE, 435.0],
+            [-1016.0, -3206.0, 427.0],    # hex_floor_1, trooper spawn
+            [-1476.0, -2828.0, 427.0],    # hex_tun_nw_floor
+            [-1596.0, -676.0, 427.0],     # axis_470
+            [-1701.0, 711.0, 213.0],      # merged_721
+            [-1350.0, 1493.0, 213.0],     # merged_721
+            [-1311.0, 2916.0, 253.0],     # axis_771
+            [-1870.0, 2892.0, 253.0],     # axis_720
+            [X_PLANE, Y_PLANE, 253.0],    # TODO: the run from axis_720 to
+                                          # the middle is not surveyed. This
+                                          # closes the route in a straight
+                                          # line, which is almost certainly
+                                          # not the shape you want.
         ],
     },
     {
@@ -192,7 +218,9 @@ ZIPLINES = [
     # those points are the lane's own half_route.
     #
     # NOTE the height: the spawn point is at z 1067 and the route runs at
-    # 427 and below, so the zipline descends into the lane.
+    # 427 and below, so the zipline descends into the lane. Points taken
+    # from the lane route are lifted by ZIP_HEIGHT; the two authored points
+    # below keep the z they were read at.
     {
         "lane": "1",
         "route": [
@@ -683,11 +711,18 @@ def build_ziplines():
         # mirrored twin. So it follows the lane's HALF route, not the
         # completed one.
         if spec.get("follow_lane"):
+            lift = spec.get("height", ZIP_HEIGHT)
             for p in lane_half(spec["lane"]):
-                if route and all(abs(p[i] - route[-1][i]) <= 1.0
+                q = [p[0], p[1], p[2] + lift]
+                if route and all(abs(q[i] - route[-1][i]) <= 1.0
                                  for i in range(3)):
                     continue          # already there, do not duplicate
-                route.append(list(p))
+                # An authored point at the same x,y wins: it was given
+                # explicitly, so its height is deliberate.
+                if route and all(abs(p[i] - route[-1][i]) <= 1.0
+                                 for i in range(2)):
+                    continue
+                route.append(q)
         name = "zip_lane%s" % spec["lane"]
         p = {
             "name": name,
