@@ -22,8 +22,19 @@ name: emit dust2
 # CENSUS, derived from the emitter's structure and stated BEFORE the run.
 # Per box: 1 CMapMesh, 1 CDmePolygonMesh, 4 CDmePolygonMeshDataArray,
 # 11 CDmePolygonMeshDataStream, 1 CDmePolygonMeshSubdivisionData = 18.
-# 4179 * 18 = 75,222, plus 2 entities * 3, plus world classprops + pluglist,
-# plus 6 singletons = 75,236 elements.
+# 4179 * 18 = 75,222. Then batch13's gameplay data: 8 CMapEntity, 6 CMapPath
+# and 24 CMapPathNode, each carrying 1 EditGameClassProps and 1 DmePlugList,
+# so 38 nodes + 76 = 114, plus the world's own classprops and pluglist, plus
+# 6 singletons: 75,222 + 114 + 2 + 6 = 75,344.
+#
+# UPDATED 2026-08-22 for batch13. Every number above is ARITHMETIC, not a
+# measurement — the previous run's 75,236 was measured, this is not. If the
+# census step fails, check the arithmetic before suspecting the emitter.
+#
+# THE COMBINATION THIS RUN IS FOR. path-smoke proves paths at 6 boxes;
+# the last emit-dust2 proved 4,179 boxes with no paths. Nothing has yet
+# emitted both together, and the box-heavy case is where a per-element cost
+# in the path code would show up.
 #
 # SCOPE. Green here means STRUCTURALLY VALID AT SIZE and accepted by
 # dmxconvert. It does NOT mean Hammer opens it and it does NOT mean Deadlock
@@ -36,16 +47,18 @@ env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
   EXPECT_BOXES: 4179
-  EXPECT_ENTS: 2
+  EXPECT_ENTS: 8
   EXPECT_MAPMESH: 4179
   EXPECT_POLYMESH: 4179
-  EXPECT_ENTITY: 2
+  EXPECT_ENTITY: 8
+  EXPECT_PATH: 6
+  EXPECT_PATHNODE: 24
   EXPECT_DATAARRAY: 16716
   EXPECT_STREAM: 45969
   EXPECT_SUBDIV: 4179
-  EXPECT_CLASSPROPS: 3
-  EXPECT_PLUGLIST: 3
-  EXPECT_ELEMENTS: 75236
+  EXPECT_CLASSPROPS: 39
+  EXPECT_PLUGLIST: 39
+  EXPECT_ELEMENTS: 75344
 
 jobs:
   emit:
@@ -85,9 +98,17 @@ jobs:
           plan = json.load(open(os.environ['PLAN']))
           boxes = plan['boxes']
           ents = plan.get('entities', [])
-          print(f"plan {plan.get('name')} boxes={len(boxes)} entities={len(ents)}")
-
           bad = 0
+          paths = plan.get('paths', [])
+          nodes = sum(len(p.get('nodes', [])) for p in paths)
+          print(f"plan {plan.get('name')} boxes={len(boxes)} entities={len(ents)} "
+                f"paths={len(paths)} pathnodes={nodes}")
+
+          for i, p in enumerate(paths):
+              if len(p.get('nodes', [])) < 2:
+                  print(f"::error::{p.get('name', i)}: a path needs 2+ nodes")
+                  bad += 1
+
           mats = collections.Counter()
           rot = 0
           names = collections.Counter()
@@ -160,6 +181,8 @@ jobs:
           chk CMapEntity                      "$EXPECT_ENTITY"
           chk CDmePolygonMeshDataArray        "$EXPECT_DATAARRAY"
           chk CDmePolygonMeshDataStream       "$EXPECT_STREAM"
+          chk CMapPath                        "$EXPECT_PATH"
+          chk CMapPathNode                    "$EXPECT_PATHNODE"
           chk CDmePolygonMeshSubdivisionData  "$EXPECT_SUBDIV"
           chk EditGameClassProps              "$EXPECT_CLASSPROPS"
           chk DmePlugList                     "$EXPECT_PLUGLIST"
@@ -168,6 +191,14 @@ jobs:
           if [ "$TOT" != "$EXPECT_ELEMENTS" ]; then
             echo "MISMATCH elements: want $EXPECT_ELEMENTS got $TOT"; FAIL=1
           else echo "ok elements = $TOT"; fi
+
+          # The no-GUID property, asserted rather than assumed. Inline path
+          # nodes are the whole reason this emitter needs no id machinery;
+          # the day something becomes referenced twice, ids appear here first.
+          IDS=$(grep -c '"elementid"' work/t1.vmap || true)
+          if [ "$IDS" != "0" ]; then
+            echo "FAIL: $IDS element id(s) emitted."; FAIL=1
+          else echo "ok no element ids"; fi
           [ "$FAIL" -eq 0 ] || exit 1
 
       - name: Fetch, reassemble, extract
@@ -286,6 +317,8 @@ jobs:
           chk CMapMesh                  "$EXPECT_MAPMESH"
           chk CDmePolygonMesh           "$EXPECT_POLYMESH"
           chk CMapEntity                "$EXPECT_ENTITY"
+          chk CMapPath                  "$EXPECT_PATH"
+          chk CMapPathNode              "$EXPECT_PATHNODE"
           chk CDmePolygonMeshDataStream "$EXPECT_STREAM"
           [ "$FAIL" -eq 0 ] || exit 1
 
