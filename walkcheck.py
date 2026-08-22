@@ -11,6 +11,7 @@ MODEL
                  voxel thick on that axis, so 13.30 stair treads register
   player height  98.00 (gen_man), 4 voxels of headroom
   step up        26.70, one voxel
+  jump up        80.10, three voxels, from JUMP_UP below
   drop           400.50 max, 15 voxels
   moves          4-neighbour, no jumping
 
@@ -36,6 +37,13 @@ VOX = 26.7
 PLAYER_H = 98.0
 STEP_UP = 1
 MAX_DROP = 15
+# Jump height, in units. Source's default is 56 for a 72-unit player;
+# scaled to the 120-unit hero used elsewhere in the viewer that is about
+# 93. It is a GUESS and it is the one number in this file most worth
+# correcting from the game, because raising it opens routes everywhere at
+# once. Converted DOWN to whole voxels, so 93 buys 3 voxels, 80.10.
+JUMP_UP = 93.0
+JUMP_VOX = int(JUMP_UP // VOX)
 
 
 def rot(angles):
@@ -162,7 +170,10 @@ def flood(stand, dims, seeds):
             nx, ny = x + dx, y + dy
             if nx < 0 or ny < 0 or nx >= dims[0] or ny >= dims[1]:
                 continue
-            for nz in range(z + STEP_UP, z - MAX_DROP - 1, -1):
+            # Search from the highest cell a jump can reach down to the
+            # deepest survivable drop, and take the FIRST hit: that is the
+            # surface you would actually land on coming from this cell.
+            for nz in range(z + max(STEP_UP, JUMP_VOX), z - MAX_DROP - 1, -1):
                 if nz < 0 or nz >= dims[2]:
                     continue
                 if stand[nx, ny, nz]:
@@ -219,7 +230,7 @@ def main():
                 nx, ny = x + dx, y + dy
                 if nx < 0 or ny < 0 or nx >= dims[0] or ny >= dims[1]:
                     continue
-                for nz in range(z + STEP_UP, z - MAX_DROP - 1, -1):
+                for nz in range(z + max(STEP_UP, JUMP_VOX), z - MAX_DROP - 1, -1):
                     if nz < 0 or nz >= dims[2]:
                         continue
                     if stand[nx, ny, nz]:
