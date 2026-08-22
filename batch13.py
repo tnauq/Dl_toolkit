@@ -217,7 +217,19 @@ LANES = [
 # TODO: placeholder route.
 # ---------------------------------------------------------------------------
 ZIPLINES = [
-    # Per team, so these DO mirror. Troopers ride one in before they walk.
+    # ONE PER LANE, BASE TO BASE. The cable spans the whole lane and who owns
+    # a stretch of it is decided at runtime by trooper position, not by there
+    # being two entities. So a zipline is completed exactly like a lane route
+    # — mirrored for mid, paired for the side lanes — and gets NO m_ twin.
+    #
+    # DISCREPANCY, unresolved: dl_example has 8 citadel_zipline_path for 4
+    # lanes, i.e. TWO per lane, and its nodes carry teamnumber 2, 3 and 4.
+    # If those two are the two directions rather than the two halves, this
+    # emits half as many as the real map. Worth checking before a load.
+    #
+    # Node teamnumber is assigned by position: nodes on the team-2 side of
+    # the mirror point get 2, the rest get 3, which is the shape the node
+    # teamnumbers take in dl_example.
     #
     # From the user 2026-08-22: the first point is the spawn shop room on
     # hex_plat_s and is shared by all three lanes; the second point differs
@@ -252,6 +264,12 @@ ZIPLINES = [
         },
     },
     {
+        # The zip FOLLOWS THE WALKING ROUTE, lifted. An earlier version sent
+        # it up through the second level on its own points (axis_766 / _761 /
+        # _762 / _790, z 720 down to 280); that is reverted, because troopers
+        # dropping off a cable onto the second level can get stuck there.
+        # Same line, first level, is the safe version. The second-level
+        # readings are kept in the handoff if it is ever wanted back.
         "lane": "3",
         "route": [
             [3.0, -5955.0, 1067.0],       # hex_plat_s
@@ -703,56 +721,59 @@ def build_points():
 
 
 def build_ziplines():
+    """One full-length cable per lane. No twin — see the ZIPLINES comment."""
     out = []
     for spec in ZIPLINES:
+        lane = spec["lane"]
         route = [list(p) for p in spec["route"]]
 
-        # A zipline runs to the middle only: it is a per-team entity and the
-        # far half belongs to the other team's zipline, which is this one's
-        # mirrored twin. So it follows the lane's HALF route, not the
-        # completed one.
         if spec.get("follow_lane"):
             lift = spec.get("height", ZIP_HEIGHT)
-            for p in lane_half(spec["lane"]):
+            for p in lane_route(lane):
                 q = [p[0], p[1], p[2] + lift]
                 if route and all(abs(q[i] - route[-1][i]) <= 1.0
                                  for i in range(3)):
-                    continue          # already there, do not duplicate
-                # An authored point at the same x,y wins: it was given
-                # explicitly, so its height is deliberate.
+                    continue
                 if route and all(abs(p[i] - route[-1][i]) <= 1.0
                                  for i in range(2)):
                     continue
                 route.append(q)
-        name = "zip_lane%s" % spec["lane"]
-        p = {
-            "name": name,
+
+        for p2 in spec.get("then", []):
+            route.append([round(v, 4) for v in p2])
+
+        # The far end: the shared start points of the OTHER base, mirrored,
+        # so the cable finishes in the enemy spawn room the way it started in
+        # ours. Without this it stops wherever the walking route ends.
+        tail = [mirror_point(p) for p in reversed(spec["route"])]
+        for t in tail:
+            if route and all(abs(t[i] - route[-1][i]) <= 1.0 for i in range(3)):
+                continue
+            route.append(t)
+
+        nodes = []
+        for q in route:
+            # Team by side of the mirror point, along y.
+            team = TEAM_A if q[1] < Y_PLANE else TEAM_B
+            nodes.append({"classname": "citadel_zipline_path_node",
+                          "origin": [round(v, 4) for v in q],
+                          "properties": {"teamnumber": team,
+                                         "enabled": "1",
+                                         "corner_node": "0",
+                                         "capturable": "0",
+                                         "disable_zipping_to": "0"}})
+
+        out.append({
+            "name": "zip_lane%s" % lane,
             "classname": "citadel_zipline_path",
             "origin": [round(v, 4) for v in route[0]],
             "angles": [0.0, 0.0, 0.0],
             "properties": dict(spec["properties"]),
             "interpolation_type": 1,
             "closed_loop": False,
-            "nodes": [{"classname": "citadel_zipline_path_node",
-                       "origin": [round(v, 4) for v in q],
-                       "properties": {"teamnumber": TEAM_A,
-                                      "enabled": "1",
-                                      "corner_node": "0",
-                                      "capturable": "0",
-                                      "disable_zipping_to": "0"}}
-                      for q in route],
+            "nodes": nodes,
             MARK: True,
-        }
-        out.append(p)
-
-        m = json.loads(json.dumps(p))
-        m["name"] = PREFIX + name
-        m["origin"] = mirror_point(route[0])
-        m["properties"]["targetname"] = PREFIX + p["properties"]["targetname"]
-        for i, q in enumerate(route):
-            m["nodes"][i]["origin"] = mirror_point(q)
-            m["nodes"][i]["properties"]["teamnumber"] = TEAM_B
-        out.append(m)
+        })
     return out
 
 
@@ -867,6 +888,21 @@ def complete_route(half):
     return [list(p) for p in half] + far
 
 
+def lane_route(lane):
+    """The completed base-to-base route for a lane, as build_paths sees it."""
+    for spec in LANES:
+        if spec["lane"] != lane:
+            continue
+        if spec.get("pair"):
+            return complete_paired(spec["half_route"],
+                                   lane_half(spec["pair"]),
+                                   lane, spec["pair"], quiet=True)
+        if spec.get("complete", True):
+            return complete_route(spec["half_route"])
+        return [list(p) for p in spec["half_route"]]
+    raise KeyError("no lane %s" % lane)
+
+
 def lane_half(lane):
     for spec in LANES:
         if spec["lane"] == lane:
@@ -879,7 +915,7 @@ def lane_half(lane):
 SEAM_SNAP = 500.0
 
 
-def complete_paired(half, partner_half, lane, partner):
+def complete_paired(half, partner_half, lane, partner, quiet=False):
     """Join a side lane to its mirror partner.
 
     The far half is the PARTNER's authored stretch, mirrored and reversed.
@@ -894,8 +930,12 @@ def complete_paired(half, partner_half, lane, partner):
     gap = ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
 
     if gap <= SEAM_SNAP:
-        print("  lane %s seam: %.1f u to lane %s, snapped" % (lane, gap, partner))
+        if not quiet:
+            print("  lane %s seam: %.1f u to lane %s, snapped"
+                  % (lane, gap, partner))
         far = far[1:]
+    elif quiet:
+        pass
     else:
         print("  lane %s seam: %.1f u to lane %s, TOO FAR to snap — the two"
               % (lane, gap, partner))
@@ -942,7 +982,8 @@ def check(plan):
     # shared lane paths, which are single by design.
     for coll in ("entities", "paths"):
         mine = [x for x in plan[coll] if x.get(MARK)
-                and x.get("classname") != "lane_marker_path"
+                and x.get("classname") not in ("lane_marker_path",
+                                               "citadel_zipline_path")
                 and not on_mirror_point(x.get("origin", [0, 0, 0]))]
         half = {x["name"] for x in mine if not x["name"].startswith(PREFIX)}
         twin = {x["name"][len(PREFIX):] for x in mine
