@@ -48,6 +48,8 @@ FORCE_FLOOR = [
     "bridge_floor_a",
     "corner_plat_n",
     "balcony_75",
+    "jump_ledge_25",
+    "jump_ledge_50",
 ]
 
 

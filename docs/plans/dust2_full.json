@@ -70785,7 +70785,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/dev_measuregeneric01.vmat"
   },
   {
    "name": "jump_ledge_50",
@@ -70804,7 +70804,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/dev_measuregeneric01.vmat"
   },
   {
    "name": "m_seam_gap_wall_n",
@@ -70861,7 +70861,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/dev_measuregeneric01.vmat"
   },
   {
    "name": "m_jump_ledge_50",
@@ -70880,7 +70880,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/dev_measuregeneric01.vmat"
   },
   {
    "name": "step_seam_w_c",
