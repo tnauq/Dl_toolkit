@@ -251,6 +251,11 @@ ZIPLINES = [
     # If those two are the two directions rather than the two halves, this
     # emits half as many as the real map. Worth checking before a load.
     #
+    # COLOURS AND max_simulation_time are dl_example's own, read off its
+    # family A paths 2026-08-22: lane 1 orange 255 106 0, lane 3 red
+    # 255 0 0, lane 4 blue 0 25 255, lane 6 purple 139 0 139. The minimap
+    # uses these, so they are not free choices.
+    #
     # Node teamnumber is assigned by position: 2 on the team-2 side, 3 on
     # the far side, and 4 across a neutral band in the middle — the shape the
     # node teamnumbers take in dl_example, where 4 accounts for 38 of 270.
@@ -277,11 +282,12 @@ ZIPLINES = [
             "targetname": "zip_lane1",
             "vscripts": "",
             "lane_number": "1",
+            "max_simulation_time": "0.2",
             "radius": "2",
             "slack": "0",
             "particle_spacing": "512",
             "static_collision": "0",
-            "color_tint": "255 216 0",
+            "color_tint": "255 106 0",
             "start_active": "1",
             "effect_name":
                 "particles/entity/path_particle_cable_default.vpcf",
@@ -302,8 +308,10 @@ ZIPLINES = [
         "follow_lane": True,
         "properties": {
             "targetname": "zip_lane3", "vscripts": "", "lane_number": "3",
+            "max_simulation_time": "0.2",
+            "max_simulation_time": "0.2",
             "radius": "2", "slack": "0", "particle_spacing": "512",
-            "static_collision": "0", "color_tint": "0 25 255",
+            "static_collision": "0", "color_tint": "255 0 0",
             "start_active": "1",
             "effect_name":
                 "particles/entity/path_particle_cable_default.vpcf",
@@ -318,8 +326,10 @@ ZIPLINES = [
         "follow_lane": True,
         "properties": {
             "targetname": "zip_lane6", "vscripts": "", "lane_number": "6",
+            "max_simulation_time": "0.2",
+            "max_simulation_time": "0.2",
             "radius": "2", "slack": "0", "particle_spacing": "512",
-            "static_collision": "0", "color_tint": "0 200 0",
+            "static_collision": "0", "color_tint": "139 0 139",
             "start_active": "1",
             "effect_name":
                 "particles/entity/path_particle_cable_default.vpcf",
