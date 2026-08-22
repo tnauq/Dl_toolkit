@@ -443,7 +443,12 @@ function prepare(p){
     // Bounding sphere radius, used by the cull. Rotation does not change
     // it, which is exactly why the cull uses a sphere and not the AABB.
     const rad = Math.hypot(h[0], h[1], h[2]);
-    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad,
+    // Floors are told apart by material, set by floormat.py. Any of the
+    // brighter dev greys counts, so switching the constant in that script
+    // does not need a matching edit here.
+    const floor = typeof b.material === 'string' &&
+                  /reflectivity_(50|70|90)/.test(b.material);
+    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad, floor,
              aabb:[o[0]-h[0],o[1]-h[1],o[2]-h[2],o[0]+h[0],o[1]+h[1],o[2]+h[2]] };
   });
   buildGrid();
@@ -573,9 +578,11 @@ function clipNear(poly){
 /* ---------- dev texture, drawn not loaded ---------- */
 /* Orange measure bands. Light/dark alternate on a checker so the eye can
    count cells at a glance, and the seam lines give edges definition. */
-function tileColor(shade, gx, gy){
+function tileColor(shade, gx, gy, floor){
   const checker = ((gx + gy) & 1) === 0;
-  const base = checker ? [198,101,42] : [154,74,29];
+  // Grey for anything a player stands on, orange for everything else.
+  const base = floor ? (checker ? [166,168,170] : [124,126,128])
+                     : (checker ? [198,101,42]  : [154,74,29]);
   const k = shade;
   return 'rgb(' + Math.round(base[0]*k) + ',' + Math.round(base[1]*k) + ','
                 + Math.round(base[2]*k) + ')';
@@ -669,7 +676,7 @@ function render(){
           for(const c of clipped) depth2 += c[2];
           depth2 /= clipped.length;
           quads.push({ depth:depth2, pts:clipped.map(v=>project(v,f)),
-                       col: tileColor(F.shade, iu, iv) });
+                       col: tileColor(F.shade, iu, iv, sol.floor) });
         }
       }
     }
