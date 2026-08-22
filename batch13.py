@@ -16,7 +16,14 @@ WHAT IT ADDS
     paths     lane_marker_path, one per lane per LaneSlot
               citadel_zipline_path, same machinery
 
-LANE PATHS ARE NOT MIRRORED. Read out of dl_example 2026-08-22: its 16
+LANE ROUTES ARE AUTHORED HALF-LENGTH. The map is rotationally symmetric, so
+only the run from the team-2 base to the mirror point is authored; the far
+half is that polyline mirrored and reversed, appended. That guarantees the
+two halves are exactly equal length, which authoring both by hand would not.
+The joining node is dropped if the last authored point lands on the mirror
+point, or the path would carry two coincident nodes there.
+
+LANE PATHS ARE NOT MIRRORED AS ENTITIES. Read out of dl_example 2026-08-22: its 16
 lane_marker_path are 4 lanes x 4 slots, each (lanenum, LaneSlot) pair exactly
 ONCE, and the class carries no teamnumber while every team-owned entity in the
 map carries one. One path spans the WHOLE lane and both teams walk it in
@@ -115,19 +122,45 @@ SLOT_OFFSET = 96.0          # units between parallel trooper files
 # SLOT_OFFSET, so the drawn line is the centre of the lane and no file
 # walks exactly on it.
 SLOTS = (0, 1, 2, 3)
+# Slots are PARALLEL FILES, confirmed by the user 2026-08-22: one route per
+# lane, offset sideways, not four independently shaped routes. 4 slots at 96
+# is 288 u across, about 7.3 m — drop SLOT_OFFSET if the lanes are narrower
+# than that after the rescale.
 
 LANES = [
+    # `half_route` runs from the team-2 base TO THE MIRROR POINT only. The
+    # far half is generated. Use as many nodes as the shape needs — a real
+    # lane_marker_path in dl_example carries 17 — and put the last one on or
+    # near (460.1, 6085.05).
+    #
+    # Lane numbers 1, 3 and 6, chosen by the user from dl_example's 1/3/4/6.
+    # There is no shipped table of lane numbering anywhere (see the handoff),
+    # so these are the only values observed working in a real map.
+    #
+    # TODO: every coordinate below is a placeholder.
     {
         "lane": "1",
-        # TODO placeholder route. BASE TO BASE: from the team-2 spawn all
-        # the way to the team-3 spawn, through the mirror point. As many
-        # nodes as the shape needs — dl_example's lane paths carry 17.
-        "route": [
+        "half_route": [
             [25.0, -530.0, 435.0],
-            [25.0, 3000.0, 435.0],
-            [25.0, 6085.05, 435.0],
-            [25.0, 9000.0, 435.0],
-            [895.2, 12700.1, 435.0],
+            [25.0, 2000.0, 435.0],
+            [25.0, 4000.0, 435.0],
+            [460.1, 6085.05, 435.0],
+        ],
+    },
+    {
+        "lane": "3",
+        "half_route": [
+            [-1500.0, -530.0, 435.0],
+            [-1500.0, 3000.0, 435.0],
+            [460.1, 6085.05, 435.0],
+        ],
+    },
+    {
+        "lane": "6",
+        "half_route": [
+            [1500.0, -530.0, 435.0],
+            [1500.0, 3000.0, 435.0],
+            [460.1, 6085.05, 435.0],
         ],
     },
 ]
@@ -699,13 +732,33 @@ def make_path(name, lane, slot, route):
     }
 
 
+def complete_route(half):
+    """Base-to-middle in, base-to-base out.
+
+    The far half is the authored polyline mirrored and REVERSED, so the
+    result runs continuously from one base to the other. If the last
+    authored point sits on the mirror point its mirror is itself, so that
+    duplicate is dropped rather than emitted as two coincident nodes.
+    """
+    if len(half) < 2:
+        raise ValueError("a half route needs at least 2 points")
+
+    far = [mirror_point(p) for p in reversed(half)]
+    a, b = half[-1], far[0]
+    same = all(abs(a[i] - b[i]) <= 1.0 for i in range(3))
+    if same:
+        far = far[1:]
+    return [list(p) for p in half] + far
+
+
 def build_paths():
     """One path per lane per slot. NOT mirrored — see the docstring."""
     out = []
     for spec in LANES:
         lane = spec["lane"]
+        full = complete_route(spec["half_route"])
         for slot in SLOTS:
-            route = offset_route(spec["route"], slot)
+            route = offset_route(full, slot)
             out.append(make_path("lane%s_slot%d" % (lane, slot),
                                  lane, slot, route))
     return out
