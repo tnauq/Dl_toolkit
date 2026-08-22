@@ -66,6 +66,23 @@ env:
   # and only four carry a model. If the ones WITH a model differ from the ones
   # without in whether they hold a child mesh, that answers it.
   CAPTURE_CLASSES: 'trigger_item_shop,trigger_team_base,func_nav_markup,citadel_breakable_prop,trigger_trooper_detector,destroyable_building'
+  # Property TUPLES to tabulate, as classname:key,key;classname:key
+  #
+  # THE QUESTION: is a lane_marker_path SHARED between the teams or one per
+  # team? dl_example has 16 of them on a FOUR-lane map. Per-team would be 24
+  # (4 lanes x 3 slots x 2 teams), shared-with-3-slots would be 12; neither
+  # fits, so the assumption that there are three slots may itself be wrong.
+  #
+  # Strong hint already in hand: lane_marker_path carries NO teamnumber, while
+  # every team-owned entity in the map does. That points at one shared path
+  # walked in both directions. If each (lanenum, LaneSlot) pair appears ONCE,
+  # it is shared and batch13 must NOT mirror lane paths — mirroring would lay
+  # a second full-length route on top of the first. If each pair appears
+  # TWICE, they are per-team and the mirroring is right.
+  #
+  # The slot count falls out of the same table: distinct LaneSlot values.
+  TUPLE_SPECS: 'lane_marker_path:lanenum,LaneSlot;citadel_zipline_path:lane_number;citadel_zipline_path_node:teamnumber;info_trooper_spawn:teamnumber,lanenum;info_team_spawn:teamnumber,lanenum;npc_barrack_boss:teamnumber,lanenum,LaneSide;npc_boss_tier2:teamnumber,lanenum'
+
   # Excerpts per kind, and lines per excerpt. A brush entity's subtree
   # contains an entire CDmePolygonMesh if the mesh is inline, which is
   # thousands of lines — the cap is deliberately BELOW that, because the
@@ -199,6 +216,15 @@ jobs:
           reflists = collections.defaultdict(list)   # "Owner.attr" -> [guid]
           idinfo   = {}                              # guid -> {type, classname}
 
+          # classname -> {key,...} to tabulate, and the observed tuples.
+          tuple_keys = {}
+          for spec in os.environ.get('TUPLE_SPECS', '').split(';'):
+              if not spec.strip():
+                  continue
+              cn, keys_csv = spec.split(':', 1)
+              tuple_keys[cn] = keys_csv.split(',')
+          tuples = collections.defaultdict(collections.Counter)
+
           excerpts = collections.defaultdict(list)
 
           # Each open element gets a frame, so an id line and a classname
@@ -270,6 +296,10 @@ jobs:
                           classes[cur_class] += 1
                           for k, v in cur_props.items():
                               keys[cur_class][k] += 1
+                          if cur_class in tuple_keys:
+                              t = tuple(cur_props.get(k, '(missing)')
+                                        for k in tuple_keys[cur_class])
+                              tuples[cur_class][t] += 1
                           # EditGameClassProps is the frame being closed, so
                           # the classname belongs to the frame BELOW it.
                           if len(frames) >= 2:
@@ -399,6 +429,46 @@ jobs:
                         ' vis=' + str(vis))
               w(fh)
 
+              w(fh, '## Property tuples')
+              w(fh)
+              for cn, keyset in tuple_keys.items():
+                  w(fh, f'### {cn} — ' + ', '.join(keyset))
+                  seen = tuples[cn]
+                  if not seen:
+                      w(fh, '- none found')
+                      w(fh)
+                      continue
+                  w(fh, '')
+                  w(fh, '| ' + ' | '.join(keyset) + ' | count |')
+                  w(fh, '|' + '---|' * (len(keyset) + 1))
+                  for t, c in sorted(seen.items()):
+                      w(fh, '| ' + ' | '.join(t) + f' | {c} |')
+                  total = sum(seen.values())
+                  uniq = len(seen)
+                  every_once = all(c == 1 for c in seen.values())
+                  every_twice = all(c == 2 for c in seen.values())
+                  w(fh, '')
+                  w(fh, f'  {total} total, {uniq} distinct combination(s)')
+                  if cn == 'lane_marker_path':
+                      slots = sorted({t[keyset.index('LaneSlot')] for t in seen}) \
+                          if 'LaneSlot' in keyset else []
+                      lanes = sorted({t[keyset.index('lanenum')] for t in seen}) \
+                          if 'lanenum' in keyset else []
+                      w(fh, f'  lanes seen: {lanes}')
+                      w(fh, f'  slots seen: {slots}')
+                      if every_once:
+                          w(fh, '  VERDICT: each (lane, slot) appears ONCE.')
+                          w(fh, '  The path is SHARED between the teams and runs')
+                          w(fh, '  the full length of the lane. batch13 must NOT')
+                          w(fh, '  mirror lane paths.')
+                      elif every_twice:
+                          w(fh, '  VERDICT: each (lane, slot) appears TWICE.')
+                          w(fh, '  Paths are PER TEAM and the mirroring is right.')
+                      else:
+                          w(fh, '  VERDICT: mixed counts — read the table, the')
+                          w(fh, '  simple shared/per-team split does not hold.')
+                  w(fh)
+
               w(fh, '## Element types')
               w(fh, '')
               w(fh, '| count | type |')
@@ -455,6 +525,8 @@ jobs:
               'idinfo': idinfo,
               'childof': dict(childof),
               'classes': dict(classes),
+              'tuples': {k: {'|'.join(t): c for t, c in v.items()}
+                         for k, v in tuples.items()},
               'keys': {k: dict(v) for k, v in keys.items()},
           }, open('out/entity-survey.json', 'w'), indent=1)
 
