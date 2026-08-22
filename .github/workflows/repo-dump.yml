@@ -1,0 +1,37 @@
+name: repo-dump
+
+# Emits a full description of the repo as a downloadable artifact:
+# repo-manifest.md (what is here) plus repo-dump.md (the text of it).
+#
+# No workflow_dispatch inputs: the mobile Actions view cannot show them.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: File count
+        run: git ls-files | wc -l
+
+      - name: Dump
+        run: timeout 300 python3 repo_dump.py --out out | tee out.log
+
+      - name: Sizes
+        if: always()
+        run: ls -l out/ || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: repo-dump
+          path: |
+            out/repo-manifest.md
+            out/repo-dump*.md
+            out.log
