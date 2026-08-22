@@ -79921,6 +79921,490 @@
     "lanenum": "1",
     "initialspawn": "1"
    }
+  },
+  {
+   "name": "guardian_l1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    25.0,
+    2000.0,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_guardian_lane1",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "CoverGroupID": "",
+    "LaneSide": "0"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_guardian_l1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    895.2,
+    10170.1,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_guardian_lane1",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "CoverGroupID": "",
+    "LaneSide": "0"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "walker_l1",
+   "classname": "npc_boss_tier2",
+   "origin": [
+    25.0,
+    3200.0,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_walker_lane1",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "BossName": "amber_walker_lane1",
+    "CoverGroupID": "",
+    "subclass_name": "npc_boss_tier2"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_walker_l1",
+   "classname": "npc_boss_tier2",
+   "origin": [
+    895.2,
+    8970.1,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_walker_lane1",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "BossName": "m_amber_walker_lane1",
+    "CoverGroupID": "",
+    "subclass_name": "npc_boss_tier2"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "trooper_spawn_l1",
+   "classname": "info_trooper_spawn",
+   "origin": [
+    25.0,
+    -300.0,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "TrooperLevel": "4"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_trooper_spawn_l1",
+   "classname": "info_trooper_spawn",
+   "origin": [
+    895.2,
+    12470.1,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "TrooperLevel": "4"
+   },
+   "_batch13": true
+  }
+ ],
+ "paths": [
+  {
+   "name": "lane1_slot0",
+   "classname": "lane_marker_path",
+   "origin": [
+    121.0,
+    -530.0,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "lanenum": "1",
+    "LaneSlot": "0"
+   },
+   "interpolation_type": 1,
+   "closed_loop": false,
+   "nodes": [
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      121.0,
+      -530.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      121.0,
+      1500.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      121.0,
+      3500.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      121.0,
+      5500.0,
+      435.0
+     ]
+    }
+   ],
+   "_batch13": true
+  },
+  {
+   "name": "m_lane1_slot0",
+   "classname": "lane_marker_path",
+   "origin": [
+    799.2,
+    12700.1,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "lanenum": "1",
+    "LaneSlot": "0"
+   },
+   "interpolation_type": 1,
+   "closed_loop": false,
+   "nodes": [
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      799.2,
+      12700.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      799.2,
+      10670.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      799.2,
+      8670.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      799.2,
+      6670.1,
+      435.0
+     ]
+    }
+   ],
+   "_batch13": true
+  },
+  {
+   "name": "lane1_slot1",
+   "classname": "lane_marker_path",
+   "origin": [
+    25.0,
+    -530.0,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "lanenum": "1",
+    "LaneSlot": "1"
+   },
+   "interpolation_type": 1,
+   "closed_loop": false,
+   "nodes": [
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      25.0,
+      -530.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      25.0,
+      1500.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      25.0,
+      3500.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      25.0,
+      5500.0,
+      435.0
+     ]
+    }
+   ],
+   "_batch13": true
+  },
+  {
+   "name": "m_lane1_slot1",
+   "classname": "lane_marker_path",
+   "origin": [
+    895.2,
+    12700.1,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "lanenum": "1",
+    "LaneSlot": "1"
+   },
+   "interpolation_type": 1,
+   "closed_loop": false,
+   "nodes": [
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      895.2,
+      12700.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      895.2,
+      10670.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      895.2,
+      8670.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      895.2,
+      6670.1,
+      435.0
+     ]
+    }
+   ],
+   "_batch13": true
+  },
+  {
+   "name": "lane1_slot2",
+   "classname": "lane_marker_path",
+   "origin": [
+    -71.0,
+    -530.0,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "lanenum": "1",
+    "LaneSlot": "2"
+   },
+   "interpolation_type": 1,
+   "closed_loop": false,
+   "nodes": [
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      -71.0,
+      -530.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      -71.0,
+      1500.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      -71.0,
+      3500.0,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      -71.0,
+      5500.0,
+      435.0
+     ]
+    }
+   ],
+   "_batch13": true
+  },
+  {
+   "name": "m_lane1_slot2",
+   "classname": "lane_marker_path",
+   "origin": [
+    991.2,
+    12700.1,
+    435.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "lanenum": "1",
+    "LaneSlot": "2"
+   },
+   "interpolation_type": 1,
+   "closed_loop": false,
+   "nodes": [
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      991.2,
+      12700.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      991.2,
+      10670.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      991.2,
+      8670.1,
+      435.0
+     ]
+    },
+    {
+     "classname": "path_node_generic",
+     "origin": [
+      991.2,
+      6670.1,
+      435.0
+     ]
+    }
+   ],
+   "_batch13": true
   }
  ]
 }
