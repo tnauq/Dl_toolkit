@@ -24,6 +24,17 @@ gradient and its descent direction:
 Copies are named with a "m_" prefix so nothing collides with the name-keyed
 manual tail.  Idempotent: rerunning just rewrites dust2_full.json.
 
+ENTITIES AND PATHS ARE PRESERVED, not clobbered (changed 2026-08-22).  This
+script only owns the BOXES.  It used to rewrite dust2_full.json wholesale from
+the half, which silently deleted anything a later batch script had added to
+the full plan -- an ordering trap with nothing to catch it: run mirror after
+batch13 and the lanes just vanish.  Now the existing full plan's entities and
+paths are carried over, so the two scripts can run in either order.
+
+Carry-over is by NAME where a name exists, and by classname plus origin where
+one does not (the two original spawns have no name).  A half-plan entity always
+wins over a same-key one in the full plan, because the half is the source.
+
     python3 mirror.py [docs/plans/dust2_half.json]
 """
 
@@ -57,6 +68,33 @@ def mirror_box(b):
     return c
 
 
+def key_of(x):
+    """Identity for carry-over. Named things go by name; the unnamed spawns
+    go by classname and origin, which is stable because this script never
+    moves an entity."""
+    if x.get("name"):
+        return ("name", x["name"])
+    return ("at", x.get("classname", ""),
+            tuple(round(float(v), 4) for v in x.get("origin", [0, 0, 0])))
+
+
+def carry_over(existing, from_half, label):
+    """Everything in the half, plus anything the full plan has on top."""
+    out = list(from_half)
+    have = {key_of(x) for x in out}
+    kept = 0
+    for x in existing:
+        k = key_of(x)
+        if k in have:
+            continue
+        out.append(x)
+        have.add(k)
+        kept += 1
+    if kept:
+        print("carried over %d %s from the existing full plan" % (kept, label))
+    return out
+
+
 def main(path):
     with open(path) as f:
         plan = json.load(f)
@@ -77,11 +115,30 @@ def main(path):
     plan["name"] = "dust2_full"
 
     dst = path.replace("dust2_half.json", "dust2_full.json")
+
+    # Read the plan we are about to overwrite, and keep the parts of it that
+    # are not ours. Boxes ARE ours and are replaced outright.
+    prev = {}
+    try:
+        with open(dst) as f:
+            prev = json.load(f)
+    except FileNotFoundError:
+        pass
+    except ValueError as ex:
+        print("WARNING: %s did not parse (%s); nothing carried over" % (dst, ex))
+
+    plan["entities"] = carry_over(prev.get("entities", []),
+                                  plan.get("entities", []), "entities")
+    plan["paths"] = carry_over(prev.get("paths", []),
+                               plan.get("paths", []), "paths")
     with open(dst, "w") as f:
         json.dump(plan, f, indent=1)
         f.write("\n")
     print("wrote %s: %d source + %d mirrored = %d boxes"
           % (dst, len(src), len(out) - len(src), len(out)))
+    print("  entities %d, paths %d, %d path nodes"
+          % (len(plan["entities"]), len(plan["paths"]),
+             sum(len(p.get("nodes", [])) for p in plan["paths"])))
 
 
 if __name__ == "__main__":
