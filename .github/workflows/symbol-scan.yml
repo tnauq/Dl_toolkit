@@ -1,0 +1,228 @@
+name: symbol scan
+
+# TEST 2, SUBSTITUTE FORM. Is CVisibilityMgr an EDITOR construct or does
+# something at RUNTIME read it?
+#
+# The direct test — read a compiled .vmap_c and look for traces — needs a
+# compiled Deadlock map, which needs the game, which needs a desktop. This
+# gets at the same question with files CI already downloads.
+#
+# METHOD. Class names survive in binaries as plain strings. Scan every binary
+# in the Reduced CSDK for the CMap* family and report WHICH binary each name
+# appears in. The map:
+#
+#   name found ONLY in hammer / tools / resourcecompiler binaries
+#     -> it is an editor-side type. Nothing at runtime can read the array,
+#        so an empty CVisibilityMgr cannot break a map, and the emitter's
+#        inline path nodes are safe.
+#
+#   name ALSO in engine2 / server / client / deadlock.exe
+#     -> something outside the editor knows the type. Not proof the array is
+#        required, but enough to stop assuming it is not, and the flagged
+#        GUID work should be built.
+#
+# CONTROLS MATTER MORE THAN THE ANSWER HERE. CMapMesh and CMapEntity are
+# scanned alongside, because they are unambiguously editor-side: the compiler
+# turns them into world geometry and entity lumps, and no runtime reads them.
+# If CVisibilityMgr appears in exactly the same set of binaries as those two,
+# it is editor-side too. If it appears somewhere they do not, that difference
+# is the finding. A result with no control to compare against would be
+# unreadable.
+#
+# WHAT THIS CANNOT SHOW. A string can be absent because it was optimised out,
+# and present because of a debug name or an unrelated use. This is evidence,
+# not proof. It is also possible the CSDK's binaries differ from retail.
+
+on: workflow_dispatch
+
+env:
+  # Scanned in this order. Controls first so they head the report.
+  NEEDLES: 'CMapMesh,CMapEntity,CMapWorld,CMapGroup,CVisibilityMgr,CMapPath,CMapPathNode,CMapRootElement,CMapSelectionSet,CMapVariableSet,CStoredCameras,CDmePolygonMesh'
+  MIN_LEN: 6
+
+jobs:
+  scan:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/csdk-12'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+          print("extracted")
+
+      - name: What binaries are even here
+        shell: python
+        run: |
+          import os, json
+          os.makedirs('out', exist_ok=True)
+          rows = []
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  p = os.path.join(root, f)
+                  ext = os.path.splitext(f)[1].lower()
+                  if ext in ('.dll', '.exe', '.so'):
+                      rows.append((os.path.relpath(p, 'csdk').replace('\\', '/'),
+                                   os.path.getsize(p)))
+          rows.sort()
+          with open('out/binaries.md', 'w') as fh:
+              fh.write('# Binaries in the CSDK\n\n| path | bytes |\n|---|---|\n')
+              for p, n in rows:
+                  fh.write(f'| {p} | {n} |\n')
+          print(f'{len(rows)} binaries')
+          for p, n in rows[:40]:
+              print(f'  {n:12d}  {p}')
+          json.dump([p for p, _ in rows], open('out/binaries.json', 'w'), indent=1)
+
+      - name: Scan for the CMap family
+        timeout-minutes: 25
+        shell: python
+        run: |
+          import os, json, re, collections
+
+          needles = [n.encode('ascii') for n in os.environ['NEEDLES'].split(',')]
+          names = os.environ['NEEDLES'].split(',')
+
+          # A name is only counted as a real occurrence if it is a whole
+          # token: bounded by a non-identifier byte on each side. Without
+          # this, CMapPath would also match inside CMapPathNode and the two
+          # rows would be indistinguishable.
+          ident = re.compile(rb'[A-Za-z0-9_]')
+
+          hits = collections.defaultdict(lambda: collections.Counter())
+
+          bins = json.load(open('out/binaries.json'))
+          for rel in bins:
+              path = os.path.join('csdk', rel.replace('/', os.sep))
+              try:
+                  with open(path, 'rb') as fh:
+                      data = fh.read()
+              except Exception as ex:
+                  print(f'  skip {rel}: {ex}')
+                  continue
+              for needle, name in zip(needles, names):
+                  start = 0
+                  n = 0
+                  while True:
+                      at = data.find(needle, start)
+                      if at < 0:
+                          break
+                      start = at + 1
+                      before = data[at-1:at]
+                      after = data[at+len(needle):at+len(needle)+1]
+                      if before and ident.match(before):
+                          continue
+                      if after and ident.match(after):
+                          continue
+                      n += 1
+                  if n:
+                      hits[name][rel] = n
+
+          def w(fh, s=''):
+              fh.write(s + '\n')
+              print(s)
+
+          with open('out/symbol-scan.md', 'w') as fh:
+              w(fh, '# CMap family, by binary')
+              w(fh)
+              w(fh, 'Whole-token matches only. CMapMesh and CMapEntity are the')
+              w(fh, 'CONTROLS: both are unambiguously editor-side. Compare every')
+              w(fh, 'other row against them, not against zero.')
+              w(fh)
+              for name in names:
+                  w(fh)
+                  w(fh, f'## {name}')
+                  if not hits[name]:
+                      w(fh, '- found in NO binary')
+                      continue
+                  for rel, n in hits[name].most_common():
+                      w(fh, f'- {rel}: {n}')
+
+              # The comparison, stated rather than left to the reader.
+              w(fh)
+              w(fh, '## Does CVisibilityMgr live anywhere the controls do not?')
+              w(fh)
+              ctrl = set(hits['CMapMesh']) | set(hits['CMapEntity'])
+              vis = set(hits['CVisibilityMgr'])
+              extra = sorted(vis - ctrl)
+              missing = sorted(ctrl - vis)
+              w(fh, f'binaries with CVisibilityMgr: {len(vis)}')
+              w(fh, f'binaries with a control:      {len(ctrl)}')
+              w(fh)
+              if extra:
+                  w(fh, 'CVisibilityMgr appears in these, where NEITHER control does:')
+                  for r in extra:
+                      w(fh, f'- {r}')
+                  w(fh)
+                  w(fh, 'READ: something outside the editor knows this type.')
+                  w(fh, 'Treat the array as possibly load-bearing and build the')
+                  w(fh, 'flagged GUID path.')
+              else:
+                  w(fh, 'CVisibilityMgr appears in NO binary that lacks a control.')
+                  w(fh, 'READ: it lives exactly where the editor-only types live.')
+                  w(fh, 'That is evidence, not proof, that an empty nodes array')
+                  w(fh, 'cannot break a map at runtime.')
+              if missing:
+                  w(fh)
+                  w(fh, 'Controls appear in these without CVisibilityMgr:')
+                  for r in missing:
+                      w(fh, f'- {r}')
+
+          json.dump({k: dict(v) for k, v in hits.items()},
+                    open('out/symbol-scan.json', 'w'), indent=1)
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: symbol-scan
+          path: out/
+          if-no-files-found: ignore
