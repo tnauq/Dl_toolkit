@@ -37,12 +37,13 @@ VOX = 26.7
 PLAYER_H = 98.0
 STEP_UP = 1
 MAX_DROP = 15
-# Jump height, in units. Source's default is 56 for a 72-unit player;
-# scaled to the 120-unit hero used elsewhere in the viewer that is about
-# 93. It is a GUESS and it is the one number in this file most worth
-# correcting from the game, because raising it opens routes everywhere at
-# once. Converted DOWN to whole voxels, so 93 buys 3 voxels, 80.10.
-JUMP_UP = 93.0
+# Jump height, in units. Deadlock's geometry is 1:16 imperial, one unit
+# to 0.75 inch, where Source is 1:12. Source's 56-unit jump is therefore
+# 56 * 16/12 = 74.70 here. Converted DOWN to whole voxels, so it buys 2
+# voxels, 53.40. An earlier value of 93 came from scaling against a
+# 120-unit hero; the gen_man model is 98, which is also what PLAYER_H
+# above uses.
+JUMP_UP = 74.7
 JUMP_VOX = int(JUMP_UP // VOX)
 
 
