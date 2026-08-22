@@ -20,6 +20,14 @@ public sealed class EntitySpec
     public double[] Origin = { 0, 0, 0 };
     public double[] Angles = { 0, 0, 0 };
     public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Optional child geometry for a BRUSH entity (a trigger volume, a nav
+    /// markup region). Emitted as a CMapMesh INLINE in the entity's children,
+    /// which is what dl_example does: no id, no reference, same pattern as a
+    /// CMapPath's nodes. Null for a point entity.
+    /// </summary>
+    public BoxSpec? Mesh;
 }
 
 /// <summary>
@@ -159,7 +167,7 @@ public static class MapEmitter
         var nodeId = 1;
         var children = new List<DmxElement>();
         foreach (var b in boxes) children.Add(MapMesh(b, ++nodeId));
-        foreach (var e in entities) children.Add(MapEntity(e, ++nodeId));
+        foreach (var e in entities) children.Add(MapEntity(e, ref nodeId));
         foreach (var p in paths) children.Add(MapPath(p, ref nodeId));
 
         var world = new DmxElement("CMapWorld");
@@ -258,12 +266,24 @@ public static class MapEmitter
         return e;
     }
 
-    private static DmxElement MapEntity(EntitySpec spec, int nodeId)
+    private static DmxElement MapEntity(EntitySpec spec, ref int nodeId)
     {
         var e = new DmxElement("CMapEntity");
-        e.Set("nodeID", Int(nodeId));
+        e.Set("nodeID", Int(++nodeId));
         e.Set("referenceID", S("uint64", "0x0"));
-        e.Set("children", EmptyArray("element_array"));
+
+        // A brush entity's volume is a CMapMesh inline in children. The mesh's
+        // own origin is LOCAL: dl_example's shop meshes sit at the entity's
+        // origin, so the box is emitted at whatever offset the spec gives,
+        // usually zero.
+        if (spec.Mesh is not null)
+        {
+            e.Set("children", InlineArray(new[] { MapMesh(spec.Mesh, ++nodeId) }));
+        }
+        else
+        {
+            e.Set("children", EmptyArray("element_array"));
+        }
         e.Set("variableTargetKeys", EmptyArray("string_array"));
         e.Set("variableNames", EmptyArray("string_array"));
         e.Set("relayPlugData", DmxValue.OfInline("DmePlugList", PlugList()));

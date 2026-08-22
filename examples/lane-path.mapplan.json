@@ -118,6 +118,44 @@
         "lanenum": "1",
         "initialspawn": "1"
       }
+    },
+    {
+      "classname": "trigger_item_shop",
+      "origin": [
+        0,
+        320,
+        16
+      ],
+      "angles": [
+        0,
+        0,
+        0
+      ],
+      "properties": {
+        "targetname": "test_shop_item_trigger",
+        "vscripts": "",
+        "StartDisabled": "0",
+        "spawnflags": "4097",
+        "teamnumber": "2"
+      },
+      "mesh": {
+        "name": "test_shop_vol",
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "extents": [
+          256,
+          256,
+          192
+        ],
+        "angles": [
+          0,
+          0,
+          0
+        ]
+      }
     }
   ],
   "paths": [

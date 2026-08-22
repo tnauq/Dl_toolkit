@@ -97,6 +97,24 @@ public sealed class MapEntity
 
     [JsonPropertyName("properties")]
     public Dictionary<string, string> Properties { get; set; } = new();
+
+    /// <summary>
+    /// Optional child geometry, for BRUSH entities. A trigger_item_shop or a
+    /// func_nav_markup is a volume, not a point: in dl_example its CMapEntity
+    /// holds a CMapMesh inline in `children`, exactly the way a CMapPath holds
+    /// its nodes. Read verbatim 2026-08-22, not inferred.
+    ///
+    /// Extents and angles are LOCAL to the entity's own origin, matching how a
+    /// box works everywhere else in this file. Leave null for a point entity —
+    /// which is nearly all of them.
+    ///
+    /// NOT the same as the `model` keyvalue. A destroyable_building carries
+    /// model = models/props_street/generator.vmdl and an EMPTY children array;
+    /// a brush entity carries a child mesh and no model. Props and volumes are
+    /// different things and this field is only for the second.
+    /// </summary>
+    [JsonPropertyName("mesh")]
+    public MapBox? Mesh { get; set; }
 }
 
 /// <summary>

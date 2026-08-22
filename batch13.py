@@ -5,8 +5,12 @@ THE FIRST BATCH THAT ADDS GAMEPLAY RATHER THAN GEOMETRY. Everything here is
 entity and path data; no box is touched, so the 4,179 count does not move.
 
 WHAT IT ADDS
-    entities  guardians, walkers, patrons, shrines, trooper spawns, shops
+    entities  guardians, walkers, trooper spawns          (team, mirrored)
+    camps     info_neutral_trooper_camp + its spawns      (NEUTRAL, see below)
+    breakables citadel_breakable_prop, item_crate_spawn   (NEUTRAL)
+    brushes   trigger_item_shop and friends, with a volume
     paths     lane_marker_path, one per lane per LaneSlot
+              citadel_zipline_path, same machinery
 
 MIRRORING. Same proper rotation as mirror.py, about the vertical line through
 (460.1, 6085.05):
@@ -46,6 +50,11 @@ MARK = "_batch13"
 # Teams. 2 is amber, 3 is sapphire, following the plan's existing spawns.
 TEAM_A = "2"
 TEAM_B = "3"
+
+# NEUTRAL things still get a mirrored twin — the layout is rotationally
+# symmetric, so a jungle camp on one half wants its opposite number — but
+# teamnumber is NOT flipped, because there is nothing to flip. Camps and
+# breakables belong to no one.
 
 
 def norm(a):
@@ -106,6 +115,112 @@ LANES = [
 
 
 # ---------------------------------------------------------------------------
+# ZIPLINES. Same CMapPath machinery as a lane: keyvalues say what it is, the
+# node list says where it goes. Troopers ride one INTO the lane before they
+# walk it, so a zipline route roughly parallels its lane at height.
+#
+# TODO: placeholder route.
+# ---------------------------------------------------------------------------
+ZIPLINES = [
+    {
+        "lane": "1",
+        "route": [
+            [25.0, -530.0, 900.0],
+            [25.0, 2500.0, 900.0],
+            [25.0, 5500.0, 900.0],
+        ],
+        "properties": {
+            "targetname": "zip_lane1",
+            "vscripts": "",
+            "lane_number": "1",
+            "radius": "2",
+            "slack": "0",
+            "particle_spacing": "512",
+            "static_collision": "0",
+            "color_tint": "255 216 0",
+            "start_active": "1",
+            "effect_name":
+                "particles/entity/path_particle_cable_default.vpcf",
+        },
+    },
+]
+
+
+# ---------------------------------------------------------------------------
+# NEUTRAL CAMPS. A camp is one info_neutral_trooper_camp plus N
+# info_neutral_trooper_spawn, tied together by CampName — a plain string, like
+# every other link in this map format. subclass_name picks the camp tier.
+#
+# TODO: placeholder origins.
+# ---------------------------------------------------------------------------
+CAMPS = [
+    {
+        "name": "camp_west_weak",
+        "camp_name": "west_weak_neutrals",
+        "origin": [-1200.0, 2400.0, 435.0],
+        "subclass": "neutral_camp_weak",
+        "trooper_type": "1",
+        "initial_delay": "120",
+        "interval": "120",
+        # Offsets from the camp origin, one per creature.
+        "spawns": [[-64.0, 0.0, 0.0], [64.0, 0.0, 0.0], [0.0, 96.0, 0.0]],
+    },
+]
+
+
+# ---------------------------------------------------------------------------
+# BREAKABLES. Point entities with a model. citadel_breakable_prop covers
+# crates and the golden statues; item_crate_spawn is the soul crate.
+#
+# TODO: placeholder origins, and the model paths are UNCONFIRMED against the
+# Deadlock tree — no run so far could have caught a bad one, because
+# dmxconvert only moves the string.
+# ---------------------------------------------------------------------------
+BREAKABLES = [
+    {
+        "name": "crate_west_1",
+        "classname": "citadel_breakable_prop",
+        "origin": [-1400.0, 1800.0, 435.0],
+        "properties": {"targetname": "", "vscripts": ""},
+    },
+]
+
+
+# ---------------------------------------------------------------------------
+# BRUSH ENTITIES. A volume, not a point: the entity carries a child mesh,
+# emitted INLINE in its children exactly as dl_example does. `extents` is the
+# size of the volume and `mesh_origin` its offset from the entity origin,
+# normally zero.
+#
+# Do NOT set a `model` keyvalue here. In dl_example a brush entity has a child
+# mesh and no model; a destroyable_building has a model and NO children. The
+# maps\...\unnamed_*.vmdl values seen on some brush entities are written by
+# the compiler on export, not authored.
+#
+# TODO: placeholder origin and size.
+# ---------------------------------------------------------------------------
+BRUSHES = [
+    {
+        "name": "shop_base",
+        "classname": "trigger_item_shop",
+        "origin": [400.0, -200.0, 435.0],
+        "angles": [0.0, 0.0, 0.0],
+        "extents": [256.0, 256.0, 192.0],
+        "mesh_origin": [0.0, 0.0, 0.0],
+        "properties": {
+            "targetname": "amber_base_shop_item_trigger",
+            "vscripts": "",
+            "parentname": "",
+            "StartDisabled": "0",
+            "spawnflags": "4097",
+            "teamnumber": TEAM_A,
+            "AudioOffset": "-0.25 22 50",
+        },
+    },
+]
+
+
+# ---------------------------------------------------------------------------
 # OBJECTIVES AND SPAWNS. Authored for team 2 only.
 #
 # Keyvalue sets are the ones dl_example actually uses. Empty strings are kept
@@ -161,6 +276,151 @@ OBJECTIVES = [
 ]
 
 
+def twin_of(e, neutral=False):
+    """The mirrored copy of an entity dict."""
+    t = json.loads(json.dumps(e))
+    t["name"] = PREFIX + e["name"]
+    t["origin"] = mirror_point(e["origin"])
+    t["angles"] = mirror_angles(e.get("angles", [0.0, 0.0, 0.0]))
+    if e.get("mesh"):
+        t["mesh"] = json.loads(json.dumps(e["mesh"]))
+        t["mesh"]["angles"] = mirror_angles(e["mesh"].get("angles",
+                                                          [0.0, 0.0, 0.0]))
+    props = dict(e.get("properties", {}))
+    if not neutral:
+        props = flip_team(props)
+    for k in ("targetname", "BossName", "CampName"):
+        if props.get(k):
+            props[k] = PREFIX + props[k]
+    t["properties"] = props
+    return t
+
+
+def build_camps():
+    """A camp and its creatures. CampName is the only link between them."""
+    out = []
+    for spec in CAMPS:
+        camp = {
+            "name": spec["name"],
+            "classname": "info_neutral_trooper_camp",
+            "origin": [round(v, 4) for v in spec["origin"]],
+            "angles": [0.0, 0.0, 0.0],
+            "properties": {
+                "targetname": "",
+                "vscripts": "",
+                "CampName": spec["camp_name"],
+                "ENeutralTrooperType": spec["trooper_type"],
+                "subclass_name": spec["subclass"],
+                "InitialSpawnDelayInSeconds": spec["initial_delay"],
+                "SpawnIntervalInSeconds": spec["interval"],
+            },
+            MARK: True,
+        }
+        out.append(camp)
+        out.append(twin_of(camp, neutral=True))
+
+        for i, off in enumerate(spec["spawns"]):
+            o = spec["origin"]
+            spawn = {
+                "name": "%s_spawn%d" % (spec["name"], i),
+                "classname": "info_neutral_trooper_spawn",
+                "origin": [round(o[0] + off[0], 4),
+                           round(o[1] + off[1], 4),
+                           round(o[2] + off[2], 4)],
+                "angles": [0.0, 0.0, 0.0],
+                "properties": {
+                    "targetname": "",
+                    "vscripts": "",
+                    "teamnumber": "0",
+                    "CampName": spec["camp_name"],
+                    "ENeutralTrooperType": spec["trooper_type"],
+                    "CoverGroupID": "",
+                    "HateCrateAttacker": "0",
+                },
+                MARK: True,
+            }
+            out.append(spawn)
+            out.append(twin_of(spawn, neutral=True))
+    return out
+
+
+def build_breakables():
+    out = []
+    for spec in BREAKABLES:
+        e = {
+            "name": spec["name"],
+            "classname": spec["classname"],
+            "origin": [round(v, 4) for v in spec["origin"]],
+            "angles": list(spec.get("angles", [0.0, 0.0, 0.0])),
+            "properties": dict(spec["properties"]),
+            MARK: True,
+        }
+        out.append(e)
+        out.append(twin_of(e, neutral=True))
+    return out
+
+
+def build_brushes():
+    """Volumes. The child mesh rides along in `mesh` and the emitter puts it
+    inline in the entity's children."""
+    out = []
+    for spec in BRUSHES:
+        e = {
+            "name": spec["name"],
+            "classname": spec["classname"],
+            "origin": [round(v, 4) for v in spec["origin"]],
+            "angles": list(spec.get("angles", [0.0, 0.0, 0.0])),
+            "properties": dict(spec["properties"]),
+            "mesh": {
+                "name": spec["name"] + "_vol",
+                "origin": [round(v, 4) for v in spec.get("mesh_origin",
+                                                         [0.0, 0.0, 0.0])],
+                "extents": [round(v, 4) for v in spec["extents"]],
+                "angles": [0.0, 0.0, 0.0],
+            },
+            MARK: True,
+        }
+        out.append(e)
+        out.append(twin_of(e))
+    return out
+
+
+def build_ziplines():
+    out = []
+    for spec in ZIPLINES:
+        route = spec["route"]
+        name = "zip_lane%s" % spec["lane"]
+        p = {
+            "name": name,
+            "classname": "citadel_zipline_path",
+            "origin": [round(v, 4) for v in route[0]],
+            "angles": [0.0, 0.0, 0.0],
+            "properties": dict(spec["properties"]),
+            "interpolation_type": 1,
+            "closed_loop": False,
+            "nodes": [{"classname": "citadel_zipline_path_node",
+                       "origin": [round(v, 4) for v in q],
+                       "properties": {"teamnumber": TEAM_A,
+                                      "enabled": "1",
+                                      "corner_node": "0",
+                                      "capturable": "0",
+                                      "disable_zipping_to": "0"}}
+                      for q in route],
+            MARK: True,
+        }
+        out.append(p)
+
+        m = json.loads(json.dumps(p))
+        m["name"] = PREFIX + name
+        m["origin"] = mirror_point(route[0])
+        m["properties"]["targetname"] = PREFIX + p["properties"]["targetname"]
+        for i, q in enumerate(route):
+            m["nodes"][i]["origin"] = mirror_point(q)
+            m["nodes"][i]["properties"]["teamnumber"] = TEAM_B
+        out.append(m)
+    return out
+
+
 def strip_previous(plan):
     """Remove everything a previous run of this script added."""
     def mine(x):
@@ -187,19 +447,7 @@ def build_entities():
             MARK: True,
         }
         out.append(e)
-
-        t = json.loads(json.dumps(e))
-        t["name"] = PREFIX + spec["name"]
-        t["origin"] = mirror_point(spec["origin"])
-        t["angles"] = mirror_angles(spec["angles"])
-        t["properties"] = flip_team(spec["properties"])
-        tn = t["properties"].get("targetname", "")
-        if tn:
-            t["properties"]["targetname"] = PREFIX + tn
-        for k in ("BossName",):
-            if t["properties"].get(k):
-                t["properties"][k] = PREFIX + t["properties"][k]
-        out.append(t)
+        out.append(twin_of(e))
     return out
 
 
@@ -303,8 +551,9 @@ def main(path):
     plan.setdefault("paths", [])
     strip_previous(plan)
 
-    ents = build_entities()
-    paths = build_paths()
+    ents = (build_entities() + build_camps() + build_breakables()
+            + build_brushes())
+    paths = build_paths() + build_ziplines()
     plan["entities"].extend(ents)
     plan["paths"].extend(paths)
 
@@ -318,9 +567,11 @@ def main(path):
         f.write("\n")
 
     nodes = sum(len(p["nodes"]) for p in paths)
+    brush = sum(1 for e in ents if e.get("mesh"))
     print("wrote %s" % path)
     print("  boxes    %d (untouched)" % len(plan["boxes"]))
-    print("  entities %d (+%d)" % (len(plan["entities"]), len(ents)))
+    print("  entities %d (+%d, of which %d brush volumes)"
+          % (len(plan["entities"]), len(ents), brush))
     print("  paths    %d (+%d), %d nodes" % (len(plan["paths"]), len(paths), nodes))
     print("\nEVERY COORDINATE IN THIS RUN IS A PLACEHOLDER. See the module")
     print("docstring. Replace with viewer `copy pos` readings before use.")

@@ -73,13 +73,31 @@ if (mode == "emit")
             return Fail($"{label}: expected 8/24/6, got " +
                         $"{hm.VertexCount}/{hm.HalfEdgeCount}/{hm.FaceCount}");
     }
-    Console.WriteLine($"geometry ok: {plan.Boxes.Count} sealed box(es)");
+    // Brush entity volumes are boxes too, and an unsealed one would fail
+    // exactly as loudly in game as an unsealed world box.
+    var brush = 0;
+    foreach (var ent in plan.Entities)
+    {
+        if (ent.Mesh is null) continue;
+        brush++;
+        var m = ent.Mesh;
+        var (hm2, _) = HalfEdgeMesh.Box(m.Extents[0], m.Extents[1], m.Extents[2]);
+        if (!hm2.IsClosed || !hm2.LoopsClose())
+            return Fail($"{ent.ClassName}: brush mesh is not sealed");
+    }
+    Console.WriteLine($"geometry ok: {plan.Boxes.Count} sealed box(es), " +
+                      $"{brush} brush volume(s)");
 
     var boxes = plan.Boxes.Select(b => new BoxSpec {
         Origin = b.Origin, Extents = b.Extents, Angles = b.Angles, Material = b.Material
     }).ToList();
     var ents = plan.Entities.Select(e => new EntitySpec {
-        ClassName = e.ClassName, Origin = e.Origin, Angles = e.Angles, Properties = e.Properties
+        ClassName = e.ClassName, Origin = e.Origin, Angles = e.Angles,
+        Properties = e.Properties,
+        Mesh = e.Mesh is null ? null : new BoxSpec {
+            Origin = e.Mesh.Origin, Extents = e.Mesh.Extents,
+            Angles = e.Mesh.Angles, Material = e.Mesh.Material
+        }
     }).ToList();
     var paths = plan.Paths.Select(p => new PathSpec {
         ClassName = p.ClassName, Origin = p.Origin, Angles = p.Angles,
@@ -171,6 +189,17 @@ if (mode == "verify")
             m.Properties.TryGetValue(k, out var got);
             if (!string.Equals(want, got, StringComparison.Ordinal))
             { Console.Error.WriteLine($"{p.ClassName}[{i}]: {k} '{want}' -> '{got ?? "(missing)"}'"); bad++; }
+        }
+        if ((p.Mesh is null) != (m.Mesh is null))
+        {
+            Console.Error.WriteLine($"{p.ClassName}[{i}]: brush volume " +
+                (p.Mesh is null ? "appeared" : "vanished"));
+            bad++;
+        }
+        else if (p.Mesh is not null && m.Mesh is not null)
+        {
+            if (!NearV(p.Mesh.Extents, m.Mesh.Extents))
+            { Console.Error.WriteLine($"{p.ClassName}[{i}]: volume extents {V(p.Mesh.Extents)} -> {V(m.Mesh.Extents)}"); bad++; }
         }
         if (bad == 0 || true) Console.WriteLine($"  ok  {m.ClassName} {V(m.Origin)}");
     }

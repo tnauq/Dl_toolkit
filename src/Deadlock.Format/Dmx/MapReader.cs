@@ -37,6 +37,9 @@ public static class MapReader
         public double[] Origin = { 0, 0, 0 };
         public double[] Angles = { 0, 0, 0 };
         public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
+
+        /// <summary>Child geometry of a brush entity, or null.</summary>
+        public ReadBox? Mesh;
     }
 
     public sealed class ReadPathNode
@@ -75,52 +78,77 @@ public static class MapReader
         return v;
     }
 
+    /// <summary>
+    /// One CMapMesh into a ReadBox. Extents are RECOVERED from the vertex
+    /// positions, never read from a field, so a geometry bug cannot hide
+    /// behind matching metadata.
+    /// </summary>
+    private static ReadBox ReadMesh(DmxElement el)
+    {
+        var b = new ReadBox
+        {
+            Origin = Vec(el.GetScalar("origin"), 3),
+            Angles = Vec(el.GetScalar("angles"), 3)
+        };
+
+        var mesh = el.Get("meshData")?.Element;
+        if (mesh is null) return b;
+
+        var mats = mesh.Get("materials");
+        if (mats?.Items is { Count: > 0 })
+            b.Material = mats.Items[0].Text ?? "";
+
+        var faces = mesh.Get("faceEdgeIndices");
+        b.FaceCount = faces?.Items?.Count ?? 0;
+
+        var pos = FindStream(mesh, "vertexData", "position");
+        if (pos is null) return b;
+
+        b.VertexCount = pos.Count;
+        double minX = double.MaxValue, minY = double.MaxValue, minZ = double.MaxValue;
+        double maxX = double.MinValue, maxY = double.MinValue, maxZ = double.MinValue;
+        foreach (var item in pos)
+        {
+            var p = Vec(item.Text, 3);
+            if (p[0] < minX) minX = p[0];
+            if (p[1] < minY) minY = p[1];
+            if (p[2] < minZ) minZ = p[2];
+            if (p[0] > maxX) maxX = p[0];
+            if (p[1] > maxY) maxY = p[1];
+            if (p[2] > maxZ) maxZ = p[2];
+        }
+        if (b.VertexCount > 0)
+            b.Extents = new[] { maxX - minX, maxY - minY, maxZ - minZ };
+        return b;
+    }
+
     public static ReadMap Read(DmxDocument doc)
     {
         var map = new ReadMap();
+
+        // Meshes that belong to an entity, collected first so the main walk
+        // can tell a world box from a brush volume.
+        var childMeshes = new HashSet<DmxElement>();
+        foreach (var el in doc.AllElements())
+        {
+            if (el.TypeName != "CMapEntity") continue;
+            var kids = el.Get("children");
+            if (kids?.Items is null) continue;
+            foreach (var it in kids.Items)
+                if (it.Element is { TypeName: "CMapMesh" } m)
+                    childMeshes.Add(m);
+        }
 
         foreach (var el in doc.AllElements())
         {
             if (el.TypeName == "CMapMesh")
             {
-                var b = new ReadBox
-                {
-                    Origin = Vec(el.GetScalar("origin"), 3),
-                    Angles = Vec(el.GetScalar("angles"), 3)
-                };
-
-                var meshVal = el.Get("meshData");
-                var mesh = meshVal?.Element;
-                if (mesh is not null)
-                {
-                    var mats = mesh.Get("materials");
-                    if (mats?.Items is { Count: > 0 })
-                        b.Material = mats.Items[0].Text ?? "";
-
-                    var faces = mesh.Get("faceEdgeIndices");
-                    b.FaceCount = faces?.Items?.Count ?? 0;
-
-                    var pos = FindStream(mesh, "vertexData", "position");
-                    if (pos is not null)
-                    {
-                        b.VertexCount = pos.Count;
-                        double minX = double.MaxValue, minY = double.MaxValue, minZ = double.MaxValue;
-                        double maxX = double.MinValue, maxY = double.MinValue, maxZ = double.MinValue;
-                        foreach (var item in pos)
-                        {
-                            var p = Vec(item.Text, 3);
-                            if (p[0] < minX) minX = p[0];
-                            if (p[1] < minY) minY = p[1];
-                            if (p[2] < minZ) minZ = p[2];
-                            if (p[0] > maxX) maxX = p[0];
-                            if (p[1] > maxY) maxY = p[1];
-                            if (p[2] > maxZ) maxZ = p[2];
-                        }
-                        if (b.VertexCount > 0)
-                            b.Extents = new[] { maxX - minX, maxY - minY, maxZ - minZ };
-                    }
-                }
-                map.Boxes.Add(b);
+                // A CMapMesh that is a CHILD of an entity is that entity's
+                // brush volume, not a world box. AllElements() walks into
+                // children, so without this the shop volumes would inflate
+                // the box count and break the plan-vs-map comparison.
+                if (childMeshes.Contains(el)) continue;
+                map.Boxes.Add(ReadMesh(el));
             }
             else if (el.TypeName == "CMapPath")
             {
@@ -164,6 +192,19 @@ public static class MapReader
                 };
                 ReadProps(el, out var ecls, e.Properties);
                 e.ClassName = ecls;
+
+                var kids = el.Get("children");
+                if (kids?.Items is not null)
+                {
+                    foreach (var it in kids.Items)
+                    {
+                        if (it.Element is { TypeName: "CMapMesh" } m)
+                        {
+                            e.Mesh = ReadMesh(m);
+                            break;
+                        }
+                    }
+                }
                 map.Entities.Add(e);
             }
         }

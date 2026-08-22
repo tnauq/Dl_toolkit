@@ -21,7 +21,14 @@ name: path smoke
 # starts writing ids, and the "nothing is shared" simplification is gone
 # without anyone noticing.
 #
-# CENSUS for the fixture — 6 boxes, 2 spawns, 3 paths, 10 path nodes:
+# ALSO COVERS BRUSH ENTITIES (added 2026-08-22). The fixture carries one
+# trigger_item_shop whose volume is a CMapMesh INLINE in its children — the
+# shape read verbatim out of dl_example. So EXPECT_MAPMESH is 7, not 6: six
+# world boxes plus one brush volume. A brush mesh has no EditGameClassProps
+# and no DmePlugList of its own; the entity holding it does.
+#
+# CENSUS for the fixture — 6 boxes, 2 spawns, 1 shop + volume, 3 paths,
+# 10 path nodes:
 #
 #   per box:  1 CMapMesh, 1 CDmePolygonMesh, 4 CDmePolygonMeshDataArray,
 #             11 CDmePolygonMeshDataStream, 1 CDmePolygonMeshSubdivisionData
@@ -41,17 +48,17 @@ on: workflow_dispatch
 env:
   PLAN: examples/lane-path.mapplan.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
-  EXPECT_MAPMESH: 6
-  EXPECT_POLYMESH: 6
-  EXPECT_ENTITY: 2
+  EXPECT_MAPMESH: 7
+  EXPECT_POLYMESH: 7
+  EXPECT_ENTITY: 3
   EXPECT_PATH: 3
   EXPECT_PATHNODE: 10
-  EXPECT_DATAARRAY: 24
-  EXPECT_STREAM: 66
-  EXPECT_SUBDIV: 6
-  EXPECT_CLASSPROPS: 16
-  EXPECT_PLUGLIST: 16
-  EXPECT_ELEMENTS: 161
+  EXPECT_DATAARRAY: 28
+  EXPECT_STREAM: 77
+  EXPECT_SUBDIV: 7
+  EXPECT_CLASSPROPS: 17
+  EXPECT_PLUGLIST: 17
+  EXPECT_ELEMENTS: 182
 
 jobs:
   paths:
