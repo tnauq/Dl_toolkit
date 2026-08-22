@@ -20,7 +20,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_1",
@@ -438,7 +438,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_27",
@@ -457,7 +457,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_28",
@@ -476,7 +476,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      3187.3,
@@ -507,7 +507,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_30",
@@ -526,7 +526,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      2987.3,
@@ -557,7 +557,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      2347.1,
@@ -588,7 +588,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      2787.2,
@@ -657,7 +657,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_42",
@@ -676,7 +676,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_45",
@@ -752,7 +752,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_50",
@@ -790,7 +790,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_54",
@@ -866,7 +866,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "yaw_58",
@@ -904,7 +904,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch2_pre": {
     "origin": [
      2133.8,
@@ -935,7 +935,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_64",
@@ -1049,7 +1049,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_70",
@@ -1182,7 +1182,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_77",
@@ -1688,7 +1688,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_123",
@@ -1745,7 +1745,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_127",
@@ -2372,7 +2372,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_195",
@@ -2429,7 +2429,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_200",
@@ -3056,7 +3056,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      3214.0,
@@ -3600,7 +3600,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_330",
@@ -3638,7 +3638,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_332",
@@ -3714,7 +3714,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_337",
@@ -3809,7 +3809,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_344",
@@ -3961,7 +3961,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_362",
@@ -3980,7 +3980,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_363",
@@ -4265,7 +4265,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_386",
@@ -4284,7 +4284,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_387",
@@ -5234,7 +5234,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_473",
@@ -5975,7 +5975,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_547",
@@ -6075,7 +6075,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_552",
@@ -6246,7 +6246,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_561",
@@ -6714,7 +6714,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "angled-wall_591",
@@ -7930,7 +7930,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "merged_721",
@@ -7949,7 +7949,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_722",
@@ -7968,7 +7968,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_725",
@@ -7987,7 +7987,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_726",
@@ -8348,7 +8348,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_746",
@@ -8424,7 +8424,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "yaw_750",
@@ -8443,7 +8443,7 @@
     85.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "yaw_751",
@@ -8462,7 +8462,7 @@
     73.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "yaw_752",
@@ -8481,7 +8481,7 @@
     55.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "compound_753",
@@ -8500,7 +8500,7 @@
     34.1,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "compound_754",
@@ -8519,7 +8519,7 @@
     23.9,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "compound_755",
@@ -8538,7 +8538,7 @@
     19.3,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "compound_756",
@@ -8557,7 +8557,7 @@
     9.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "compound_757",
@@ -8595,7 +8595,7 @@
     1.5,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_759",
@@ -8823,7 +8823,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_771",
@@ -8842,7 +8842,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_772",
@@ -8861,7 +8861,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_773",
@@ -9108,7 +9108,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_787",
@@ -9146,7 +9146,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_789",
@@ -9184,7 +9184,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_791",
@@ -9203,7 +9203,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_792",
@@ -9241,7 +9241,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_794",
@@ -10628,7 +10628,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_1102",
@@ -10666,7 +10666,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_1104",
@@ -10723,7 +10723,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_33",
@@ -10742,7 +10742,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_53",
@@ -10761,7 +10761,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_90",
@@ -10799,7 +10799,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_143",
@@ -11312,7 +11312,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_218",
@@ -12528,7 +12528,7 @@
     -0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_372",
@@ -13262,7 +13262,7 @@
     -0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_471",
@@ -13281,7 +13281,7 @@
     -0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_499",
@@ -13927,7 +13927,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_603",
@@ -16492,7 +16492,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_4_56",
@@ -16511,7 +16511,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_6_39",
@@ -16530,7 +16530,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_11_40",
@@ -16720,7 +16720,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_29_50",
@@ -16758,7 +16758,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_38_26",
@@ -16777,7 +16777,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_39_8",
@@ -16796,7 +16796,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_39_9",
@@ -16815,7 +16815,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_39_44",
@@ -16872,7 +16872,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_47_23",
@@ -16891,7 +16891,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_50_20",
@@ -16929,7 +16929,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_50_34",
@@ -16948,7 +16948,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_51_28",
@@ -16967,7 +16967,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_56_41",
@@ -16986,7 +16986,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_820_d462",
@@ -19532,7 +19532,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_80_61",
@@ -19836,7 +19836,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "gapfill_195_193",
@@ -19855,7 +19855,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_265_195_diag",
@@ -19893,7 +19893,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ceiling_195_bay",
@@ -19988,7 +19988,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp_29_22_down",
@@ -20007,7 +20007,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_192_face",
@@ -20102,7 +20102,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp_479_down_a",
@@ -20121,7 +20121,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp_479_down_b",
@@ -20140,7 +20140,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_551_ext",
@@ -20159,7 +20159,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_129_corner_block",
@@ -20235,7 +20235,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_574_hdr",
@@ -22344,7 +22344,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_468_jamb_w",
@@ -23123,7 +23123,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ramp-slab_861_d468b",
@@ -23807,7 +23807,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_floor_1",
@@ -23826,7 +23826,7 @@
     60.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_floor_2",
@@ -23845,7 +23845,7 @@
     120.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_n_floor",
@@ -23864,7 +23864,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_n_wall_l",
@@ -23959,7 +23959,7 @@
     -93.447,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_ne_ramp",
@@ -23978,7 +23978,7 @@
     86.553,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_ne_mitre",
@@ -23997,7 +23997,7 @@
     -93.447,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_ne_stub_floor",
@@ -24016,7 +24016,7 @@
     -150.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_ne_stub_roof",
@@ -24130,7 +24130,7 @@
     -86.553,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_nw_roof",
@@ -24168,7 +24168,7 @@
     -30.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_tun_nw_stub_roof",
@@ -25612,7 +25612,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_265_hdr",
@@ -25973,7 +25973,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_333_hdr",
@@ -26315,7 +26315,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "bay_tun_ramp1",
@@ -26334,7 +26334,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "bay_tun_landing1",
@@ -26353,7 +26353,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "bay_tun_ramp2",
@@ -26372,7 +26372,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "bay_tun_landing2",
@@ -26391,7 +26391,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "bay_tun_wall_s",
@@ -26638,7 +26638,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_d553n_hdr",
@@ -27284,7 +27284,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_d553s_hdr",
@@ -28861,7 +28861,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_floor_1",
@@ -28880,7 +28880,7 @@
     60.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_floor_2",
@@ -28899,7 +28899,7 @@
     120.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_ceil_0",
@@ -29013,7 +29013,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_e_floor",
@@ -29032,7 +29032,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_e_roof",
@@ -29450,7 +29450,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_ne_dstub_roof",
@@ -29488,7 +29488,7 @@
     -130.911,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_ne_leg_roof",
@@ -29526,7 +29526,7 @@
     60,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_ne_fstub_roof",
@@ -30039,7 +30039,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_se_dpad",
@@ -30058,7 +30058,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_se_leg_floor",
@@ -30077,7 +30077,7 @@
     141.031,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_se_leg_roof",
@@ -30115,7 +30115,7 @@
     300,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex2_tun_se_fstub_roof",
@@ -31616,7 +31616,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_drop_tun0_floor",
@@ -31635,7 +31635,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_drop_tun0_wall_w",
@@ -31711,7 +31711,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_drop_tun1_wall_w",
@@ -31825,7 +31825,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "hex_drop_tun2_wall_w",
@@ -33424,7 +33424,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_1",
@@ -33842,7 +33842,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_27",
@@ -33861,7 +33861,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_28",
@@ -33880,7 +33880,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      -2267.1,
@@ -33911,7 +33911,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_30",
@@ -33930,7 +33930,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      -2067.1,
@@ -33961,7 +33961,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      -1426.9,
@@ -33992,7 +33992,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      -1867.0,
@@ -34061,7 +34061,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_42",
@@ -34080,7 +34080,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_45",
@@ -34156,7 +34156,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_50",
@@ -34194,7 +34194,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_54",
@@ -34270,7 +34270,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_yaw_58",
@@ -34308,7 +34308,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch2_pre": {
     "origin": [
      -1213.6,
@@ -34339,7 +34339,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_64",
@@ -34453,7 +34453,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_70",
@@ -34586,7 +34586,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_77",
@@ -35092,7 +35092,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_123",
@@ -35149,7 +35149,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_127",
@@ -35776,7 +35776,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_195",
@@ -35833,7 +35833,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_200",
@@ -36460,7 +36460,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat",
+   "material": "materials/dev/reflectivity_50.vmat",
    "_batch9_pre": {
     "origin": [
      -2293.8,
@@ -37004,7 +37004,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_330",
@@ -37042,7 +37042,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_332",
@@ -37118,7 +37118,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_337",
@@ -37213,7 +37213,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_344",
@@ -37365,7 +37365,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_362",
@@ -37384,7 +37384,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_363",
@@ -37669,7 +37669,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_386",
@@ -37688,7 +37688,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_387",
@@ -38638,7 +38638,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_473",
@@ -39379,7 +39379,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_547",
@@ -39479,7 +39479,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_552",
@@ -39650,7 +39650,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_561",
@@ -40118,7 +40118,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_angled-wall_591",
@@ -41334,7 +41334,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_merged_721",
@@ -41353,7 +41353,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_722",
@@ -41372,7 +41372,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_725",
@@ -41391,7 +41391,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_726",
@@ -41752,7 +41752,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_746",
@@ -41828,7 +41828,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_yaw_750",
@@ -41847,7 +41847,7 @@
     -95.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_yaw_751",
@@ -41866,7 +41866,7 @@
     -107.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_yaw_752",
@@ -41885,7 +41885,7 @@
     -125.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_compound_753",
@@ -41904,7 +41904,7 @@
     -145.9,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_compound_754",
@@ -41923,7 +41923,7 @@
     -156.1,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_compound_755",
@@ -41942,7 +41942,7 @@
     -160.7,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_compound_756",
@@ -41961,7 +41961,7 @@
     -171.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_compound_757",
@@ -41999,7 +41999,7 @@
     -178.5,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_759",
@@ -42227,7 +42227,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_771",
@@ -42246,7 +42246,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_772",
@@ -42265,7 +42265,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_773",
@@ -42512,7 +42512,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_787",
@@ -42550,7 +42550,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_789",
@@ -42588,7 +42588,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_791",
@@ -42607,7 +42607,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_792",
@@ -42645,7 +42645,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_794",
@@ -44032,7 +44032,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_1102",
@@ -44070,7 +44070,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_1104",
@@ -44127,7 +44127,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_33",
@@ -44146,7 +44146,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_53",
@@ -44165,7 +44165,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_90",
@@ -44203,7 +44203,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_143",
@@ -44716,7 +44716,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_218",
@@ -45932,7 +45932,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_372",
@@ -46666,7 +46666,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_471",
@@ -46685,7 +46685,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_499",
@@ -47331,7 +47331,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_603",
@@ -49896,7 +49896,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_4_56",
@@ -49934,7 +49934,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_11_40",
@@ -49953,7 +49953,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_12_32",
@@ -49991,7 +49991,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_12_54",
@@ -50124,7 +50124,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_29_50",
@@ -50162,7 +50162,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_38_26",
@@ -50181,7 +50181,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_39_8",
@@ -50200,7 +50200,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_39_9",
@@ -50219,7 +50219,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_39_44",
@@ -50276,7 +50276,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_47_23",
@@ -50295,7 +50295,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_50_20",
@@ -50333,7 +50333,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_50_34",
@@ -50352,7 +50352,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_51_28",
@@ -50371,7 +50371,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_56_41",
@@ -50390,7 +50390,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_820_d462",
@@ -52936,7 +52936,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_80_61",
@@ -53240,7 +53240,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_gapfill_195_193",
@@ -53259,7 +53259,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_265_195_diag",
@@ -53297,7 +53297,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ceiling_195_bay",
@@ -53392,7 +53392,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp_29_22_down",
@@ -53411,7 +53411,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_192_face",
@@ -53506,7 +53506,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp_479_down_a",
@@ -53525,7 +53525,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp_479_down_b",
@@ -53544,7 +53544,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_551_ext",
@@ -53563,7 +53563,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_129_corner_block",
@@ -53639,7 +53639,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_574_hdr",
@@ -55748,7 +55748,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_468_jamb_w",
@@ -56527,7 +56527,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ramp-slab_861_d468b",
@@ -57211,7 +57211,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_floor_1",
@@ -57230,7 +57230,7 @@
     -120.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_floor_2",
@@ -57249,7 +57249,7 @@
     -60.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_n_floor",
@@ -57268,7 +57268,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_n_wall_l",
@@ -57363,7 +57363,7 @@
     86.553,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_ne_ramp",
@@ -57382,7 +57382,7 @@
     -93.447,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_ne_mitre",
@@ -57401,7 +57401,7 @@
     86.553,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_ne_stub_floor",
@@ -57420,7 +57420,7 @@
     30.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_ne_stub_roof",
@@ -57534,7 +57534,7 @@
     93.447,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_nw_roof",
@@ -57572,7 +57572,7 @@
     150.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_tun_nw_stub_roof",
@@ -59016,7 +59016,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_265_hdr",
@@ -59377,7 +59377,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_333_hdr",
@@ -59719,7 +59719,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_bay_tun_ramp1",
@@ -59738,7 +59738,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_bay_tun_landing1",
@@ -59757,7 +59757,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_bay_tun_ramp2",
@@ -59776,7 +59776,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_bay_tun_landing2",
@@ -59795,7 +59795,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_bay_tun_wall_s",
@@ -60042,7 +60042,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_d553n_hdr",
@@ -60688,7 +60688,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_d553s_hdr",
@@ -62265,7 +62265,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_floor_1",
@@ -62284,7 +62284,7 @@
     -120.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_floor_2",
@@ -62303,7 +62303,7 @@
     -60.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_ceil_0",
@@ -62417,7 +62417,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_e_floor",
@@ -62436,7 +62436,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_e_roof",
@@ -62854,7 +62854,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_ne_dstub_roof",
@@ -62892,7 +62892,7 @@
     49.089,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_ne_leg_roof",
@@ -62930,7 +62930,7 @@
     -120.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_ne_fstub_roof",
@@ -63443,7 +63443,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_se_dpad",
@@ -63462,7 +63462,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_se_leg_floor",
@@ -63481,7 +63481,7 @@
     -38.969,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_se_leg_roof",
@@ -63519,7 +63519,7 @@
     120.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex2_tun_se_fstub_roof",
@@ -65020,7 +65020,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_drop_tun0_floor",
@@ -65039,7 +65039,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_drop_tun0_wall_w",
@@ -65115,7 +65115,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_drop_tun1_wall_w",
@@ -65229,7 +65229,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_hex_drop_tun2_wall_w",
@@ -66828,7 +66828,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "bridge_floor_a",
@@ -68695,7 +68695,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t1_ramp1",
@@ -68714,7 +68714,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t1_pad1",
@@ -68733,7 +68733,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t1_pad1",
@@ -68752,7 +68752,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t1_ramp2",
@@ -68771,7 +68771,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t1_ramp2",
@@ -68790,7 +68790,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t1_pad2",
@@ -68809,7 +68809,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t1_pad2",
@@ -68828,7 +68828,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t1_ramp3",
@@ -68847,7 +68847,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t1_ramp3",
@@ -68866,7 +68866,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t3_ramp1",
@@ -68885,7 +68885,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t3_ramp1",
@@ -68904,7 +68904,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t3_pad1",
@@ -68923,7 +68923,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t3_pad1",
@@ -68942,7 +68942,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t3_ramp2",
@@ -68961,7 +68961,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t3_ramp2",
@@ -68980,7 +68980,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t3_pad2",
@@ -68999,7 +68999,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t3_pad2",
@@ -69018,7 +69018,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "t3_ramp3",
@@ -69037,7 +69037,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_t3_ramp3",
@@ -69056,7 +69056,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "rail_n_end",
@@ -69075,7 +69075,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_rail_n_end",
@@ -69094,7 +69094,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "rail_n_fade",
@@ -69113,7 +69113,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_rail_n_fade",
@@ -69132,7 +69132,7 @@
     -90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "rail_c_fill",
@@ -69151,7 +69151,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_rail_c_fill",
@@ -69170,7 +69170,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "seam_w_c_s",
@@ -69265,7 +69265,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_seam_w_c_under",
@@ -69284,7 +69284,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "seam_w_c_hdr",
@@ -70310,7 +70310,7 @@
     -0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "fill_under_42_27",
@@ -70709,7 +70709,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_fill_under_42_27",
@@ -70899,7 +70899,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "seam_e_a_s",
@@ -70956,7 +70956,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "seam_e_a_hdr",
@@ -71336,7 +71336,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "axis_47_hdr",
@@ -71678,7 +71678,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_seam_e_a_s",
@@ -71735,7 +71735,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_seam_e_a_hdr",
@@ -72115,7 +72115,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_axis_47_hdr",
@@ -73878,7 +73878,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ttun_straight_ceil",
@@ -73954,7 +73954,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "ttun_room_ceil",
@@ -75094,7 +75094,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ttun_straight_ceil",
@@ -75170,7 +75170,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_ttun_room_ceil",
@@ -75341,7 +75341,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_up1_ceil",
@@ -75417,7 +75417,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_up_room_a_ceil",
@@ -75569,7 +75569,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_up2_ceil",
@@ -75645,7 +75645,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_up_room_b_ceil",
@@ -75797,7 +75797,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_up3_ceil",
@@ -75873,7 +75873,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_up_tall_ceil",
@@ -76804,7 +76804,7 @@
     90.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo1_ceil",
@@ -76899,7 +76899,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo_room_e_ceil",
@@ -77051,7 +77051,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo2_ceil",
@@ -77127,7 +77127,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo_room_f_ceil",
@@ -77279,7 +77279,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo3_ceil",
@@ -77355,7 +77355,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo_room_g_ceil",
@@ -77507,7 +77507,7 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "xtun_lo4_ceil",
@@ -77583,7 +77583,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_up1_ceil",
@@ -77659,7 +77659,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_up_room_a_ceil",
@@ -77811,7 +77811,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_up2_ceil",
@@ -77887,7 +77887,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_up_room_b_ceil",
@@ -78039,7 +78039,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_up3_ceil",
@@ -78115,7 +78115,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_up_tall_ceil",
@@ -79046,7 +79046,7 @@
     270.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo1_ceil",
@@ -79141,7 +79141,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo_room_e_ceil",
@@ -79293,7 +79293,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo2_ceil",
@@ -79369,7 +79369,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo_room_f_ceil",
@@ -79521,7 +79521,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo3_ceil",
@@ -79597,7 +79597,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo_room_g_ceil",
@@ -79749,7 +79749,7 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_50.vmat"
   },
   {
    "name": "m_xtun_lo4_ceil",
@@ -79824,7 +79824,8 @@
     0.0,
     0.0,
     0.0
-   ]
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   },
   {
    "name": "corner_plat_n_rail_w",
@@ -79842,7 +79843,8 @@
     0.0,
     0.0,
     0.0
-   ]
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   },
   {
    "name": "corner_plat_n_rail_n",
@@ -79860,7 +79862,8 @@
     0.0,
     0.0,
     0.0
-   ]
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   },
   {
    "name": "m_corner_plat_n",
@@ -79878,7 +79881,8 @@
     0.0,
     180.0,
     0.0
-   ]
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   },
   {
    "name": "m_corner_plat_n_rail_w",
@@ -79896,7 +79900,8 @@
     0.0,
     180.0,
     0.0
-   ]
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   },
   {
    "name": "m_corner_plat_n_rail_n",
@@ -79914,7 +79919,8 @@
     0.0,
     180.0,
     0.0
-   ]
+   ],
+   "material": "materials/dev/reflectivity_30.vmat"
   }
  ],
  "entities": [
