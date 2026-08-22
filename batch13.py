@@ -8,7 +8,11 @@ WHAT IT ADDS
     entities  guardians, walkers, trooper spawns          (team, mirrored)
     camps     info_neutral_trooper_camp + its spawns      (NEUTRAL, see below)
     breakables citadel_breakable_prop, item_crate_spawn   (NEUTRAL)
-    brushes   trigger_item_shop and friends, with a volume
+    volumes   every trigger_* and func_*: shops, shields, urn dropoffs,
+              ropes, catapults, pushes, zap and speed-boost zipline volumes,
+              spawn regen. All carry an inline child mesh.
+    points    citadel_item_powerup_spawner (bridge buff),
+              citadel_minimap_boundary. Both carry NO keyvalues at all.
     paths     lane_marker_path, one per lane per LaneSlot
               citadel_zipline_path, same machinery
 
@@ -215,22 +219,158 @@ BREAKABLES = [
 # TODO: placeholder origin and size.
 # ---------------------------------------------------------------------------
 BRUSHES = [
+    # ---- per team, mirrored ------------------------------------------
     {
         "name": "shop_base",
         "classname": "trigger_item_shop",
         "origin": [400.0, -200.0, 435.0],
-        "angles": [0.0, 0.0, 0.0],
         "extents": [256.0, 256.0, 192.0],
-        "mesh_origin": [0.0, 0.0, 0.0],
         "properties": {
             "targetname": "amber_base_shop_item_trigger",
-            "vscripts": "",
-            "parentname": "",
-            "StartDisabled": "0",
-            "spawnflags": "4097",
             "teamnumber": TEAM_A,
+            "spawnflags": "4097",
             "AudioOffset": "-0.25 22 50",
         },
+    },
+    {
+        # Urn dropoff AND spawn; the two alternate, so this is one entity
+        # that does both jobs and its twin is the other end.
+        "name": "urn_return",
+        "classname": "citadel_trigger_idol_return",
+        "origin": [200.0, 400.0, 435.0],
+        "extents": [192.0, 192.0, 192.0],
+        "properties": {"targetname": "amber_idol_return",
+                       "teamnumber": TEAM_A, "spawnflags": "4097"},
+    },
+    {
+        "name": "spawn_regen",
+        "classname": "func_regenerate",
+        "origin": [25.0, -700.0, 435.0],
+        "extents": [512.0, 384.0, 256.0],
+        "properties": {"targetname": "amber_spawn_regen",
+                       "teamnumber": TEAM_A, "spawnflags": "4097"},
+    },
+    {
+        # Patron phase 2. No targetname in dl_example either.
+        "name": "patron_phase2_shield",
+        "classname": "trigger_tier3phase2_shield",
+        "origin": [25.0, -900.0, 435.0],
+        "extents": [768.0, 768.0, 512.0],
+        "properties": {"spawnflags": "4097"},
+    },
+    {
+        # Shot off the zipline. A volume that damages the WRONG team, so it
+        # runs along the enemy-side stretch of a zipline, not the whole run.
+        # PercentMaxHealthDamage and the two timings are real tuning, copied
+        # in shape from dl_example but with placeholder values.
+        "name": "zip_zap_l1",
+        "classname": "citadel_zap_trigger",
+        "origin": [25.0, 4000.0, 900.0],
+        "extents": [256.0, 3000.0, 256.0],
+        "properties": {
+            "targetname": "amber_zip_zap_lane1",
+            "teamnumber": TEAM_A,
+            "spawnflags": "4097",
+            "PercentMaxHealthDamage": "5",
+            "TimeBetweenShots": "1",
+            "ShootAfterEnteringTime": "1",
+            "ShootFromEntity": "",
+        },
+    },
+    {
+        "name": "zip_boost_l1",
+        "classname": "citadel_trigger_speed_boost",
+        "origin": [25.0, 1000.0, 900.0],
+        "extents": [256.0, 1500.0, 256.0],
+        "properties": {"targetname": "amber_zip_boost_lane1",
+                       "spawnflags": "4097"},
+    },
+
+    # ---- neutral, mirrored -------------------------------------------
+    {
+        # The midboss pit shield. Only 4 keys in dl_example: no targetname
+        # and no teamnumber, so it is presumably found by proximity to the
+        # camp rather than wired by name. It regenerates constantly and is a
+        # DPS CHECK — chip damage is meant to achieve nothing — which means
+        # the volume wants to enclose the pit tightly enough that a team has
+        # to commit inside it.
+        "name": "midboss_shield",
+        "classname": "trigger_midboss_shield",
+        "origin": [460.1, 6085.05, 435.0],
+        "extents": [1024.0, 1024.0, 512.0],
+        "neutral": True,
+        "properties": {"StartDisabled": "0", "spawnflags": "4097"},
+    },
+    {
+        "name": "rope_west",
+        "classname": "citadel_trigger_climb_rope",
+        "origin": [-1600.0, 3000.0, 435.0],
+        "extents": [96.0, 96.0, 640.0],
+        "neutral": True,
+        "properties": {"targetname": "", "spawnflags": "4097"},
+    },
+    {
+        # Jump pad. `target` names the entity it launches you AT, so a
+        # landing marker has to exist under that name — see POINTS below.
+        "name": "catapult_west",
+        "classname": "trigger_catapult",
+        "origin": [-1800.0, 4000.0, 435.0],
+        "extents": [128.0, 128.0, 64.0],
+        "neutral": True,
+        "properties": {"targetname": "catapult_west",
+                       "target": "catapult_west_land",
+                       "launch_speed": "800", "spawnflags": "4097"},
+    },
+    {
+        # Directional push (a fan), not a teleporter: pushdir + speed.
+        "name": "push_west",
+        "classname": "citadel_trigger_push",
+        "origin": [-2000.0, 5000.0, 435.0],
+        "extents": [192.0, 192.0, 256.0],
+        "neutral": True,
+        "properties": {"targetname": "", "pushdir": "0 90 0",
+                       "speed": "500", "spawnflags": "4097"},
+    },
+]
+
+
+# ---------------------------------------------------------------------------
+# POINT ENTITIES WITH NO KEYVALUES. Both of these carry nothing but a
+# classname in dl_example — the position IS the whole content, like a
+# path_node_generic.
+#
+#   citadel_item_powerup_spawner  the bridge buff. Rolls one of four buffs,
+#                                 so the roll is not authored. TWO on the
+#                                 real map, i.e. one here plus its twin.
+#   citadel_minimap_boundary      2 of them; without these the minimap has
+#                                 no frame.
+#
+# info_target_server_only is here too, as the landing marker a
+# trigger_catapult aims at by name.
+#
+# TODO: placeholder origins.
+# ---------------------------------------------------------------------------
+POINTS = [
+    {
+        "name": "bridge_buff_west",
+        "classname": "citadel_item_powerup_spawner",
+        "origin": [-1500.0, 5200.0, 700.0],
+        "neutral": True,
+        "properties": {},
+    },
+    {
+        "name": "minimap_corner",
+        "classname": "citadel_minimap_boundary",
+        "origin": [-5200.0, -6500.0, 0.0],
+        "neutral": True,
+        "properties": {},
+    },
+    {
+        "name": "catapult_west_land",
+        "classname": "info_target_server_only",
+        "origin": [-1800.0, 5200.0, 900.0],
+        "neutral": True,
+        "properties": {"targetname": "catapult_west_land"},
     },
 ]
 
@@ -291,6 +431,21 @@ OBJECTIVES = [
 ]
 
 
+ON_AXIS_TOL = 1.0
+
+
+def on_mirror_point(origin):
+    """True if this sits ON the mirror point, so its twin would be itself.
+
+    Exactly the stitch_ground case from the box plan: the mirror maps the
+    point onto itself, and emitting a twin puts two coincident entities in
+    the same place. The midboss shield is the obvious one — the pit is in
+    the middle of the map by definition.
+    """
+    return (abs(origin[0] - X_PLANE) <= ON_AXIS_TOL
+            and abs(origin[1] - Y_PLANE) <= ON_AXIS_TOL)
+
+
 def twin_of(e, neutral=False):
     """The mirrored copy of an entity dict."""
     t = json.loads(json.dumps(e))
@@ -304,7 +459,13 @@ def twin_of(e, neutral=False):
     props = dict(e.get("properties", {}))
     if not neutral:
         props = flip_team(props)
-    for k in ("targetname", "BossName", "CampName"):
+    # Every key that NAMES another entity has to be prefixed too, or the
+    # twin points back at the original half. Caught by the target check:
+    # the mirrored catapult was launching players at the un-mirrored
+    # landing marker, i.e. across the whole map.
+    for k in ("targetname", "BossName", "CampName", "target",
+              "ShootFromEntity", "BackdoorProtectionTrigger", "parentname",
+              "filtername"):
         if props.get(k):
             props[k] = PREFIX + props[k]
     t["properties"] = props
@@ -371,7 +532,8 @@ def build_breakables():
             MARK: True,
         }
         out.append(e)
-        out.append(twin_of(e, neutral=True))
+        if not on_mirror_point(e["origin"]):
+            out.append(twin_of(e, neutral=True))
     return out
 
 
@@ -396,7 +558,26 @@ def build_brushes():
             MARK: True,
         }
         out.append(e)
-        out.append(twin_of(e))
+        if not on_mirror_point(e["origin"]):
+            out.append(twin_of(e, neutral=spec.get("neutral", False)))
+    return out
+
+
+def build_points():
+    """Entities that are nothing but a position."""
+    out = []
+    for spec in POINTS:
+        e = {
+            "name": spec["name"],
+            "classname": spec["classname"],
+            "origin": [round(v, 4) for v in spec["origin"]],
+            "angles": list(spec.get("angles", [0.0, 0.0, 0.0])),
+            "properties": dict(spec.get("properties", {})),
+            MARK: True,
+        }
+        out.append(e)
+        if not on_mirror_point(e["origin"]):
+            out.append(twin_of(e, neutral=spec.get("neutral", False)))
     return out
 
 
@@ -548,12 +729,23 @@ def check(plan):
     # shared lane paths, which are single by design.
     for coll in ("entities", "paths"):
         mine = [x for x in plan[coll] if x.get(MARK)
-                and x.get("classname") != "lane_marker_path"]
+                and x.get("classname") != "lane_marker_path"
+                and not on_mirror_point(x.get("origin", [0, 0, 0]))]
         half = {x["name"] for x in mine if not x["name"].startswith(PREFIX)}
         twin = {x["name"][len(PREFIX):] for x in mine
                 if x["name"].startswith(PREFIX)}
         if half != twin:
             print("FAIL %s asymmetric: %s" % (coll, sorted(half ^ twin)))
+            bad += 1
+
+    # Name wiring: anything referenced by `target` must actually exist, on
+    # both halves. A dangling name fails silently in game.
+    names = {e["properties"].get("targetname")
+             for e in plan["entities"] if e.get("properties")}
+    for e in plan["entities"]:
+        want = (e.get("properties") or {}).get("target")
+        if want and want not in names:
+            print("FAIL %s: target '%s' names nothing" % (e["name"], want))
             bad += 1
 
     # A shared lane path must not have acquired a twin.
@@ -628,7 +820,7 @@ def main(path):
     strip_previous(plan)
 
     ents = (build_entities() + build_camps() + build_breakables()
-            + build_brushes())
+            + build_brushes() + build_points())
     paths = build_paths() + build_ziplines()
     plan["entities"].extend(ents)
     plan["paths"].extend(paths)
