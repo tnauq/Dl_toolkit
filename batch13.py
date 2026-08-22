@@ -16,6 +16,13 @@ WHAT IT ADDS
     paths     lane_marker_path, one per lane per LaneSlot
               citadel_zipline_path, same machinery
 
+SIDE LANES ARE A MIRROR PAIR. With three lanes and 180 degree symmetry only
+the MID lane can map to itself, because a route that does not pass through the
+centre cannot be its own mirror. The two side lanes therefore map to EACH
+OTHER: lane 3's far half is lane 6 reversed and mirrored, and lane 6's far
+half is lane 3. So a side lane is authored as its own team-2 stretch and
+completed from its PARTNER's, joined at the seam.
+
 LANE ROUTES ARE AUTHORED HALF-LENGTH. The map is rotationally symmetric, so
 only the run from the team-2 base to the mirror point is authored; the far
 half is that polyline mirrored and reversed, appended. That guarantees the
@@ -165,14 +172,10 @@ LANES = [
             [X_PLANE, Y_PLANE, 0.0],      # snapped from stitch_ground
         ],
     },
-    # WEST SIDE LANE. Crosshair readings 2026-08-22. The last two raw
-    # readings, (-1467, 6131) on m_t3_ramp3 and (-2241, 6159) on m_t3_pad1,
-    # were PAST the mirror point and on m_ boxes, i.e. the far half — an
-    # overshoot. They are dropped and the route is closed on the mirror
-    # point instead. Under a 180 degree rotation only the centre maps to
-    # itself, so a half route that ends anywhere else generates a straight
-    # jump from that point to its mirror: ending on (-2241, 6159) would have
-    # put a 5,400 u line straight across the map.
+    # WEST SIDE LANE. Crosshair readings 2026-08-22, running past the middle
+    # onto the mirrored east geometry (m_t3_ramp3, m_t3_pad1) — which is
+    # correct, not an overshoot: this lane continues into what is the east
+    # side of the far half. Completed from lane 6, its mirror partner.
     {
         "lane": "3",
         "half_route": [
@@ -183,23 +186,26 @@ LANES = [
             [-1350.0, 1493.0, 213.0],     # merged_721
             [-1311.0, 2916.0, 253.0],     # axis_771
             [-1870.0, 2892.0, 253.0],     # axis_720
+            [-1467.0, 6131.0, 343.0],     # m_t3_ramp3
+            [-2241.0, 6159.0, 365.0],     # m_t3_pad1
         ],
-        # INCOMPLETE: the run from axis_720 to the middle is not surveyed.
-        # Nothing is invented to close it — a straight line across 3,900 u
-        # of unsurveyed lane would have been the wrong shape AND would have
-        # made the length figure look authoritative. The far half is not
-        # generated for an incomplete route either, because the completion
-        # only works from a route that ends on the mirror point.
-        "complete": False,
+        "pair": "6",
     },
     {
+        # EAST SIDE LANE. Completed from lane 3.
         "lane": "6",
         "half_route": [
-            [1500.0, -530.0, 435.0],
-            [1500.0, 3000.0, 435.0],
-            [X_PLANE, Y_PLANE, 435.0],
+            [1002.0, -3207.0, 427.0],     # hex_floor_2, trooper spawn
+            [1461.0, -2939.0, 427.0],     # hex_tun_ne_stub_floor
+            [1591.0, -690.0, 213.0],      # axis_125
+            [1731.0, 18.0, 213.0],        # axis_125
+            [2100.0, 1134.0, 213.0],      # gapfill_39_9
+            [2120.0, 2327.0, 213.0],      # gapfill_38_26
+            [3438.0, 2512.0, 213.0],      # gapfill_51_28
+            [3468.0, 6015.0, 365.0],      # t1_ramp1
         ],
-    },
+        "pair": "3",
+    }
 ]
 
 
@@ -696,13 +702,6 @@ def build_points():
     return out
 
 
-def lane_half(lane):
-    for spec in LANES:
-        if spec["lane"] == lane:
-            return spec["half_route"]
-    raise KeyError("no lane %s" % lane)
-
-
 def build_ziplines():
     out = []
     for spec in ZIPLINES:
@@ -868,12 +867,53 @@ def complete_route(half):
     return [list(p) for p in half] + far
 
 
+def lane_half(lane):
+    for spec in LANES:
+        if spec["lane"] == lane:
+            return spec["half_route"]
+    raise KeyError("no lane %s" % lane)
+
+
+# How far apart the two halves of a paired lane may be at the seam before it
+# is treated as an error rather than crosshair slop. 500 u is 12.7 m.
+SEAM_SNAP = 500.0
+
+
+def complete_paired(half, partner_half, lane, partner):
+    """Join a side lane to its mirror partner.
+
+    The far half is the PARTNER's authored stretch, mirrored and reversed.
+    The seam is where this lane's last point meets the partner's mirrored
+    last point; they are two independent crosshair readings of the same
+    place, so they will not match exactly. Within SEAM_SNAP the partner's
+    point is dropped and this lane's reading wins — one reading, not an
+    average, so the seam sits on a real surface someone actually stood on.
+    """
+    far = [mirror_point(p) for p in reversed(partner_half)]
+    a, b = half[-1], far[0]
+    gap = ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
+
+    if gap <= SEAM_SNAP:
+        print("  lane %s seam: %.1f u to lane %s, snapped" % (lane, gap, partner))
+        far = far[1:]
+    else:
+        print("  lane %s seam: %.1f u to lane %s, TOO FAR to snap — the two"
+              % (lane, gap, partner))
+        print("    halves are joined by a straight line of that length. Either")
+        print("    survey the gap or move an endpoint.")
+    return [list(p) for p in half] + far
+
+
 def build_paths():
     """One path per lane per slot. NOT mirrored — see the docstring."""
     out = []
     for spec in LANES:
         lane = spec["lane"]
-        if spec.get("complete", True):
+        if spec.get("pair"):
+            full = complete_paired(spec["half_route"],
+                                   lane_half(spec["pair"]),
+                                   lane, spec["pair"])
+        elif spec.get("complete", True):
             full = complete_route(spec["half_route"])
         else:
             full = [list(p) for p in spec["half_route"]]
@@ -947,7 +987,7 @@ def route_length(route):
 
 
 INCOMPLETE = {spec["lane"] for spec in LANES
-              if not spec.get("complete", True)}
+              if not spec.get("complete", True) and not spec.get("pair")}
 
 
 def report_lengths(paths):
