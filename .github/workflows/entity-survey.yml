@@ -90,7 +90,22 @@ env:
   # NOTE ON COUNTS: dl_example is a GYM, not a layout. It shows one of each
   # mechanism (1 powerup spawner, 1 rope, 1 catapult) where the real map has
   # more. Do not read its counts as a template for how many to place.
-  CAPTURE_CLASSES: 'citadel_trigger_idol_return,trigger_midboss_shield,citadel_item_powerup_spawner,citadel_trigger_climb_rope,trigger_catapult,citadel_trigger_push,func_regenerate,trigger_tier3phase2_shield,citadel_trigger_speed_boost,citadel_zap_trigger,trigger_neutral_shield'
+  # TWO ZIPLINE SYSTEMS. dl_example has 8 citadel_zipline_path for 4 lanes,
+  # and the tuple table shows they are not a matched pair: two per lane with
+  # DIFFERENT key schemas. One carries start_active, the other lacks the key
+  # entirely; 146 of the 270 nodes carry one_way and always_usable, the other
+  # 124 lack both. That is two distinct systems sharing a classname, not one
+  # cable authored twice.
+  #
+  # Both subtrees are captured here so the difference can be read rather than
+  # guessed. What to look for: node COUNT, the height the route runs at, the
+  # keys each carries, and whether one of them is short and base-adjacent
+  # (which would make it the reinforcement zip rather than the lane transit
+  # line).
+  #
+  # MAX_EXCERPTS is 4, not 1: with 8 paths, one excerpt would show only the
+  # first and the whole point is the comparison.
+  CAPTURE_CLASSES: 'citadel_zipline_path,citadel_zipline_path_node'
   # Property TUPLES to tabulate, as classname:key,key;classname:key
   #
   # THE QUESTION: is a lane_marker_path SHARED between the teams or one per
@@ -129,8 +144,8 @@ env:
   # question is answered by the first few lines of `children`, not by the
   # vertex streams. A truncation notice is printed, so a truncated block is
   # itself evidence the mesh is inline.
-  MAX_EXCERPTS: 1
-  MAX_EXCERPT_LINES: 120
+  MAX_EXCERPTS: 4
+  MAX_EXCERPT_LINES: 200
 
 jobs:
   survey:
