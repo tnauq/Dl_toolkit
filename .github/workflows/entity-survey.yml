@@ -44,7 +44,14 @@ on: workflow_dispatch
 env:
   FIXTURE: dl_example.vmap
   # Element types whose whole subtree gets captured verbatim.
-  CAPTURE_TYPES: 'CMapEntity,CMapPath,CMapPathNode,CMapGroup,CMapInstance'
+  # CMapGroup and CMapInstance are NOT capture types, deliberately. The
+  # dumper starts a capture at the outermost element of a capture type and
+  # will not start another while inside one, so a group swallows everything
+  # nested in it — and its own excerpt is then discarded, because a group has
+  # no classname to match. That is exactly what hid 4 of the 8
+  # citadel_zipline_path: a cap of 8 returned only 4, and dl_example has
+  # exactly 2 CMapGroup. Family B is grouped; family A is not.
+  CAPTURE_TYPES: 'CMapEntity,CMapPath,CMapPathNode'
   # Classnames worth an excerpt, plus the path element types above.
   #
   # CHANGED 2026-08-22: swapped the path classnames, whose structure is now
