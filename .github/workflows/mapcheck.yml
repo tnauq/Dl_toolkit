@@ -14,6 +14,7 @@ on:
       - 'docs/plans/dust2_full.json'
       - 'floormat.py'
       - 'walkcheck.py'
+      - 'patch_viewer.py'
       - '.github/workflows/mapcheck.yml'
 
 env:
@@ -46,6 +47,9 @@ jobs:
       - name: Floor material swap
         run: timeout 600 python3 floormat.py "$PLAN" | tee floormat.log
 
+      - name: Patch viewer for floor colour
+        run: python3 patch_viewer.py || true
+
       - name: Walkability check
         run: timeout 900 python3 walkcheck.py "$PLAN" "$REPORT" | tee walkcheck.log
 
@@ -75,7 +79,7 @@ jobs:
         run: |
           git config user.name  "mapcheck"
           git config user.email "mapcheck@users.noreply.github.com"
-          git add "$PLAN" "$REPORT"
+          git add -A "$PLAN" "$REPORT" *.html **/*.html 2>/dev/null || git add "$PLAN" "$REPORT"
           git diff --cached --quiet && echo "no change" && exit 0
           git commit -m "mapcheck: floor materials and walk report"
           git push
