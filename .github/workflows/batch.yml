@@ -1,0 +1,112 @@
+name: batch
+
+# Runs ONE plan-editing script against docs/plans/dust2_full.json and commits
+# the result. Generic on purpose: for the next one, edit SCRIPT below and
+# re-run. Same pattern as dump-files.yml, and for the same reason — the mobile
+# Actions view renders the Run button but NOT workflow_dispatch input fields,
+# so a dispatch input is unreachable from a phone.
+#
+# Nothing in the repo ran the batch scripts before this. batch8 through
+# batch12 were applied some way that left no trace here, so this is the first
+# recorded runner rather than a replacement for one.
+#
+# CHAINS INTO MAPCHECK. mapcheck.yml triggers on any push touching
+# docs/plans/dust2_full.json, so the commit at the end of this run starts a
+# mapcheck run by itself. Do not run mapcheck by hand afterwards; watch for
+# the second run instead.
+#
+# THE TRIPWIRE. Every batch script so far edits boxes; batch13 edits only
+# entities and paths. Either way the box count is the thing that must not
+# move by accident, so it is asserted against EXPECT_BOXES. A script that
+# legitimately changes the count needs that number changed in the same drop,
+# which is the point: the count changes deliberately or not at all.
+
+on: workflow_dispatch
+
+env:
+  # Edit this line to run a different script. Repo root, one script per run.
+  SCRIPT: batch13.py
+  PLAN: docs/plans/dust2_full.json
+  EXPECT_BOXES: 4179
+  COMMIT_PLAN: "true"
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Cheap checks before anything is written. A missing script or an
+      # unparseable plan should cost seconds, not a failed commit.
+      - name: Before
+        run: |
+          set -euo pipefail
+          [ -f "$SCRIPT" ] || { echo "::error::no such script: $SCRIPT"; exit 1; }
+          [ -f "$PLAN" ] || { echo "::error::no such plan: $PLAN"; exit 1; }
+          ls -l "$SCRIPT" "$PLAN"
+          python3 - <<'PY' | tee before.txt
+          import json, os
+          p = json.load(open(os.environ["PLAN"]))
+          print("boxes", len(p["boxes"]))
+          print("entities", len(p.get("entities", [])))
+          print("paths", len(p.get("paths", [])))
+          print("pathnodes", sum(len(q.get("nodes", [])) for q in p.get("paths", [])))
+          PY
+
+      - name: Run the script
+        run: |
+          set -uo pipefail
+          RC=0
+          timeout 600 python3 "$SCRIPT" "$PLAN" > run.log 2>&1 || RC=$?
+          cat run.log
+          echo "exit: $RC" | tee -a run.log
+          [ "$RC" -eq 0 ] || exit 1
+
+      - name: After, and assert the box count held
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | tee after.txt
+          import json, os, sys
+          p = json.load(open(os.environ["PLAN"]))
+          want = int(os.environ["EXPECT_BOXES"])
+          got = len(p["boxes"])
+          print("boxes", got)
+          print("entities", len(p.get("entities", [])))
+          print("paths", len(p.get("paths", [])))
+          print("pathnodes", sum(len(q.get("nodes", [])) for q in p.get("paths", [])))
+          if got != want:
+              print(f"::error::box count moved: want {want}, got {got}")
+              sys.exit(1)
+          PY
+          echo "--- before / after ---"
+          paste -d'|' before.txt after.txt || true
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch
+          path: |
+            run.log
+            before.txt
+            after.txt
+            docs/plans/dust2_full.json
+          if-no-files-found: ignore
+
+      - name: Commit the plan
+        if: env.COMMIT_PLAN == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "batch"
+          git config user.email "batch@users.noreply.github.com"
+          git add -A "$PLAN"
+          git diff --cached --quiet && echo "no change" && exit 0
+          git commit -m "batch: $SCRIPT"
+          git push
