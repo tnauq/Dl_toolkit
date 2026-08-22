@@ -1,0 +1,81 @@
+name: mapcheck
+
+# Re-runs the floor material swap and the walkability report on
+# docs/plans/dust2_full.json, commits the updated plan, and uploads the
+# report as an artifact.
+#
+# No workflow_dispatch inputs on purpose: the mobile Actions view cannot
+# show them. Everything is hardcoded in env below.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/plans/dust2_full.json'
+      - 'floormat.py'
+      - 'walkcheck.py'
+      - '.github/workflows/mapcheck.yml'
+
+env:
+  PLAN: docs/plans/dust2_full.json
+  REPORT: docs/walk_report.txt
+  COMMIT_PLAN: "true"
+
+jobs:
+  mapcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # cheap checks first, before anything slow
+      - name: Show plan size
+        run: |
+          ls -l "$PLAN"
+          python3 -c "import json;p=json.load(open('$PLAN'));print('boxes',len(p['boxes']))"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install numpy
+        run: pip install --quiet numpy
+
+      - name: Floor material swap
+        run: timeout 600 python3 floormat.py "$PLAN" | tee floormat.log
+
+      - name: Walkability check
+        run: timeout 900 python3 walkcheck.py "$PLAN" "$REPORT" | tee walkcheck.log
+
+      - name: Material histogram
+        run: |
+          python3 - <<'PY' | tee materials.log
+          import json, collections
+          p = json.load(open("docs/plans/dust2_full.json"))
+          for mat, n in collections.Counter(b.get("material") for b in p["boxes"]).most_common():
+              print(n, mat)
+          PY
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapcheck
+          path: |
+            docs/walk_report.txt
+            floormat.log
+            walkcheck.log
+            materials.log
+            docs/plans/dust2_full.json
+
+      - name: Commit updated plan
+        if: env.COMMIT_PLAN == 'true'
+        run: |
+          git config user.name  "mapcheck"
+          git config user.email "mapcheck@users.noreply.github.com"
+          git add "$PLAN" "$REPORT"
+          git diff --cached --quiet && echo "no change" && exit 0
+          git commit -m "mapcheck: floor materials and walk report"
+          git push
