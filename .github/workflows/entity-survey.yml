@@ -25,6 +25,19 @@ name: entity survey
 #
 # It dumps VERBATIM subtrees for the entities that matter, so the answer is
 # readable rather than inferred from counts.
+#
+# ADDED 2026-08-22, TEST 1 OF THE CVisibilityMgr QUESTION. The emitter leaves
+# CVisibilityMgr's nodes array empty, which is why its path nodes stay inline
+# and need no ids. Whether that array is REQUIRED is the open risk. First
+# evidence: in dl_example, CMapWorld's children holds 767 references and
+# CVisibilityMgr's nodes holds 765. If the array were a manifest the runtime
+# depends on, those counts would match. This run diffs the two id sets and
+# names what sits in one and not the other, so the discrepancy stops being a
+# number and becomes a fact about which kinds of element the array skips.
+#
+# A LARGE, MEANINGFUL GAP is evidence the array is editor bookkeeping.
+# A GAP OF EXACTLY NOTHING but a couple of odd singletons is evidence it is
+# meant to be exhaustive, and the emitter probably has to populate it.
 
 on: workflow_dispatch
 
@@ -152,24 +165,25 @@ jobs:
           classes  = collections.Counter()
           keys     = collections.defaultdict(collections.Counter)
           ids      = 0
-          # An element reference is the evidence for sharing. Recorded by the
-          # attribute or array that holds it, because WHICH attribute shares
-          # is what decides whether paths are reachable from the emitter.
           refs     = collections.Counter()
-          # Which element types appear inline under which attribute name.
           childof  = collections.Counter()
+
+          # TEST 1 state. Every reference recorded against the element type
+          # that holds it, so CMapWorld.children and CVisibilityMgr.nodes can
+          # be compared as SETS rather than as counts. And every id-carrying
+          # element described, so a gap can be named rather than counted.
+          reflists = collections.defaultdict(list)   # "Owner.attr" -> [guid]
+          idinfo   = {}                              # guid -> {type, classname}
 
           excerpts = collections.defaultdict(list)
 
-          # Parser state. A container is ('elem', typename) or ('array', attrname).
-          stack = []
-          attr_stack = []          # attribute name that opened each container
+          # Each open element gets a frame, so an id line and a classname
+          # found later can both be attached to the right element.
+          frames = []              # [{'type':..,'id':None,'class':None}]
+          attr_stack = []
           props_depth = None
           cur_props = {}
-          cur_class = None
 
-          # Verbatim capture. Starts at the outermost capture-type element and
-          # ends when its brace closes.
           cap_lines = None
           cap_depth = None
           cap_type = None
@@ -188,6 +202,9 @@ jobs:
                       body.append(f'... truncated, {len(cap_lines)} lines total')
                   excerpts[kind].append(body)
               cap_lines = cap_depth = cap_type = cap_class = None
+
+          def owner_type():
+              return frames[-1]['type'] if frames else '(root)'
 
           def lines_with_lookahead(fh):
               prev = None
@@ -213,27 +230,34 @@ jobs:
                   if s in ('{', '['):
                       depth += 1
                       if s == '{':
-                          stack.append(('elem', pending_type))
+                          frames.append({'type': pending_type, 'id': None,
+                                         'class': None})
                           if pending_type == 'EditGameClassProps' and props_depth is None:
                               props_depth = depth
                               cur_props = {}
-                      else:
-                          stack.append(('array', pending_attr))
                       attr_stack.append(pending_attr)
                       pending_type = pending_attr = None
                       continue
 
                   if s in ('}', ']', '},', '],'):
+                      closing_elem = s in ('}', '},')
                       if props_depth is not None and depth == props_depth:
                           cur_class = cur_props.pop('classname', '(none)')
                           classes[cur_class] += 1
                           for k, v in cur_props.items():
                               keys[cur_class][k] += 1
+                          # EditGameClassProps is the frame being closed, so
+                          # the classname belongs to the frame BELOW it.
+                          if len(frames) >= 2:
+                              frames[-2]['class'] = cur_class
                           if cap_lines is not None and cap_class is None:
                               cap_class = cur_class
                           props_depth = None
-                      if stack:
-                          stack.pop()
+                      if closing_elem and frames:
+                          f = frames.pop()
+                          if f['id']:
+                              idinfo[f['id']] = {'type': f['type'],
+                                                 'classname': f['class'] or ''}
                       if attr_stack:
                           attr_stack.pop()
                       depth -= 1
@@ -246,8 +270,11 @@ jobs:
                       name, typ, val = m.groups()
                       if name == 'id' and typ == 'elementid':
                           ids += 1
+                          if frames:
+                              frames[-1]['id'] = val
                       elif typ == 'element' and val:
                           refs[f'{name} (attribute)'] += 1
+                          reflists[f'{owner_type()}.{name}'].append(val)
                       elif props_depth is not None and depth == props_depth:
                           cur_props[name] = val
                       continue
@@ -256,7 +283,6 @@ jobs:
                   if m:
                       a, b = m.groups()
                       if nxt in ('{', '['):
-                          # inline element, or an array header
                           pending_attr = a
                           pending_type = b if nxt == '{' else None
                           if pending_type:
@@ -268,9 +294,10 @@ jobs:
                                   cap_type = pending_type
                                   cap_class = None
                       elif a == 'element':
-                          # a reference sitting in an element_array
                           holder = attr_stack[-1] if attr_stack else '(root)'
                           refs[f'{holder} (array item)'] += 1
+                          # The array's own frame is the element that owns it.
+                          reflists[f'{owner_type()}.{holder}'].append(b)
                       continue
 
                   m = one.match(s)
@@ -286,10 +313,16 @@ jobs:
                               cap_depth = depth + 1
                               cap_type = tok
                               cap_class = None
-                      # otherwise it is a plain array scalar: ignored on purpose
                       continue
 
           flush_capture()
+
+          def describe(guid):
+              d = idinfo.get(guid)
+              if not d:
+                  return f'{guid} (never defined in this file)'
+              cn = f" classname={d['classname']}" if d['classname'] else ''
+              return f"{d['type']}{cn}"
 
           def w(fh, s=''):
               fh.write(s + '\n')
@@ -299,6 +332,49 @@ jobs:
               w(fh)
               w(fh, f'elements referenced MORE THAN ONCE (carry an id): {ids}')
               w(fh)
+
+              # ------------------------------------------------ TEST 1
+              w(fh, '## Is CVisibilityMgr.nodes exhaustive?')
+              w(fh)
+              world = None
+              vis = None
+              for k in reflists:
+                  if k.endswith('.children') and k.startswith('CMapWorld'):
+                      world = k
+                  if k.endswith('.nodes') and k.startswith('CVisibilityMgr'):
+                      vis = k
+              w(fh, '| array | references |')
+              w(fh, '|---|---|')
+              for k in sorted(reflists):
+                  w(fh, f'| {k} | {len(reflists[k])} |')
+              w(fh)
+              if world and vis:
+                  ws, vs = set(reflists[world]), set(reflists[vis])
+                  only_w = ws - vs
+                  only_v = vs - ws
+                  w(fh, f'in world children but NOT in visibility nodes: {len(only_w)}')
+                  for g in sorted(only_w):
+                      w(fh, f'- {describe(g)}')
+                  w(fh)
+                  w(fh, f'in visibility nodes but NOT in world children: {len(only_v)}')
+                  for g in sorted(only_v):
+                      w(fh, f'- {describe(g)}')
+                  w(fh)
+                  # Path nodes are the case that matters: they are referenced
+                  # from a CMapPath, not from the world. If the visibility
+                  # array skips them, it is not a manifest of every element.
+                  pathkids = set()
+                  for k, v in reflists.items():
+                      if k.startswith('CMapPath.'):
+                          pathkids |= set(v)
+                  w(fh, f'nodes referenced by a CMapPath: {len(pathkids)}')
+                  w(fh, f'  of those, also in visibility nodes: {len(pathkids & vs)}')
+                  w(fh, f'  of those, also in world children:  {len(pathkids & ws)}')
+              else:
+                  w(fh, 'Could not find both arrays. world=' + str(world) +
+                        ' vis=' + str(vis))
+              w(fh)
+
               w(fh, '## Element types')
               w(fh, '')
               w(fh, '| count | type |')
@@ -351,18 +427,21 @@ jobs:
               'ids': ids,
               'types': dict(types),
               'refs': dict(refs),
+              'reflists': {k: v for k, v in reflists.items()},
+              'idinfo': idinfo,
               'childof': dict(childof),
               'classes': dict(classes),
               'keys': {k: dict(v) for k, v in keys.items()},
           }, open('out/entity-survey.json', 'w'), indent=1)
 
-          # A parse that is working reports 222 CMapMesh on this fixture.
-          # If that number is wrong, nothing else in the report is safe.
+          # A parse that is working reports 222 CMapMesh and 767 ids on this
+          # fixture. Both were confirmed on the previous run. If either is
+          # wrong, nothing else in the report is safe.
           print('CMapMesh:', types.get('CMapMesh'), '(want 222)')
-          print('elements with an id:', ids)
-          print('reference sites:', sum(refs.values()))
-          print('classnames:', len(classes), 'element types:', len(types))
-          print('excerpt kinds:', sorted(excerpts))
+          print('elements with an id:', ids, '(want 767)')
+          print('described ids:', len(idinfo))
+          for k in sorted(reflists):
+              print(f'  {k}: {len(reflists[k])}')
 
       - name: What landed
         if: always()
