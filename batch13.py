@@ -133,6 +133,30 @@ def flip_team(props):
 # doorway passage can be given real readings later without changing this.
 ZIP_HEIGHT = 300.0
 
+# Zipline node ownership. teamnumber 2 and 3 are the two ends; 4 is the
+# NEUTRAL band in the middle, where the two trooper waves meet and neither
+# side owns the cable. dl_example carries 38 nodes at 4 out of 270, about
+# 14%, so the band is a real feature of the middle rather than a stray value.
+#
+# PROVISIONAL: the WIDTH is a guess. 2000 u either side of the mirror point
+# is 50.8 m, chosen to be roughly a seventh of a 570 m lane and so land near
+# dl_example's 14%. Nothing was measured. If it matters in play, the honest
+# fix is to read the real band off a lane in game rather than tune it here.
+ZIP_NEUTRAL_HALF_SPAN = 2000.0
+TEAM_NEUTRAL = "4"
+
+# How far from the middle a node is still CAPTURABLE. Read off dl_example
+# 2026-08-22: every one of its 38 teamnumber-4 nodes is capturable, while the
+# 232 owned nodes split roughly 60/40 not-capturable to capturable. So
+# capturable is not ownership — it marks the stretch that can change hands as
+# a wave pushes, which is why a winning team ends up zipping most of the map.
+# Nodes near a base are fixed; the middle and its approaches are not.
+#
+# 6000 u is 152 m, three times the neutral half-span. PROVISIONAL: chosen so
+# roughly half the owned nodes come out capturable, matching dl_example's
+# split. Not measured.
+ZIP_CAPTURABLE_HALF_SPAN = 6000.0
+
 SLOT_OFFSET = 96.0          # units between parallel trooper files
 # FOUR slots, read from dl_example, not three. A wave is 4 troopers.
 # Offsets are centred on the authored route: -1.5, -0.5, +0.5, +1.5 x
@@ -227,9 +251,9 @@ ZIPLINES = [
     # If those two are the two directions rather than the two halves, this
     # emits half as many as the real map. Worth checking before a load.
     #
-    # Node teamnumber is assigned by position: nodes on the team-2 side of
-    # the mirror point get 2, the rest get 3, which is the shape the node
-    # teamnumbers take in dl_example.
+    # Node teamnumber is assigned by position: 2 on the team-2 side, 3 on
+    # the far side, and 4 across a neutral band in the middle — the shape the
+    # node teamnumbers take in dl_example, where 4 accounts for 38 of 270.
     #
     # From the user 2026-08-22: the first point is the spawn shop room on
     # hex_plat_s and is shared by all three lanes; the second point differs
@@ -753,14 +777,26 @@ def build_ziplines():
 
         nodes = []
         for q in route:
-            # Team by side of the mirror point, along y.
-            team = TEAM_A if q[1] < Y_PLANE else TEAM_B
+            # Team by side of the mirror point, with a neutral band across
+            # the middle where the waves meet.
+            dy = q[1] - Y_PLANE
+            if abs(dy) <= ZIP_NEUTRAL_HALF_SPAN:
+                team = TEAM_NEUTRAL
+            else:
+                team = TEAM_A if dy < 0 else TEAM_B
+            cap = "1" if abs(dy) <= ZIP_CAPTURABLE_HALF_SPAN else "0"
             nodes.append({"classname": "citadel_zipline_path_node",
                           "origin": [round(v, 4) for v in q],
                           "properties": {"teamnumber": team,
                                          "enabled": "1",
+                                         # corner_node marks turn geometry.
+                                         # In dl_example disable_zipping_to
+                                         # is 1 only where corner_node is 1:
+                                         # you pass through a corner, you do
+                                         # not zip TO it. Left at 0 until
+                                         # the corners here are identified.
                                          "corner_node": "0",
-                                         "capturable": "0",
+                                         "capturable": cap,
                                          "disable_zipping_to": "0"}})
 
         out.append({
