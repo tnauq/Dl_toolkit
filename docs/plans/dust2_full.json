@@ -76712,25 +76712,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "xtun_big_n1",
-   "origin": [
-    -2187.05,
-    3578.87,
-    1106.75
-   ],
-   "extents": [
-    0.0,
-    26.7,
-    773.1
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "xtun_big_n_sill",
    "origin": [
     -2313.55,
@@ -78943,25 +78924,6 @@
    ],
    "extents": [
     272.07,
-    26.7,
-    773.1
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_xtun_big_n1",
-   "origin": [
-    3107.25,
-    8591.23,
-    1106.75
-   ],
-   "extents": [
-    0.0,
     26.7,
     773.1
    ],
