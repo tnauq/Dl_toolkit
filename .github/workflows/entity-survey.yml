@@ -1,38 +1,42 @@
 name: entity survey
 
-# WHAT SHAPE ARE DEADLOCK'S OBJECTIVES?
+# REPLACES the first version, which had two faults:
 #
-#   dl_example.vmap (binary, 15 MB, a REAL Deadlock map)
-#     -> dmxconvert -> keyvalues2 text
-#     -> scan       -> every classname, every keyvalue, every element type
+#   1. it converted with -oe keyvalues2, which stamps an id on EVERY element,
+#      so the "elements carrying an id" figure was meaningless. This one uses
+#      keyvalues2_noids, where an id appears ONLY on an element referenced
+#      more than once. That count is the answer to "how much sharing is
+#      there", which is what decides whether the emitter can grow paths.
 #
-# This decides a fork. If objectives — guardians, walkers, shops, the patron,
-# lane paths — are POINT ENTITIES with flat string keyvalues, they go in
-# MapPlan and out through the emitter that just did 4,179 boxes, all from a
-# phone. If they need shared elements (paths, node graphs, entity IO between
-# named entities), the emitter's whole simplification breaks: MapEmitter's
-# no-GUID property holds only because nothing it writes is referenced twice.
+#   2. its line scanner could not tell an array SCALAR item from an element
+#      TYPE header, because both are a single quoted token on a line. The
+#      difference is only visible on the NEXT line: an element is followed by
+#      a brace. This version keeps a one-line lookahead, so the element type
+#      census is trustworthy this time. Same fix for two-token lines, where
+#      "name" "TypeName" (inline element) and "element" "someid" (a
+#      reference inside an array) are otherwise identical in shape.
 #
-# So the report answers three questions, in order of how much they cost:
+# THE QUESTION THIS RUN EXISTS TO ANSWER: how does a lane_marker_path hold
+# its route? The keyvalues carry only lanenum and LaneSlot, so the ordered
+# positions live somewhere else — as inline child elements, or as references
+# to shared CMapPathNode elements. Inline means the emitter can grow into it
+# with no id machinery. References mean ids come back, and MapEmitter's whole
+# no-GUID simplification has to be reopened.
 #
-#   1. which classnames exist, how many of each, and what keys do they carry
-#   2. which element TYPES exist beyond the 14 the emitter produces
-#   3. how many elements carry an id, i.e. are referenced more than once,
-#      and do any CMapEntity carry a non-empty connectionsData or children
-#
-# Question 3 is the load-bearing one. Measured on this same fixture earlier:
-# 767 ids for 768 multiply-referenced elements. If the objective entities sit
-# outside that set, the plan route is open.
-#
-# NOTE: keyvalues2 WITH ids is used deliberately, not keyvalues2_noids. The
-# ids are the evidence for question 3.
+# It dumps VERBATIM subtrees for the entities that matter, so the answer is
+# readable rather than inferred from counts.
 
 on: workflow_dispatch
 
 env:
   FIXTURE: dl_example.vmap
-  # Keys whose values are long or noisy get counted but not sampled.
-  MAX_SAMPLES: 3
+  # Element types whose whole subtree gets captured verbatim.
+  CAPTURE_TYPES: 'CMapEntity,CMapPath,CMapPathNode,CMapGroup,CMapInstance'
+  # Classnames worth an excerpt, plus the path element types above.
+  CAPTURE_CLASSES: 'lane_marker_path,path_node_generic,citadel_zipline_path,citadel_zipline_path_node,path_simple,npc_barrack_boss,citadel_final_objective_proxy'
+  # Excerpts per kind, and lines per excerpt. Keeps the artifact readable.
+  MAX_EXCERPTS: 2
+  MAX_EXCERPT_LINES: 300
 
 jobs:
   survey:
@@ -113,7 +117,7 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
               g.write(f"conv={conv}\n")
 
-      - name: Binary to keyvalues2 text, WITH ids
+      - name: Binary to keyvalues2_noids text
         timeout-minutes: 20
         shell: bash
         run: |
@@ -122,75 +126,119 @@ jobs:
           RC=0
           "${{ steps.get.outputs.conv }}" \
             -i "$ROOT/$FIXTURE" -ie binary \
-            -o "$ROOT/work/example.txt" -oe keyvalues2 > out/conv.txt 2>&1 || RC=$?
+            -o "$ROOT/work/example.txt" -oe keyvalues2_noids > out/conv.txt 2>&1 || RC=$?
           cat out/conv.txt
           echo "exit: $RC" | tee -a out/conv.txt
           [ -s work/example.txt ] || { echo "FAIL: no text out"; exit 1; }
           wc -c work/example.txt | tee -a out/conv.txt
 
       - name: Survey
-        timeout-minutes: 20
+        timeout-minutes: 25
         shell: python
         run: |
-          import re, os, collections, json
+          import re, os, json, collections
 
           SRC = 'work/example.txt'
-          MAX = int(os.environ.get('MAX_SAMPLES', '3'))
+          CAP_TYPES = set(os.environ['CAPTURE_TYPES'].split(','))
+          CAP_CLASSES = set(os.environ['CAPTURE_CLASSES'].split(','))
+          MAX_EX = int(os.environ['MAX_EXCERPTS'])
+          MAX_LINES = int(os.environ['MAX_EXCERPT_LINES'])
 
-          # Line shapes in dmxconvert keyvalues2 output:
-          #   "name" "type" "value"        scalar attribute
-          #   "name" "TypeName"            inline element, next line is {
-          #   "TypeName"                   element in an array or at root
-          #   "name" "type_array"          next line is [
-          # Depth is tracked by counting braces and brackets, so an
-          # EditGameClassProps block is left exactly when its depth is closed.
-          three = re.compile(r'^\s*"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?\s*$')
-          two   = re.compile(r'^\s*"([^"]*)"\s+"([^"]*)"\s*$')
-          one   = re.compile(r'^\s*"([^"]*)"\s*,?\s*$')
+          three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
+          two   = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
+          one   = re.compile(r'^"(.*)"\s*,?$')
 
-          types      = collections.Counter()   # element type -> count
-          classes    = collections.Counter()   # classname -> count
-          keys       = collections.defaultdict(collections.Counter)
-          samples    = collections.defaultdict(lambda: collections.defaultdict(list))
-          ids        = 0                       # elements carrying an id
-          elemrefs   = collections.Counter()   # attribute name -> ref count
-          nonempty   = collections.Counter()   # CMapEntity fields that are not empty
+          types    = collections.Counter()
+          classes  = collections.Counter()
+          keys     = collections.defaultdict(collections.Counter)
+          ids      = 0
+          # An element reference is the evidence for sharing. Recorded by the
+          # attribute or array that holds it, because WHICH attribute shares
+          # is what decides whether paths are reachable from the emitter.
+          refs     = collections.Counter()
+          # Which element types appear inline under which attribute name.
+          childof  = collections.Counter()
 
-          depth = 0
-          props_at = None          # depth at which the current classprops block sits
-          pending_type = None      # type name seen, waiting for its {
-          cur = {}
-          # The type of the element we are currently inside, innermost first.
+          excerpts = collections.defaultdict(list)
+
+          # Parser state. A container is ('elem', typename) or ('array', attrname).
           stack = []
+          attr_stack = []          # attribute name that opened each container
+          props_depth = None
+          cur_props = {}
+          cur_class = None
 
-          with open(SRC, 'r', encoding='utf-8', errors='replace') as fh:
-              for line in fh:
-                  s = line.strip()
+          # Verbatim capture. Starts at the outermost capture-type element and
+          # ends when its brace closes.
+          cap_lines = None
+          cap_depth = None
+          cap_type = None
+          cap_class = None
+
+          def flush_capture():
+              global cap_lines, cap_depth, cap_type, cap_class
+              if cap_lines is None:
+                  return
+              kind = cap_class or cap_type
+              if (cap_type in CAP_TYPES and
+                      (cap_class is None or cap_class in CAP_CLASSES) and
+                      len(excerpts[kind]) < MAX_EX):
+                  body = cap_lines[:MAX_LINES]
+                  if len(cap_lines) > MAX_LINES:
+                      body.append(f'... truncated, {len(cap_lines)} lines total')
+                  excerpts[kind].append(body)
+              cap_lines = cap_depth = cap_type = cap_class = None
+
+          def lines_with_lookahead(fh):
+              prev = None
+              for raw in fh:
+                  s = raw.rstrip('\r\n').strip()
                   if not s:
                       continue
+                  if prev is not None:
+                      yield prev, s
+                  prev = s
+              if prev is not None:
+                  yield prev, ''
+
+          depth = 0
+          pending_type = None
+          pending_attr = None
+
+          with open(SRC, 'r', encoding='utf-8', errors='replace') as fh:
+              for s, nxt in lines_with_lookahead(fh):
+                  if cap_lines is not None and len(cap_lines) < MAX_LINES + 1:
+                      cap_lines.append('\t' * max(0, depth - cap_depth) + s)
 
                   if s in ('{', '['):
                       depth += 1
-                      stack.append(pending_type)
-                      if pending_type == 'EditGameClassProps' and props_at is None:
-                          props_at = depth
-                          cur = {}
-                      pending_type = None
+                      if s == '{':
+                          stack.append(('elem', pending_type))
+                          if pending_type == 'EditGameClassProps' and props_depth is None:
+                              props_depth = depth
+                              cur_props = {}
+                      else:
+                          stack.append(('array', pending_attr))
+                      attr_stack.append(pending_attr)
+                      pending_type = pending_attr = None
                       continue
 
                   if s in ('}', ']', '},', '],'):
-                      if props_at is not None and depth == props_at:
-                          cn = cur.pop('classname', '(none)')
-                          classes[cn] += 1
-                          for k, v in cur.items():
-                              keys[cn][k] += 1
-                              lst = samples[cn][k]
-                              if len(lst) < MAX and v not in lst and len(v) <= 64:
-                                  lst.append(v)
-                          props_at = None
+                      if props_depth is not None and depth == props_depth:
+                          cur_class = cur_props.pop('classname', '(none)')
+                          classes[cur_class] += 1
+                          for k, v in cur_props.items():
+                              keys[cur_class][k] += 1
+                          if cap_lines is not None and cap_class is None:
+                              cap_class = cur_class
+                          props_depth = None
                       if stack:
                           stack.pop()
+                      if attr_stack:
+                          attr_stack.pop()
                       depth -= 1
+                      if cap_lines is not None and depth < cap_depth:
+                          flush_capture()
                       continue
 
                   m = three.match(s)
@@ -199,52 +247,77 @@ jobs:
                       if name == 'id' and typ == 'elementid':
                           ids += 1
                       elif typ == 'element' and val:
-                          elemrefs[name] += 1
-                      elif props_at is not None and depth == props_at:
-                          cur[name] = val
-                      elif stack and stack[-1] == 'CMapEntity':
-                          pass
+                          refs[f'{name} (attribute)'] += 1
+                      elif props_depth is not None and depth == props_depth:
+                          cur_props[name] = val
                       continue
 
                   m = two.match(s)
                   if m:
-                      name, typ = m.groups()
-                      # An inline element or an array header. The type name is
-                      # the second token for inline elements only.
-                      pending_type = typ if not typ.endswith('_array') else None
-                      if pending_type:
-                          types[pending_type] += 1
+                      a, b = m.groups()
+                      if nxt in ('{', '['):
+                          # inline element, or an array header
+                          pending_attr = a
+                          pending_type = b if nxt == '{' else None
+                          if pending_type:
+                              types[pending_type] += 1
+                              childof[f'{a} -> {b}'] += 1
+                              if (pending_type in CAP_TYPES and cap_lines is None):
+                                  cap_lines = [s]
+                                  cap_depth = depth + 1
+                                  cap_type = pending_type
+                                  cap_class = None
+                      elif a == 'element':
+                          # a reference sitting in an element_array
+                          holder = attr_stack[-1] if attr_stack else '(root)'
+                          refs[f'{holder} (array item)'] += 1
                       continue
 
                   m = one.match(s)
                   if m:
-                      pending_type = m.group(1)
-                      types[pending_type] += 1
+                      tok = m.group(1)
+                      if nxt == '{':
+                          types[tok] += 1
+                          holder = attr_stack[-1] if attr_stack else '(root)'
+                          childof[f'{holder} -> {tok}'] += 1
+                          pending_type = tok
+                          if tok in CAP_TYPES and cap_lines is None:
+                              cap_lines = [s]
+                              cap_depth = depth + 1
+                              cap_type = tok
+                              cap_class = None
+                      # otherwise it is a plain array scalar: ignored on purpose
                       continue
+
+          flush_capture()
 
           def w(fh, s=''):
               fh.write(s + '\n')
-              print(s)
 
           with open('out/entity-survey.md', 'w', encoding='utf-8') as fh:
-              w(fh, '# Entity survey of dl_example.vmap')
+              w(fh, '# Entity survey of dl_example.vmap (keyvalues2_noids)')
               w(fh)
-              w(fh, f'elements carrying an id (referenced more than once): {ids}')
+              w(fh, f'elements referenced MORE THAN ONCE (carry an id): {ids}')
               w(fh)
               w(fh, '## Element types')
-              w(fh)
+              w(fh, '')
               w(fh, '| count | type |')
               w(fh, '|---|---|')
               for t, c in types.most_common():
                   w(fh, f'| {c} | {t} |')
               w(fh)
-              w(fh, '## Non-empty element references, by attribute')
+              w(fh, '## Element references, by holder')
               w(fh)
-              if elemrefs:
-                  for n, c in elemrefs.most_common():
+              if refs:
+                  for n, c in refs.most_common():
                       w(fh, f'- {n}: {c}')
               else:
-                  w(fh, '- none')
+                  w(fh, '- NONE. Nothing in this map is referenced by id.')
+              w(fh)
+              w(fh, '## Inline nesting: which types sit under which attribute')
+              w(fh)
+              for n, c in childof.most_common(60):
+                  w(fh, f'- {n}: {c}')
               w(fh)
               w(fh, '## Classnames')
               w(fh)
@@ -258,25 +331,43 @@ jobs:
                   w(fh)
                   w(fh, f'### {cn}')
                   for k, c in keys[cn].most_common():
-                      ex = samples[cn][k]
-                      exs = ('  e.g. ' + ', '.join(ex)) if ex else ''
-                      w(fh, f'- {k} ({c}){exs}')
+                      w(fh, f'- {k} ({c})')
+
+          with open('out/excerpts.md', 'w', encoding='utf-8') as fh:
+              w(fh, '# Verbatim subtrees')
+              w(fh)
+              w(fh, 'Indented from the capture root. Truncated per the caps in env.')
+              for kind, blocks in sorted(excerpts.items()):
+                  for i, b in enumerate(blocks):
+                      w(fh)
+                      w(fh, f'## {kind} [{i}]')
+                      w(fh)
+                      w(fh, '```')
+                      for ln in b:
+                          w(fh, ln)
+                      w(fh, '```')
 
           json.dump({
               'ids': ids,
               'types': dict(types),
+              'refs': dict(refs),
+              'childof': dict(childof),
               'classes': dict(classes),
               'keys': {k: dict(v) for k, v in keys.items()},
           }, open('out/entity-survey.json', 'w'), indent=1)
 
-          print()
-          print(f'{len(classes)} distinct classnames, {len(types)} element types')
+          # A parse that is working reports 222 CMapMesh on this fixture.
+          # If that number is wrong, nothing else in the report is safe.
+          print('CMapMesh:', types.get('CMapMesh'), '(want 222)')
+          print('elements with an id:', ids)
+          print('reference sites:', sum(refs.values()))
+          print('classnames:', len(classes), 'element types:', len(types))
+          print('excerpt kinds:', sorted(excerpts))
 
       - name: What landed
         if: always()
         shell: bash
         run: |
-          # The text conversion is very large; the reports are the artifact.
           ls -l out || true
 
       - uses: actions/upload-artifact@v4
