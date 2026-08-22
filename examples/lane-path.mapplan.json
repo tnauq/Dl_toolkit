@@ -1,0 +1,275 @@
+{
+  "version": 1,
+  "name": "lane_path",
+  "cell": 64,
+  "boxes": [
+    {
+      "name": "floor",
+      "origin": [
+        0,
+        0,
+        -32.0
+      ],
+      "extents": [
+        1664,
+        1664,
+        64
+      ]
+    },
+    {
+      "name": "ceiling",
+      "origin": [
+        0,
+        0,
+        544.0
+      ],
+      "extents": [
+        1664,
+        1664,
+        64
+      ]
+    },
+    {
+      "name": "wall_-x",
+      "origin": [
+        -800.0,
+        0,
+        256.0
+      ],
+      "extents": [
+        64,
+        1536,
+        512
+      ]
+    },
+    {
+      "name": "wall_+x",
+      "origin": [
+        800.0,
+        0,
+        256.0
+      ],
+      "extents": [
+        64,
+        1536,
+        512
+      ]
+    },
+    {
+      "name": "wall_-y",
+      "origin": [
+        0,
+        -800.0,
+        256.0
+      ],
+      "extents": [
+        1664,
+        64,
+        512
+      ]
+    },
+    {
+      "name": "wall_+y",
+      "origin": [
+        0,
+        800.0,
+        256.0
+      ],
+      "extents": [
+        1664,
+        64,
+        512
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "classname": "info_team_spawn",
+      "origin": [
+        -384,
+        0,
+        0
+      ],
+      "angles": [
+        0,
+        0,
+        0
+      ],
+      "properties": {
+        "teamnumber": "2",
+        "lanenum": "1",
+        "initialspawn": "1"
+      }
+    },
+    {
+      "classname": "info_team_spawn",
+      "origin": [
+        384,
+        0,
+        0
+      ],
+      "angles": [
+        0,
+        180,
+        0
+      ],
+      "properties": {
+        "teamnumber": "3",
+        "lanenum": "1",
+        "initialspawn": "1"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "name": "lane1_slot0",
+      "classname": "lane_marker_path",
+      "origin": [
+        -640,
+        0,
+        16
+      ],
+      "properties": {
+        "targetname": "",
+        "vscripts": "",
+        "lanenum": "1",
+        "LaneSlot": "0"
+      },
+      "nodes": [
+        {
+          "origin": [
+            -640,
+            0,
+            16
+          ]
+        },
+        {
+          "origin": [
+            -213,
+            0,
+            16
+          ]
+        },
+        {
+          "origin": [
+            213,
+            0,
+            16
+          ]
+        },
+        {
+          "origin": [
+            640,
+            0,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lane1_slot1",
+      "classname": "lane_marker_path",
+      "origin": [
+        -640,
+        -96,
+        16
+      ],
+      "properties": {
+        "targetname": "",
+        "vscripts": "",
+        "lanenum": "1",
+        "LaneSlot": "1"
+      },
+      "nodes": [
+        {
+          "origin": [
+            -640,
+            -96,
+            16
+          ]
+        },
+        {
+          "origin": [
+            0,
+            -96,
+            16
+          ]
+        },
+        {
+          "origin": [
+            640,
+            -96,
+            16
+          ]
+        }
+      ]
+    },
+    {
+      "name": "zip_test",
+      "classname": "citadel_zipline_path",
+      "origin": [
+        -640,
+        320,
+        400
+      ],
+      "properties": {
+        "targetname": "zip_test",
+        "lane_number": "1",
+        "radius": "2",
+        "slack": "0",
+        "particle_spacing": "512",
+        "static_collision": "0",
+        "color_tint": "0 25 255",
+        "start_active": "1",
+        "effect_name": "particles/entity/path_particle_cable_default.vpcf"
+      },
+      "nodes": [
+        {
+          "classname": "citadel_zipline_path_node",
+          "origin": [
+            -640,
+            320,
+            400
+          ],
+          "properties": {
+            "teamnumber": "2",
+            "corner_node": "0",
+            "enabled": "1",
+            "capturable": "0",
+            "disable_zipping_to": "0"
+          }
+        },
+        {
+          "classname": "citadel_zipline_path_node",
+          "origin": [
+            0,
+            320,
+            400
+          ],
+          "properties": {
+            "teamnumber": "0",
+            "corner_node": "0",
+            "enabled": "1",
+            "capturable": "0",
+            "disable_zipping_to": "0"
+          }
+        },
+        {
+          "classname": "citadel_zipline_path_node",
+          "origin": [
+            640,
+            320,
+            400
+          ],
+          "properties": {
+            "teamnumber": "3",
+            "corner_node": "0",
+            "enabled": "1",
+            "capturable": "0",
+            "disable_zipping_to": "0"
+          }
+        }
+      ]
+    }
+  ]
+}

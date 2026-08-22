@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using Deadlock.Contracts;
 using Deadlock.Format.Dmx;
@@ -49,7 +50,17 @@ if (mode == "emit")
     var plan = JsonSerializer.Deserialize<MapPlan>(File.ReadAllText(inPath));
     if (plan is null) return Fail("plan did not deserialize");
     Console.WriteLine($"plan '{plan.Name}' cell={plan.Cell} " +
-                      $"boxes={plan.Boxes.Count} entities={plan.Entities.Count}");
+                      $"boxes={plan.Boxes.Count} entities={plan.Entities.Count} " +
+                      $"paths={plan.Paths.Count} " +
+                      $"pathnodes={plan.Paths.Sum(p => p.Nodes.Count)}");
+
+    // A path with fewer than two nodes is not a route. Caught here rather
+    // than in the game, where it would be a silent no-op.
+    foreach (var p in plan.Paths)
+    {
+        if (p.Nodes.Count >= 2) continue;
+        return Fail($"{p.Name ?? p.ClassName}: {p.Nodes.Count} node(s), a path needs 2");
+    }
 
     for (var i = 0; i < plan.Boxes.Count; i++)
     {
@@ -70,8 +81,19 @@ if (mode == "emit")
     var ents = plan.Entities.Select(e => new EntitySpec {
         ClassName = e.ClassName, Origin = e.Origin, Angles = e.Angles, Properties = e.Properties
     }).ToList();
+    var paths = plan.Paths.Select(p => new PathSpec {
+        ClassName = p.ClassName, Origin = p.Origin, Angles = p.Angles,
+        Properties = p.Properties, InterpolationType = p.InterpolationType,
+        ClosedLoop = p.ClosedLoop, ParticleSnapshotSpacing = p.ParticleSnapshotSpacing,
+        Nodes = p.Nodes.Select(n => new PathNodeSpec {
+            ClassName = n.ClassName, Origin = n.Origin, Angles = n.Angles,
+            InTangent = n.InTangent, OutTangent = n.OutTangent,
+            InTangentType = n.InTangentType, OutTangentType = n.OutTangentType,
+            Properties = n.Properties
+        }).ToList()
+    }).ToList();
 
-    var doc = MapEmitter.Emit(boxes, ents);
+    var doc = MapEmitter.Emit(boxes, ents, paths);
     PrintCensus(doc);
 
     var text = Kv2Writer.Write(doc);
@@ -97,8 +119,10 @@ if (mode == "verify")
     if (!rr.Ok) return Fail($"map parse failed: {rr.Failure} at {rr.Offset}");
 
     var map = MapReader.Read(rr.Document!);
-    Console.WriteLine($"plan:  {plan.Boxes.Count} boxes, {plan.Entities.Count} entities");
-    Console.WriteLine($"map:   {map.Boxes.Count} boxes, {map.Entities.Count} entities");
+    Console.WriteLine($"plan:  {plan.Boxes.Count} boxes, {plan.Entities.Count} entities, " +
+                      $"{plan.Paths.Count} paths");
+    Console.WriteLine($"map:   {map.Boxes.Count} boxes, {map.Entities.Count} entities, " +
+                      $"{map.Paths.Count} paths");
 
     var bad = 0;
     // Tolerance, not equality: the value survives a float round trip
@@ -149,6 +173,43 @@ if (mode == "verify")
             { Console.Error.WriteLine($"{p.ClassName}[{i}]: {k} '{want}' -> '{got ?? "(missing)"}'"); bad++; }
         }
         if (bad == 0 || true) Console.WriteLine($"  ok  {m.ClassName} {V(m.Origin)}");
+    }
+
+    // ------------------------------------------------------------ paths
+    // The route is the point. A path that survives as an element but loses
+    // its node ORDER would still play wrong, so nodes are compared in
+    // sequence, not as a set.
+    if (map.Paths.Count != plan.Paths.Count)
+    { Console.Error.WriteLine("PATH COUNT differs"); bad++; }
+
+    for (var i = 0; i < Math.Min(plan.Paths.Count, map.Paths.Count); i++)
+    {
+        var p = plan.Paths[i]; var m = map.Paths[i];
+        var label = p.Name ?? $"{p.ClassName}[{i}]";
+        if (!string.Equals(p.ClassName, m.ClassName, StringComparison.Ordinal))
+        { Console.Error.WriteLine($"{label}: class '{p.ClassName}' -> '{m.ClassName}'"); bad++; continue; }
+        if (!NearV(p.Origin, m.Origin))
+        { Console.Error.WriteLine($"{label}: origin {V(p.Origin)} -> {V(m.Origin)}"); bad++; }
+        foreach (var (k, want) in p.Properties)
+        {
+            m.Properties.TryGetValue(k, out var got);
+            if (!string.Equals(want, got, StringComparison.Ordinal))
+            { Console.Error.WriteLine($"{label}: {k} '{want}' -> '{got ?? "(missing)"}'"); bad++; }
+        }
+        if (m.Nodes.Count != p.Nodes.Count)
+        { Console.Error.WriteLine($"{label}: {p.Nodes.Count} nodes -> {m.Nodes.Count}"); bad++; continue; }
+        for (var j = 0; j < p.Nodes.Count; j++)
+        {
+            var pn = p.Nodes[j]; var mn = m.Nodes[j];
+            if (!NearV(pn.Origin, mn.Origin))
+            { Console.Error.WriteLine($"{label} node[{j}]: origin {V(pn.Origin)} -> {V(mn.Origin)}"); bad++; }
+            if (!NearV(pn.InTangent, mn.InTangent) || !NearV(pn.OutTangent, mn.OutTangent))
+            { Console.Error.WriteLine($"{label} node[{j}]: tangents moved"); bad++; }
+            if (!string.Equals(pn.ClassName, mn.ClassName, StringComparison.Ordinal))
+            { Console.Error.WriteLine($"{label} node[{j}]: class '{pn.ClassName}' -> '{mn.ClassName}'"); bad++; }
+        }
+        if (bad == 0)
+            Console.WriteLine($"  ok  {label} {m.Nodes.Count} nodes, first {V(m.Nodes[0].Origin)}");
     }
 
     if (bad != 0) return Fail($"\nVERIFY FAILED in {bad} place(s)");

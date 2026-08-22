@@ -39,10 +39,29 @@ public static class MapReader
         public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
     }
 
+    public sealed class ReadPathNode
+    {
+        public string ClassName = "";
+        public double[] Origin = { 0, 0, 0 };
+        public double[] InTangent = { 0, 0, 0 };
+        public double[] OutTangent = { 0, 0, 0 };
+        public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
+    }
+
+    public sealed class ReadPath
+    {
+        public string ClassName = "";
+        public double[] Origin = { 0, 0, 0 };
+        public double[] Angles = { 0, 0, 0 };
+        public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
+        public List<ReadPathNode> Nodes = new();
+    }
+
     public sealed class ReadMap
     {
         public List<ReadBox> Boxes = new();
         public List<ReadEntity> Entities = new();
+        public List<ReadPath> Paths = new();
     }
 
     private static double[] Vec(string? s, int n)
@@ -103,6 +122,39 @@ public static class MapReader
                 }
                 map.Boxes.Add(b);
             }
+            else if (el.TypeName == "CMapPath")
+            {
+                var p = new ReadPath
+                {
+                    Origin = Vec(el.GetScalar("origin"), 3),
+                    Angles = Vec(el.GetScalar("angles"), 3)
+                };
+                ReadProps(el, out var pcls, p.Properties);
+                p.ClassName = pcls;
+
+                // Nodes are inline in children. Reading them back in order is
+                // the only way to prove the ROUTE survived, as opposed to the
+                // path element merely existing.
+                var kids = el.Get("children");
+                if (kids?.Items is not null)
+                {
+                    foreach (var it in kids.Items)
+                    {
+                        var n = it.Element;
+                        if (n is null || n.TypeName != "CMapPathNode") continue;
+                        var rn = new ReadPathNode
+                        {
+                            Origin = Vec(n.GetScalar("origin"), 3),
+                            InTangent = Vec(n.GetScalar("inTangent"), 3),
+                            OutTangent = Vec(n.GetScalar("outTangent"), 3)
+                        };
+                        ReadProps(n, out var ncls, rn.Properties);
+                        rn.ClassName = ncls;
+                        p.Nodes.Add(rn);
+                    }
+                }
+                map.Paths.Add(p);
+            }
             else if (el.TypeName == "CMapEntity")
             {
                 var e = new ReadEntity
@@ -110,20 +162,31 @@ public static class MapReader
                     Origin = Vec(el.GetScalar("origin"), 3),
                     Angles = Vec(el.GetScalar("angles"), 3)
                 };
-                var props = el.Get("entity_properties")?.Element;
-                if (props is not null)
-                {
-                    foreach (var (k, v) in props.Attributes)
-                    {
-                        if (v.Kind != DmxValueKind.Scalar) continue;
-                        if (k == "classname") e.ClassName = v.Scalar ?? "";
-                        else e.Properties[k] = v.Scalar ?? "";
-                    }
-                }
+                ReadProps(el, out var ecls, e.Properties);
+                e.ClassName = ecls;
                 map.Entities.Add(e);
             }
         }
         return map;
+    }
+
+    /// <summary>
+    /// Pull classname and every other scalar out of an element's
+    /// entity_properties. Shared by entities, paths and path nodes, which all
+    /// carry the same EditGameClassProps bag.
+    /// </summary>
+    private static void ReadProps(DmxElement el, out string className,
+                                  Dictionary<string, string> into)
+    {
+        className = "";
+        var props = el.Get("entity_properties")?.Element;
+        if (props is null) return;
+        foreach (var (k, v) in props.Attributes)
+        {
+            if (v.Kind != DmxValueKind.Scalar) continue;
+            if (k == "classname") className = v.Scalar ?? "";
+            else into[k] = v.Scalar ?? "";
+        }
     }
 
     /// <summary>

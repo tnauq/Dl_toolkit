@@ -23,6 +23,56 @@ public sealed class EntitySpec
 }
 
 /// <summary>
+/// One control point on a path. Position is WORLD space, like an entity's,
+/// not local to the path: dl_example's CMapPathNode carries a full world
+/// origin and the parent CMapPath's own origin is just where its widget sits.
+/// </summary>
+public sealed class PathNodeSpec
+{
+    public string ClassName = "path_node_generic";
+    public double[] Origin = { 0, 0, 0 };
+    public double[] Angles = { 0, 0, 0 };
+    public double[] InTangent = { 0, 0, 0 };
+    public double[] OutTangent = { 0, 0, 0 };
+    public int InTangentType = 1;
+    public int OutTangentType = 1;
+    public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
+}
+
+/// <summary>
+/// A path: a spline the game follows. A lane_marker_path is what troopers
+/// walk; a citadel_zipline_path is the same structure with a different
+/// classname and keyvalues.
+///
+/// WHY THE NODES ARE INLINE HERE AND REFERENCED IN dl_example. In the real
+/// map every root-level element is listed BOTH in CMapWorld's children and
+/// in CVisibilityMgr's nodes array. Two references means dmxconvert must
+/// hoist the element to top level and point at it by id, which is where 767
+/// of the 767 ids in that file come from. This emitter leaves
+/// CVisibilityMgr's nodes empty, exactly as it already does for meshes and
+/// entities, so each node is referenced ONCE and stays inline. The no-GUID
+/// property survives.
+///
+/// UNCONFIRMED: whether Deadlock or Hammer requires path nodes to be
+/// registered in CVisibilityMgr. The sealed room loads with that array empty
+/// for meshes and entities, which is the evidence this rests on, and it is
+/// not proof for paths. If a compile or a load rejects the file, populating
+/// CVisibilityMgr is hypothesis #1 — and doing so forces ids back in.
+/// </summary>
+public sealed class PathSpec
+{
+    public string ClassName = "lane_marker_path";
+    public double[] Origin = { 0, 0, 0 };
+    public double[] Angles = { 0, 0, 0 };
+    public Dictionary<string, string> Properties = new(StringComparer.Ordinal);
+    /// <summary>1 in every path in dl_example. Read off, not chosen.</summary>
+    public int InterpolationType = 1;
+    public bool ClosedLoop = false;
+    public double ParticleSnapshotSpacing = 16;
+    public List<PathNodeSpec> Nodes = new();
+}
+
+/// <summary>
 /// Builds a CMapRootElement document from boxes and point entities.
 ///
 /// WHY THERE ARE NO GUIDS HERE. keyvalues2_noids writes an element id only
@@ -96,13 +146,21 @@ public static class MapEmitter
 
     public static DmxDocument Emit(IReadOnlyList<BoxSpec> boxes,
                                    IReadOnlyList<EntitySpec> entities)
+        => Emit(boxes, entities, Array.Empty<PathSpec>());
+
+    public static DmxDocument Emit(IReadOnlyList<BoxSpec> boxes,
+                                   IReadOnlyList<EntitySpec> entities,
+                                   IReadOnlyList<PathSpec> paths)
     {
         var doc = new DmxDocument("keyvalues2_noids", 4, "vmap", 40);
 
+        // nodeID is a plain counter shared across every node type. A path
+        // and its nodes each take one, so the ids stay unique document-wide.
         var nodeId = 1;
         var children = new List<DmxElement>();
         foreach (var b in boxes) children.Add(MapMesh(b, ++nodeId));
         foreach (var e in entities) children.Add(MapEntity(e, ++nodeId));
+        foreach (var p in paths) children.Add(MapPath(p, ref nodeId));
 
         var world = new DmxElement("CMapWorld");
         world.Set("nodeID", Int(1));
@@ -220,6 +278,73 @@ public static class MapEmitter
         e.Set("transformLocked", Bool(false));
         e.Set("force_hidden", Bool(false));
         e.Set("editorOnly", Bool(false));
+        return e;
+    }
+
+    /// <summary>
+    /// A CMapPath holding its CMapPathNode children inline. Attribute set and
+    /// order are copied from a real lane_marker_path in dl_example.vmap, read
+    /// verbatim, not inferred.
+    /// </summary>
+    private static DmxElement MapPath(PathSpec spec, ref int nodeId)
+    {
+        var e = new DmxElement("CMapPath");
+        e.Set("nodeID", Int(++nodeId));
+        e.Set("referenceID", S("uint64", "0x0"));
+
+        var nodes = new List<DmxElement>();
+        foreach (var n in spec.Nodes) nodes.Add(MapPathNode(n, ++nodeId));
+        e.Set("children", InlineArray(nodes));
+
+        e.Set("variableTargetKeys", EmptyArray("string_array"));
+        e.Set("variableNames", EmptyArray("string_array"));
+        e.Set("relayPlugData", DmxValue.OfInline("DmePlugList", PlugList()));
+        e.Set("connectionsData", EmptyArray("element_array"));
+        e.Set("entity_properties",
+            DmxValue.OfInline("EditGameClassProps", ClassProps(spec.ClassName, spec.Properties)));
+        e.Set("hitNormal", V3(new double[] { 0, 0, 1 }));
+        e.Set("isProceduralEntity", Bool(false));
+        e.Set("origin", V3(spec.Origin));
+        e.Set("angles", Ang(spec.Angles));
+        e.Set("scales", V3(new double[] { 1, 1, 1 }));
+        e.Set("transformLocked", Bool(false));
+        e.Set("force_hidden", Bool(false));
+        e.Set("editorOnly", Bool(false));
+        e.Set("interpolationType", Int(spec.InterpolationType));
+        e.Set("closedLoop", Bool(spec.ClosedLoop));
+        e.Set("particleSnapshotSpacing", Flt(spec.ParticleSnapshotSpacing));
+        return e;
+    }
+
+    /// <summary>
+    /// A CMapPathNode. Same shape as a CMapEntity plus the four tangent
+    /// attributes. A path_node_generic carries NO keyvalues beyond its
+    /// classname in dl_example — the position is the whole content.
+    /// </summary>
+    private static DmxElement MapPathNode(PathNodeSpec spec, int nodeId)
+    {
+        var e = new DmxElement("CMapPathNode");
+        e.Set("nodeID", Int(nodeId));
+        e.Set("referenceID", S("uint64", "0x0"));
+        e.Set("children", EmptyArray("element_array"));
+        e.Set("variableTargetKeys", EmptyArray("string_array"));
+        e.Set("variableNames", EmptyArray("string_array"));
+        e.Set("relayPlugData", DmxValue.OfInline("DmePlugList", PlugList()));
+        e.Set("connectionsData", EmptyArray("element_array"));
+        e.Set("entity_properties",
+            DmxValue.OfInline("EditGameClassProps", ClassProps(spec.ClassName, spec.Properties)));
+        e.Set("hitNormal", V3(new double[] { 0, 0, 1 }));
+        e.Set("isProceduralEntity", Bool(false));
+        e.Set("origin", V3(spec.Origin));
+        e.Set("angles", Ang(spec.Angles));
+        e.Set("scales", V3(new double[] { 1, 1, 1 }));
+        e.Set("transformLocked", Bool(false));
+        e.Set("force_hidden", Bool(false));
+        e.Set("editorOnly", Bool(false));
+        e.Set("inTangent", V3(spec.InTangent));
+        e.Set("outTangent", V3(spec.OutTangent));
+        e.Set("inTangentType", Int(spec.InTangentType));
+        e.Set("outTangentType", Int(spec.OutTangentType));
         return e;
     }
 
