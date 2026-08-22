@@ -444,8 +444,8 @@ function prepare(p){
     // it, which is exactly why the cull uses a sphere and not the AABB.
     const rad = Math.hypot(h[0], h[1], h[2]);
     // Floors are told apart by material, set by floormat.py. Any of the
-    // brighter dev greys counts, so switching the constant in that script
-    // does not need a matching edit here.
+    // dev greys counts, so switching the constant in that script does not
+    // need a matching edit here.
     const floor = typeof b.material === 'string' &&
                   /measure|reflectivity_(50|70|90)/.test(b.material);
     return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad, floor,
@@ -662,6 +662,11 @@ function render(){
       const nv = Math.max(1, Math.min(64, Math.round(vSize/tile)));
       const du = uSize/nu, dv = vSize/nv;
 
+      // Material is a per-BOX field, but only the TOP face of a floor box
+      // is a floor. Without this, a wall whose top is walkable goes grey
+      // on all six faces and a ramp reads grey down its sides.
+      const ff = sol.floor && F.w === 2 && F.s === 1;
+
       for(let iu=0; iu<nu; iu++){
         for(let iv=0; iv<nv; iv++){
           const corners = [[0,0],[1,0],[1,1],[0,1]].map(([a,b])=>{
@@ -677,8 +682,8 @@ function render(){
           for(const c of clipped) depth2 += c[2];
           depth2 /= clipped.length;
           quads.push({ depth:depth2, pts:clipped.map(v=>project(v,f)),
-                       col: tileColor(F.shade, iu, iv, sol.floor),
-                       floor: sol.floor });
+                       col: tileColor(F.shade, iu, iv, ff),
+                       floor: ff });
         }
       }
     }
