@@ -10,12 +10,16 @@ plan was right; the renderer was not looking.
 WHAT IT CHANGES  (three edits, all inside the <script> block)
 
   1. prepare()   reads b.material and stores a boolean `floor` on the
-                 prepared solid, true when the material name ends in
+                 prepared solid, true for dev_measure* or for
                  reflectivity_50, _70 or _90.
-  2. tileColor() takes that flag and returns a grey checker instead of
-                 the orange one. Same checker, same shading, so the LOD
-                 banding and the face shading still read as before.
-  3. the call    passes sol.floor through.
+  2. tileColor() takes that flag and returns flat dev grey instead of the
+                 orange checker. The checker survives as a 7-point
+                 wobble, so the fill reads as one flat surface and the
+                 grid line carries the scale, as on dev_measuregeneric.
+  3. the call    passes sol.floor through, and puts it on the quad.
+  4. the seam    goes light on grey and stays dark on orange. A dark seam
+                 on a dark grey fill is invisible, which would have left
+                 the floor a flat slab with no grid at all.
 
 The viewer stays read-only on the plan: this adds a derived field on the
 prepared copy, exactly like `rad` and `aabb` already are.
@@ -40,7 +44,7 @@ EDITS = [
         "    // brighter dev greys counts, so switching the constant in that script\n"
         "    // does not need a matching edit here.\n"
         "    const floor = typeof b.material === 'string' &&\n"
-        "                  /reflectivity_(50|70|90)/.test(b.material);\n"
+        "                  /measure|reflectivity_(50|70|90)/.test(b.material);\n"
         "    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad, floor,",
     ),
     (
@@ -49,13 +53,21 @@ EDITS = [
         "  const base = checker ? [198,101,42] : [154,74,29];",
         "function tileColor(shade, gx, gy, floor){\n"
         "  const checker = ((gx + gy) & 1) === 0;\n"
-        "  // Grey for anything a player stands on, orange for everything else.\n"
-        "  const base = floor ? (checker ? [166,168,170] : [124,126,128])\n"
-        "                     : (checker ? [198,101,42]  : [154,74,29]);",
+        "  // Floors: flat dev grey with a barely-there checker, so the grid line\n"
+        "  // does the work rather than the fill, matching dev_measuregeneric.\n"
+        "  const base = floor ? (checker ? [62,59,57] : [55,52,50])\n"
+        "                     : (checker ? [198,101,42] : [154,74,29]);",
     ),
     (
         "                       col: tileColor(F.shade, iu, iv) });",
-        "                       col: tileColor(F.shade, iu, iv, sol.floor) });",
+        "                       col: tileColor(F.shade, iu, iv, sol.floor),\n"
+        "                       floor: sol.floor });",
+    ),
+    (
+        "      ctx.strokeStyle = 'rgba(40,18,6,.55)';",
+        "      // On orange the seam is a dark shadow line; on dev grey it has to be\n"
+        "      // LIGHTER than the fill or the grid disappears into the surface.\n"
+        "      ctx.strokeStyle = q.floor ? 'rgba(176,180,184,.42)' : 'rgba(40,18,6,.55)';",
     ),
 ]
 
@@ -110,7 +122,7 @@ def main():
 
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
-        print("%s patched, 3 edits" % path)
+        print("%s patched, %d edits" % (path, len(EDITS)))
 
     return rc
 

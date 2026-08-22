@@ -26,7 +26,7 @@ import sys
 
 import walkcheck
 
-FLOOR_MAT = "materials/dev/reflectivity_50.vmat"
+FLOOR_MAT = "materials/dev/dev_measuregeneric01.vmat"
 WALL_MAT = "materials/dev/reflectivity_30.vmat"
 
 
