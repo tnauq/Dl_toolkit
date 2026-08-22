@@ -147,7 +147,23 @@ env:
   # ONE SPEC PER CLASSNAME. The parser keys on classname, so a repeated one
   # silently overwrites the earlier — hence the single wide tuple below
   # rather than three narrow ones.
-  TUPLE_SPECS: 'citadel_zipline_path_node:teamnumber,capturable,corner_node,one_way,always_usable,enabled,disable_zipping_to;lane_marker_path:lanenum,LaneSlot;citadel_zipline_path:lane_number,start_active;info_trooper_spawn:teamnumber,lanenum'
+  # FAMILY A vs FAMILY B, the last zipline question. dl_example has 8
+  # citadel_zipline_path for 4 lanes and they are the SAME FOUR CABLES in two
+  # representations, not two systems:
+  #
+  #   A  31 CMapPathNode children, no targetname, no pathNodes
+  #   B  no children at all; the route packed into a pathNodes STRING as
+  #      rows of 9 floats (pos xyz, in-tangent xyz, out-tangent xyz) relative
+  #      to the entity origin, plus targetname 8785_LaneN, start_active,
+  #      pathNodePinsEnabled, pathNodeRadiusScales. Lives inside the 2
+  #      CMapGroup, so probably pasted or imported as a unit.
+  #
+  # IF THEY OCCUPY THE SAME SPACE they are duplicates and one cable per lane
+  # is right, which is what batch13 already emits. If they are in different
+  # places they are two systems and batch13 emits half the map's ziplines.
+  # ORIGIN is the discriminator: family B's route is relative to it, so two
+  # representations of one cable would share it.
+  TUPLE_SPECS: 'citadel_zipline_path:lane_number,targetname,color_tint;citadel_zipline_path_node:teamnumber,capturable'
 
   # Excerpts per kind, and lines per excerpt. A brush entity's subtree
   # contains an entire CDmePolygonMesh if the mesh is inline, which is
@@ -291,6 +307,12 @@ jobs:
               tuple_keys[cn] = keys_csv.split(',')
           tuples = collections.defaultdict(collections.Counter)
 
+          # citadel_zipline_path rows: origin and child count, which the
+          # tuple table cannot reach because both live OUTSIDE
+          # entity_properties.
+          ziprows = []
+          zip_pending = None      # {'origin','kids','haspathnodes'} while inside one
+
           excerpts = collections.defaultdict(list)
 
           # Each open element gets a frame, so an id line and a classname
@@ -348,6 +370,11 @@ jobs:
                       if s == '{':
                           frames.append({'type': pending_type, 'id': None,
                                          'class': None})
+                          if pending_type == 'CMapPath':
+                              zip_pending = {'origin': '?', 'kids': 0,
+                                             'lane': '?', 'name': '',
+                                             'pathnodes': False,
+                                             'depth': depth}
                           if pending_type == 'EditGameClassProps' and props_depth is None:
                               props_depth = depth
                               cur_props = {}
@@ -373,6 +400,16 @@ jobs:
                           if cap_lines is not None and cap_class is None:
                               cap_class = cur_class
                           props_depth = None
+                      if (closing_elem and zip_pending is not None
+                              and depth == zip_pending['depth']):
+                          if zip_pending['lane'] != '?':
+                              ziprows.append([
+                                  zip_pending['name'] or '(none)',
+                                  zip_pending['lane'],
+                                  zip_pending['origin'],
+                                  str(zip_pending['kids']),
+                                  'B' if zip_pending['pathnodes'] else 'A'])
+                          zip_pending = None
                       if closing_elem and frames:
                           f = frames.pop()
                           if f['id']:
@@ -388,6 +425,15 @@ jobs:
                   m = three.match(s)
                   if m:
                       name, typ, val = m.groups()
+                      if zip_pending is not None:
+                          if name == 'origin':
+                              zip_pending['origin'] = val
+                          elif name == 'lane_number':
+                              zip_pending['lane'] = val
+                          elif name == 'targetname':
+                              zip_pending['name'] = val or '(none)'
+                          elif name == 'pathNodes':
+                              zip_pending['pathnodes'] = True
                       if name == 'id' and typ == 'elementid':
                           ids += 1
                           if frames:
@@ -416,6 +462,8 @@ jobs:
                       elif a == 'element':
                           holder = attr_stack[-1] if attr_stack else '(root)'
                           refs[f'{holder} (array item)'] += 1
+                          if zip_pending is not None and holder == 'children':
+                              zip_pending['kids'] += 1
                           # The array's own frame is the element that owns it.
                           reflists[f'{owner_type()}.{holder}'].append(b)
                       continue
@@ -534,6 +582,18 @@ jobs:
                           w(fh, '  VERDICT: mixed counts — read the table, the')
                           w(fh, '  simple shared/per-team split does not hold.')
                   w(fh)
+
+              w(fh, '## citadel_zipline_path origins')
+              w(fh)
+              w(fh, 'Two representations of ONE cable share an origin; two')
+              w(fh, 'separate cables do not. Family B carries pathNodes and')
+              w(fh, 'has no children.')
+              w(fh)
+              w(fh, '| targetname | lane | origin | children | family |')
+              w(fh, '|---|---|---|---|---|')
+              for row in ziprows:
+                  w(fh, '| ' + ' | '.join(row) + ' |')
+              w(fh)
 
               w(fh, '## Element types')
               w(fh, '')
