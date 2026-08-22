@@ -183,12 +183,14 @@ LANES = [
             [-1350.0, 1493.0, 213.0],     # merged_721
             [-1311.0, 2916.0, 253.0],     # axis_771
             [-1870.0, 2892.0, 253.0],     # axis_720
-            [X_PLANE, Y_PLANE, 253.0],    # TODO: the run from axis_720 to
-                                          # the middle is not surveyed. This
-                                          # closes the route in a straight
-                                          # line, which is almost certainly
-                                          # not the shape you want.
         ],
+        # INCOMPLETE: the run from axis_720 to the middle is not surveyed.
+        # Nothing is invented to close it — a straight line across 3,900 u
+        # of unsurveyed lane would have been the wrong shape AND would have
+        # made the length figure look authoritative. The far half is not
+        # generated for an incomplete route either, because the completion
+        # only works from a route that ends on the mirror point.
+        "complete": False,
     },
     {
         "lane": "6",
@@ -848,6 +850,16 @@ def complete_route(half):
     if len(half) < 2:
         raise ValueError("a half route needs at least 2 points")
 
+    # Only the centre maps to itself under a 180 degree rotation. A route
+    # that ends anywhere else generates a straight jump from its last point
+    # to that point's mirror — for a side lane that is thousands of units
+    # across the map. Refuse rather than emit it.
+    if not on_mirror_point(half[-1]):
+        raise ValueError(
+            "route ends at %s, not on the mirror point (%.2f, %.2f). "
+            "Either finish the survey or set \"complete\": False."
+            % (half[-1][:2], X_PLANE, Y_PLANE))
+
     far = [mirror_point(p) for p in reversed(half)]
     a, b = half[-1], far[0]
     same = all(abs(a[i] - b[i]) <= 1.0 for i in range(3))
@@ -861,7 +873,10 @@ def build_paths():
     out = []
     for spec in LANES:
         lane = spec["lane"]
-        full = complete_route(spec["half_route"])
+        if spec.get("complete", True):
+            full = complete_route(spec["half_route"])
+        else:
+            full = [list(p) for p in spec["half_route"]]
         for slot in SLOTS:
             route = offset_route(full, slot)
             out.append(make_path("lane%s_slot%d" % (lane, slot),
@@ -931,6 +946,10 @@ def route_length(route):
     return total
 
 
+INCOMPLETE = {spec["lane"] for spec in LANES
+              if not spec.get("complete", True)}
+
+
 def report_lengths(paths):
     """Lane lengths, and the distance to the mirror point.
 
@@ -955,6 +974,12 @@ def report_lengths(paths):
                 best, at = d, i
         first = route_length(route[:at + 1])
         second = total - first
+
+        lane = p["properties"].get("lanenum", "")
+        if lane in INCOMPLETE:
+            print("  %-16s %8.1f u (%6.1f m)   INCOMPLETE, not comparable"
+                  % (p["name"], total, total / UNITS_PER_M))
+            continue
 
         line = ("  %-16s %8.1f u (%6.1f m)   to midpoint %7.1f / %7.1f"
                 % (p["name"], total, total / UNITS_PER_M, first, second))
