@@ -21,18 +21,29 @@ name: path smoke
 # starts writing ids, and the "nothing is shared" simplification is gone
 # without anyone noticing.
 #
+# ALSO COVERS ENTITY IO (added 2026-08-23). The fixture now carries a
+# logic_auto and a logic_relay wired the way dl_example wires a shop:
+# OnMapSpawn triggers the relay, the relay Disables the shop's item trigger.
+# Two DmeConnectionData, asserted at emit AND after the round trip.
+#
+# WHY THIS DOES NOT BREAK THE NO-ID BET. A connection names its target by
+# STRING, not by element reference, so each DmeConnectionData is referenced
+# exactly once, by the entity that owns it. The zero-ids assertion below is
+# what proves that rather than assuming it.
+#
 # ALSO COVERS BRUSH ENTITIES (added 2026-08-22). The fixture carries one
 # trigger_item_shop whose volume is a CMapMesh INLINE in its children — the
 # shape read verbatim out of dl_example. So EXPECT_MAPMESH is 7, not 6: six
 # world boxes plus one brush volume. A brush mesh has no EditGameClassProps
 # and no DmePlugList of its own; the entity holding it does.
 #
-# CENSUS for the fixture — 6 boxes, 2 spawns, 1 shop + volume, 3 paths,
-# 10 path nodes:
+# CENSUS for the fixture — 6 boxes, 2 spawns, 1 shop + volume, 1 relay,
+# 1 logic_auto, 2 connections, 3 paths, 10 path nodes:
 #
 #   per box:  1 CMapMesh, 1 CDmePolygonMesh, 4 CDmePolygonMeshDataArray,
 #             11 CDmePolygonMeshDataStream, 1 CDmePolygonMeshSubdivisionData
 #   per ent:  1 CMapEntity, 1 EditGameClassProps, 1 DmePlugList
+#   per wire: 1 DmeConnectionData (no classprops, no pluglist of its own)
 #   per path: 1 CMapPath, 1 EditGameClassProps, 1 DmePlugList
 #   per node: 1 CMapPathNode, 1 EditGameClassProps, 1 DmePlugList
 #   world:    1 EditGameClassProps, 1 DmePlugList
@@ -50,15 +61,21 @@ env:
   EXPECT_HEADER: 'binary 9 format vmap 40'
   EXPECT_MAPMESH: 7
   EXPECT_POLYMESH: 7
-  EXPECT_ENTITY: 3
+  EXPECT_ENTITY: 5
   EXPECT_PATH: 3
   EXPECT_PATHNODE: 10
   EXPECT_DATAARRAY: 28
   EXPECT_STREAM: 77
   EXPECT_SUBDIV: 7
-  EXPECT_CLASSPROPS: 17
-  EXPECT_PLUGLIST: 17
-  EXPECT_ELEMENTS: 182
+  EXPECT_CLASSPROPS: 19
+  EXPECT_PLUGLIST: 19
+  EXPECT_ELEMENTS: 190
+  # ENTITY IO, added 2026-08-23. Two connections in the fixture: a logic_auto
+  # that fires OnMapSpawn into a logic_relay, and the relay that Disables the
+  # shop. That is the smallest slice of dl_example's real shop wiring that
+  # still exercises the whole path, and it is the ONLY gate that covers
+  # connections at all.
+  EXPECT_CONN: 2
 
 jobs:
   paths:
@@ -119,6 +136,7 @@ jobs:
           chk CDmePolygonMeshSubdivisionData  "$EXPECT_SUBDIV"
           chk EditGameClassProps              "$EXPECT_CLASSPROPS"
           chk DmePlugList                     "$EXPECT_PLUGLIST"
+          chk DmeConnectionData               "$EXPECT_CONN"
           TOT=$(awk -F= '/^elements=/ {print $2}' out/emit.txt | head -1)
           TOT=${TOT:-0}
           if [ "$TOT" != "$EXPECT_ELEMENTS" ]; then
@@ -253,9 +271,13 @@ jobs:
             else echo "ok $1 = $GOT"; fi
           }
           chk CMapMesh     "$EXPECT_MAPMESH"
-          chk CMapEntity   "$EXPECT_ENTITY"
-          chk CMapPath     "$EXPECT_PATH"
-          chk CMapPathNode "$EXPECT_PATHNODE"
+          chk CMapEntity        "$EXPECT_ENTITY"
+          chk CMapPath          "$EXPECT_PATH"
+          chk CMapPathNode      "$EXPECT_PATHNODE"
+          # Survives the round trip through dmxconvert, which is the real
+          # question: an inline element type Valve's converter did not
+          # recognise would vanish here rather than at emit.
+          chk DmeConnectionData "$EXPECT_CONN"
           [ "$FAIL" -eq 0 ] || exit 1
 
       - name: Verify — does the map still MEAN the plan

@@ -115,6 +115,56 @@ public sealed class MapEntity
     /// </summary>
     [JsonPropertyName("mesh")]
     public MapBox? Mesh { get; set; }
+
+    /// <summary>
+    /// Entity IO. A shop is enabled and disabled by relays rather than
+    /// directly, so most wiring lives on logic_relay, logic_auto and
+    /// logic_auto_citadel entities rather than on the thing being driven.
+    /// Read out of dl_example.vmap 2026-08-23.
+    ///
+    /// Optional and empty for nearly every entity, so plans written before
+    /// this field existed still parse unchanged.
+    /// </summary>
+    [JsonPropertyName("connections")]
+    public List<MapConnection> Connections { get; set; } = new();
+}
+
+/// <summary>
+/// One output-to-input wire, as it appears in a plan.
+///
+/// TARGETNAME IS A STRING, and that is the whole reason connections are cheap
+/// here: nothing is referenced, so nothing needs an id, and a mirrored twin
+/// only needs its target string prefixed the same way every other name is.
+///
+/// Every field has the value observed in all 89 of dl_example's connections
+/// as its default, so a plan usually only sets OutputName, TargetName and
+/// InputName.
+/// </summary>
+public sealed class MapConnection
+{
+    [JsonPropertyName("outputName")]
+    public string OutputName { get; set; } = "OnTrigger";
+
+    /// <summary>7 in all 89 observed, across six owner classnames.</summary>
+    [JsonPropertyName("targetType")]
+    public int TargetType { get; set; } = 7;
+
+    [JsonPropertyName("targetName")]
+    public string TargetName { get; set; } = "";
+
+    [JsonPropertyName("inputName")]
+    public string InputName { get; set; } = "Enable";
+
+    /// <summary>Empty in all 89, but always present.</summary>
+    [JsonPropertyName("overrideParam")]
+    public string OverrideParam { get; set; } = "";
+
+    [JsonPropertyName("delay")]
+    public double Delay { get; set; } = 0;
+
+    /// <summary>-1 is unlimited, and is the value in all 89.</summary>
+    [JsonPropertyName("timesToFire")]
+    public int TimesToFire { get; set; } = -1;
 }
 
 /// <summary>

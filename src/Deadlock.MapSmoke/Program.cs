@@ -97,7 +97,13 @@ if (mode == "emit")
         Mesh = e.Mesh is null ? null : new BoxSpec {
             Origin = e.Mesh.Origin, Extents = e.Mesh.Extents,
             Angles = e.Mesh.Angles, Material = e.Mesh.Material
-        }
+        },
+        Connections = e.Connections.Select(c => new ConnectionSpec {
+            OutputName = c.OutputName, TargetType = c.TargetType,
+            TargetName = c.TargetName, InputName = c.InputName,
+            OverrideParam = c.OverrideParam, Delay = c.Delay,
+            TimesToFire = c.TimesToFire
+        }).ToList()
     }).ToList();
     var paths = plan.Paths.Select(p => new PathSpec {
         ClassName = p.ClassName, Origin = p.Origin, Angles = p.Angles,

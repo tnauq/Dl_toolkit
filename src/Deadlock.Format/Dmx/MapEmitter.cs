@@ -28,6 +28,48 @@ public sealed class EntitySpec
     /// CMapPath's nodes. Null for a point entity.
     /// </summary>
     public BoxSpec? Mesh;
+
+    /// <summary>
+    /// Entity IO. Emitted as DmeConnectionData elements INLINE in
+    /// connectionsData, the same no-id pattern as an inline mesh or a path
+    /// node. Empty for nearly every entity.
+    /// </summary>
+    public List<ConnectionSpec> Connections = new();
+}
+
+/// <summary>
+/// One output-to-input wire. Read verbatim out of dl_example.vmap's 89
+/// DmeConnectionData, 2026-08-23: ALL 89 carry exactly these seven
+/// attributes, in this order, with these types. No optional attribute and no
+/// second shape exists in the fixture.
+///
+/// TARGETTYPE IS 7 IN ALL 89, across six different owner classnames
+/// (logic_relay, citadel_final_objective_proxy, destroyable_building,
+/// info_super_trooper_spawn, logic_auto, logic_auto_citadel). It is exposed
+/// as a field rather than hardcoded because it is plainly an enum, but 7 is
+/// the only value this project has ever seen and the default is therefore
+/// evidence, not a guess.
+///
+/// OVERRIDEPARAM was absent from every note in this repo and is present in
+/// all 89. Writing this element from the notes alone would have produced six
+/// attributes where the fixture has seven.
+/// </summary>
+public sealed class ConnectionSpec
+{
+    /// <summary>The output that fires, e.g. OnTrigger, OnDestroyed.</summary>
+    public string OutputName = "OnTrigger";
+    /// <summary>7 in all 89 observed. See the class note.</summary>
+    public int TargetType = 7;
+    /// <summary>targetname of the entity being driven.</summary>
+    public string TargetName = "";
+    /// <summary>The input fired on it, e.g. Enable, Disable, Kill.</summary>
+    public string InputName = "Enable";
+    /// <summary>Empty in every observed connection, but always present.</summary>
+    public string OverrideParam = "";
+    /// <summary>Seconds. 0 in most, 0.1 on skin sets, 15 on game start.</summary>
+    public double Delay = 0;
+    /// <summary>-1 means unlimited, and is the value in all 89.</summary>
+    public int TimesToFire = -1;
 }
 
 /// <summary>
@@ -87,8 +129,13 @@ public sealed class PathSpec
 /// where an element is referenced MORE THAN ONCE (measured: 767 ids for 768
 /// multiply-referenced elements in dl_example.vmap). Everything this emitter
 /// produces is referenced exactly once, so the document needs no ids at all.
-/// Adding groups, selection sets, paths or entity connections would break
-/// that property and reintroduce id generation. Weigh it before extending.
+/// Groups and selection sets would break that property and reintroduce id
+/// generation. Paths did NOT, because their nodes are inline; nor do entity
+/// CONNECTIONS, because a DmeConnectionData names its target by STRING
+/// rather than by element reference, so it is referenced exactly once by the
+/// entity that owns it. Both were open questions in this note and both are
+/// now settled by measurement rather than argument: path-smoke asserts zero
+/// ids on a plan carrying paths, and now on one carrying connections too.
 ///
 /// Structural values (editorbuild, editorversion, the empty CMapVariableSet,
 /// the CMapWorld defaults) are copied from the fixture, not invented.
@@ -266,6 +313,24 @@ public static class MapEmitter
         return e;
     }
 
+    /// <summary>
+    /// A DmeConnectionData. Attribute names, ORDER and types are copied from
+    /// dl_example.vmap, read 2026-08-23, not inferred. Order matters only for
+    /// diffing against the fixture, but costs nothing to preserve.
+    /// </summary>
+    private static DmxElement Connection(ConnectionSpec c)
+    {
+        var e = new DmxElement("DmeConnectionData");
+        e.Set("outputName", Str(c.OutputName));
+        e.Set("targetType", Int(c.TargetType));
+        e.Set("targetName", Str(c.TargetName));
+        e.Set("inputName", Str(c.InputName));
+        e.Set("overrideParam", Str(c.OverrideParam));
+        e.Set("delay", Flt(c.Delay));
+        e.Set("timesToFire", Int(c.TimesToFire));
+        return e;
+    }
+
     private static DmxElement MapEntity(EntitySpec spec, ref int nodeId)
     {
         var e = new DmxElement("CMapEntity");
@@ -287,7 +352,22 @@ public static class MapEmitter
         e.Set("variableTargetKeys", EmptyArray("string_array"));
         e.Set("variableNames", EmptyArray("string_array"));
         e.Set("relayPlugData", DmxValue.OfInline("DmePlugList", PlugList()));
-        e.Set("connectionsData", EmptyArray("element_array"));
+
+        // Connections are INLINE, like the mesh and like a path's nodes, so
+        // they add no ids. A connection names its target by STRING, not by
+        // element reference, which is why wiring the map does not break the
+        // no-GUID property.
+        if (spec.Connections.Count > 0)
+        {
+            var conns = new List<DmxElement>();
+            foreach (var c in spec.Connections) conns.Add(Connection(c));
+            e.Set("connectionsData", InlineArray(conns));
+        }
+        else
+        {
+            e.Set("connectionsData", EmptyArray("element_array"));
+        }
+
         e.Set("entity_properties",
             DmxValue.OfInline("EditGameClassProps", ClassProps(spec.ClassName, spec.Properties)));
         e.Set("hitNormal", V3(new double[] { 0, 0, 1 }));
