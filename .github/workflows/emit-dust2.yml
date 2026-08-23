@@ -20,16 +20,38 @@ name: emit dust2
 #      whose content path is still UNCONFIRMED against the Deadlock tree
 #
 # CENSUS, derived from the emitter's structure and stated BEFORE the run.
-# Per box: 1 CMapMesh, 1 CDmePolygonMesh, 4 CDmePolygonMeshDataArray,
+# Per MESH: 1 CMapMesh, 1 CDmePolygonMesh, 4 CDmePolygonMeshDataArray,
 # 11 CDmePolygonMeshDataStream, 1 CDmePolygonMeshSubdivisionData = 18.
-# 4179 * 18 = 75,222. Then batch13's gameplay data: 8 CMapEntity, 6 CMapPath
-# and 24 CMapPathNode, each carrying 1 EditGameClassProps and 1 DmePlugList,
-# so 38 nodes + 76 = 114, plus the world's own classprops and pluglist, plus
-# 6 singletons: 75,222 + 114 + 2 + 6 = 75,344.
 #
-# UPDATED 2026-08-22 for batch13. Every number above is ARITHMETIC, not a
-# measurement — the previous run's 75,236 was measured, this is not. If the
-# census step fails, check the arithmetic before suspecting the emitter.
+# THERE ARE TWO SOURCES OF MESHES NOW, which is what changed. 4,179 boxes,
+# plus 27 BRUSH ENTITIES that each carry an inline child mesh: shops,
+# shields, regen, urn returns, ropes, catapults, pushes, zap and boost
+# volumes. A brush entity is a mesh AND a node, so it is counted in both
+# places and neither count alone is the whole story.
+#
+#   meshes      4179 + 27          = 4206, at 18 each = 75,708
+#   nodes       61 entities + 15 paths + 236 path nodes = 312
+#   node props  312 x (EditGameClassProps + DmePlugList) = 624
+#   world       its own classprops and pluglist         = 2
+#   singletons                                          = 6
+#   TOTAL       75,708 + 312 + 624 + 2 + 6              = 76,652
+#
+# UPDATED 2026-08-23 for batch13 with the real survey coordinates. The
+# previous numbers (8 entities, 6 paths, 24 nodes) predate the survey and
+# WOULD have failed this run; the failure would have been the census doing
+# its job, not the emitter breaking.
+#
+# EVERY NUMBER ABOVE IS ARITHMETIC, not a measurement. Two assumptions are
+# load-bearing and neither has been checked at this size:
+#
+#   1. an entity's inline mesh costs the same 18 elements as a box, i.e. it
+#      gets its own subdivision data and full stream set
+#   2. a mesh carries NO classprops and NO pluglist, which is why the old
+#      count of 39 classprops was 38 nodes plus the world and not 4,217
+#
+# If the census fails by a multiple of 27, assumption 1 is wrong. If it fails
+# by a multiple of 4,206, assumption 2 is. Check the arithmetic before
+# suspecting the emitter.
 #
 # THE COMBINATION THIS RUN IS FOR. path-smoke proves paths at 6 boxes;
 # the last emit-dust2 proved 4,179 boxes with no paths. Nothing has yet
@@ -47,18 +69,20 @@ env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
   EXPECT_BOXES: 4179
-  EXPECT_ENTS: 8
-  EXPECT_MAPMESH: 4179
-  EXPECT_POLYMESH: 4179
-  EXPECT_ENTITY: 8
-  EXPECT_PATH: 6
-  EXPECT_PATHNODE: 24
-  EXPECT_DATAARRAY: 16716
-  EXPECT_STREAM: 45969
-  EXPECT_SUBDIV: 4179
-  EXPECT_CLASSPROPS: 39
-  EXPECT_PLUGLIST: 39
-  EXPECT_ELEMENTS: 75344
+  EXPECT_ENTS: 61
+  # 4179 boxes + 27 brush entities, each carrying an inline child mesh.
+  EXPECT_MAPMESH: 4206
+  EXPECT_POLYMESH: 4206
+  EXPECT_ENTITY: 61
+  EXPECT_PATH: 15
+  EXPECT_PATHNODE: 236
+  EXPECT_DATAARRAY: 16824      # 4 x 4206
+  EXPECT_STREAM: 46266         # 11 x 4206
+  EXPECT_SUBDIV: 4206
+  # 312 nodes plus the world's own.
+  EXPECT_CLASSPROPS: 313
+  EXPECT_PLUGLIST: 313
+  EXPECT_ELEMENTS: 76652
 
 jobs:
   emit:

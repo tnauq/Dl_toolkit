@@ -20,12 +20,20 @@ name: batch
 # move by accident, so it is asserted against EXPECT_BOXES. A script that
 # legitimately changes the count needs that number changed in the same drop,
 # which is the point: the count changes deliberately or not at all.
+#
+# batch14 EDITS boxes without adding or removing any: it lowers one wall,
+# recolours four, and extends one to close a gap. So EXPECT_BOXES stays at
+# 4179 and the tripwire still means something. batch14 asserts the same count
+# internally as well, which is belt and braces on purpose: an edit-in-place
+# script is the easy way to lose a box by accident.
+#
+# batch13 ran green 2026-08-23 with the real survey coordinates.
 
 on: workflow_dispatch
 
 env:
   # Edit this line to run a different script. Repo root, one script per run.
-  SCRIPT: batch13.py
+  SCRIPT: batch14.py
   PLAN: docs/plans/dust2_full.json
   EXPECT_BOXES: 4179
   COMMIT_PLAN: "true"
