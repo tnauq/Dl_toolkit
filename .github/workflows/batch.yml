@@ -1,10 +1,27 @@
 name: batch
 
-# Runs ONE plan-editing script against docs/plans/dust2_full.json and commits
-# the result. Generic on purpose: for the next one, edit SCRIPT below and
-# re-run. Same pattern as dump-files.yml, and for the same reason — the mobile
-# Actions view renders the Run button but NOT workflow_dispatch input fields,
-# so a dispatch input is unreachable from a phone.
+# Runs the plan-editing scripts against docs/plans/dust2_full.json IN ORDER
+# and commits the result. Same pattern as dump-files.yml, and for the same
+# reason: the mobile Actions view renders the Run button but NOT
+# workflow_dispatch input fields, so a dispatch input is unreachable from a
+# phone.
+#
+# A LIST, NOT ONE SCRIPT (changed 2026-08-23). It used to run a single script
+# named in SCRIPT, which meant every drop had to edit this file to point at
+# the next one, from a phone, before anything could run. SCRIPTS is now a
+# space-separated list run left to right in one job, so the normal case is
+# pressing Run and changing nothing.
+#
+# ORDER MATTERS AND IS NOT ALPHABETICAL. batch13 rebuilds the entity set from
+# scratch, deleting everything it previously added; batch15 then reads those
+# entities and attaches wiring to them. Running 15 before 13 leaves the
+# relays pointing at entities that are about to be deleted and recreated.
+# Any script that edits BOXES (batch14) is independent of both and can sit
+# anywhere in the list.
+#
+# EACH SCRIPT MUST BE RERUNNABLE, because this list re-runs all of them every
+# time. Every batch script here already is: they strip what they previously
+# added, by name or by mark, and rebuild.
 #
 # Nothing in the repo ran the batch scripts before this. batch8 through
 # batch12 were applied some way that left no trace here, so this is the first
@@ -34,8 +51,8 @@ name: batch
 on: workflow_dispatch
 
 env:
-  # Edit this line to run a different script. Repo root, one script per run.
-  SCRIPT: batch15.py
+  # Space-separated, run in this order. Repo root.
+  SCRIPTS: batch13.py batch14.py batch15.py
   PLAN: docs/plans/dust2_full.json
   EXPECT_BOXES: 4179
   COMMIT_PLAN: "true"
@@ -58,9 +75,11 @@ jobs:
       - name: Before
         run: |
           set -euo pipefail
-          [ -f "$SCRIPT" ] || { echo "::error::no such script: $SCRIPT"; exit 1; }
+          for S in $SCRIPTS; do
+            [ -f "$S" ] || { echo "::error::no such script: $S"; exit 1; }
+          done
           [ -f "$PLAN" ] || { echo "::error::no such plan: $PLAN"; exit 1; }
-          ls -l "$SCRIPT" "$PLAN"
+          ls -l $SCRIPTS "$PLAN"
           python3 - <<'PY' | tee before.txt
           import json, os
           p = json.load(open(os.environ["PLAN"]))
@@ -70,14 +89,21 @@ jobs:
           print("pathnodes", sum(len(q.get("nodes", [])) for q in p.get("paths", [])))
           PY
 
-      - name: Run the script
+      - name: Run the scripts, in order
         run: |
           set -uo pipefail
-          RC=0
-          timeout 600 python3 "$SCRIPT" "$PLAN" > run.log 2>&1 || RC=$?
-          cat run.log
-          echo "exit: $RC" | tee -a run.log
-          [ "$RC" -eq 0 ] || exit 1
+          : > run.log
+          for S in $SCRIPTS; do
+            echo "=== $S ===" | tee -a run.log
+            RC=0
+            timeout 600 python3 "$S" "$PLAN" >> run.log 2>&1 || RC=$?
+            tail -80 run.log
+            echo "exit: $RC" | tee -a run.log
+            # STOP AT THE FIRST FAILURE. The plan is edited in place, so
+            # carrying on after a script died would run the next one against a
+            # half-written file and the commit at the end would preserve it.
+            [ "$RC" -eq 0 ] || { echo "::error::$S failed"; exit 1; }
+          done
 
       - name: After, and assert the box count held
         run: |
@@ -118,5 +144,5 @@ jobs:
           git config user.email "batch@users.noreply.github.com"
           git add -A "$PLAN"
           git diff --cached --quiet && echo "no change" && exit 0
-          git commit -m "batch: $SCRIPT"
+          git commit -m "batch: $SCRIPTS"
           git push
