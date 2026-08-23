@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using Deadlock.Contracts;
@@ -207,7 +208,63 @@ if (mode == "verify")
             if (!NearV(p.Mesh.Extents, m.Mesh.Extents))
             { Console.Error.WriteLine($"{p.ClassName}[{i}]: volume extents {V(p.Mesh.Extents)} -> {V(m.Mesh.Extents)}"); bad++; }
         }
-        if (bad == 0 || true) Console.WriteLine($"  ok  {m.ClassName} {V(m.Origin)}");
+        // ENTITY IO. The census already proves a DmeConnectionData survived
+        // the trip; this proves it still says the same thing. A wire whose
+        // targetName came back mangled is the failure mode that looks green
+        // and does nothing in game, and no other check would catch it.
+        //
+        // Compared as STRINGS, including delay and timesToFire, because the
+        // question is whether the text survived. Parsing them to numbers here
+        // could hide a difference by rounding it away.
+        if (p.Connections.Count != m.Connections.Count)
+        {
+            Console.Error.WriteLine($"{p.ClassName}[{i}]: connection count " +
+                $"{p.Connections.Count} -> {m.Connections.Count}");
+            bad++;
+        }
+        else
+        {
+            for (var c = 0; c < p.Connections.Count; c++)
+            {
+                var pc = p.Connections[c]; var mc = m.Connections[c];
+                void Cmp(string field, string want, string got)
+                {
+                    if (string.Equals(want, got, StringComparison.Ordinal)) return;
+                    Console.Error.WriteLine(
+                        $"{p.ClassName}[{i}].connection[{c}]: {field} " +
+                        $"'{want}' -> '{got}'");
+                    bad++;
+                }
+                Cmp("outputName", pc.OutputName, mc.OutputName);
+                Cmp("targetName", pc.TargetName, mc.TargetName);
+                Cmp("inputName", pc.InputName, mc.InputName);
+                Cmp("overrideParam", pc.OverrideParam, mc.OverrideParam);
+                Cmp("targetType",
+                    pc.TargetType.ToString(CultureInfo.InvariantCulture),
+                    mc.TargetType);
+                Cmp("timesToFire",
+                    pc.TimesToFire.ToString(CultureInfo.InvariantCulture),
+                    mc.TimesToFire);
+                // Delay is the one field written as a float, so it is the one
+                // that can come back spelled differently while meaning the
+                // same thing (0 vs 0.0). Compared numerically for that reason
+                // alone, with everything else still compared as text.
+                var wantD = pc.Delay;
+                if (!double.TryParse(mc.Delay, NumberStyles.Float,
+                                     CultureInfo.InvariantCulture, out var gotD)
+                    || Math.Abs(wantD - gotD) > 1e-4)
+                {
+                    Console.Error.WriteLine(
+                        $"{p.ClassName}[{i}].connection[{c}]: delay " +
+                        $"'{wantD}' -> '{mc.Delay}'");
+                    bad++;
+                }
+            }
+        }
+
+        var wires = m.Connections.Count > 0
+            ? $" [{m.Connections.Count} wire(s)]" : "";
+        if (bad == 0 || true) Console.WriteLine($"  ok  {m.ClassName} {V(m.Origin)}{wires}");
     }
 
     // ------------------------------------------------------------ paths

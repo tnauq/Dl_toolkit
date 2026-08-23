@@ -26,6 +26,11 @@ name: path smoke
 # OnMapSpawn triggers the relay, the relay Disables the shop's item trigger.
 # Two DmeConnectionData, asserted at emit AND after the round trip.
 #
+# VERIFY NOW COMPARES CONNECTIONS (2026-08-23). Proven at emit and after the
+# round trip, the census says two DmeConnectionData exist; it does NOT say
+# their targetName strings are intact. verify compares every field of every
+# wire, as text, so a mangled target is caught here rather than in game.
+#
 # WHY THIS DOES NOT BREAK THE NO-ID BET. A connection names its target by
 # STRING, not by element reference, so each DmeConnectionData is referenced
 # exactly once, by the entity that owns it. The zero-ids assertion below is

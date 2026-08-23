@@ -40,6 +40,35 @@ public static class MapReader
 
         /// <summary>Child geometry of a brush entity, or null.</summary>
         public ReadBox? Mesh;
+
+        /// <summary>
+        /// Entity IO, read back so verify can compare it. Without this the
+        /// census proves a DmeConnectionData survived the round trip but not
+        /// that its targetName string did, and a mangled target is a wire
+        /// that looks green and does nothing in game.
+        /// </summary>
+        public List<ReadConnection> Connections = new();
+    }
+
+    /// <summary>
+    /// One DmeConnectionData as read back. Values stay as STRINGS, including
+    /// delay and timesToFire: this type exists to be compared against what
+    /// was written, and comparing the text avoids inventing a parse that
+    /// could mask a difference by rounding it away.
+    /// </summary>
+    public sealed class ReadConnection
+    {
+        public string OutputName = "";
+        public string TargetType = "";
+        public string TargetName = "";
+        public string InputName = "";
+        public string OverrideParam = "";
+        public string Delay = "";
+        public string TimesToFire = "";
+
+        public override string ToString()
+            => $"{OutputName} -> {TargetName}.{InputName}"
+             + $" (type {TargetType}, delay {Delay}, times {TimesToFire})";
     }
 
     public sealed class ReadPathNode
@@ -203,6 +232,29 @@ public static class MapReader
                             e.Mesh = ReadMesh(m);
                             break;
                         }
+                    }
+                }
+
+                // Connections are INLINE in connectionsData, so they come
+                // back as child elements rather than as references. Same
+                // shape as the mesh above.
+                var conns = el.Get("connectionsData");
+                if (conns?.Items is not null)
+                {
+                    foreach (var it in conns.Items)
+                    {
+                        if (it.Element is not { TypeName: "DmeConnectionData" } c)
+                            continue;
+                        e.Connections.Add(new ReadConnection
+                        {
+                            OutputName = c.GetScalar("outputName") ?? "",
+                            TargetType = c.GetScalar("targetType") ?? "",
+                            TargetName = c.GetScalar("targetName") ?? "",
+                            InputName = c.GetScalar("inputName") ?? "",
+                            OverrideParam = c.GetScalar("overrideParam") ?? "",
+                            Delay = c.GetScalar("delay") ?? "",
+                            TimesToFire = c.GetScalar("timesToFire") ?? "",
+                        });
                     }
                 }
                 map.Entities.Add(e);
