@@ -1263,7 +1263,8 @@ def report_lengths(paths):
     unfair in a way no amount of geometry symmetry fixes.
     """
     print("\nlane lengths")
-    meet = []
+    lengths = []
+    approx = 0
     for p in paths:
         if p.get("classname") != "lane_marker_path":
             continue
@@ -1290,31 +1291,51 @@ def report_lengths(paths):
         if TROOPER_SPEED > 0:
             line += "   %5.1f s" % (first / TROOPER_SPEED)
         print(line)
-        meet.append((p["name"], first / TROOPER_SPEED if TROOPER_SPEED else 0.0))
+        lengths.append(total)
+        # The midpoint split is printed for interest only. It is taken at
+        # whichever node falls nearest the centre, so on a lane that passes
+        # the middle without stopping near it the two halves are a sampling
+        # artefact rather than a measurement. Not a defect, and no longer
+        # worth a warning per slot.
         if best is not None and best > 500.0:
-            print("    NOTE nearest node is %.0f u from the mirror point; the"
-                  % best)
-            print("    split above is approximate. Add a node near the middle.")
+            approx += 1
+    if approx:
+        print("  (%d slot(s) have no node within 500 u of the centre, so their"
+              % approx)
+        print("   midpoint split above is approximate. Lengths are exact.)")
     if TROOPER_SPEED <= 0:
         print("  (no trooper speed known, so no times, see TROOPER_SPEED)")
         return
 
-    # LANE PARITY. The times above are only interesting relative to each
-    # other: if one lane's wave reaches the middle first, that lane is
-    # contested earlier every single wave, for the whole match. A spread of a
-    # second or two is noise; a spread of five seconds is a design fault the
-    # geometry cannot fix later.
-    if len(meet) > 1:
-        times = [t for _, t in meet]
-        lo, hi = min(times), max(times)
-        print("\nlane parity, base to midpoint at %.0f u/s" % TROOPER_SPEED)
-        print("  fastest %.1f s, slowest %.1f s, spread %.1f s"
-              % (lo, hi, hi - lo))
-        if hi - lo > 3.0:
-            print("  WARNING spread over 3 s. One lane is contested first,")
-            print("  every wave, all match. Even the routes before polishing.")
+    # LANE PARITY, measured on TOTAL LENGTH rather than time to the middle.
+    #
+    # An earlier version of this report compared base-to-midpoint times and
+    # warned when they differed by more than three seconds. That check is
+    # gone, on the user's call 2026-08-23, and the reasoning is worth keeping:
+    # waves do not have to meet at the geometric centre, and on a rotationally
+    # symmetric map they will meet somewhere sensible regardless, because both
+    # halves of a lane are the same polyline. What actually has to match is
+    # the LENGTH of one lane against another, since that is what decides
+    # whether all three lanes are contested on a similar cadence.
+    #
+    # The old check was also measuring the wrong thing. The split is taken at
+    # whichever node happens to fall nearest the middle, and on the side lanes
+    # that node is 1,800 to 2,000 u away, so it reported a 7 s spread on
+    # routes whose totals differ by 2%. It was reporting sampling error.
+    if len(lengths) > 1:
+        lo, hi = min(lengths), max(lengths)
+        print("\nlane parity, by total route length")
+        print("  shortest %8.1f u (%.1f m)" % (lo, lo / UNITS_PER_M))
+        print("  longest  %8.1f u (%.1f m)" % (hi, hi / UNITS_PER_M))
+        spread = (hi - lo) / lo * 100.0
+        print("  spread   %8.1f u (%.1f%%)" % (hi - lo, spread))
+        if TROOPER_SPEED > 0:
+            print("  at %.0f u/s that is %.1f s between the shortest and"
+                  " longest lane" % (TROOPER_SPEED, (hi - lo) / TROOPER_SPEED))
+        if spread > 5.0:
+            print("  OVER 5%%. One lane is meaningfully longer than another.")
         else:
-            print("  within 3 s, lanes are comparable.")
+            print("  within 5%, lanes are comparable.")
 
 
 LEGACY_SPAWN_CLASSES = ("info_team_spawn",)

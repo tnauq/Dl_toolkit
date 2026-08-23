@@ -136,7 +136,14 @@ env:
   # excerpt budget goes to the entities that make it up. logic_auto_citadel
   # is the one that starts shops 15 seconds into the game and is the only
   # citadel-specific member.
-  CAPTURE_CLASSES: 'logic_relay,logic_auto,logic_auto_citadel,trigger_item_shop,trigger_item_shop_safe_zone,info_super_trooper_spawn,destroyable_building'
+  #
+  # 2026-08-23, round three. The IO questions are closed and wired. The last
+  # unverified thing in the drop is the KEY SET of the objective classes:
+  # batch13 writes npc_boss_tier3 with the keys read off npc_boss_tier2,
+  # because tier3's own were never tabulated. A wrong or missing keyvalue is
+  # ignored silently by the game, so it surfaces as an objective that does
+  # nothing rather than as an error.
+  CAPTURE_CLASSES: 'npc_boss_tier3,npc_boss_tier2,npc_barrack_boss,destroyable_building,info_super_trooper_spawn'
   # Property TUPLES to tabulate, as classname:key,key;classname:key
   #
   # THE QUESTION: is a lane_marker_path SHARED between the teams or one per
@@ -202,7 +209,14 @@ env:
   # DmeConnectionData has no classname, so it cannot be tabulated this way and
   # the connection pass below does it instead. Left pointed at the shop so the
   # table still says which shops carry a teamnumber.
-  TUPLE_SPECS: 'logic_relay:targetname,spawnflags,StartDisabled;logic_auto:targetname,spawnflags;logic_auto_citadel:targetname,spawnflags;trigger_item_shop:targetname,teamnumber,spawnflags;destroyable_building:targetname,teamnumber,subclass_name'
+  #
+  # Every key batch13 currently writes on an objective, so a missing column
+  # says "this class does not take that key" and a (missing) cell in an
+  # otherwise-full column says the fixture leaves it empty. The 'Keys per
+  # classname' section further down is the complement: it lists keys that
+  # exist in the fixture and are NOT written here, which is the failure
+  # direction nothing else would catch.
+  TUPLE_SPECS: 'npc_boss_tier3:targetname,teamnumber,lanenum,BossName,CoverGroupID,subclass_name;npc_boss_tier2:targetname,teamnumber,lanenum,BossName,CoverGroupID,subclass_name;npc_barrack_boss:targetname,teamnumber,lanenum,BackdoorProtectionTrigger,LaneSide,subclass_name;destroyable_building:targetname,teamnumber,subclass_name'
 
   # Excerpts per kind, and lines per excerpt. A brush entity's subtree
   # contains an entire CDmePolygonMesh if the mesh is inline, which is
