@@ -79912,20 +79912,23 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_guardian_lane3",
+    "targetname": "",
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "3",
-    "BossName": "amber_guardian_lane3",
+    "BackdoorProtectionTrigger": "",
+    "BossName": "rebels_t3_boss_orange",
+    "subclass_name": "npc_boss_tier3",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier3"
+    "dying_cover_id": "",
+    "vulnerable_cover_id": ""
    },
    "_batch13": true,
    "connections": [
     {
      "outputName": "OnBossKilled",
      "targetType": 7,
-     "targetName": "amber_lane3_shop_kill_relay",
+     "targetName": "shop_rebels_t1_orange_shop_kill_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -79948,20 +79951,23 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_guardian_lane3",
+    "targetname": "",
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "3",
-    "BossName": "m_amber_guardian_lane3",
+    "BackdoorProtectionTrigger": "",
+    "BossName": "combine_t3_boss_orange",
+    "subclass_name": "alt_npc_boss_tier3",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier3"
+    "dying_cover_id": "",
+    "vulnerable_cover_id": ""
    },
    "_batch13": true,
    "connections": [
     {
      "outputName": "OnBossKilled",
      "targetType": 7,
-     "targetName": "m_amber_lane3_shop_kill_relay",
+     "targetName": "shop_combine_t1_orange_shop_kill_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -79984,20 +79990,23 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_guardian_lane1",
+    "targetname": "",
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "1",
-    "BossName": "amber_guardian_lane1",
+    "BackdoorProtectionTrigger": "",
+    "BossName": "rebels_t3_boss_yellow",
+    "subclass_name": "npc_boss_tier3",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier3"
+    "dying_cover_id": "",
+    "vulnerable_cover_id": ""
    },
    "_batch13": true,
    "connections": [
     {
      "outputName": "OnBossKilled",
      "targetType": 7,
-     "targetName": "amber_lane1_shop_kill_relay",
+     "targetName": "shop_rebels_t1_yellow_shop_kill_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -80020,20 +80029,23 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_guardian_lane1",
+    "targetname": "",
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "1",
-    "BossName": "m_amber_guardian_lane1",
+    "BackdoorProtectionTrigger": "",
+    "BossName": "combine_t3_boss_yellow",
+    "subclass_name": "alt_npc_boss_tier3",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier3"
+    "dying_cover_id": "",
+    "vulnerable_cover_id": ""
    },
    "_batch13": true,
    "connections": [
     {
      "outputName": "OnBossKilled",
      "targetType": 7,
-     "targetName": "m_amber_lane1_shop_kill_relay",
+     "targetName": "shop_combine_t1_yellow_shop_kill_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -80056,20 +80068,23 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_guardian_lane6",
+    "targetname": "",
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "6",
-    "BossName": "amber_guardian_lane6",
+    "BackdoorProtectionTrigger": "",
+    "BossName": "rebels_t3_boss_purple",
+    "subclass_name": "npc_boss_tier3",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier3"
+    "dying_cover_id": "",
+    "vulnerable_cover_id": ""
    },
    "_batch13": true,
    "connections": [
     {
      "outputName": "OnBossKilled",
      "targetType": 7,
-     "targetName": "amber_lane6_shop_kill_relay",
+     "targetName": "shop_rebels_t1_purple_shop_kill_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -80092,20 +80107,23 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_guardian_lane6",
+    "targetname": "",
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "6",
-    "BossName": "m_amber_guardian_lane6",
+    "BackdoorProtectionTrigger": "",
+    "BossName": "combine_t3_boss_purple",
+    "subclass_name": "alt_npc_boss_tier3",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier3"
+    "dying_cover_id": "",
+    "vulnerable_cover_id": ""
    },
    "_batch13": true,
    "connections": [
     {
      "outputName": "OnBossKilled",
      "targetType": 7,
-     "targetName": "m_amber_lane6_shop_kill_relay",
+     "targetName": "shop_combine_t1_purple_shop_kill_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -80128,13 +80146,13 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_walker_lane3",
+    "targetname": "rebels_t2_boss_orange",
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "3",
-    "BossName": "amber_walker_lane3",
+    "BossName": "rebels_t2_boss_orange",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier2"
+    "subclass_name": "npc_boss_tier2_weak"
    },
    "_batch13": true
   },
@@ -80152,13 +80170,13 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_walker_lane3",
+    "targetname": "combine_t2_boss_orange",
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "3",
-    "BossName": "m_amber_walker_lane3",
+    "BossName": "combine_t2_boss_orange",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier2"
+    "subclass_name": "alt_npc_boss_tier2_weak"
    },
    "_batch13": true
   },
@@ -80176,11 +80194,11 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_walker_lane1",
+    "targetname": "rebels_t2_boss_yellow",
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "1",
-    "BossName": "amber_walker_lane1",
+    "BossName": "rebels_t2_boss_yellow",
     "CoverGroupID": "",
     "subclass_name": "npc_boss_tier2"
    },
@@ -80200,13 +80218,13 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_walker_lane1",
+    "targetname": "combine_t2_boss_yellow",
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "1",
-    "BossName": "m_amber_walker_lane1",
+    "BossName": "combine_t2_boss_yellow",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier2"
+    "subclass_name": "alt_npc_boss_tier2"
    },
    "_batch13": true
   },
@@ -80224,13 +80242,13 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_walker_lane6",
+    "targetname": "rebels_t2_boss_purple",
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "6",
-    "BossName": "amber_walker_lane6",
+    "BossName": "rebels_t2_boss_purple",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier2"
+    "subclass_name": "npc_boss_tier2_weak"
    },
    "_batch13": true
   },
@@ -80248,13 +80266,13 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_walker_lane6",
+    "targetname": "combine_t2_boss_purple",
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "6",
-    "BossName": "m_amber_walker_lane6",
+    "BossName": "combine_t2_boss_purple",
     "CoverGroupID": "",
-    "subclass_name": "npc_boss_tier2"
+    "subclass_name": "alt_npc_boss_tier2_weak"
    },
    "_batch13": true
   },
@@ -80674,7 +80692,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_base_shop_item_trigger",
+    "targetname": "base_shop_rebels_item_trigger",
     "teamnumber": "2",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -80713,7 +80731,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_base_shop_item_trigger",
+    "targetname": "base_shop_combine_item_trigger",
     "teamnumber": "3",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -80752,7 +80770,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_idol_return",
+    "targetname": "rebels_idol_return",
     "teamnumber": "2",
     "spawnflags": "4097"
    },
@@ -80790,7 +80808,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_idol_return",
+    "targetname": "combine_idol_return",
     "teamnumber": "3",
     "spawnflags": "4097"
    },
@@ -80828,7 +80846,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_spawn_regen",
+    "targetname": "rebels_spawn_regen",
     "teamnumber": "2",
     "spawnflags": "4097"
    },
@@ -80866,7 +80884,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_spawn_regen",
+    "targetname": "combine_spawn_regen",
     "teamnumber": "3",
     "spawnflags": "4097"
    },
@@ -80976,7 +80994,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_zip_zap_lane1",
+    "targetname": "rebels_zip_zap_yellow",
     "teamnumber": "2",
     "spawnflags": "4097",
     "PercentMaxHealthDamage": "5",
@@ -81018,7 +81036,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_zip_zap_lane1",
+    "targetname": "combine_zip_zap_yellow",
     "teamnumber": "3",
     "spawnflags": "4097",
     "PercentMaxHealthDamage": "5",
@@ -81060,7 +81078,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_zip_boost_lane1",
+    "targetname": "rebels_zip_boost_yellow",
     "spawnflags": "4097"
    },
    "mesh": {
@@ -81097,7 +81115,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_zip_boost_lane1",
+    "targetname": "combine_zip_boost_yellow",
     "spawnflags": "4097"
    },
    "mesh": {
@@ -81134,7 +81152,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane3_shop_item_trigger",
+    "targetname": "shop_rebels_t1_orange_shop_item_trigger",
     "teamnumber": "2",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81173,7 +81191,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane3_shop_item_trigger",
+    "targetname": "shop_combine_t1_orange_shop_item_trigger",
     "teamnumber": "3",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81212,7 +81230,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane1_shop_item_trigger",
+    "targetname": "shop_rebels_t1_yellow_shop_item_trigger",
     "teamnumber": "2",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81251,7 +81269,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane1_shop_item_trigger",
+    "targetname": "shop_combine_t1_yellow_shop_item_trigger",
     "teamnumber": "3",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81290,7 +81308,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane6_shop_item_trigger",
+    "targetname": "shop_rebels_t1_purple_shop_item_trigger",
     "teamnumber": "2",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81329,7 +81347,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane6_shop_item_trigger",
+    "targetname": "shop_combine_t1_purple_shop_item_trigger",
     "teamnumber": "3",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81368,7 +81386,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_secret_shop_item_trigger",
+    "targetname": "secret_shop_rebels_item_trigger",
     "teamnumber": "2",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81407,7 +81425,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_secret_shop_item_trigger",
+    "targetname": "secret_shop_combine_item_trigger",
     "teamnumber": "3",
     "spawnflags": "4097",
     "AudioOffset": "-0.25 22 50"
@@ -81813,7 +81831,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane3_shop_enable_relay",
+    "targetname": "shop_rebels_t1_orange_shop_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -81821,7 +81839,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane3_shop_item_trigger",
+     "targetName": "shop_rebels_t1_orange_shop_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -81845,7 +81863,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane3_shop_disable_relay",
+    "targetname": "shop_rebels_t1_orange_shop_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -81853,7 +81871,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane3_shop_item_trigger",
+     "targetName": "shop_rebels_t1_orange_shop_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -81877,7 +81895,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane3_shop_kill_relay",
+    "targetname": "shop_rebels_t1_orange_shop_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -81885,7 +81903,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane3_shop_item_trigger",
+     "targetName": "shop_rebels_t1_orange_shop_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -81909,14 +81927,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane3_shop_logic_auto_disable",
+    "targetname": "shop_rebels_t1_orange_shop_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "amber_lane3_shop_disable_relay",
+     "targetName": "shop_rebels_t1_orange_shop_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -81940,14 +81958,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane3_shop_logic_auto_enable",
+    "targetname": "shop_rebels_t1_orange_shop_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "amber_lane3_shop_enable_relay",
+     "targetName": "shop_rebels_t1_orange_shop_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -81971,7 +81989,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane1_shop_enable_relay",
+    "targetname": "shop_rebels_t1_yellow_shop_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -81979,7 +81997,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane1_shop_item_trigger",
+     "targetName": "shop_rebels_t1_yellow_shop_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82003,7 +82021,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane1_shop_disable_relay",
+    "targetname": "shop_rebels_t1_yellow_shop_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82011,7 +82029,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane1_shop_item_trigger",
+     "targetName": "shop_rebels_t1_yellow_shop_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82035,7 +82053,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane1_shop_kill_relay",
+    "targetname": "shop_rebels_t1_yellow_shop_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82043,7 +82061,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane1_shop_item_trigger",
+     "targetName": "shop_rebels_t1_yellow_shop_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -82067,14 +82085,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane1_shop_logic_auto_disable",
+    "targetname": "shop_rebels_t1_yellow_shop_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "amber_lane1_shop_disable_relay",
+     "targetName": "shop_rebels_t1_yellow_shop_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -82098,14 +82116,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane1_shop_logic_auto_enable",
+    "targetname": "shop_rebels_t1_yellow_shop_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "amber_lane1_shop_enable_relay",
+     "targetName": "shop_rebels_t1_yellow_shop_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -82129,7 +82147,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane6_shop_enable_relay",
+    "targetname": "shop_rebels_t1_purple_shop_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82137,7 +82155,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane6_shop_item_trigger",
+     "targetName": "shop_rebels_t1_purple_shop_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82161,7 +82179,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane6_shop_disable_relay",
+    "targetname": "shop_rebels_t1_purple_shop_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82169,7 +82187,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane6_shop_item_trigger",
+     "targetName": "shop_rebels_t1_purple_shop_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82193,7 +82211,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane6_shop_kill_relay",
+    "targetname": "shop_rebels_t1_purple_shop_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82201,7 +82219,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_lane6_shop_item_trigger",
+     "targetName": "shop_rebels_t1_purple_shop_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -82225,14 +82243,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane6_shop_logic_auto_disable",
+    "targetname": "shop_rebels_t1_purple_shop_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "amber_lane6_shop_disable_relay",
+     "targetName": "shop_rebels_t1_purple_shop_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -82256,14 +82274,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_lane6_shop_logic_auto_enable",
+    "targetname": "shop_rebels_t1_purple_shop_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "amber_lane6_shop_enable_relay",
+     "targetName": "shop_rebels_t1_purple_shop_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -82287,7 +82305,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_base_shop_enable_relay",
+    "targetname": "base_shop_rebels_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82295,7 +82313,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_base_shop_item_trigger",
+     "targetName": "base_shop_rebels_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82319,7 +82337,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_base_shop_disable_relay",
+    "targetname": "base_shop_rebels_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82327,7 +82345,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_base_shop_item_trigger",
+     "targetName": "base_shop_rebels_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82351,7 +82369,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_base_shop_kill_relay",
+    "targetname": "base_shop_rebels_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82359,7 +82377,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_base_shop_item_trigger",
+     "targetName": "base_shop_rebels_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -82383,14 +82401,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_base_shop_logic_auto_disable",
+    "targetname": "base_shop_rebels_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "amber_base_shop_disable_relay",
+     "targetName": "base_shop_rebels_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -82414,14 +82432,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_base_shop_logic_auto_enable",
+    "targetname": "base_shop_rebels_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "amber_base_shop_enable_relay",
+     "targetName": "base_shop_rebels_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -82445,7 +82463,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_secret_shop_enable_relay",
+    "targetname": "secret_shop_rebels_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82453,7 +82471,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_secret_shop_item_trigger",
+     "targetName": "secret_shop_rebels_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82477,7 +82495,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_secret_shop_disable_relay",
+    "targetname": "secret_shop_rebels_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82485,7 +82503,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_secret_shop_item_trigger",
+     "targetName": "secret_shop_rebels_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82509,7 +82527,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_secret_shop_kill_relay",
+    "targetname": "secret_shop_rebels_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "2"
    },
@@ -82517,7 +82535,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "amber_secret_shop_item_trigger",
+     "targetName": "secret_shop_rebels_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -82541,14 +82559,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_secret_shop_logic_auto_disable",
+    "targetname": "secret_shop_rebels_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "amber_secret_shop_disable_relay",
+     "targetName": "secret_shop_rebels_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -82572,14 +82590,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "amber_secret_shop_logic_auto_enable",
+    "targetname": "secret_shop_rebels_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "amber_secret_shop_enable_relay",
+     "targetName": "secret_shop_rebels_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -82603,7 +82621,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane3_shop_enable_relay",
+    "targetname": "shop_combine_t1_orange_shop_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82611,7 +82629,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane3_shop_item_trigger",
+     "targetName": "shop_combine_t1_orange_shop_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82635,7 +82653,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane3_shop_disable_relay",
+    "targetname": "shop_combine_t1_orange_shop_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82643,7 +82661,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane3_shop_item_trigger",
+     "targetName": "shop_combine_t1_orange_shop_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82667,7 +82685,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane3_shop_kill_relay",
+    "targetname": "shop_combine_t1_orange_shop_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82675,7 +82693,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane3_shop_item_trigger",
+     "targetName": "shop_combine_t1_orange_shop_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -82699,14 +82717,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane3_shop_logic_auto_disable",
+    "targetname": "shop_combine_t1_orange_shop_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "m_amber_lane3_shop_disable_relay",
+     "targetName": "shop_combine_t1_orange_shop_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -82730,14 +82748,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane3_shop_logic_auto_enable",
+    "targetname": "shop_combine_t1_orange_shop_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "m_amber_lane3_shop_enable_relay",
+     "targetName": "shop_combine_t1_orange_shop_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -82761,7 +82779,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane1_shop_enable_relay",
+    "targetname": "shop_combine_t1_yellow_shop_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82769,7 +82787,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane1_shop_item_trigger",
+     "targetName": "shop_combine_t1_yellow_shop_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82793,7 +82811,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane1_shop_disable_relay",
+    "targetname": "shop_combine_t1_yellow_shop_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82801,7 +82819,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane1_shop_item_trigger",
+     "targetName": "shop_combine_t1_yellow_shop_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82825,7 +82843,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane1_shop_kill_relay",
+    "targetname": "shop_combine_t1_yellow_shop_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82833,7 +82851,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane1_shop_item_trigger",
+     "targetName": "shop_combine_t1_yellow_shop_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -82857,14 +82875,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane1_shop_logic_auto_disable",
+    "targetname": "shop_combine_t1_yellow_shop_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "m_amber_lane1_shop_disable_relay",
+     "targetName": "shop_combine_t1_yellow_shop_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -82888,14 +82906,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane1_shop_logic_auto_enable",
+    "targetname": "shop_combine_t1_yellow_shop_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "m_amber_lane1_shop_enable_relay",
+     "targetName": "shop_combine_t1_yellow_shop_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -82919,7 +82937,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane6_shop_enable_relay",
+    "targetname": "shop_combine_t1_purple_shop_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82927,7 +82945,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane6_shop_item_trigger",
+     "targetName": "shop_combine_t1_purple_shop_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82951,7 +82969,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane6_shop_disable_relay",
+    "targetname": "shop_combine_t1_purple_shop_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82959,7 +82977,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane6_shop_item_trigger",
+     "targetName": "shop_combine_t1_purple_shop_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -82983,7 +83001,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane6_shop_kill_relay",
+    "targetname": "shop_combine_t1_purple_shop_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -82991,7 +83009,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_lane6_shop_item_trigger",
+     "targetName": "shop_combine_t1_purple_shop_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -83015,14 +83033,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane6_shop_logic_auto_disable",
+    "targetname": "shop_combine_t1_purple_shop_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "m_amber_lane6_shop_disable_relay",
+     "targetName": "shop_combine_t1_purple_shop_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -83046,14 +83064,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_lane6_shop_logic_auto_enable",
+    "targetname": "shop_combine_t1_purple_shop_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "m_amber_lane6_shop_enable_relay",
+     "targetName": "shop_combine_t1_purple_shop_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -83077,7 +83095,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_base_shop_enable_relay",
+    "targetname": "base_shop_combine_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -83085,7 +83103,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_base_shop_item_trigger",
+     "targetName": "base_shop_combine_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -83109,7 +83127,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_base_shop_disable_relay",
+    "targetname": "base_shop_combine_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -83117,7 +83135,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_base_shop_item_trigger",
+     "targetName": "base_shop_combine_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -83141,7 +83159,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_base_shop_kill_relay",
+    "targetname": "base_shop_combine_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -83149,7 +83167,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_base_shop_item_trigger",
+     "targetName": "base_shop_combine_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -83173,14 +83191,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_base_shop_logic_auto_disable",
+    "targetname": "base_shop_combine_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "m_amber_base_shop_disable_relay",
+     "targetName": "base_shop_combine_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -83204,14 +83222,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_base_shop_logic_auto_enable",
+    "targetname": "base_shop_combine_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "m_amber_base_shop_enable_relay",
+     "targetName": "base_shop_combine_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
@@ -83235,7 +83253,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_secret_shop_enable_relay",
+    "targetname": "secret_shop_combine_enable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -83243,7 +83261,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_secret_shop_item_trigger",
+     "targetName": "secret_shop_combine_item_trigger",
      "inputName": "Enable",
      "overrideParam": "",
      "delay": 0.0,
@@ -83267,7 +83285,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_secret_shop_disable_relay",
+    "targetname": "secret_shop_combine_disable_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -83275,7 +83293,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_secret_shop_item_trigger",
+     "targetName": "secret_shop_combine_item_trigger",
      "inputName": "Disable",
      "overrideParam": "",
      "delay": 0.0,
@@ -83299,7 +83317,7 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_secret_shop_kill_relay",
+    "targetname": "secret_shop_combine_kill_relay",
     "StartDisabled": "0",
     "teamnumber": "3"
    },
@@ -83307,7 +83325,7 @@
     {
      "outputName": "OnTrigger",
      "targetType": 7,
-     "targetName": "m_amber_secret_shop_item_trigger",
+     "targetName": "secret_shop_combine_item_trigger",
      "inputName": "Kill",
      "overrideParam": "",
      "delay": 0.0,
@@ -83331,14 +83349,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_secret_shop_logic_auto_disable",
+    "targetname": "secret_shop_combine_logic_auto_disable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnMapSpawn",
      "targetType": 7,
-     "targetName": "m_amber_secret_shop_disable_relay",
+     "targetName": "secret_shop_combine_disable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 0.0,
@@ -83362,14 +83380,14 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_amber_secret_shop_logic_auto_enable",
+    "targetname": "secret_shop_combine_logic_auto_enable",
     "spawnflags": "1"
    },
    "connections": [
     {
      "outputName": "OnGameInProgress",
      "targetType": 7,
-     "targetName": "m_amber_secret_shop_enable_relay",
+     "targetName": "secret_shop_combine_enable_relay",
      "inputName": "Trigger",
      "overrideParam": "",
      "delay": 15.0,
