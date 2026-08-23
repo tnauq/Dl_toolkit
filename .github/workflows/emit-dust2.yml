@@ -30,16 +30,23 @@ name: emit dust2
 # places and neither count alone is the whole story.
 #
 #   meshes      4179 + 27          = 4206, at 18 each = 75,708
-#   nodes       61 entities + 15 paths + 236 path nodes = 312
-#   node props  312 x (EditGameClassProps + DmePlugList) = 624
+#   nodes       63 entities + 15 paths + 236 path nodes = 314
+#   node props  314 x (EditGameClassProps + DmePlugList) = 628
 #   world       its own classprops and pluglist         = 2
 #   singletons                                          = 6
-#   TOTAL       75,708 + 312 + 624 + 2 + 6              = 76,652
+#   TOTAL       75,708 + 314 + 628 + 2 + 6              = 76,658
 #
-# UPDATED 2026-08-23 for batch13 with the real survey coordinates. The
-# previous numbers (8 entities, 6 paths, 24 nodes) predate the survey and
-# WOULD have failed this run; the failure would have been the census doing
-# its job, not the emitter breaking.
+# UPDATED 2026-08-23 for batch13 with the real survey coordinates, then
+# corrected the same day. The first attempt said 61 entities, counting only
+# what batch13 writes, and the run came back with 63: the plan also carried
+# TWO info_team_spawn from an earlier session that batch13 neither created
+# nor knew about. Both census assumptions below held exactly; the arithmetic
+# was simply counting the wrong population.
+#
+# batch13 now owns the team spawns, so the 63 is 61 plus an authored spawn
+# and its mirrored twin, and the two unnamed legacy ones are gone. The total
+# is unchanged at 63 by coincidence, not by design: if that strip is ever
+# removed, this number moves.
 #
 # EVERY NUMBER ABOVE IS ARITHMETIC, not a measurement. Two assumptions are
 # load-bearing and neither has been checked at this size:
@@ -69,20 +76,20 @@ env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
   EXPECT_BOXES: 4179
-  EXPECT_ENTS: 61
+  EXPECT_ENTS: 63
   # 4179 boxes + 27 brush entities, each carrying an inline child mesh.
   EXPECT_MAPMESH: 4206
   EXPECT_POLYMESH: 4206
-  EXPECT_ENTITY: 61
+  EXPECT_ENTITY: 63
   EXPECT_PATH: 15
   EXPECT_PATHNODE: 236
   EXPECT_DATAARRAY: 16824      # 4 x 4206
   EXPECT_STREAM: 46266         # 11 x 4206
   EXPECT_SUBDIV: 4206
-  # 312 nodes plus the world's own.
-  EXPECT_CLASSPROPS: 313
-  EXPECT_PLUGLIST: 313
-  EXPECT_ELEMENTS: 76652
+  # 314 nodes plus the world's own.
+  EXPECT_CLASSPROPS: 315
+  EXPECT_PLUGLIST: 315
+  EXPECT_ELEMENTS: 76658
 
 jobs:
   emit:

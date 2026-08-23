@@ -721,6 +721,24 @@ def build_objectives():
                     "subclass_name": "npc_boss_tier2",
                 },
             })
+    # TEAM SPAWN, read on hex_plat_s_e. Authored here for the first time:
+    # the plan already carried two info_team_spawn from an earlier session,
+    # unnamed, at placeholder coordinates, and NOT mirror-symmetric with each
+    # other. Those are removed by strip_legacy_spawns and replaced by this
+    # one plus its generated twin, so the pair is symmetric by construction
+    # like everything else in this file.
+    out.append({
+        "name": "team_spawn",
+        "classname": "info_team_spawn",
+        "origin": list(SPAWN_ORIGIN),
+        "angles": face_centre(SPAWN_ORIGIN),
+        "surveyed_on": "hex_plat_s_e",
+        "properties": {
+            "teamnumber": TEAM_A,
+            "lanenum": "1",
+            "initialspawn": "1",
+        },
+    })
     for spec in LANES:
         lane = spec["lane"]
         first = list(spec["half_route"][0])
@@ -1290,6 +1308,41 @@ def report_lengths(paths):
             print("  within 3 s, lanes are comparable.")
 
 
+LEGACY_SPAWN_CLASSES = ("info_team_spawn",)
+
+
+def strip_legacy_spawns(plan):
+    """Remove UNNAMED team spawns this script did not write.
+
+    THIS DELETES SOMETHING BATCH13 DID NOT CREATE, which no other batch script
+    does, so the rule is deliberately narrow: only info_team_spawn, only where
+    the entity has no `name`, and only where it is not already marked as
+    batch13's own. Everything batch13 writes carries a name, so a named spawn
+    is either mine and rebuilt anyway or somebody else's and left alone.
+
+    WHY AT ALL. The plan carried two of these from an earlier session, at
+    placeholder coordinates, and they were not mirrors of each other:
+    (25, -530, 435) mirrors to (895.2, 12700.1, 435), while the second sat at
+    (1494, 4854, 3). Leaving them would mean two spawn pairs, one symmetric
+    and one not, and the emitted map would have four spawn points.
+    """
+    before = len(plan["entities"])
+    kept = []
+    for e in plan["entities"]:
+        if (e.get("classname") in LEGACY_SPAWN_CLASSES
+                and not e.get("name")
+                and not e.get(MARK)):
+            print("  removing legacy %s at %s (unnamed, not batch13's)"
+                  % (e["classname"], [round(v) for v in e["origin"]]))
+            continue
+        kept.append(e)
+    plan["entities"] = kept
+    n = before - len(kept)
+    if n:
+        print("  removed %d legacy spawn(s)" % n)
+    return n
+
+
 def main(path):
     with open(path) as f:
         plan = json.load(f)
@@ -1297,6 +1350,7 @@ def main(path):
     plan.setdefault("entities", [])
     plan.setdefault("paths", [])
     strip_previous(plan)
+    strip_legacy_spawns(plan)
 
     ents = (build_entities() + build_camps() + build_breakables()
             + build_brushes() + build_points())
@@ -1323,7 +1377,8 @@ def main(path):
     report_lengths(paths)
     print("\nWHAT IN THIS RUN IS REAL, 2026-08-23")
     print("  READ      lane routes, guardians, walkers, guardian shops,")
-    print("            secret shop, urn dropoff, base shop, spawn room")
+    print("            secret shop, urn dropoff, base shop, spawn room,")
+    print("            team spawn")
     print("  DERIVED   trooper spawns, from each lane's first node")
     print("  INVENTED  every volume SIZE, all angles, camps, breakables,")
     print("            bridge buffs, minimap corners, ziplines, zap and")
