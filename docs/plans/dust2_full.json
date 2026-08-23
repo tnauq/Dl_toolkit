@@ -79899,44 +79899,8 @@
  ],
  "entities": [
   {
-   "classname": "info_team_spawn",
-   "origin": [
-    25,
-    -530,
-    435
-   ],
-   "angles": [
-    0,
-    90,
-    0
-   ],
-   "properties": {
-    "teamnumber": "2",
-    "lanenum": "1",
-    "initialspawn": "1"
-   }
-  },
-  {
-   "classname": "info_team_spawn",
-   "origin": [
-    1494,
-    4854,
-    3
-   ],
-   "angles": [
-    0,
-    270,
-    0
-   ],
-   "properties": {
-    "teamnumber": "3",
-    "lanenum": "1",
-    "initialspawn": "1"
-   }
-  },
-  {
    "name": "guardian_l3",
-   "classname": "npc_barrack_boss",
+   "classname": "npc_boss_tier3",
    "origin": [
     -1753.0,
     4750.0,
@@ -79952,10 +79916,9 @@
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "3",
-    "BackdoorProtectionTrigger": "",
+    "BossName": "amber_guardian_lane3",
     "CoverGroupID": "",
-    "LaneSide": "0",
-    "subclass_name": "npc_barrack_boss"
+    "subclass_name": "npc_boss_tier3"
    },
    "_batch13": true,
    "connections": [
@@ -79973,7 +79936,7 @@
   },
   {
    "name": "m_guardian_l3",
-   "classname": "npc_barrack_boss",
+   "classname": "npc_boss_tier3",
    "origin": [
     2673.2,
     7420.1,
@@ -79989,10 +79952,9 @@
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "3",
-    "BackdoorProtectionTrigger": "",
+    "BossName": "m_amber_guardian_lane3",
     "CoverGroupID": "",
-    "LaneSide": "0",
-    "subclass_name": "npc_barrack_boss"
+    "subclass_name": "npc_boss_tier3"
    },
    "_batch13": true,
    "connections": [
@@ -80010,7 +79972,7 @@
   },
   {
    "name": "guardian_l1",
-   "classname": "npc_barrack_boss",
+   "classname": "npc_boss_tier3",
    "origin": [
     425.0,
     4126.0,
@@ -80026,10 +79988,9 @@
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "1",
-    "BackdoorProtectionTrigger": "",
+    "BossName": "amber_guardian_lane1",
     "CoverGroupID": "",
-    "LaneSide": "0",
-    "subclass_name": "npc_barrack_boss"
+    "subclass_name": "npc_boss_tier3"
    },
    "_batch13": true,
    "connections": [
@@ -80047,7 +80008,7 @@
   },
   {
    "name": "m_guardian_l1",
-   "classname": "npc_barrack_boss",
+   "classname": "npc_boss_tier3",
    "origin": [
     495.2,
     8044.1,
@@ -80063,10 +80024,9 @@
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "1",
-    "BackdoorProtectionTrigger": "",
+    "BossName": "m_amber_guardian_lane1",
     "CoverGroupID": "",
-    "LaneSide": "0",
-    "subclass_name": "npc_barrack_boss"
+    "subclass_name": "npc_boss_tier3"
    },
    "_batch13": true,
    "connections": [
@@ -80084,7 +80044,7 @@
   },
   {
    "name": "guardian_l6",
-   "classname": "npc_barrack_boss",
+   "classname": "npc_boss_tier3",
    "origin": [
     3467.0,
     4143.0,
@@ -80100,10 +80060,9 @@
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "6",
-    "BackdoorProtectionTrigger": "",
+    "BossName": "amber_guardian_lane6",
     "CoverGroupID": "",
-    "LaneSide": "0",
-    "subclass_name": "npc_barrack_boss"
+    "subclass_name": "npc_boss_tier3"
    },
    "_batch13": true,
    "connections": [
@@ -80121,7 +80080,7 @@
   },
   {
    "name": "m_guardian_l6",
-   "classname": "npc_barrack_boss",
+   "classname": "npc_boss_tier3",
    "origin": [
     -2546.8,
     8027.1,
@@ -80137,10 +80096,9 @@
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "6",
-    "BackdoorProtectionTrigger": "",
+    "BossName": "m_amber_guardian_lane6",
     "CoverGroupID": "",
-    "LaneSide": "0",
-    "subclass_name": "npc_barrack_boss"
+    "subclass_name": "npc_boss_tier3"
    },
    "_batch13": true,
    "connections": [
@@ -80297,6 +80255,46 @@
     "BossName": "m_amber_walker_lane6",
     "CoverGroupID": "",
     "subclass_name": "npc_boss_tier2"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "team_spawn",
+   "classname": "info_team_spawn",
+   "origin": [
+    518.0,
+    -6183.0,
+    1067.0
+   ],
+   "angles": [
+    0.0,
+    90.27,
+    0.0
+   ],
+   "properties": {
+    "teamnumber": "2",
+    "lanenum": "1",
+    "initialspawn": "1"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_team_spawn",
+   "classname": "info_team_spawn",
+   "origin": [
+    402.2,
+    18353.1,
+    1067.0
+   ],
+   "angles": [
+    0.0,
+    -89.73,
+    0.0
+   ],
+   "properties": {
+    "teamnumber": "3",
+    "lanenum": "1",
+    "initialspawn": "1"
    },
    "_batch13": true
   },
