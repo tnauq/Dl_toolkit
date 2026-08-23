@@ -73,7 +73,52 @@ Y_PLANE = 12170.1 / 2.0     # 6085.05
 PREFIX = "m_"
 MARK = "_batch13"
 
-# Teams. 2 is amber, 3 is sapphire, following the plan's existing spawns.
+# Teams. 2 is amber, 3 is sapphire in Deadlock's own colour language, but
+# dl_example names its entities REBELS and COMBINE, and every targetname in
+# the fixture follows that. Matching it 2026-08-23 on the user's call, so a
+# name read out of this map means the same thing as one read out of Valve's.
+#
+# THE TEAM WORD IS PART OF THE NAME, not a prefix bolted on. dl_example has
+# rebels_t2_boss_orange and combine_t2_boss_orange as a pair, and no m_
+# anywhere. This file still uses the m_ prefix for the PLAN-LEVEL entity
+# name, because strip_previous and every batch script key on it, but the
+# TARGETNAME - the thing the game and entity IO actually see - swaps the team
+# word instead. Two namespaces, one bookkeeping and one real.
+TEAM_WORD_A = "rebels"
+TEAM_WORD_B = "combine"
+
+# LANE COLOURS, read off dl_example's boss names: yellow is lane 1, orange
+# lane 3, blue lane 4, purple lane 6. Lane 4 is listed for completeness even
+# though this map has no such lane.
+#
+# NOTE the fixture's zipline color_tint does NOT agree with these on lane 3
+# (red tint, orange name). The BOSS NAMES are followed here because they are
+# what other entities reference.
+LANE_COLOUR = {"1": "yellow", "3": "orange", "4": "blue", "6": "purple"}
+
+
+def lane_colour(lane):
+    return LANE_COLOUR.get(lane, "lane" + lane)
+
+
+def team_swap(name):
+    """Swap the team word in a targetname, for the mirrored copy.
+
+    The word is not always at the front. dl_example puts it in the middle
+    (shop_Sapphire_t1_lanecolor_shop, base_shop_teamname), so the swap is on
+    the first occurrence ANYWHERE rather than on a prefix. A name with no team
+    word in it is neutral and falls back to the m_ prefix, which is what the
+    jungle and midboss entities use.
+    """
+    if not name:
+        return name
+    if TEAM_WORD_A in name:
+        return name.replace(TEAM_WORD_A, TEAM_WORD_B, 1)
+    if TEAM_WORD_B in name:
+        return name.replace(TEAM_WORD_B, TEAM_WORD_A, 1)
+    return PREFIX + name
+
+
 TEAM_A = "2"
 TEAM_B = "3"
 
@@ -157,8 +202,22 @@ def mirror_angles(a):
 TEAM_SUBCLASS = {
     "npc_boss_tier3": "alt_npc_boss_tier3",
     "npc_boss_tier2": "alt_npc_boss_tier2",
+    "npc_boss_tier2_weak": "alt_npc_boss_tier2_weak",
     "npc_boss_tier1": "alt_npc_boss_tier1",
 }
+
+# WALKER DIFFICULTY BY LANE. dl_example runs two strengths of npc_boss_tier2
+# per team - the plain subclass and a _weak one - so lanes are deliberately
+# not equal. User's call 2026-08-23: the SIDE lanes are the weak ones here,
+# so the mid lane's walker is the full-strength body and 3 and 6 are weak.
+#
+# This is a subclass swap only. Position, keys and wiring are identical, and
+# the difference lives entirely in npc_units.vdata.
+#
+# NOT READ FROM THE FIXTURE, and it could not be: dl_example is a four-lane
+# map and puts its weak walkers on lanes 1 and 6, which says nothing about
+# which lanes are "sides" on a three-lane map. This is a design decision.
+WEAK_WALKER_LANES = {"3", "6"}
 
 
 def flip_team(props):
@@ -469,7 +528,7 @@ BRUSHES = [
         "origin": list(BASE_SHOP_ORIGIN),
         "extents": list(SHOP_EXTENTS),
         "properties": {
-            "targetname": "amber_base_shop_item_trigger",
+            "targetname": "base_shop_%s_item_trigger" % TEAM_WORD_A,
             "teamnumber": TEAM_A,
             "spawnflags": "4097",
             "AudioOffset": "-0.25 22 50",
@@ -483,7 +542,7 @@ BRUSHES = [
         # READ 2026-08-23 on hex2_dais1_0.
         "origin": list(URN_ORIGIN),
         "extents": [192.0, 192.0, 192.0],
-        "properties": {"targetname": "amber_idol_return",
+        "properties": {"targetname": "%s_idol_return" % TEAM_WORD_A,
                        "teamnumber": TEAM_A, "spawnflags": "4097"},
     },
     {
@@ -500,7 +559,7 @@ BRUSHES = [
                     round(abs(SPAWN_ORIGIN[1] - BASE_SHOP_ORIGIN[1])
                           + 2 * REGEN_MARGIN, 4),
                     REGEN_HEIGHT],
-        "properties": {"targetname": "amber_spawn_regen",
+        "properties": {"targetname": "%s_spawn_regen" % TEAM_WORD_A,
                        "teamnumber": TEAM_A, "spawnflags": "4097"},
     },
     {
@@ -521,7 +580,7 @@ BRUSHES = [
         "origin": [25.0, 4000.0, 900.0],
         "extents": [256.0, 3000.0, 256.0],
         "properties": {
-            "targetname": "amber_zip_zap_lane1",
+            "targetname": "%s_zip_zap_%s" % (TEAM_WORD_A, lane_colour("1")),
             "teamnumber": TEAM_A,
             "spawnflags": "4097",
             "PercentMaxHealthDamage": "5",
@@ -535,7 +594,7 @@ BRUSHES = [
         "classname": "citadel_trigger_speed_boost",
         "origin": [25.0, 1000.0, 900.0],
         "extents": [256.0, 1500.0, 256.0],
-        "properties": {"targetname": "amber_zip_boost_lane1",
+        "properties": {"targetname": "%s_zip_boost_%s" % (TEAM_WORD_A, lane_colour("1")),
                        "spawnflags": "4097"},
     },
 
@@ -548,7 +607,7 @@ BRUSHES = [
         "classname": "trigger_item_shop",
         "origin": [-1623.0, 3200.0, 253.0],       # axis_770
         "extents": list(SHOP_EXTENTS),
-        "properties": {"targetname": "amber_lane3_shop_item_trigger",
+        "properties": {"targetname": "shop_%s_t1_%s_shop_item_trigger" % (TEAM_WORD_A, lane_colour("3")),
                        "teamnumber": TEAM_A, "spawnflags": "4097",
                        "AudioOffset": "-0.25 22 50"},
     },
@@ -557,7 +616,7 @@ BRUSHES = [
         "classname": "trigger_item_shop",
         "origin": [915.0, 3980.0, 0.0],           # axis_0
         "extents": list(SHOP_EXTENTS),
-        "properties": {"targetname": "amber_lane1_shop_item_trigger",
+        "properties": {"targetname": "shop_%s_t1_%s_shop_item_trigger" % (TEAM_WORD_A, lane_colour("1")),
                        "teamnumber": TEAM_A, "spawnflags": "4097",
                        "AudioOffset": "-0.25 22 50"},
     },
@@ -566,7 +625,7 @@ BRUSHES = [
         "classname": "trigger_item_shop",
         "origin": [3179.0, 3416.0, 213.0],        # gapfill_50_34
         "extents": list(SHOP_EXTENTS),
-        "properties": {"targetname": "amber_lane6_shop_item_trigger",
+        "properties": {"targetname": "shop_%s_t1_%s_shop_item_trigger" % (TEAM_WORD_A, lane_colour("6")),
                        "teamnumber": TEAM_A, "spawnflags": "4097",
                        "AudioOffset": "-0.25 22 50"},
     },
@@ -578,7 +637,7 @@ BRUSHES = [
         "classname": "trigger_item_shop",
         "origin": list(SECRET_SHOP_ORIGIN),       # axis_769
         "extents": list(SHOP_EXTENTS),
-        "properties": {"targetname": "amber_secret_shop_item_trigger",
+        "properties": {"targetname": "secret_shop_%s_item_trigger" % TEAM_WORD_A,
                        "teamnumber": TEAM_A, "spawnflags": "4097",
                        "AudioOffset": "-0.25 22 50"},
     },
@@ -748,7 +807,7 @@ def build_objectives():
                     "teamnumber": TEAM_A,
                     "lanenum": lane,
                     "BackdoorProtectionTrigger": "",
-                    "BossName": "amber_guardian_lane%s" % lane,
+                    "BossName": "%s_t3_boss_%s" % (TEAM_WORD_A, lane_colour(lane)),
                     "subclass_name": "npc_boss_tier3",
                     "CoverGroupID": "",
                     "dying_cover_id": "",
@@ -768,17 +827,19 @@ def build_objectives():
                 # it matches its BossName.
                 #
                 # SUBCLASS_NAME IS PER TEAM here too: npc_boss_tier2 for
-                # team 2, alt_npc_boss_tier2 for team 3. The fixture also uses
-                # _weak variants on two lanes of each team, which is a
-                # difficulty choice this map is not making yet.
+                # team 2, alt_npc_boss_tier2 for team 3, and flip_team swaps
+                # them. It is also PER LANE: the side lanes take the _weak
+                # variant, see WEAK_LANES.
                 "properties": {
-                    "targetname": "amber_walker_lane%s" % lane,
+                    "targetname": "%s_t2_boss_%s" % (TEAM_WORD_A, lane_colour(lane)),
                     "vscripts": "",
                     "teamnumber": TEAM_A,
                     "lanenum": lane,
-                    "BossName": "amber_walker_lane%s" % lane,
+                    "BossName": "%s_t2_boss_%s" % (TEAM_WORD_A, lane_colour(lane)),
                     "CoverGroupID": "",
-                    "subclass_name": "npc_boss_tier2",
+                    "subclass_name": ("npc_boss_tier2_weak"
+                                      if lane in WEAK_WALKER_LANES
+                                      else "npc_boss_tier2"),
                 },
             })
     # TEAM SPAWN, read on hex_plat_s_e. Authored here for the first time:
@@ -858,7 +919,10 @@ def twin_of(e, neutral=False):
               "ShootFromEntity", "BackdoorProtectionTrigger", "parentname",
               "filtername"):
         if props.get(k):
-            props[k] = PREFIX + props[k]
+            # team_swap turns rebels_ into combine_ where the fixture's
+            # convention applies, and falls back to the m_ prefix for
+            # anything neutral, which has no team word to swap.
+            props[k] = team_swap(props[k])
     t["properties"] = props
     return t
 

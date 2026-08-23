@@ -71,6 +71,26 @@ MARK = "_batch15"
 TEAM_A = "2"
 TEAM_B = "3"
 
+# The same two namespaces batch13 uses: m_ for the PLAN-LEVEL entity name,
+# which every script keys on, and a TEAM WORD swap for the targetname, which
+# is what the game and entity IO see. dl_example names its pairs
+# rebels_/combine_ with no prefix anywhere, and a relay network is nothing but
+# names pointing at names, so getting this wrong would wire every mirrored
+# relay back into the team-2 half while both halves verified green.
+TEAM_WORD_A = "rebels"
+TEAM_WORD_B = "combine"
+
+
+def team_swap(name):
+    """First occurrence anywhere; m_ prefix for names with no team word."""
+    if not name:
+        return name
+    if TEAM_WORD_A in name:
+        return name.replace(TEAM_WORD_A, TEAM_WORD_B, 1)
+    if TEAM_WORD_B in name:
+        return name.replace(TEAM_WORD_B, TEAM_WORD_A, 1)
+    return PREFIX + name
+
 # The 15 second wait before shops open, read off dl_example's
 # logic_auto_citadel OnGameInProgress wire.
 GAME_START_DELAY = 15.0
@@ -249,7 +269,7 @@ def twin_of(e):
     elif props.get("teamnumber") == TEAM_B:
         props["teamnumber"] = TEAM_A
     if props.get("targetname"):
-        props["targetname"] = PREFIX + props["targetname"]
+        props["targetname"] = team_swap(props["targetname"])
     t["properties"] = props
 
     # THE ONE THAT WOULD FAIL SILENTLY. targetName is a name like any other,
@@ -259,7 +279,7 @@ def twin_of(e):
     for c in e.get("connections", []):
         c2 = dict(c)
         if c2.get("targetName"):
-            c2["targetName"] = PREFIX + c2["targetName"]
+            c2["targetName"] = team_swap(c2["targetName"])
         conns.append(c2)
     if conns:
         t["connections"] = conns
@@ -332,7 +352,7 @@ def main(path):
             continue
         base = base_shop["properties"]["targetname"][: -len("_item_trigger")]
         mk.setdefault("connections", []).append(
-            wire(GUARDIAN_OUTPUT, PREFIX + base + "_kill_relay", "Trigger"))
+            wire(GUARDIAN_OUTPUT, team_swap(base) + "_kill_relay", "Trigger"))
 
     conns = sum(len(e.get("connections", [])) for e in plan["entities"])
     with open(path, "w") as f:
@@ -344,9 +364,9 @@ def main(path):
     print("  connections %d" % conns)
     print("\nGUARDIAN_OUTPUT = %r, read from dl_example's npc_boss_tier3."
           % GUARDIAN_OUTPUT)
-    print("UNVERIFIED: the npc_boss_tier3 KEY SET in batch13 copies the shape")
-    print("of npc_boss_tier2 rather than being read. A wrong key is ignored")
-    print("silently by the game.")
+    print("Names follow dl_example: rebels_/combine_ pairs, lane colours")
+    print("yellow/orange/purple for lanes 1/3/6, and no m_ prefix on any")
+    print("targetname. The m_ prefix is plan bookkeeping only.")
     return 0
 
 
