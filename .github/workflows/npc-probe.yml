@@ -1,43 +1,47 @@
 name: npc probe
 
-# ROUND THREE. Round two dumped four blocks of eight and missed every trooper,
-# which is the same mistake twice: it searched for names somebody GUESSED
-# rather than asking the file what it contains. npc_units.vdata mentions a
-# trooper 131 times and yet no key is called npc_trooper, so the real subclass
-# names are simply unknown.
+# ROUND FOUR. Round three indexed ZERO block keys in a file that plainly has
+# hundreds, and the cause is a trap this repo has already paid for once: NO
+# LOOKAHEAD. entity-survey.yml hit exactly this and its note says an array
+# scalar and an element type header are both one quoted token on a line, and
+# only the NEXT line tells them apart. Same shape here. Round three demanded
+# that a key's brace sit on the SAME line as the key:
 #
-# So this run INDEXES FIRST. Every block-shaped key in npc_units.vdata is
-# listed before anything is dumped. That index is the answer to "what is a
-# trooper actually called", and it is a list nobody has to guess at again.
-# Blocks are then dumped by PATTERN, not by exact name: anything whose key
-# contains trooper or shrine gets printed whole.
+#     if m.group(2).strip() in ('{', '['):
 #
-# WHY SHRINES ARE NOW WORTH DUMPING. Round two found models/npc/core_shrine,
-# an animgraph under npc_units/shrines/sapphire_shrine, and two shrine keys
-# living inside npc_boss_tier3 itself: m_flShrineAttackHealthLossPerAttack and
-# m_flPostShrineTransition. So shrines are real units, they sit in the npc
-# tree, and the patron reads their state. There are 37 shrine lines in
-# npc_units.vdata that nobody has looked at.
+# vdata puts the brace on the line BELOW. So every block key in the file
+# failed the test and the index came back empty, while round two's brace
+# walker had worked fine because it started from the key line and did not
+# care where the opening brace was.
 #
-# WHAT ROUND TWO DID SETTLE, so it is not re-asked here:
+# The fix is one line of lookahead: a key is a block key if its value is empty
+# or a brace, AND the next non-blank line opens one. Round two's walker is
+# kept exactly as it was, since it was never the broken part.
+#
+# STILL OPEN, and the only two things this run is for:
+#   trooper speed     no key called npc_trooper exists, so the index IS the
+#                     answer to what it is called
+#   shrine classname  37 shrine lines in npc_units.vdata, unread
+#
+# ALREADY SETTLED, not re-asked:
 #   guardian clip capsule  radius 32, height 224
 #   guardian invul range   944.882
-#   walker sight/invul     866, navHull 2
-#   patron core radius     130, pit radius 550
-# Clearance is answered. Only speed and the shrine classname remain.
+#   walker sight / navHull 866, 2
+#   patron core / pit      130, 550
+#   lane enum              BarrackBoss_Lane1..Lane4, contiguous
 
 on: workflow_dispatch
 
 env:
-  # The file whose contents are being enumerated.
   INDEX_FILES: 'npc_units.vdata,misc.vdata'
-  # Dump any block whose KEY contains one of these. Patterns, not names.
-  BLOCK_PATTERNS: 'trooper,shrine,barrack,boss'
-  # Flag these inside a dumped block so a speed is findable by eye.
+  BLOCK_PATTERNS: 'trooper,shrine,barrack,boss,guard'
   SPEED_HINTS: 'speed,rate,velocity,move'
   MAX_BLOCK_LINES: 400
   MAX_DUMPS: 24
   MAX_FILE_MB: 12
+  # Assert a known value so a broken parse is visible instead of plausible.
+  # Round two read these blocks successfully at these exact lines.
+  EXPECT_KEYS: 'npc_barrack_boss,npc_boss_tier2,npc_boss_tier3,alt_npc_boss_tier3'
 
 jobs:
   probe:
@@ -76,12 +80,13 @@ jobs:
         env:
           GT_SHA: ${{ steps.gt.outputs.sha }}
         run: |
-          python3 - <<'PY' | tee out/npc-probe3.log
+          python3 - <<'PY' | tee out/npc-probe4.log
           import os, re, json
 
           index_files = os.environ['INDEX_FILES'].split(',')
           patterns = [p.lower() for p in os.environ['BLOCK_PATTERNS'].split(',')]
           hints = [h.lower() for h in os.environ['SPEED_HINTS'].split(',')]
+          expect = os.environ['EXPECT_KEYS'].split(',')
           max_block = int(os.environ['MAX_BLOCK_LINES'])
           max_dumps = int(os.environ['MAX_DUMPS'])
           cap = int(os.environ['MAX_FILE_MB']) * 1024 * 1024
@@ -97,12 +102,30 @@ jobs:
           if not targets:
               print('NO index files matched, check INDEX_FILES')
 
-          pair = re.compile(r'^[\s"]*([A-Za-z_][A-Za-z0-9_]*)["\s]*[=:]\s*(.*)$')
+          pair = re.compile(r'^[\s"]*([A-Za-z_][A-Za-z0-9_]*)["\s]*[=:]?\s*(.*)$')
           numeric = re.compile(r'^-?\d+(\.\d+)?$')
 
           def read(path):
               return open(path, 'r', encoding='utf-8',
                           errors='replace').read().split('\n')
+
+          def opens_block(lines, i):
+              """LOOKAHEAD. The brace may be on this line or the next non-blank
+              one. Round three checked only this line and indexed nothing."""
+              m = pair.search(lines[i])
+              if not m:
+                  return None
+              key, val = m.group(1), m.group(2).strip().rstrip(',')
+              if val in ('{', '['):
+                  return key
+              if val not in ('', '='):
+                  return None
+              for j in range(i + 1, min(len(lines), i + 3)):
+                  nxt = lines[j].strip()
+                  if not nxt:
+                      continue
+                  return key if nxt[:1] in ('{', '[') else None
+              return None
 
           def extract(lines, start):
               depth, out, seen_open = 0, [], False
@@ -121,56 +144,62 @@ jobs:
               fh.write(s + '\n')
               print(s)
 
-          # An index entry is a key whose value opens a block, at ANY depth.
-          # Depth is tracked so a top-level subclass is distinguishable from a
-          # nested struct, which is the difference between a unit and a field.
-          index = {}      # path -> [(depth, key, lineno)]
+          index = {}
           for path in targets:
               lines = read(path)
               depth, entries = 0, []
               for i, ln in enumerate(lines):
-                  m = pair.search(ln)
-                  if m and m.group(2).strip() in ('{', '['):
-                      entries.append((depth, m.group(1), i))
+                  key = opens_block(lines, i)
+                  if key:
+                      entries.append((depth, key, i))
                   depth += ln.count('{') + ln.count('[')
                   depth -= ln.count('}') + ln.count(']')
               index[path] = entries
 
-          with open('out/npc-probe3.md', 'w') as fh:
-              w(fh, '# NPC probe, round three')
+          all_keys = {k for v in index.values() for _, k, _ in v}
+          missing = [k for k in expect if k not in all_keys]
+
+          with open('out/npc-probe4.md', 'w') as fh:
+              w(fh, '# NPC probe, round four')
               w(fh)
               w(fh, f"GameTracking {os.environ.get('GT_SHA','')}")
+              w(fh)
+              w(fh, '## Parse assertion')
+              w(fh)
+              if missing:
+                  w(fh, 'FAILED. These keys were read successfully in round two')
+                  w(fh, 'and the index cannot see them, so the index is wrong:')
+                  for k in missing:
+                      w(fh, f'  - {k}')
+              else:
+                  w(fh, f'OK, all {len(expect)} known keys present in the index.')
               w(fh)
 
               w(fh, '## Index of every block key')
               w(fh)
-              w(fh, 'Depth 0 and 1 are the subclass level. Anything deeper is a')
-              w(fh, 'field inside a unit, not a unit. This is the list that says')
-              w(fh, 'what a trooper is really called.')
+              w(fh, 'Depth 0 to 2 is the subclass level. Deeper is a field')
+              w(fh, 'inside a unit, not a unit.')
               for path, entries in index.items():
                   w(fh)
                   w(fh, f'### {path}, {len(entries)} block keys')
                   w(fh)
-                  shallow = [e for e in entries if e[0] <= 1]
-                  w(fh, f'depth 0 to 1 ({len(shallow)}):')
+                  shallow = [e for e in entries if e[0] <= 2]
+                  w(fh, f'depth 0 to 2 ({len(shallow)}):')
                   for d, k, i in shallow:
                       w(fh, f'  {d}  {k}  :{i}')
 
               w(fh)
               w(fh, '## Blocks matching a pattern')
               w(fh)
-              w(fh, 'Speed-shaped keys flagged with ++. A units-per-second value')
-              w(fh, 'will be in the hundreds; a multiplier will be near 1.')
-              dumped = 0
-              hit_keys = []
+              w(fh, 'Speed-shaped keys flagged with ++. Units per second will')
+              w(fh, 'be in the hundreds; a multiplier will be near 1.')
+              dumped, hit_keys = 0, []
               for path, entries in index.items():
                   lines = read(path)
                   for d, k, i in entries:
                       if dumped >= max_dumps:
                           break
-                      if not any(p in k.lower() for p in patterns):
-                          continue
-                      if d > 1:
+                      if d > 2 or not any(p in k.lower() for p in patterns):
                           continue
                       hit_keys.append(k)
                       dumped += 1
@@ -201,16 +230,19 @@ jobs:
           json.dump({
               'index': {p: [list(e) for e in v] for p, v in index.items()},
               'dumped': hit_keys,
-          }, open('out/npc-probe3.json', 'w'), indent=1)
+              'assertion_missing': missing,
+          }, open('out/npc-probe4.json', 'w'), indent=1)
 
           print()
+          for p, v in index.items():
+              print(f'{p}: {len(v)} block keys')
           print(f'blocks dumped: {dumped}')
-          print('keys: ' + ', '.join(hit_keys))
+          print('assertion: ' + ('OK' if not missing else 'FAILED ' + ','.join(missing)))
           PY
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: npc-probe3
+          name: npc-probe4
           path: out/
           if-no-files-found: ignore
