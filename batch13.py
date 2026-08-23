@@ -1058,10 +1058,19 @@ def check(plan):
     return bad
 
 
-# Trooper ground speed, in units per second. UNVERIFIED: not found in the
-# vdata searched so far, so this is a placeholder used only to turn lane
-# lengths into a rough time. The LENGTHS are exact; the times are not.
-TROOPER_SPEED = 0.0          # set from npc_units.vdata when known
+# Trooper ground speed, in units per second. READ from npc_units.vdata,
+# subclass trooper_normal, npc-probe round four: m_flWalkSpeed = 248,
+# m_flRunSpeed = 512, m_flAcceleration = 200. Lane troopers WALK, so the walk
+# speed is the one that sets wave timing. The run speed is what a trooper
+# uses when it is chasing something, which is not what a lane length measures.
+#
+# WHAT IS STILL UNVERIFIED. Nobody has watched a trooper walk this map, so the
+# times below assume a trooper is at full walk speed for the whole route with
+# no acceleration ramp, no pathing overshoot on corners and no stopping to
+# shoot. Real waves do all three, so treat every time as a FLOOR. The lengths
+# remain exact; only the times carry the assumption.
+TROOPER_SPEED = 248.0        # m_flWalkSpeed, trooper_normal
+TROOPER_RUN_SPEED = 512.0    # m_flRunSpeed, for reference, not used below
 UNITS_PER_M = 39.37
 
 
@@ -1087,6 +1096,7 @@ def report_lengths(paths):
     unfair in a way no amount of geometry symmetry fixes.
     """
     print("\nlane lengths")
+    meet = []
     for p in paths:
         if p.get("classname") != "lane_marker_path":
             continue
@@ -1113,12 +1123,31 @@ def report_lengths(paths):
         if TROOPER_SPEED > 0:
             line += "   %5.1f s" % (first / TROOPER_SPEED)
         print(line)
+        meet.append((p["name"], first / TROOPER_SPEED if TROOPER_SPEED else 0.0))
         if best is not None and best > 500.0:
             print("    NOTE nearest node is %.0f u from the mirror point; the"
                   % best)
             print("    split above is approximate. Add a node near the middle.")
     if TROOPER_SPEED <= 0:
-        print("  (no trooper speed known, so no times — see TROOPER_SPEED)")
+        print("  (no trooper speed known, so no times, see TROOPER_SPEED)")
+        return
+
+    # LANE PARITY. The times above are only interesting relative to each
+    # other: if one lane's wave reaches the middle first, that lane is
+    # contested earlier every single wave, for the whole match. A spread of a
+    # second or two is noise; a spread of five seconds is a design fault the
+    # geometry cannot fix later.
+    if len(meet) > 1:
+        times = [t for _, t in meet]
+        lo, hi = min(times), max(times)
+        print("\nlane parity, base to midpoint at %.0f u/s" % TROOPER_SPEED)
+        print("  fastest %.1f s, slowest %.1f s, spread %.1f s"
+              % (lo, hi, hi - lo))
+        if hi - lo > 3.0:
+            print("  WARNING spread over 3 s. One lane is contested first,")
+            print("  every wave, all match. Even the routes before polishing.")
+        else:
+            print("  within 3 s, lanes are comparable.")
 
 
 def main(path):

@@ -1,47 +1,56 @@
 name: npc probe
 
-# ROUND FOUR. Round three indexed ZERO block keys in a file that plainly has
-# hundreds, and the cause is a trap this repo has already paid for once: NO
-# LOOKAHEAD. entity-survey.yml hit exactly this and its note says an array
-# scalar and an element type header are both one quoted token on a line, and
-# only the NEXT line tells them apart. Same shape here. Round three demanded
-# that a key's brace sit on the SAME line as the key:
+# ROUND FIVE. Round four's index worked, the assertion passed, and it answered
+# the trooper question outright: the unit is trooper_normal, not npc_trooper,
+# with m_flWalkSpeed 248 and m_flRunSpeed 512. That value is now in batch13.
 #
-#     if m.group(2).strip() in ('{', '['):
+# WHAT IS LEFT is two identifications, both currently guesses:
 #
-# vdata puts the brace on the line BELOW. So every block key in the file
-# failed the test and the index came back empty, while round two's brace
-# walker had worked fine because it started from the key line and did not
-# care where the opening brace was.
+# 1. THE SHRINE UNIT. destroyable_building sits at depth 1 in npc_units.vdata,
+#    immediately after the three barrack boss variants, and the user describes
+#    shrines as destructible buildings with a curse that release super
+#    troopers when broken. That is a good match and nothing more. What would
+#    settle it is the block itself: a curse-shaped modifier, a super trooper
+#    reference, or a core_shrine model path.
 #
-# The fix is one line of lookahead: a key is a block key if its value is empty
-# or a brace, AND the next non-blank line opens one. Round two's walker is
-# kept exactly as it was, since it was never the broken part.
+# 2. WHAT npc_boss_tier1 IS. The user has established that the LANE guardian
+#    is generic npc_barrack_boss and the BASE guardians are its amber and
+#    sapphire variants, which the vdata confirms: all three are identical
+#    except for m_sModelName. That leaves the tier1 slot with nothing obvious
+#    to be, so either it is legacy or it is the shrine, competing with
+#    destroyable_building for the same job.
 #
-# STILL OPEN, and the only two things this run is for:
-#   trooper speed     no key called npc_trooper exists, so the index IS the
-#                     answer to what it is called
-#   shrine classname  37 shrine lines in npc_units.vdata, unread
+# 3. THE m_VS TABLES. Every trooper block carries a damage table split by
+#    target: m_VSPlayer, m_VSTrooper, m_VSWatcher, m_VSWalker, m_VSPatron,
+#    m_VSPatronPhase2, m_VSGuardian, m_VSShrine. That is EIGHT target
+#    categories, and guardian and watcher are separate entries, which is the
+#    same distinction the user drew from the game. Whatever the shrine unit
+#    turns out to be called, m_VSShrine proves a shrine is a first-class
+#    thing the damage model knows about, so the tables are worth reading
+#    whole rather than as a line of numbers.
 #
-# ALREADY SETTLED, not re-asked:
-#   guardian clip capsule  radius 32, height 224
-#   guardian invul range   944.882
-#   walker sight / navHull 866, 2
-#   patron core / pit      130, 550
-#   lane enum              BarrackBoss_Lane1..Lane4, contiguous
+# METHOD is unchanged from round four, which is the point: the index and the
+# lookahead both worked and the assertion caught nothing, so only the patterns
+# move. The assertion keys move with them.
 
 on: workflow_dispatch
 
 env:
   INDEX_FILES: 'npc_units.vdata,misc.vdata'
-  BLOCK_PATTERNS: 'trooper,shrine,barrack,boss,guard'
-  SPEED_HINTS: 'speed,rate,velocity,move'
+  # Round four already dumped the barrack bosses and the troopers. These are
+  # the blocks nobody has read yet.
+  BLOCK_PATTERNS: 'destroyable_building,npc_boss_tier1,shrine,watcher,curse'
+  # Flag anything that would identify a shrine by behaviour rather than name.
+  SPEED_HINTS: 'shrine,curse,super,model,vmdl,trooper,modifier'
   MAX_BLOCK_LINES: 400
   MAX_DUMPS: 24
   MAX_FILE_MB: 12
   # Assert a known value so a broken parse is visible instead of plausible.
   # Round two read these blocks successfully at these exact lines.
-  EXPECT_KEYS: 'npc_barrack_boss,npc_boss_tier2,npc_boss_tier3,alt_npc_boss_tier3'
+  # Read successfully in round four at these names, so the index must still
+  # see them. trooper_normal is included because it is the round that found
+  # it, and a regression there would be silent otherwise.
+  EXPECT_KEYS: 'npc_barrack_boss,npc_boss_tier2,npc_boss_tier3,trooper_normal,destroyable_building'
 
 jobs:
   probe:
@@ -80,7 +89,7 @@ jobs:
         env:
           GT_SHA: ${{ steps.gt.outputs.sha }}
         run: |
-          python3 - <<'PY' | tee out/npc-probe4.log
+          python3 - <<'PY' | tee out/npc-probe5.log
           import os, re, json
 
           index_files = os.environ['INDEX_FILES'].split(',')
@@ -159,15 +168,15 @@ jobs:
           all_keys = {k for v in index.values() for _, k, _ in v}
           missing = [k for k in expect if k not in all_keys]
 
-          with open('out/npc-probe4.md', 'w') as fh:
-              w(fh, '# NPC probe, round four')
+          with open('out/npc-probe5.md', 'w') as fh:
+              w(fh, '# NPC probe, round five')
               w(fh)
               w(fh, f"GameTracking {os.environ.get('GT_SHA','')}")
               w(fh)
               w(fh, '## Parse assertion')
               w(fh)
               if missing:
-                  w(fh, 'FAILED. These keys were read successfully in round two')
+                  w(fh, 'FAILED. These keys were read successfully in round four')
                   w(fh, 'and the index cannot see them, so the index is wrong:')
                   for k in missing:
                       w(fh, f'  - {k}')
@@ -227,11 +236,45 @@ jobs:
                   w(fh)
                   w(fh, f'STOPPED at MAX_DUMPS={max_dumps}. Narrow BLOCK_PATTERNS.')
 
+              # The damage tables, dumped whole rather than flattened into a
+              # numeric line. Eight target categories, and guardian and
+              # watcher are separate, which is the distinction that matters
+              # for what goes in the base room versus the lane.
+              w(fh)
+              w(fh, '## Damage tables, trooper_normal')
+              w(fh)
+              vs_seen = []
+              for path, entries in index.items():
+                  if 'npc_units' not in path:
+                      continue
+                  lines = read(path)
+                  for d, k, i in entries:
+                      if not k.startswith('m_VS'):
+                          continue
+                      # Only the ones belonging to trooper_normal, which
+                      # round four located at line 543. Bounded by the next
+                      # depth-1 key after it.
+                      if not (543 < i < 769):
+                          continue
+                      vs_seen.append(k)
+                      body = extract(lines, i)
+                      w(fh, f'### {k}  (:{i})')
+                      w(fh, '```')
+                      for ln in body:
+                          w(fh, ln)
+                      w(fh, '```')
+              if not vs_seen:
+                  w(fh, 'NONE found in the trooper_normal line range. Either')
+                  w(fh, 'the file moved or the range is wrong; check the index')
+                  w(fh, 'above for where trooper_normal actually starts.')
+              else:
+                  w(fh, 'categories: ' + ', '.join(vs_seen))
+
           json.dump({
               'index': {p: [list(e) for e in v] for p, v in index.items()},
               'dumped': hit_keys,
               'assertion_missing': missing,
-          }, open('out/npc-probe4.json', 'w'), indent=1)
+          }, open('out/npc-probe5.json', 'w'), indent=1)
 
           print()
           for p, v in index.items():
@@ -243,6 +286,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: npc-probe4
+          name: npc-probe5
           path: out/
           if-no-files-found: ignore
