@@ -5240,12 +5240,12 @@
    "name": "axis_473",
    "origin": [
     1413.6,
-    2347.1,
+    2293.775,
     748.0
    ],
    "extents": [
     1013.5,
-    1547.0,
+    1653.65,
     26.7
    ],
    "angles": [
@@ -5253,7 +5253,8 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch14": "extended 106.7 u on y toward axis_124_far"
   },
   {
    "name": "axis_475",
@@ -6265,7 +6266,8 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is a box)"
   },
   {
    "name": "axis_562",
@@ -6531,7 +6533,8 @@
     79.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is a box)"
   },
   {
    "name": "axis_576",
@@ -7911,7 +7914,8 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is wall)"
   },
   {
    "name": "axis_720",
@@ -31452,19 +31456,20 @@
    "origin": [
     0.0,
     -5852.4,
-    1387.1
+    1307.075
    ],
    "extents": [
     1554.7,
     26.7,
-    640.2
+    480.15
    ],
    "angles": [
     0.0,
     -180.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "lowered 25%"
   },
   {
    "name": "hex_plat_s_s",
@@ -38644,12 +38649,12 @@
    "name": "m_axis_473",
    "origin": [
     -493.4,
-    9823.0,
+    9876.325,
     748.0
    ],
    "extents": [
     1013.5,
-    1547.0,
+    1653.65,
     26.7
    ],
    "angles": [
@@ -38657,7 +38662,8 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch14": "extended 106.7 u on y toward axis_124_far"
   },
   {
    "name": "m_axis_475",
@@ -39669,7 +39675,8 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is a box)"
   },
   {
    "name": "m_axis_562",
@@ -39935,7 +39942,8 @@
     -101.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is a box)"
   },
   {
    "name": "m_axis_576",
@@ -41315,7 +41323,8 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is wall)"
   },
   {
    "name": "m_axis_720",
@@ -64856,19 +64865,20 @@
    "origin": [
     920.2,
     18022.5,
-    1387.1
+    1307.075
    ],
    "extents": [
     1554.7,
     26.7,
-    640.2
+    480.15
    ],
    "angles": [
     0.0,
     0.0,
     0.0
    ],
-   "material": "materials/dev/reflectivity_30.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "lowered 25%"
   },
   {
    "name": "m_hex_plat_s_s",
@@ -72947,7 +72957,8 @@
     0.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is wall)"
   },
   {
    "name": "arch_axis_553_mid_0_ramp-slab_820",
@@ -74163,7 +74174,8 @@
     180.0,
     0.0
    ],
-   "material": "materials/dev/dev_measuregeneric01.vmat"
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch14": "material from hex_par_s_mid (coloured as floor but is wall)"
   },
   {
    "name": "m_arch_axis_553_mid_0_ramp-slab_820",
