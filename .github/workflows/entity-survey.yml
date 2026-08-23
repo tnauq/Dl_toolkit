@@ -129,7 +129,14 @@ env:
   # guardian falls, so the output side lives on npc_barrack_boss and the
   # input side on trigger_item_shop, and seeing both ends is what says which
   # way round the wiring goes.
-  CAPTURE_CLASSES: 'npc_barrack_boss,trigger_item_shop'
+  #
+  # 2026-08-23, round two. The first connection pass showed the wiring is NOT
+  # guardian-to-shop: not one of the 89 connections is owned by an
+  # npc_barrack_boss. Each shop owns a small RELAY NETWORK instead, so the
+  # excerpt budget goes to the entities that make it up. logic_auto_citadel
+  # is the one that starts shops 15 seconds into the game and is the only
+  # citadel-specific member.
+  CAPTURE_CLASSES: 'logic_relay,logic_auto,logic_auto_citadel,trigger_item_shop,trigger_item_shop_safe_zone,info_super_trooper_spawn,destroyable_building'
   # Property TUPLES to tabulate, as classname:key,key;classname:key
   #
   # THE QUESTION: is a lane_marker_path SHARED between the teams or one per
@@ -195,7 +202,7 @@ env:
   # DmeConnectionData has no classname, so it cannot be tabulated this way and
   # the connection pass below does it instead. Left pointed at the shop so the
   # table still says which shops carry a teamnumber.
-  TUPLE_SPECS: 'trigger_item_shop:targetname,teamnumber'
+  TUPLE_SPECS: 'logic_relay:targetname,spawnflags,StartDisabled;logic_auto:targetname,spawnflags;logic_auto_citadel:targetname,spawnflags;trigger_item_shop:targetname,teamnumber,spawnflags;destroyable_building:targetname,teamnumber,subclass_name'
 
   # Excerpts per kind, and lines per excerpt. A brush entity's subtree
   # contains an entire CDmePolygonMesh if the mesh is inline, which is
@@ -203,7 +210,7 @@ env:
   # question is answered by the first few lines of `children`, not by the
   # vertex streams. A truncation notice is printed, so a truncated block is
   # itself evidence the mesh is inline.
-  MAX_EXCERPTS: 8
+  MAX_EXCERPTS: 4
   MAX_EXCERPT_LINES: 200
 
 jobs:
@@ -627,6 +634,57 @@ jobs:
                       w(fh, 'assume a fixed set; optional attributes exist.')
                   w(fh)
 
+                  # THE ENUM. Round one sampled ONE targetType, a 7 on a
+                  # logic_relay, and an npc_boss_tier3 row looked different.
+                  # An enum read from a single sample is a guess with a
+                  # number in it, so every value is counted here against the
+                  # owner and the target it names. If 7 always accompanies a
+                  # plain targetname and some other value always accompanies
+                  # something else, the meaning falls out of the pairing
+                  # without needing a shipped table.
+                  w(fh, '### targetType, every value')
+                  w(fh)
+                  tt = collections.Counter()
+                  tt_owner = collections.defaultdict(collections.Counter)
+                  for owner, c in conns:
+                      v = c.get('targetType', ('', '(absent)'))[1]
+                      tt[v] += 1
+                      cls = (owner or {}).get('class') or (owner or {}).get('type') or '?'
+                      tt_owner[v][cls] += 1
+                  w(fh, '| targetType | count | owners |')
+                  w(fh, '|---|---|---|')
+                  for v, n in tt.most_common():
+                      who = ', '.join(f'{k} x{m}'
+                                      for k, m in tt_owner[v].most_common(6))
+                      w(fh, f'| {v} | {n} | {who} |')
+                  w(fh)
+                  if len(tt) == 1:
+                      w(fh, 'ONE value across all 89. The emitter can write it')
+                      w(fh, 'as a constant and the enum does not matter.')
+                  else:
+                      w(fh, f'{len(tt)} distinct values, so it IS an enum and')
+                      w(fh, 'the emitter cannot hardcode one. The owner column')
+                      w(fh, 'is the evidence for what each value means.')
+                  w(fh)
+
+                  # Does every targetName resolve to an entity that exists?
+                  # A connection naming something absent is either a fixture
+                  # artefact or proof that names can point outside the map,
+                  # and either way it is worth knowing BEFORE generating
+                  # names by convention.
+                  w(fh, '### Do connection targets exist in the map?')
+                  w(fh)
+                  targets = collections.Counter(
+                      c.get('targetName', ('', ''))[1] for _, c in conns)
+                  w(fh, f'{len(targets)} distinct target name(s).')
+                  w(fh, 'Cross-check against the targetname index below is')
+                  w(fh, 'manual for now: this pass records the names, it does')
+                  w(fh, 'not resolve them.')
+                  w(fh)
+                  for t, n in targets.most_common(30):
+                      w(fh, f'  {t or "(empty)"}  x{n}')
+                  w(fh)
+
                   w(fh, '### Vocabulary: which outputs drive which inputs')
                   w(fh)
                   w(fh, '| owner classname | outputName | inputName | target'
@@ -642,7 +700,7 @@ jobs:
                              c.get('delay', ('', ''))[1],
                              c.get('timesToFire', ('', ''))[1])
                       vocab[row] += 1
-                  for row, n in vocab.most_common(40):
+                  for row, n in vocab.most_common(120):
                       cells = ' | '.join(x or '(empty)' for x in row)
                       w(fh, f'| {cells} | x{n} |')
                   w(fh)
