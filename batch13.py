@@ -684,7 +684,17 @@ def build_objectives():
         if kind == "guardian":
             out.append({
                 "name": "guardian_l%s" % lane,
-                "classname": "npc_barrack_boss",
+                # CORRECTED 2026-08-23, user: the objective standing in the
+                # middle of a lane is npc_boss_tier3, and it is the one whose
+                # death disables the lane's shop. npc_barrack_boss is NOT
+                # this: it is the pair guarding a SHRINE in the base, and it
+                # drives nothing.
+                #
+                # The vdata agrees where it can be checked. npc_boss_tier3 is
+                # the only objective class dl_example wires an output on
+                # (OnBossKilled), and npc_barrack_boss owns no connection in
+                # the fixture at all.
+                "classname": "npc_boss_tier3",
                 "origin": list(origin),
                 "angles": face_centre(origin),
                 "surveyed_on": box,
@@ -693,15 +703,14 @@ def build_objectives():
                     "vscripts": "",
                     "teamnumber": TEAM_A,
                     "lanenum": lane,
-                    "BackdoorProtectionTrigger": "",
+                    "BossName": "amber_guardian_lane%s" % lane,
                     "CoverGroupID": "",
-                    "LaneSide": "0",
-                    # The GENERIC subclass. Confirmed 2026-08-23: the lane
-                    # guardian uses npc_barrack_boss, while the BASE
-                    # guardians use the amber and sapphire variants, which
-                    # differ from it only by m_sModelName. Base guardians are
-                    # not authored yet, so no variant is used anywhere here.
-                    "subclass_name": "npc_barrack_boss",
+                    # UNVERIFIED KEY SET. dl_example's npc_boss_tier3 keys
+                    # were never tabulated, so this copies the shape of
+                    # npc_boss_tier2, which IS read. BackdoorProtectionTrigger
+                    # and LaneSide are dropped: both were npc_barrack_boss
+                    # keys and there is no evidence tier3 takes them.
+                    "subclass_name": "npc_boss_tier3",
                 },
             })
         else:
@@ -1383,8 +1392,8 @@ def main(path):
     print("  INVENTED  every volume SIZE, all angles, camps, breakables,")
     print("            bridge buffs, minimap corners, ziplines, zap and")
     print("            boost volumes, midboss")
-    print("  ABSENT    shrines, base guardians, patron. Readings pending;")
-    print("            the base room has a 550 u patron pit to fit around.")
+    print("  ABSENT    shrines (destroyable_building), the barrack")
+    print("            bosses guarding them, patron. Readings pending.")
     return 0
 
 

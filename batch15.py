@@ -30,10 +30,10 @@ spawnflags 1; the 15 second delay is on the OnGameInProgress wire.
 WHAT IS A DESIGN DECISION AND NOT A READING. Two things, both the user's
 2026-08-23 call, and both marked so they can be changed in one place:
 
-  1. GUARDIANS KILL THEIR OWN LANE'S SHOP. dl_example wires an
-     info_super_trooper_spawn's OnTrooperKilled into the kill relay instead,
-     which suits a map where super troopers come from the barracks. Here the
-     guardian does it directly, so a lane's shop dies with its guardian.
+  1. LANE OBJECTIVES KILL THEIR OWN LANE'S SHOP. dl_example wires an
+     info_super_trooper_spawn's OnTrooperKilled into the kill relay instead.
+     Here the npc_boss_tier3 standing in the lane does it directly, so a
+     lane's shop dies with the objective that holds the lane.
 
   2. SHRINES UPGRADE TROOPERS. Not implemented below, because there are no
      shrines in the plan yet and no super trooper spawns for them to enable.
@@ -75,7 +75,7 @@ TEAM_B = "3"
 # logic_auto_citadel OnGameInProgress wire.
 GAME_START_DELAY = 15.0
 
-# UNVERIFIED, see the module docstring. Fails silently if wrong.
+# READ from dl_example: npc_boss_tier3 fires OnBossKilled.
 GUARDIAN_OUTPUT = "OnBossKilled"
 
 # Which shops get a network, and which entity kills each one.
@@ -342,11 +342,11 @@ def main(path):
     print("  entities %d (+%d, of which %d mirrored)"
           % (len(plan["entities"]), len(added) + len(twins), len(twins)))
     print("  connections %d" % conns)
-    print("\nUNVERIFIED: GUARDIAN_OUTPUT = %r. No connection in dl_example is"
+    print("\nGUARDIAN_OUTPUT = %r, read from dl_example's npc_boss_tier3."
           % GUARDIAN_OUTPUT)
-    print("owned by an npc_barrack_boss, so nothing says what one fires when")
-    print("it dies. A wrong name emits, converts and verifies clean, and the")
-    print("shop simply never closes.")
+    print("UNVERIFIED: the npc_boss_tier3 KEY SET in batch13 copies the shape")
+    print("of npc_boss_tier2 rather than being read. A wrong key is ignored")
+    print("silently by the game.")
     return 0
 
 
