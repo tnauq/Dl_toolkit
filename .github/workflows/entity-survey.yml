@@ -51,6 +51,13 @@ env:
   # no classname to match. That is exactly what hid 4 of the 8
   # citadel_zipline_path: a cap of 8 returned only 4, and dl_example has
   # exactly 2 CMapGroup. Family B is grouped; family A is not.
+  #
+  # DmeConnectionData is deliberately NOT here, 2026-08-23. It is nested
+  # inside a CMapEntity, and a capture never starts while one is already
+  # open, so adding it would produce zero excerpts and look like the fixture
+  # has no connections. That is the same trap CMapGroup set. Connections are
+  # collected by a dedicated pass instead, below, and the ENTITY excerpts
+  # carry them inline as context.
   CAPTURE_TYPES: 'CMapEntity,CMapPath,CMapPathNode'
   # Classnames worth an excerpt, plus the path element types above.
   #
@@ -116,7 +123,13 @@ env:
   # for exactly the 124 nodes that lack one_way and always_usable. Family B,
   # the 146-node one with start_active, pathNodes, pathNodePinsEnabled and
   # real targetnames like 8785_Lane6, was never reached. 8 gets both.
-  CAPTURE_CLASSES: 'citadel_zipline_path'
+  #
+  # 2026-08-23: the zipline questions are all closed, so the excerpt budget
+  # goes to the entities that OWN connections. A shop disables when its
+  # guardian falls, so the output side lives on npc_barrack_boss and the
+  # input side on trigger_item_shop, and seeing both ends is what says which
+  # way round the wiring goes.
+  CAPTURE_CLASSES: 'npc_barrack_boss,trigger_item_shop'
   # Property TUPLES to tabulate, as classname:key,key;classname:key
   #
   # THE QUESTION: is a lane_marker_path SHARED between the teams or one per
@@ -163,7 +176,26 @@ env:
   # places they are two systems and batch13 emits half the map's ziplines.
   # ORIGIN is the discriminator: family B's route is relative to it, so two
   # representations of one cable would share it.
-  TUPLE_SPECS: 'citadel_zipline_path:lane_number,targetname,color_tint;citadel_zipline_path_node:teamnumber,capturable'
+  #
+  # 2026-08-23. THE QUESTION NOW IS ENTITY IO. dl_example has 89
+  # DmeConnectionData and the emitter writes none, so a shop never learns its
+  # guardian died. NEXT records the key NAMES — outputName, targetType,
+  # targetName, inputName, delay, timesToFire — but NOT their TYPES, and a
+  # keyvalues2 attribute carries its type inline. Guessing that targetType is
+  # an int and delay a float is exactly the class of guess that has cost this
+  # project four probe rounds today. So the block is read, not assumed.
+  #
+  # WHAT A GOOD RESULT LOOKS LIKE: one verbatim DmeConnectionData excerpt
+  # showing every attribute with its type, plus the tuple table below saying
+  # which outputs and inputs are actually used across all 89. The pair
+  # (outputName, inputName) is the vocabulary; if it is a handful of repeated
+  # values, the wiring is a pattern that can be generated rather than
+  # authored per entity.
+  # TUPLE_SPECS keys on CLASSNAME, which comes out of EditGameClassProps. A
+  # DmeConnectionData has no classname, so it cannot be tabulated this way and
+  # the connection pass below does it instead. Left pointed at the shop so the
+  # table still says which shops carry a teamnumber.
+  TUPLE_SPECS: 'trigger_item_shop:targetname,teamnumber'
 
   # Excerpts per kind, and lines per excerpt. A brush entity's subtree
   # contains an entire CDmePolygonMesh if the mesh is inline, which is
@@ -315,6 +347,11 @@ jobs:
 
           excerpts = collections.defaultdict(list)
 
+          # Every DmeConnectionData found, as (owner frame, {attr: (type,
+          # value)}). The owner frame is kept by reference, not copied, so the
+          # classname it gains later is visible when the report is written.
+          conns = []
+
           # Each open element gets a frame, so an id line and a classname
           # found later can both be attached to the right element.
           frames = []              # [{'type':..,'id':None,'class':None}]
@@ -412,6 +449,13 @@ jobs:
                           zip_pending = None
                       if closing_elem and frames:
                           f = frames.pop()
+                          if f['type'] == 'DmeConnectionData' and f.get('conn'):
+                              # The owner is the frame below, whose classname
+                              # is filled in when ITS EditGameClassProps
+                              # closes. That may not have happened yet, so the
+                              # owning FRAME is stored and read at the end.
+                              conns.append((frames[-1] if frames else None,
+                                            f['conn']))
                           if f['id']:
                               idinfo[f['id']] = {'type': f['type'],
                                                  'classname': f['class'] or ''}
@@ -425,6 +469,15 @@ jobs:
                   m = three.match(s)
                   if m:
                       name, typ, val = m.groups()
+                      # CONNECTION PASS. A DmeConnectionData carries its
+                      # attributes directly, not inside an EditGameClassProps,
+                      # so the classname machinery above cannot see it. Every
+                      # attribute is recorded WITH ITS TYPE, because the type
+                      # is the whole question: NEXT records the key names but
+                      # not whether targetType is an int, delay a float, or
+                      # either of them a string.
+                      if frames and frames[-1]['type'] == 'DmeConnectionData':
+                          frames[-1].setdefault('conn', {})[name] = (typ, val)
                       if zip_pending is not None:
                           if name == 'origin':
                               zip_pending['origin'] = val
@@ -541,6 +594,73 @@ jobs:
               else:
                   w(fh, 'Could not find both arrays. world=' + str(world) +
                         ' vis=' + str(vis))
+              w(fh)
+
+              # ------------------------------------------------ CONNECTIONS
+              w(fh, '## Entity IO: every DmeConnectionData')
+              w(fh)
+              w(fh, f'found: {len(conns)}')
+              w(fh)
+              if not conns:
+                  w(fh, 'NONE. The fixture is documented as having 89, so zero')
+                  w(fh, 'here means the collector is broken, not that the map')
+                  w(fh, 'has no wiring. Check that DmeConnectionData is NOT in')
+                  w(fh, 'CAPTURE_TYPES: a capture swallows nested elements.')
+              else:
+                  # The attribute set with TYPES, which is what the emitter
+                  # needs and what no note in the repo records.
+                  shape = collections.Counter()
+                  for _, c in conns:
+                      shape[tuple(sorted((k, t) for k, (t, _) in c.items()))] += 1
+                  w(fh, '### Attribute set and TYPES')
+                  w(fh)
+                  for sh, n in shape.most_common():
+                      w(fh, f'{n} connection(s) with:')
+                      for k, t in sh:
+                          w(fh, f'  "{k}" "{t}"')
+                      w(fh)
+                  if len(shape) == 1:
+                      w(fh, 'One shape across all of them, so the emitter can')
+                      w(fh, 'write a fixed attribute set.')
+                  else:
+                      w(fh, f'{len(shape)} DIFFERENT shapes. The emitter cannot')
+                      w(fh, 'assume a fixed set; optional attributes exist.')
+                  w(fh)
+
+                  w(fh, '### Vocabulary: which outputs drive which inputs')
+                  w(fh)
+                  w(fh, '| owner classname | outputName | inputName | target'
+                        ' | delay | times | count |')
+                  w(fh, '|---|---|---|---|---|---|---|')
+                  vocab = collections.Counter()
+                  for owner, c in conns:
+                      cls = (owner or {}).get('class') or (owner or {}).get('type') or '?'
+                      row = (cls,
+                             c.get('outputName', ('', ''))[1],
+                             c.get('inputName', ('', ''))[1],
+                             c.get('targetName', ('', ''))[1],
+                             c.get('delay', ('', ''))[1],
+                             c.get('timesToFire', ('', ''))[1])
+                      vocab[row] += 1
+                  for row, n in vocab.most_common(40):
+                      cells = ' | '.join(x or '(empty)' for x in row)
+                      w(fh, f'| {cells} | x{n} |')
+                  w(fh)
+                  w(fh, f'{len(vocab)} distinct row(s) across {len(conns)}'
+                        ' connections. A small number means the wiring is a')
+                  w(fh, 'PATTERN the emitter can generate rather than data')
+                  w(fh, 'that has to be authored per entity.')
+                  w(fh)
+
+                  w(fh, '### One verbatim example')
+                  w(fh)
+                  w(fh, '```')
+                  owner, c = conns[0]
+                  cls = (owner or {}).get('class') or '?'
+                  w(fh, f'owner: {cls}')
+                  for k, (t, v) in c.items():
+                      w(fh, f'"{k}" "{t}" "{v}"')
+                  w(fh, '```')
               w(fh)
 
               w(fh, '## Property tuples')
