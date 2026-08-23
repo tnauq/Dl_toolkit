@@ -77,6 +77,54 @@ MARK = "_batch13"
 TEAM_A = "2"
 TEAM_B = "3"
 
+
+# READ COORDINATES, 2026-08-23. Crosshair `copy pos` from the viewer, team-2
+# half only; every one below is mirrored to the team-3 half by twin_of. The
+# box each reading was taken on is recorded so a later re-survey knows what
+# moved.
+#
+# LANE ASSIGNMENT is by x, not read: west is lane 3, mid lane 1, east lane 6,
+# matching the LANES table. If the lane numbering itself is wrong, it is wrong
+# consistently here and in the paths.
+#
+# WHAT IS STILL INVENTED. The ANGLES. No facing was surveyed, so each
+# objective is turned to face the mirror point, which is the direction a
+# defender looks down its own lane. That is a reasonable default and nothing
+# more; a boss facing the wrong way is a cosmetic fault, not a structural one.
+OBJECTIVE_READINGS = [
+    # lane, kind, origin, box the reading was taken on
+    ("3", "guardian", [-1753.0, 4750.0, 280.0], "axis_790"),
+    ("1", "guardian", [425.0, 4126.0, 0.0], "axis_0"),
+    ("6", "guardian", [3467.0, 4143.0, 213.0], "gapfill_50_34"),
+    ("3", "walker", [-1208.0, 1143.0, 213.0], "merged_721"),
+    ("1", "walker", [437.0, 1419.0, 213.0], "axis_125"),
+    ("6", "walker", [2867.0, 2403.0, 213.0], "gapfill_42_27"),
+]
+
+# Guardian shops, one per lane. Same reading session.
+SHOP_READINGS = [
+    ("3", [-1623.0, 3200.0, 253.0], "axis_770"),
+    ("1", [915.0, 3980.0, 0.0], "axis_0"),
+    ("6", [3179.0, 3416.0, 213.0], "gapfill_50_34"),
+]
+
+# Base room. hex_plat_s is the spawn shop, hex_plat_s_e the team spawn, and
+# the regen covers the whole room, so the two readings are used as opposite
+# reference points for its volume.
+SPAWN_ORIGIN = [518.0, -6183.0, 1067.0]          # hex_plat_s_e
+BASE_SHOP_ORIGIN = [17.0, -5926.0, 1067.0]       # hex_plat_s
+SECRET_SHOP_ORIGIN = [-402.0, 2424.0, 654.0]     # axis_769
+URN_ORIGIN = [-3688.0, 2908.0, 867.0]            # hex2_dais1_0
+
+# INVENTED, all of them: no size was surveyed for any volume. A shop you
+# cannot walk into is worse than one that is too big, so these err large.
+# The regen is sized to span the two base-room readings plus a margin.
+SHOP_EXTENTS = [256.0, 256.0, 192.0]
+REGEN_MARGIN = 256.0
+REGEN_HEIGHT = 256.0
+
+
+
 # NEUTRAL things still get a mirrored twin — the layout is rotationally
 # symmetric, so a jungle camp on one half wants its opposite number — but
 # teamnumber is NOT flipped, because there is nothing to flip. Camps and
@@ -396,8 +444,9 @@ BRUSHES = [
     {
         "name": "shop_base",
         "classname": "trigger_item_shop",
-        "origin": [400.0, -200.0, 435.0],
-        "extents": [256.0, 256.0, 192.0],
+        # READ 2026-08-23 on hex_plat_s, the spawn shop room.
+        "origin": list(BASE_SHOP_ORIGIN),
+        "extents": list(SHOP_EXTENTS),
         "properties": {
             "targetname": "amber_base_shop_item_trigger",
             "teamnumber": TEAM_A,
@@ -410,7 +459,8 @@ BRUSHES = [
         # that does both jobs and its twin is the other end.
         "name": "urn_return",
         "classname": "citadel_trigger_idol_return",
-        "origin": [200.0, 400.0, 435.0],
+        # READ 2026-08-23 on hex2_dais1_0.
+        "origin": list(URN_ORIGIN),
         "extents": [192.0, 192.0, 192.0],
         "properties": {"targetname": "amber_idol_return",
                        "teamnumber": TEAM_A, "spawnflags": "4097"},
@@ -418,8 +468,17 @@ BRUSHES = [
     {
         "name": "spawn_regen",
         "classname": "func_regenerate",
-        "origin": [25.0, -700.0, 435.0],
-        "extents": [512.0, 384.0, 256.0],
+        # The WHOLE spawn room, per the user: the two base-room readings are
+        # used as opposite reference points and the volume spans both plus a
+        # margin. The room's true walls were not surveyed, so the SIZE is
+        # invented even though both reference points are real.
+        "origin": [round((SPAWN_ORIGIN[i] + BASE_SHOP_ORIGIN[i]) / 2.0, 4)
+                   for i in range(3)],
+        "extents": [round(abs(SPAWN_ORIGIN[0] - BASE_SHOP_ORIGIN[0])
+                          + 2 * REGEN_MARGIN, 4),
+                    round(abs(SPAWN_ORIGIN[1] - BASE_SHOP_ORIGIN[1])
+                          + 2 * REGEN_MARGIN, 4),
+                    REGEN_HEIGHT],
         "properties": {"targetname": "amber_spawn_regen",
                        "teamnumber": TEAM_A, "spawnflags": "4097"},
     },
@@ -457,6 +516,50 @@ BRUSHES = [
         "extents": [256.0, 1500.0, 256.0],
         "properties": {"targetname": "amber_zip_boost_lane1",
                        "spawnflags": "4097"},
+    },
+
+    # ---- guardian shops, READ 2026-08-23 -----------------------------
+    # One per lane, beside its guardian. Origins are real; EXTENTS are not,
+    # so a shop that turns out to sit inside a wall is a size fault, not a
+    # position fault.
+    {
+        "name": "shop_lane3",
+        "classname": "trigger_item_shop",
+        "origin": [-1623.0, 3200.0, 253.0],       # axis_770
+        "extents": list(SHOP_EXTENTS),
+        "properties": {"targetname": "amber_lane3_shop_item_trigger",
+                       "teamnumber": TEAM_A, "spawnflags": "4097",
+                       "AudioOffset": "-0.25 22 50"},
+    },
+    {
+        "name": "shop_lane1",
+        "classname": "trigger_item_shop",
+        "origin": [915.0, 3980.0, 0.0],           # axis_0
+        "extents": list(SHOP_EXTENTS),
+        "properties": {"targetname": "amber_lane1_shop_item_trigger",
+                       "teamnumber": TEAM_A, "spawnflags": "4097",
+                       "AudioOffset": "-0.25 22 50"},
+    },
+    {
+        "name": "shop_lane6",
+        "classname": "trigger_item_shop",
+        "origin": [3179.0, 3416.0, 213.0],        # gapfill_50_34
+        "extents": list(SHOP_EXTENTS),
+        "properties": {"targetname": "amber_lane6_shop_item_trigger",
+                       "teamnumber": TEAM_A, "spawnflags": "4097",
+                       "AudioOffset": "-0.25 22 50"},
+    },
+    {
+        # SECRET SHOP. Authored per team like every other shop, so the twin
+        # sits on the mirrored half. If the real map has ONE secret shop
+        # rather than one per side, delete the twin rather than moving this.
+        "name": "shop_secret",
+        "classname": "trigger_item_shop",
+        "origin": list(SECRET_SHOP_ORIGIN),       # axis_769
+        "extents": list(SHOP_EXTENTS),
+        "properties": {"targetname": "amber_secret_shop_item_trigger",
+                       "teamnumber": TEAM_A, "spawnflags": "4097",
+                       "AudioOffset": "-0.25 22 50"},
     },
 
     # ---- neutral, mirrored -------------------------------------------
@@ -557,51 +660,88 @@ POINTS = [
 #
 # TODO: every origin below is a placeholder.
 # ---------------------------------------------------------------------------
-OBJECTIVES = [
-    {
-        "name": "guardian_l1",
-        "classname": "npc_barrack_boss",
-        "origin": [25.0, 2000.0, 435.0],
-        "angles": [0.0, 90.0, 0.0],
-        "properties": {
-            "targetname": "amber_guardian_lane1",
-            "vscripts": "",
-            "teamnumber": TEAM_A,
-            "lanenum": "1",
-            "BackdoorProtectionTrigger": "",
-            "CoverGroupID": "",
-            "LaneSide": "0",
-        },
-    },
-    {
-        "name": "walker_l1",
-        "classname": "npc_boss_tier2",
-        "origin": [25.0, 3200.0, 435.0],
-        "angles": [0.0, 90.0, 0.0],
-        "properties": {
-            "targetname": "amber_walker_lane1",
-            "vscripts": "",
-            "teamnumber": TEAM_A,
-            "lanenum": "1",
-            "BossName": "amber_walker_lane1",
-            "CoverGroupID": "",
-            "subclass_name": "npc_boss_tier2",
-        },
-    },
-    {
-        "name": "trooper_spawn_l1",
-        "classname": "info_trooper_spawn",
-        "origin": [25.0, -300.0, 435.0],
-        "angles": [0.0, 90.0, 0.0],
-        "properties": {
-            "targetname": "",
-            "vscripts": "",
-            "teamnumber": TEAM_A,
-            "lanenum": "1",
-            "TrooperLevel": "4",
-        },
-    },
-]
+def face_centre(origin):
+    """Yaw turning this entity toward the mirror point.
+
+    Not surveyed. A guardian looks up its own lane toward the middle, which
+    is where everything it cares about comes from, so this is the sane
+    default rather than a measured fact.
+    """
+    import math
+    return [0.0, round(math.degrees(math.atan2(Y_PLANE - origin[1],
+                                               X_PLANE - origin[0])), 2), 0.0]
+
+
+def build_objectives():
+    """The objective table, from the readings above.
+
+    Trooper spawns are NOT in the readings: none was surveyed. Each is
+    DERIVED from the first node of its own lane route, which is the point
+    troopers walk away from by definition. Derived, not read, and marked so.
+    """
+    out = []
+    for lane, kind, origin, box in OBJECTIVE_READINGS:
+        if kind == "guardian":
+            out.append({
+                "name": "guardian_l%s" % lane,
+                "classname": "npc_barrack_boss",
+                "origin": list(origin),
+                "angles": face_centre(origin),
+                "surveyed_on": box,
+                "properties": {
+                    "targetname": "amber_guardian_lane%s" % lane,
+                    "vscripts": "",
+                    "teamnumber": TEAM_A,
+                    "lanenum": lane,
+                    "BackdoorProtectionTrigger": "",
+                    "CoverGroupID": "",
+                    "LaneSide": "0",
+                    # The GENERIC subclass. Confirmed 2026-08-23: the lane
+                    # guardian uses npc_barrack_boss, while the BASE
+                    # guardians use the amber and sapphire variants, which
+                    # differ from it only by m_sModelName. Base guardians are
+                    # not authored yet, so no variant is used anywhere here.
+                    "subclass_name": "npc_barrack_boss",
+                },
+            })
+        else:
+            out.append({
+                "name": "walker_l%s" % lane,
+                "classname": "npc_boss_tier2",
+                "origin": list(origin),
+                "angles": face_centre(origin),
+                "surveyed_on": box,
+                "properties": {
+                    "targetname": "amber_walker_lane%s" % lane,
+                    "vscripts": "",
+                    "teamnumber": TEAM_A,
+                    "lanenum": lane,
+                    "BossName": "amber_walker_lane%s" % lane,
+                    "CoverGroupID": "",
+                    "subclass_name": "npc_boss_tier2",
+                },
+            })
+    for spec in LANES:
+        lane = spec["lane"]
+        first = list(spec["half_route"][0])
+        out.append({
+            "name": "trooper_spawn_l%s" % lane,
+            "classname": "info_trooper_spawn",
+            "origin": [round(v, 4) for v in first],
+            "angles": face_centre(first),
+            "surveyed_on": "DERIVED from lane %s first node" % lane,
+            "properties": {
+                "targetname": "",
+                "vscripts": "",
+                "teamnumber": TEAM_A,
+                "lanenum": lane,
+                "TrooperLevel": "4",
+            },
+        })
+    return out
+
+
+OBJECTIVES = build_objectives()
 
 
 ON_AXIS_TOL = 1.0
@@ -1181,8 +1321,15 @@ def main(path):
           % (len(plan["entities"]), len(ents), brush))
     print("  paths    %d (+%d), %d nodes" % (len(plan["paths"]), len(paths), nodes))
     report_lengths(paths)
-    print("\nEVERY COORDINATE IN THIS RUN IS A PLACEHOLDER. See the module")
-    print("docstring. Replace with viewer `copy pos` readings before use.")
+    print("\nWHAT IN THIS RUN IS REAL, 2026-08-23")
+    print("  READ      lane routes, guardians, walkers, guardian shops,")
+    print("            secret shop, urn dropoff, base shop, spawn room")
+    print("  DERIVED   trooper spawns, from each lane's first node")
+    print("  INVENTED  every volume SIZE, all angles, camps, breakables,")
+    print("            bridge buffs, minimap corners, ziplines, zap and")
+    print("            boost volumes, midboss")
+    print("  ABSENT    shrines, base guardians, patron. Readings pending;")
+    print("            the base room has a 550 u patron pit to fit around.")
     return 0
 
 
