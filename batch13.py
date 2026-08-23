@@ -149,13 +149,34 @@ def mirror_angles(a):
     return [a[0], norm(a[1] + 180.0), a[2]]
 
 
+# SUBCLASSES THAT ARE PER TEAM. Read off dl_example 2026-08-23: its team-2
+# objectives use the plain subclass and its team-3 objectives the alt_ one,
+# and the vdata shows the pair differing only in model and scale. So the
+# mirror has to swap these the same way it swaps teamnumber - a twin left on
+# the team-2 subclass renders in the wrong colours.
+TEAM_SUBCLASS = {
+    "npc_boss_tier3": "alt_npc_boss_tier3",
+    "npc_boss_tier2": "alt_npc_boss_tier2",
+    "npc_boss_tier1": "alt_npc_boss_tier1",
+}
+
+
 def flip_team(props):
-    """Swap teamnumber on the mirrored copy. Anything else is left alone."""
+    """Swap teamnumber, and any subclass that has a per-team variant."""
     out = dict(props)
     if out.get("teamnumber") == TEAM_A:
         out["teamnumber"] = TEAM_B
     elif out.get("teamnumber") == TEAM_B:
         out["teamnumber"] = TEAM_A
+
+    sub = out.get("subclass_name")
+    if sub in TEAM_SUBCLASS:
+        out["subclass_name"] = TEAM_SUBCLASS[sub]
+    else:
+        for base, alt in TEAM_SUBCLASS.items():
+            if sub == alt:
+                out["subclass_name"] = base
+                break
     return out
 
 
@@ -698,19 +719,40 @@ def build_objectives():
                 "origin": list(origin),
                 "angles": face_centre(origin),
                 "surveyed_on": box,
+                # KEY SET READ 2026-08-23, not copied. dl_example's two
+                # npc_boss_tier3 carry exactly ten keys and all ten are here.
+                # Three were missing from the earlier tier2-shaped guess:
+                # BackdoorProtectionTrigger, dying_cover_id and
+                # vulnerable_cover_id.
+                #
+                # TARGETNAME IS EMPTY in both of dl_example's, which use
+                # BossName as the identity instead. That is followed here,
+                # because BossName is what the fixture keys on and an
+                # invented targetname could collide with something the game
+                # looks up. NOTE that this makes the objective unaddressable
+                # by entity IO from anything except its own outputs, which is
+                # fine: it drives the shop relay rather than being driven.
+                #
+                # SUBCLASS_NAME IS PER TEAM. The fixture's team-2 boss uses
+                # npc_boss_tier3 and its team-3 counterpart alt_npc_boss_tier3,
+                # which the vdata confirms differ only in model scale and core
+                # radius. flip_team does not touch subclass_name, so the twin
+                # is corrected in build_objectives' mirror step below.
+                #
+                # The cover ids are UNSET rather than invented. dl_example
+                # carries real values (CoverGroupID 4321 / 1234), which look
+                # like references into cover groups this map does not have.
                 "properties": {
-                    "targetname": "amber_guardian_lane%s" % lane,
+                    "targetname": "",
                     "vscripts": "",
                     "teamnumber": TEAM_A,
                     "lanenum": lane,
+                    "BackdoorProtectionTrigger": "",
                     "BossName": "amber_guardian_lane%s" % lane,
-                    "CoverGroupID": "",
-                    # UNVERIFIED KEY SET. dl_example's npc_boss_tier3 keys
-                    # were never tabulated, so this copies the shape of
-                    # npc_boss_tier2, which IS read. BackdoorProtectionTrigger
-                    # and LaneSide are dropped: both were npc_barrack_boss
-                    # keys and there is no evidence tier3 takes them.
                     "subclass_name": "npc_boss_tier3",
+                    "CoverGroupID": "",
+                    "dying_cover_id": "",
+                    "vulnerable_cover_id": "",
                 },
             })
         else:
@@ -720,6 +762,15 @@ def build_objectives():
                 "origin": list(origin),
                 "angles": face_centre(origin),
                 "surveyed_on": box,
+                # KEY SET CONFIRMED 2026-08-23 against dl_example's eight
+                # npc_boss_tier2: seven keys, exactly these. Unlike tier3,
+                # this class DOES carry a real targetname in the fixture, and
+                # it matches its BossName.
+                #
+                # SUBCLASS_NAME IS PER TEAM here too: npc_boss_tier2 for
+                # team 2, alt_npc_boss_tier2 for team 3. The fixture also uses
+                # _weak variants on two lanes of each team, which is a
+                # difficulty choice this map is not making yet.
                 "properties": {
                     "targetname": "amber_walker_lane%s" % lane,
                     "vscripts": "",
