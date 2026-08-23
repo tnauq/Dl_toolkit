@@ -1,57 +1,51 @@
 name: npc probe
 
-# THE QUESTIONS THIS RUN IS ASKED. Three now, not two. The walker-size and
-# lane-numbering searches from the previous version are kept verbatim, because
-# neither has been answered and both fail silently in game. Two are added:
+# ROUND TWO. Round one answered the wrong half of each question, and both
+# failures were the same failure: a substring search finds WHERE a thing is
+# mentioned, which is useful exactly once. After that the question becomes
+# "what does its block actually say", and only a block dump answers that.
 #
-# 3. HOW FAST IS A TROOPER? batch13 prints a lane length report but cannot
-#    turn distance into time, because TROOPER_SPEED is 0. The value is
-#    presumably in npc_units.vdata under a trooper subclass. Time to the
-#    meeting point is the number that says whether a lane is the right
-#    length, so a report without it is half a report.
+# 1. TROOPER SPEED. Round one found no speed key anywhere in npc_units.vdata,
+#    and 119 false hits from abilities.vdata, because the filter was "any
+#    file mentioning a trooper". So this run stops guessing at key spellings
+#    and instead dumps the WHOLE subclass block for each trooper unit, with
+#    every numeric key listed. If a speed is in there under a name nobody
+#    predicted, it is visible. If the block genuinely has no speed, that is
+#    also an answer and the value lives in the model or a base class.
 #
-# 4. WHAT IS THE RIFT CALLED? A capture point that spawns troopers, newer
-#    than dl_example and absent from its 55 classnames. If it can be named it
-#    can be placed with no emitter change at all.
+# 2. SHRINES. Destructible buildings with a curse ability that release super
+#    troopers when broken. No shipped classname for them has turned up in
+#    dl_example's 55 or in round one, because round one never searched for
+#    one. The ability is the way in: an ability named for a curse or a shrine
+#    will carry the unit that owns it, or the unit block will name the
+#    ability. Searched from both ends here.
 #
-# WHAT CHANGED IN THE SEARCH SURFACE. The previous run cloned *.vdata only.
-# The rift is a gameplay object with UI strings, so it is far more likely to
-# surface in localization or script text than in unit data. This clone adds
-# *.txt. Blob-filtered sparse checkout means the extra pattern costs little,
-# and the file listing step prints what actually arrived before anything is
-# read, so a bad pattern is visible immediately rather than as an empty
-# report at the end.
+# 3. THE CAPTURE POINT is NOT pursued further. Round one found
+#    citadel_capture_point and CCitadelTriggerCapturePoint, and dl_example
+#    predates the rift by months, so a class that IS in the shipped binary
+#    but NOT in dl_example is consistent with it and cannot be confirmed
+#    either way from text alone. Left as the standing candidate.
 #
-# WHY TEXT AND NOT THE KV3 READER. The question is "where is this mentioned",
-# not "what is the value at this path". A grep finds the file and the
-# surrounding block; reading it properly is the follow-up once the file is
-# known. Reading a surface before writing against it is the standing rule.
-#
-# WHAT THIS CANNOT DO. Clearance may be expressed as a collision radius, a
-# hull name, a model reference, or nothing at all, in which case the size
-# lives in the .vmdl and this run will say so by finding only a model path.
-# That is still an answer. Likewise the rift may simply not be in any shipped
-# text file, and a clean NOT FOUND on all four needles is the result that
-# closes the question rather than leaving it open.
+# BRACE MATCHING, and its limit. The dumper walks braces from the line a name
+# appears on, so a block ends where its braces balance. vdata is well formed,
+# so this holds. What it cannot do is follow INHERITANCE: if a trooper
+# subclass derives its speed from a base unit, the derived block will not
+# contain it and the base will be somewhere else in the file. Every block
+# printed therefore also has its _class / _base / parent-shaped keys called
+# out at the top, so the next hop is visible without another round trip.
 
 on: workflow_dispatch
 
 env:
-  # Names to locate. Each gets its own section with surrounding context.
-  NEEDLES: 'npc_boss_tier2,npc_boss_tier3,npc_barrack_boss,alt_npc_boss_tier3,trooper,npc_trooper,neutral_trooper'
-  # Keys that would carry a size, wherever they appear near a needle.
-  SIZE_KEYS: 'radius,height,hull,collision,bounds,scale,model,mins,maxs,width'
-  # Keys that would carry a movement speed. Source 2 unit data spells this
-  # several ways, so all of them are flagged rather than guessed between.
-  SPEED_KEYS: 'speed,movespeed,move_speed,m_flSpeed,MaxSpeed,max_speed,run_speed,walk_speed,velocity,m_flMoveSpeed'
-  # Lane numbering evidence.
-  LANE_KEYS: 'lanenum,lane_number,LaneSlot,m_nLane,lane_count,num_lanes'
-  # The rift. Wide on purpose: the shipped name for it is unknown, so this is
-  # a fishing expedition and a narrow net catches nothing.
-  RIFT_NEEDLES: 'rift,capture_point,capturepoint,portal,teleport,spawner_capture,capture'
-  CONTEXT: 40
-  # Skip anything enormous. A single 50 MB localization blob would dominate
-  # the run and carries nothing these questions need.
+  # Units to dump whole. Matched as a KEY, not as a mention.
+  UNIT_BLOCKS: 'npc_trooper,trooper_neutral,npc_super_trooper,super_trooper,npc_barrack_boss,npc_boss_tier2,npc_boss_tier3,alt_npc_boss_tier3'
+  # Files worth dumping blocks out of. Everything else is searched only.
+  BLOCK_FILES: 'npc_units.vdata,misc.vdata'
+  # The shrine hunt, from both ends.
+  SHRINE_NEEDLES: 'shrine,curse,cursed,super_trooper,supertrooper,barrack,destructible,building'
+  # Keys that name a parent, so inheritance can be followed by eye.
+  PARENT_KEYS: '_class,_base,BaseClass,subclass_name,m_strBaseClass,ParentClass'
+  MAX_BLOCK_LINES: 400
   MAX_FILE_MB: 12
 
 jobs:
@@ -83,210 +77,167 @@ jobs:
           mkdir -p out
           find gt \( -name '*.vdata' -o -name '*.txt' \) -not -path '*/.git/*' \
             -printf '%s\t%p\n' | sort -rn > out/files.txt
-          # Kept under the old name so anything downstream still reads it.
-          grep -P '\.vdata$' out/files.txt > out/vdata-files.txt || true
-          echo "vdata: $(wc -l < out/vdata-files.txt)"
-          echo "all:   $(wc -l < out/files.txt)"
-          echo "--- 30 largest ---"
-          head -30 out/files.txt
+          echo "all: $(wc -l < out/files.txt)"
+          head -20 out/files.txt
 
-      - name: Search
+      - name: Dump blocks and hunt shrines
         timeout-minutes: 20
         env:
           GT_SHA: ${{ steps.gt.outputs.sha }}
         run: |
-          python3 - <<'PY' | tee out/npc-probe.log
+          python3 - <<'PY' | tee out/npc-probe2.log
           import os, re, json, collections
 
-          needles = os.environ['NEEDLES'].split(',')
-          size_keys = os.environ['SIZE_KEYS'].split(',')
-          speed_keys = os.environ['SPEED_KEYS'].split(',')
-          lane_keys = os.environ['LANE_KEYS'].split(',')
-          rift_needles = os.environ['RIFT_NEEDLES'].split(',')
-          ctx = int(os.environ['CONTEXT'])
+          unit_blocks = os.environ['UNIT_BLOCKS'].split(',')
+          block_files = os.environ['BLOCK_FILES'].split(',')
+          shrine_needles = os.environ['SHRINE_NEEDLES'].split(',')
+          parent_keys = [k.lower() for k in os.environ['PARENT_KEYS'].split(',')]
+          max_block = int(os.environ['MAX_BLOCK_LINES'])
           cap = int(os.environ['MAX_FILE_MB']) * 1024 * 1024
 
-          files, skipped = [], 0
+          files = []
           for line in open('out/files.txt'):
               size, path = line.rstrip('\n').split('\t', 1)
-              if int(size) > cap:
-                  skipped += 1
-                  continue
-              files.append(path)
-          print(f'{len(files)} files scanned, {skipped} over the size cap')
+              if int(size) <= cap:
+                  files.append(path)
+          print(f'{len(files)} files under the size cap')
 
-          hits = collections.defaultdict(list)      # needle -> [(path, line)]
-          lane_hits = collections.defaultdict(collections.Counter)
-          lane_values = collections.defaultdict(collections.Counter)
-          speed_hits = collections.defaultdict(list)   # key -> [(path, line, value)]
-          rift_hits = collections.defaultdict(collections.Counter)
-          rift_lines = collections.defaultdict(list)
-
-          # Any "key" "value" or key = value pair, both spellings appear.
           pair = re.compile(r'^[\s"]*([A-Za-z_][A-Za-z0-9_]*)["\s]*[=:]\s*"?([^",\n]*)')
+          numeric = re.compile(r'^-?\d+(\.\d+)?$')
 
-          for path in files:
-              try:
-                  text = open(path, 'r', encoding='utf-8', errors='replace').read()
-              except Exception as ex:
-                  print(f'  skip {path}: {ex}')
-                  continue
-              lines = text.split('\n')
-              low_path = path.lower()
-              # Speed is only interesting near a trooper, so it is collected
-              # per file and filtered afterwards by whether the file mentions
-              # one at all. Collecting every speed key in every vdata would
-              # bury the answer.
-              trooper_file = 'trooper' in text.lower()
-              for i, line in enumerate(lines):
-                  for n in needles:
-                      if n in line:
-                          hits[n].append((path, i))
-                  for k in lane_keys:
-                      if k in line:
-                          lane_hits[k][path] += 1
-                          m = pair.search(line)
-                          if m and m.group(1) == k:
-                              lane_values[k][m.group(2).strip()] += 1
-                  if trooper_file:
-                      m = pair.search(line)
-                      if m and any(k.lower() == m.group(1).lower()
-                                   for k in speed_keys):
-                          speed_hits[m.group(1)].append(
-                              (path, i, m.group(2).strip()))
-                  low = line.lower()
-                  for r in rift_needles:
-                      if r in low:
-                          rift_hits[r][path] += 1
-                          if len(rift_lines[r]) < 25:
-                              rift_lines[r].append((path, i, line.strip()[:160]))
+          def read(path):
+              return open(path, 'r', encoding='utf-8',
+                          errors='replace').read().split('\n')
 
-          def block(path, at):
-              lines = open(path, 'r', encoding='utf-8',
-                           errors='replace').read().split('\n')
-              lo = max(0, at - 4)
-              hi = min(len(lines), at + ctx)
-              return lines[lo:hi]
+          def extract(lines, start):
+              depth, out, seen_open = 0, [], False
+              for i in range(start, min(len(lines), start + max_block)):
+                  ln = lines[i]
+                  out.append(ln)
+                  depth += ln.count('{') + ln.count('[')
+                  depth -= ln.count('}') + ln.count(']')
+                  if ln.count('{') or ln.count('['):
+                      seen_open = True
+                  if seen_open and depth <= 0:
+                      break
+              return out
 
           def w(fh, s=''):
               fh.write(s + '\n')
               print(s)
 
-          with open('out/npc-probe.md', 'w') as fh:
-              w(fh, '# NPC probe')
+          targets = [p for p in files
+                     if any(b in os.path.basename(p) for b in block_files)]
+          if targets:
+              print('block files: ' + ', '.join(targets))
+          else:
+              print('NO block files matched, check BLOCK_FILES')
+
+          blocks = {}
+          for path in targets:
+              lines = read(path)
+              for i, ln in enumerate(lines):
+                  m = pair.search(ln)
+                  key = m.group(1) if m else ''
+                  for u in unit_blocks:
+                      if u in blocks:
+                          continue
+                      if key == u or ln.strip().strip('"').startswith(u + '"'):
+                          blocks[u] = (path, i, extract(lines, i))
+
+          shrine_hits = collections.defaultdict(collections.Counter)
+          shrine_lines = collections.defaultdict(list)
+          for path in files:
+              try:
+                  lines = read(path)
+              except Exception as ex:
+                  print(f'  skip {path}: {ex}')
+                  continue
+              for i, ln in enumerate(lines):
+                  low = ln.lower()
+                  for n in shrine_needles:
+                      if n in low:
+                          shrine_hits[n][path] += 1
+                          if len(shrine_lines[n]) < 40:
+                              shrine_lines[n].append((path, i, ln.strip()[:180]))
+
+          with open('out/npc-probe2.md', 'w') as fh:
+              w(fh, '# NPC probe, round two')
               w(fh)
               w(fh, f"GameTracking {os.environ.get('GT_SHA','')}")
               w(fh)
 
-              w(fh, '## Where each name appears')
+              w(fh, '## Unit blocks')
               w(fh)
-              for n in needles:
-                  where = collections.Counter(p for p, _ in hits[n])
+              w(fh, 'Numeric keys are listed first as a summary, then the raw')
+              w(fh, 'block. A speed will be a number in the hundreds if it is')
+              w(fh, 'units per second, or single digits if it is a multiplier.')
+              for u in unit_blocks:
+                  w(fh)
+                  w(fh, f'### {u}')
+                  if u not in blocks:
+                      w(fh, '- NOT FOUND as a block key')
+                      continue
+                  path, at, body = blocks[u]
+                  w(fh, f'{path}:{at}, {len(body)} lines')
+                  w(fh)
+                  parents, nums = [], []
+                  for ln in body:
+                      m = pair.search(ln)
+                      if not m:
+                          continue
+                      k, v = m.group(1), m.group(2).strip()
+                      if k.lower() in parent_keys and v:
+                          parents.append(f'{k} = {v}')
+                      if numeric.match(v):
+                          nums.append(f'{k} = {v}')
+                  if parents:
+                      w(fh, 'INHERITS: ' + '; '.join(parents))
+                  else:
+                      w(fh, 'INHERITS: nothing named, block is self contained')
+                  w(fh)
+                  w(fh, 'numeric keys: ' + (', '.join(nums) if nums else 'none'))
+                  w(fh)
+                  w(fh, '```')
+                  for ln in body:
+                      w(fh, ln)
+                  w(fh, '```')
+
+              w(fh)
+              w(fh, '## Shrine hunt')
+              w(fh)
+              w(fh, 'A classname or an ability name is what matters here.')
+              w(fh, 'English UI strings are noise unless they name a key.')
+              for n in shrine_needles:
+                  w(fh)
                   w(fh, f'### {n}')
-                  if not where:
-                      w(fh, '- found in NO file')
-                      w(fh)
+                  if not shrine_hits[n]:
+                      w(fh, '- not found anywhere')
                       continue
-                  for p, c in where.most_common(10):
+                  for p, c in shrine_hits[n].most_common(10):
                       w(fh, f'- {p}: {c}')
-                  w(fh)
-
-              w(fh, '## Context around the first hit of each name')
-              w(fh)
-              w(fh, 'Size-bearing keys are flagged with >> and speed-bearing')
-              w(fh, 'keys with ++ so they are findable in a long block.')
-              for n in needles:
-                  if not hits[n]:
-                      continue
-                  path, at = hits[n][0]
-                  w(fh)
-                  w(fh, f'### {n} at {path}:{at}')
-                  w(fh)
-                  w(fh, '```')
-                  for ln in block(path, at):
-                      low = ln.lower()
-                      if any(k.lower() in low for k in speed_keys):
-                          mark = '++ '
-                      elif any(k.lower() in low for k in size_keys):
-                          mark = '>> '
-                      else:
-                          mark = '   '
-                      w(fh, mark + ln)
-                  w(fh, '```')
-
-              w(fh)
-              w(fh, '## Trooper speed')
-              w(fh)
-              w(fh, 'Speed-shaped keys, in files that mention a trooper at all.')
-              w(fh, 'A key appearing once in one unit file is the likely answer;')
-              w(fh, 'a key appearing in fifty is a generic field and proves nothing.')
-              w(fh)
-              if not speed_hits:
-                  w(fh, '- NOTHING found. Speed is not a plain key in any')
-                  w(fh, '  trooper-mentioning file, so it is either inherited from a')
-                  w(fh, '  base subclass under another name or lives in the model.')
-              for k in sorted(speed_hits, key=lambda k: len(speed_hits[k])):
-                  rows = speed_hits[k]
-                  w(fh, f'### {k} ({len(rows)} occurrences)')
-                  for path, i, val in rows[:12]:
-                      w(fh, f'- {path}:{i} = {val}')
-                  w(fh)
-
-              w(fh)
-              w(fh, '## The rift')
-              w(fh)
-              w(fh, 'Substring search, case-insensitive, deliberately wide. Most')
-              w(fh, 'of this will be noise. What is being looked for is a')
-              w(fh, 'CLASSNAME or a subclass_name, not an English sentence.')
-              w(fh)
-              for r in rift_needles:
-                  w(fh, f'### {r}')
-                  if not rift_hits[r]:
-                      w(fh, '- not found')
-                      w(fh)
-                      continue
-                  for p, c in rift_hits[r].most_common(8):
-                      w(fh, f'- {p}: {c}')
-                  for path, i, ln in rift_lines[r][:10]:
+                  for path, i, ln in shrine_lines[n][:15]:
                       w(fh, f'    {path}:{i}  {ln}')
-                  w(fh)
-
-              w(fh)
-              w(fh, '## Lane numbering')
-              w(fh)
-              for k in lane_keys:
-                  w(fh, f'### {k}')
-                  if not lane_hits[k]:
-                      w(fh, '- not found')
-                      w(fh)
-                      continue
-                  for p, c in lane_hits[k].most_common(8):
-                      w(fh, f'- {p}: {c}')
-                  vals = lane_values[k]
-                  if vals:
-                      w(fh, '  values seen: ' +
-                            ', '.join(f'{v} x{c}' for v, c in vals.most_common(12)))
-                  w(fh)
 
           json.dump({
-              'files_scanned': len(files),
-              'hits': {k: [list(x) for x in v] for k, v in hits.items()},
-              'lane_hits': {k: dict(v) for k, v in lane_hits.items()},
-              'lane_values': {k: dict(v) for k, v in lane_values.items()},
-              'speed_hits': {k: [list(x) for x in v] for k, v in speed_hits.items()},
-              'rift_hits': {k: dict(v) for k, v in rift_hits.items()},
-          }, open('out/npc-probe.json', 'w'), indent=1)
+              'blocks': {u: {'path': blocks[u][0], 'line': blocks[u][1],
+                             'lines': len(blocks[u][2])}
+                         for u in blocks},
+              'shrine_hits': {k: dict(v) for k, v in shrine_hits.items()},
+              'shrine_lines': {k: [list(x) for x in v]
+                               for k, v in shrine_lines.items()},
+          }, open('out/npc-probe2.json', 'w'), indent=1)
 
           print()
-          for n in needles:
-              print(f'{n}: {len(hits[n])} line(s)')
-          print(f'speed keys found: {sum(len(v) for v in speed_hits.values())}')
-          print(f'rift candidates:  {sum(sum(c.values()) for c in rift_hits.values())}')
+          print(f'blocks found: {len(blocks)} of {len(unit_blocks)}')
+          for u in unit_blocks:
+              if u not in blocks:
+                  print(f'  MISSING {u}')
           PY
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: npc-probe
+          name: npc-probe2
           path: out/
           if-no-files-found: ignore
