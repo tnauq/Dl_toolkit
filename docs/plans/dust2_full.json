@@ -79957,7 +79957,19 @@
     "LaneSide": "0",
     "subclass_name": "npc_barrack_boss"
    },
-   "_batch13": true
+   "_batch13": true,
+   "connections": [
+    {
+     "outputName": "OnBossKilled",
+     "targetType": 7,
+     "targetName": "amber_lane3_shop_kill_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ]
   },
   {
    "name": "m_guardian_l3",
@@ -79982,7 +79994,19 @@
     "LaneSide": "0",
     "subclass_name": "npc_barrack_boss"
    },
-   "_batch13": true
+   "_batch13": true,
+   "connections": [
+    {
+     "outputName": "OnBossKilled",
+     "targetType": 7,
+     "targetName": "m_amber_lane3_shop_kill_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ]
   },
   {
    "name": "guardian_l1",
@@ -80007,7 +80031,19 @@
     "LaneSide": "0",
     "subclass_name": "npc_barrack_boss"
    },
-   "_batch13": true
+   "_batch13": true,
+   "connections": [
+    {
+     "outputName": "OnBossKilled",
+     "targetType": 7,
+     "targetName": "amber_lane1_shop_kill_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ]
   },
   {
    "name": "m_guardian_l1",
@@ -80032,7 +80068,19 @@
     "LaneSide": "0",
     "subclass_name": "npc_barrack_boss"
    },
-   "_batch13": true
+   "_batch13": true,
+   "connections": [
+    {
+     "outputName": "OnBossKilled",
+     "targetType": 7,
+     "targetName": "m_amber_lane1_shop_kill_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ]
   },
   {
    "name": "guardian_l6",
@@ -80057,7 +80105,19 @@
     "LaneSide": "0",
     "subclass_name": "npc_barrack_boss"
    },
-   "_batch13": true
+   "_batch13": true,
+   "connections": [
+    {
+     "outputName": "OnBossKilled",
+     "targetType": 7,
+     "targetName": "amber_lane6_shop_kill_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ]
   },
   {
    "name": "m_guardian_l6",
@@ -80082,7 +80142,19 @@
     "LaneSide": "0",
     "subclass_name": "npc_barrack_boss"
    },
-   "_batch13": true
+   "_batch13": true,
+   "connections": [
+    {
+     "outputName": "OnBossKilled",
+     "targetType": 7,
+     "targetName": "m_amber_lane6_shop_kill_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ]
   },
   {
    "name": "walker_l3",
@@ -81728,6 +81800,1586 @@
     "targetname": "m_catapult_west_land"
    },
    "_batch13": true
+  },
+  {
+   "name": "shop_lane3_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -1623.0,
+    3200.0,
+    381.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane3_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane3_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane3_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -1623.0,
+    3200.0,
+    445.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane3_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane3_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane3_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -1623.0,
+    3200.0,
+    509.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane3_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane3_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane3_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    -1623.0,
+    3200.0,
+    573.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane3_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "amber_lane3_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane3_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    -1623.0,
+    3200.0,
+    637.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane3_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "amber_lane3_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane1_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    915.0,
+    3980.0,
+    128.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane1_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane1_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane1_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    915.0,
+    3980.0,
+    192.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane1_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane1_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane1_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    915.0,
+    3980.0,
+    256.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane1_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane1_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane1_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    915.0,
+    3980.0,
+    320.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane1_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "amber_lane1_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane1_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    915.0,
+    3980.0,
+    384.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane1_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "amber_lane1_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane6_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    3179.0,
+    3416.0,
+    341.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane6_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane6_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane6_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    3179.0,
+    3416.0,
+    405.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane6_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane6_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane6_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    3179.0,
+    3416.0,
+    469.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane6_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_lane6_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane6_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    3179.0,
+    3416.0,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane6_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "amber_lane6_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_lane6_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    3179.0,
+    3416.0,
+    597.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_lane6_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "amber_lane6_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_base_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    17.0,
+    -5926.0,
+    1195.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_base_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_base_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_base_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    17.0,
+    -5926.0,
+    1259.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_base_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_base_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_base_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    17.0,
+    -5926.0,
+    1323.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_base_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_base_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_base_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    17.0,
+    -5926.0,
+    1387.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_base_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "amber_base_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_base_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    17.0,
+    -5926.0,
+    1451.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_base_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "amber_base_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_secret_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -402.0,
+    2424.0,
+    782.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_secret_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_secret_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_secret_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -402.0,
+    2424.0,
+    846.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_secret_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_secret_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_secret_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -402.0,
+    2424.0,
+    910.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_secret_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "2"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "amber_secret_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_secret_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    -402.0,
+    2424.0,
+    974.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_secret_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "amber_secret_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "shop_secret_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    -402.0,
+    2424.0,
+    1038.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "amber_secret_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "amber_secret_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane3_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    2543.2,
+    8970.1,
+    381.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane3_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane3_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane3_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    2543.2,
+    8970.1,
+    445.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane3_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane3_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane3_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    2543.2,
+    8970.1,
+    509.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane3_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane3_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane3_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    2543.2,
+    8970.1,
+    573.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane3_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "m_amber_lane3_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane3_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    2543.2,
+    8970.1,
+    637.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane3_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "m_amber_lane3_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane1_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    5.2,
+    8190.1,
+    128.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane1_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane1_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane1_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    5.2,
+    8190.1,
+    192.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane1_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane1_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane1_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    5.2,
+    8190.1,
+    256.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane1_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane1_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane1_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    5.2,
+    8190.1,
+    320.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane1_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "m_amber_lane1_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane1_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    5.2,
+    8190.1,
+    384.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane1_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "m_amber_lane1_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane6_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -2258.8,
+    8754.1,
+    341.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane6_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane6_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane6_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -2258.8,
+    8754.1,
+    405.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane6_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane6_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane6_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    -2258.8,
+    8754.1,
+    469.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane6_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_lane6_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane6_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    -2258.8,
+    8754.1,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane6_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "m_amber_lane6_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_lane6_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    -2258.8,
+    8754.1,
+    597.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_lane6_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "m_amber_lane6_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_base_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    903.2,
+    18096.1,
+    1195.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_base_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_base_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_base_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    903.2,
+    18096.1,
+    1259.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_base_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_base_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_base_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    903.2,
+    18096.1,
+    1323.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_base_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_base_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_base_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    903.2,
+    18096.1,
+    1387.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_base_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "m_amber_base_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_base_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    903.2,
+    18096.1,
+    1451.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_base_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "m_amber_base_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_secret_enable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    1322.2,
+    9746.1,
+    782.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_secret_shop_enable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_secret_shop_item_trigger",
+     "inputName": "Enable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_secret_disable_relay",
+   "classname": "logic_relay",
+   "origin": [
+    1322.2,
+    9746.1,
+    846.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_secret_shop_disable_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_secret_shop_item_trigger",
+     "inputName": "Disable",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_secret_kill_relay",
+   "classname": "logic_relay",
+   "origin": [
+    1322.2,
+    9746.1,
+    910.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_secret_shop_kill_relay",
+    "StartDisabled": "0",
+    "teamnumber": "3"
+   },
+   "connections": [
+    {
+     "outputName": "OnTrigger",
+     "targetType": 7,
+     "targetName": "m_amber_secret_shop_item_trigger",
+     "inputName": "Kill",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_secret_logic_auto_disable",
+   "classname": "logic_auto",
+   "origin": [
+    1322.2,
+    9746.1,
+    974.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_secret_shop_logic_auto_disable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnMapSpawn",
+     "targetType": 7,
+     "targetName": "m_amber_secret_shop_disable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 0.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
+  },
+  {
+   "name": "m_shop_secret_logic_auto_enable",
+   "classname": "logic_auto_citadel",
+   "origin": [
+    1322.2,
+    9746.1,
+    1038.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_amber_secret_shop_logic_auto_enable",
+    "spawnflags": "1"
+   },
+   "connections": [
+    {
+     "outputName": "OnGameInProgress",
+     "targetType": 7,
+     "targetName": "m_amber_secret_shop_enable_relay",
+     "inputName": "Trigger",
+     "overrideParam": "",
+     "delay": 15.0,
+     "timesToFire": -1,
+     "_batch15": true
+    }
+   ],
+   "_batch15": true
   }
  ],
  "paths": [
