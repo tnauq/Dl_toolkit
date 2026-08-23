@@ -1,22 +1,26 @@
 name: npc probe
 
-# TWO QUESTIONS THE MAP PLAN CANNOT ANSWER, both from the vdata tree.
+# THE QUESTIONS THIS RUN IS ASKED. Three now, not two. The walker-size and
+# lane-numbering searches from the previous version are kept verbatim, because
+# neither has been answered and both fail silently in game. Two are added:
 #
-# 1. HOW BIG IS A WALKER? npc_boss_tier2 in dl_example.vmap carries no model,
-#    no extents and no scale — only subclass_name. So the body comes from a
-#    subclass definition in vdata, and the clearance a map has to leave for it
-#    is written there, not in the map. Placing a walker in a corridor it does
-#    not fit in would be invisible in the plan and invisible in the viewer.
+# 3. HOW FAST IS A TROOPER? batch13 prints a lane length report but cannot
+#    turn distance into time, because TROOPER_SPEED is 0. The value is
+#    presumably in npc_units.vdata under a trooper subclass. Time to the
+#    meeting point is the number that says whether a lane is the right
+#    length, so a report without it is half a report.
 #
-# 2. WHAT ARE THE LANE NUMBERS? dl_example uses lanenum 1, 3, 4 and 6 — a
-#    four-lane map with a numbering that is plainly not 1..n. A three-lane map
-#    might use 1/2/3, or keep a sparse set. Guessing wrong produces troopers
-#    spawning for lanes that do not exist, with nothing to catch it.
+# 4. WHAT IS THE RIFT CALLED? A capture point that spawns troopers, newer
+#    than dl_example and absent from its 55 classnames. If it can be named it
+#    can be placed with no emitter change at all.
 #
-# METHOD. Sparse-clone the vdata out of GameTracking-Deadlock, exactly as
-# loop.yml already does, then search it as TEXT. No dl-patch build, no CSDK,
-# no dotnet: this only reads. Search terms are hardcoded in env because the
-# mobile Actions view does not render workflow_dispatch inputs.
+# WHAT CHANGED IN THE SEARCH SURFACE. The previous run cloned *.vdata only.
+# The rift is a gameplay object with UI strings, so it is far more likely to
+# surface in localization or script text than in unit data. This clone adds
+# *.txt. Blob-filtered sparse checkout means the extra pattern costs little,
+# and the file listing step prints what actually arrived before anything is
+# read, so a bad pattern is visible immediately rather than as an empty
+# report at the end.
 #
 # WHY TEXT AND NOT THE KV3 READER. The question is "where is this mentioned",
 # not "what is the value at this path". A grep finds the file and the
@@ -24,20 +28,31 @@ name: npc probe
 # known. Reading a surface before writing against it is the standing rule.
 #
 # WHAT THIS CANNOT DO. Clearance may be expressed as a collision radius, a
-# hull name, a model reference, or nothing at all — in which case the size
+# hull name, a model reference, or nothing at all, in which case the size
 # lives in the .vmdl and this run will say so by finding only a model path.
-# That is still an answer.
+# That is still an answer. Likewise the rift may simply not be in any shipped
+# text file, and a clean NOT FOUND on all four needles is the result that
+# closes the question rather than leaving it open.
 
 on: workflow_dispatch
 
 env:
   # Names to locate. Each gets its own section with surrounding context.
-  NEEDLES: 'npc_boss_tier2,npc_boss_tier3,npc_barrack_boss,alt_npc_boss_tier3'
+  NEEDLES: 'npc_boss_tier2,npc_boss_tier3,npc_barrack_boss,alt_npc_boss_tier3,trooper,npc_trooper,neutral_trooper'
   # Keys that would carry a size, wherever they appear near a needle.
   SIZE_KEYS: 'radius,height,hull,collision,bounds,scale,model,mins,maxs,width'
+  # Keys that would carry a movement speed. Source 2 unit data spells this
+  # several ways, so all of them are flagged rather than guessed between.
+  SPEED_KEYS: 'speed,movespeed,move_speed,m_flSpeed,MaxSpeed,max_speed,run_speed,walk_speed,velocity,m_flMoveSpeed'
   # Lane numbering evidence.
   LANE_KEYS: 'lanenum,lane_number,LaneSlot,m_nLane,lane_count,num_lanes'
+  # The rift. Wide on purpose: the shipped name for it is unknown, so this is
+  # a fishing expedition and a narrow net catches nothing.
+  RIFT_NEEDLES: 'rift,capture_point,capturepoint,portal,teleport,spawner_capture,capture'
   CONTEXT: 40
+  # Skip anything enormous. A single 50 MB localization blob would dominate
+  # the run and carries nothing these questions need.
+  MAX_FILE_MB: 12
 
 jobs:
   probe:
@@ -50,7 +65,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Clone GameTracking (vdata only)
+      - name: Clone GameTracking (vdata and txt)
         id: gt
         run: |
           set -euo pipefail
@@ -58,40 +73,54 @@ jobs:
             https://github.com/SteamDatabase/GameTracking-Deadlock.git gt
           cd gt
           git sparse-checkout init --no-cone
-          git sparse-checkout set --no-cone '/**/*.vdata'
+          git sparse-checkout set --no-cone '/**/*.vdata' '/**/*.txt'
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "cloned $(git rev-parse --short HEAD)"
 
-      - name: What vdata is even here
+      - name: What is even here
         run: |
           set -euo pipefail
           mkdir -p out
-          find gt -name '*.vdata' -not -path '*/.git/*' -printf '%s\t%p\n' \
-            | sort -rn > out/vdata-files.txt
-          wc -l out/vdata-files.txt
+          find gt \( -name '*.vdata' -o -name '*.txt' \) -not -path '*/.git/*' \
+            -printf '%s\t%p\n' | sort -rn > out/files.txt
+          # Kept under the old name so anything downstream still reads it.
+          grep -P '\.vdata$' out/files.txt > out/vdata-files.txt || true
+          echo "vdata: $(wc -l < out/vdata-files.txt)"
+          echo "all:   $(wc -l < out/files.txt)"
           echo "--- 30 largest ---"
-          head -30 out/vdata-files.txt
+          head -30 out/files.txt
 
       - name: Search
         timeout-minutes: 20
+        env:
+          GT_SHA: ${{ steps.gt.outputs.sha }}
         run: |
           python3 - <<'PY' | tee out/npc-probe.log
           import os, re, json, collections
 
           needles = os.environ['NEEDLES'].split(',')
           size_keys = os.environ['SIZE_KEYS'].split(',')
+          speed_keys = os.environ['SPEED_KEYS'].split(',')
           lane_keys = os.environ['LANE_KEYS'].split(',')
+          rift_needles = os.environ['RIFT_NEEDLES'].split(',')
           ctx = int(os.environ['CONTEXT'])
+          cap = int(os.environ['MAX_FILE_MB']) * 1024 * 1024
 
-          files = []
-          for line in open('out/vdata-files.txt'):
+          files, skipped = [], 0
+          for line in open('out/files.txt'):
               size, path = line.rstrip('\n').split('\t', 1)
+              if int(size) > cap:
+                  skipped += 1
+                  continue
               files.append(path)
-          print(f'{len(files)} vdata files')
+          print(f'{len(files)} files scanned, {skipped} over the size cap')
 
           hits = collections.defaultdict(list)      # needle -> [(path, line)]
           lane_hits = collections.defaultdict(collections.Counter)
           lane_values = collections.defaultdict(collections.Counter)
+          speed_hits = collections.defaultdict(list)   # key -> [(path, line, value)]
+          rift_hits = collections.defaultdict(collections.Counter)
+          rift_lines = collections.defaultdict(list)
 
           # Any "key" "value" or key = value pair, both spellings appear.
           pair = re.compile(r'^[\s"]*([A-Za-z_][A-Za-z0-9_]*)["\s]*[=:]\s*"?([^",\n]*)')
@@ -103,6 +132,12 @@ jobs:
                   print(f'  skip {path}: {ex}')
                   continue
               lines = text.split('\n')
+              low_path = path.lower()
+              # Speed is only interesting near a trooper, so it is collected
+              # per file and filtered afterwards by whether the file mentions
+              # one at all. Collecting every speed key in every vdata would
+              # bury the answer.
+              trooper_file = 'trooper' in text.lower()
               for i, line in enumerate(lines):
                   for n in needles:
                       if n in line:
@@ -113,6 +148,18 @@ jobs:
                           m = pair.search(line)
                           if m and m.group(1) == k:
                               lane_values[k][m.group(2).strip()] += 1
+                  if trooper_file:
+                      m = pair.search(line)
+                      if m and any(k.lower() == m.group(1).lower()
+                                   for k in speed_keys):
+                          speed_hits[m.group(1)].append(
+                              (path, i, m.group(2).strip()))
+                  low = line.lower()
+                  for r in rift_needles:
+                      if r in low:
+                          rift_hits[r][path] += 1
+                          if len(rift_lines[r]) < 25:
+                              rift_lines[r].append((path, i, line.strip()[:160]))
 
           def block(path, at):
               lines = open(path, 'r', encoding='utf-8',
@@ -137,7 +184,7 @@ jobs:
                   where = collections.Counter(p for p, _ in hits[n])
                   w(fh, f'### {n}')
                   if not where:
-                      w(fh, '- found in NO vdata file')
+                      w(fh, '- found in NO file')
                       w(fh)
                       continue
                   for p, c in where.most_common(10):
@@ -146,21 +193,63 @@ jobs:
 
               w(fh, '## Context around the first hit of each name')
               w(fh)
-              w(fh, 'Size-bearing keys are flagged with >> so they are findable')
-              w(fh, 'in a long block.')
+              w(fh, 'Size-bearing keys are flagged with >> and speed-bearing')
+              w(fh, 'keys with ++ so they are findable in a long block.')
               for n in needles:
                   if not hits[n]:
                       continue
                   path, at = hits[n][0]
                   w(fh)
-                  w(fh, f'### {n} — {path}:{at}')
+                  w(fh, f'### {n} at {path}:{at}')
                   w(fh)
                   w(fh, '```')
                   for ln in block(path, at):
-                      mark = '>> ' if any(k.lower() in ln.lower()
-                                          for k in size_keys) else '   '
+                      low = ln.lower()
+                      if any(k.lower() in low for k in speed_keys):
+                          mark = '++ '
+                      elif any(k.lower() in low for k in size_keys):
+                          mark = '>> '
+                      else:
+                          mark = '   '
                       w(fh, mark + ln)
                   w(fh, '```')
+
+              w(fh)
+              w(fh, '## Trooper speed')
+              w(fh)
+              w(fh, 'Speed-shaped keys, in files that mention a trooper at all.')
+              w(fh, 'A key appearing once in one unit file is the likely answer;')
+              w(fh, 'a key appearing in fifty is a generic field and proves nothing.')
+              w(fh)
+              if not speed_hits:
+                  w(fh, '- NOTHING found. Speed is not a plain key in any')
+                  w(fh, '  trooper-mentioning file, so it is either inherited from a')
+                  w(fh, '  base subclass under another name or lives in the model.')
+              for k in sorted(speed_hits, key=lambda k: len(speed_hits[k])):
+                  rows = speed_hits[k]
+                  w(fh, f'### {k} ({len(rows)} occurrences)')
+                  for path, i, val in rows[:12]:
+                      w(fh, f'- {path}:{i} = {val}')
+                  w(fh)
+
+              w(fh)
+              w(fh, '## The rift')
+              w(fh)
+              w(fh, 'Substring search, case-insensitive, deliberately wide. Most')
+              w(fh, 'of this will be noise. What is being looked for is a')
+              w(fh, 'CLASSNAME or a subclass_name, not an English sentence.')
+              w(fh)
+              for r in rift_needles:
+                  w(fh, f'### {r}')
+                  if not rift_hits[r]:
+                      w(fh, '- not found')
+                      w(fh)
+                      continue
+                  for p, c in rift_hits[r].most_common(8):
+                      w(fh, f'- {p}: {c}')
+                  for path, i, ln in rift_lines[r][:10]:
+                      w(fh, f'    {path}:{i}  {ln}')
+                  w(fh)
 
               w(fh)
               w(fh, '## Lane numbering')
@@ -180,14 +269,19 @@ jobs:
                   w(fh)
 
           json.dump({
+              'files_scanned': len(files),
               'hits': {k: [list(x) for x in v] for k, v in hits.items()},
               'lane_hits': {k: dict(v) for k, v in lane_hits.items()},
               'lane_values': {k: dict(v) for k, v in lane_values.items()},
+              'speed_hits': {k: [list(x) for x in v] for k, v in speed_hits.items()},
+              'rift_hits': {k: dict(v) for k, v in rift_hits.items()},
           }, open('out/npc-probe.json', 'w'), indent=1)
 
           print()
           for n in needles:
               print(f'{n}: {len(hits[n])} line(s)')
+          print(f'speed keys found: {sum(len(v) for v in speed_hits.values())}')
+          print(f'rift candidates:  {sum(sum(c.values()) for c in rift_hits.values())}')
           PY
 
       - uses: actions/upload-artifact@v4
