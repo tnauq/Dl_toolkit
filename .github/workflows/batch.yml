@@ -27,13 +27,15 @@ name: batch
 # internally as well, which is belt and braces on purpose: an edit-in-place
 # script is the easy way to lose a box by accident.
 #
-# batch13 ran green 2026-08-23 with the real survey coordinates.
+# batch13 and batch14 both ran green 2026-08-23. batch15 adds the shop relay
+# network: it touches ENTITIES only, so EXPECT_BOXES is still the right
+# tripwire and still 4179.
 
 on: workflow_dispatch
 
 env:
   # Edit this line to run a different script. Repo root, one script per run.
-  SCRIPT: batch14.py
+  SCRIPT: batch15.py
   PLAN: docs/plans/dust2_full.json
   EXPECT_BOXES: 4179
   COMMIT_PLAN: "true"
