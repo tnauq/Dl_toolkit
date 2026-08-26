@@ -81,6 +81,16 @@ TIERS = {
            "trooper_type": "2",
            "creatures": 4,
            "initial_delay": "150", "interval": "150"},
+    # READ 2026-08-26 off dl_example, via the classname probe. The MIDBOSS
+    # IS A CAMP: there is no npc_ classname for it. It is an
+    # info_neutral_trooper_camp whose subclass is neutral_camp_midboss and
+    # whose type is 5, with both spawn timings at -1 - it does not respawn on
+    # a clock. Its spawn carries teamnumber 4 and HateCrateAttacker 1.
+    "midboss": {"subclass": "neutral_camp_midboss",   # read
+                "trooper_type": "5",                  # read
+                "creatures": 1,
+                "hate_crate": "1",                    # read
+                "initial_delay": "-1", "interval": "-1"},  # read
     "t3": {"subclass": "neutral_camp_strong",  # GUESS
            "trooper_type": "3",
            "creatures": 4,
@@ -95,6 +105,10 @@ RING_RADIUS = 110.0
 
 
 def ring(n):
+    # A camp of one is the midboss: it stands ON the camp point, not on a
+    # ring around it.
+    if n == 1:
+        return [[0.0, 0.0, 0.0]]
     return [[round(RING_RADIUS * math.cos(2 * math.pi * i / n), 2),
              round(RING_RADIUS * math.sin(2 * math.pi * i / n), 2),
              0.0] for i in range(n)]
@@ -237,6 +251,11 @@ BRUSHES = [
     },
 ]
 
+# The midboss, at the centre of the hexagon room, standing over the hole on
+# whatever ends up being the lid. It is a camp, not an npc - see TIERS above.
+# Sits on the mirror point, so it is not twinned.
+MIDBOSS = ("midboss", [460.15, 6085.05, 1307.1], "the hexagon room floor")
+
 # Landing markers for the pads above. A point, not a volume, and the name
 # must match the pad's `target` exactly - that string is the whole wiring.
 LANDINGS = [
@@ -349,7 +368,7 @@ def rows(table):
     return [(n, o, note) for n, o, note in table if o is not None]
 
 
-def make_camp(name, origin, tier):
+def make_camp(name, origin, tier, team="0"):
     spec = TIERS[tier]
     camp_name = name + "_neutrals"
     out = []
@@ -370,7 +389,8 @@ def make_camp(name, origin, tier):
         MARK: True,
     }
     out.append(camp)
-    out.append(twin_of(camp))
+    if not on_mirror_point(origin):
+        out.append(twin_of(camp))
     for i, off in enumerate(ring(spec["creatures"])):
         s = {
             "name": "%s_spawn%d" % (name, i),
@@ -382,16 +402,17 @@ def make_camp(name, origin, tier):
             "properties": {
                 "targetname": "",
                 "vscripts": "",
-                "teamnumber": "0",
+                "teamnumber": team,
                 "CampName": camp_name,
                 "ENeutralTrooperType": spec["trooper_type"],
                 "CoverGroupID": "",
-                "HateCrateAttacker": "0",
+                "HateCrateAttacker": spec.get("hate_crate", "0"),
             },
             MARK: True,
         }
         out.append(s)
-        out.append(twin_of(s))
+        if not on_mirror_point(origin):
+            out.append(twin_of(s))
     return out
 
 
@@ -495,6 +516,11 @@ def main():
         new += made
         brushes.append((spec, len(made)))
 
+    tier, origin, note = MIDBOSS
+    # teamnumber 4 on the spawn, read off dl_example's own midboss camp.
+    new += make_camp("midboss", origin, tier, team="4")
+    sites.append(("midboss", origin, note))
+
     for name, origin, note in LANDINGS:
         new += make_point(name, origin, "info_target_server_only",
                           {"targetname": name})
@@ -574,10 +600,17 @@ def main():
             # Fatal for a camp: neutrals stand and path there, and a camp in
             # the air is a typed coordinate. Only a warning for a powerup,
             # which may be deliberately off the floor.
-            (problems if name.startswith("camp_") else warnings).append(
-                "%s has no box under it within 400 u" % name)
+            # The midboss stands over the square hole on purpose: whatever
+            # covers that hole does not exist yet, so no floor under it is
+            # the expected state, not a fault.
+            note_txt = ("%s has no box under it within 400 u" % name
+                        + (" - expected, it stands over the hole"
+                           if name == "midboss" else ""))
+            (problems if name.startswith("camp_") else warnings).append(note_txt)
         d_twin = math.hypot(o[0] - (2 * X_PLANE - o[0]),
                             o[1] - (2 * Y_PLANE - o[1]))
+        if on_mirror_point(o, 2.0):
+            d_twin = 1e9        # it IS the mirror point; it is not twinned
         if d_twin < TWIN_WARN:
             warnings.append("%s is %.0f u from its own twin - too near the "
                             "mirror point" % (name, d_twin))

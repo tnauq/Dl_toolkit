@@ -179,6 +179,13 @@ jobs:
           classes = collections.Counter()
           keys = collections.defaultdict(collections.Counter)
           examples = {}
+          # THE FIRST RUN OF THIS PROBE REPORTED KEY NAMES BUT NOT VALUES,
+          # which answered "does a camp have a subclass_name" and not "what
+          # are the subclass names" - and the second is the question. Values
+          # are collected per classname per key, capped so a key like
+          # targetname cannot flood the report.
+          values = collections.defaultdict(
+              lambda: collections.defaultdict(collections.Counter))
 
           lines = open(SRC, encoding='utf-8', errors='replace').read().split('\n')
           i = 0
@@ -214,8 +221,9 @@ jobs:
                   cn = props.get('classname')
                   if cn:
                       classes[cn] += 1
-                      for k in props:
+                      for k, v in props.items():
                           keys[cn][k] += 1
+                          values[cn][k][v] += 1
                       if cn not in examples:
                           examples[cn] = '\n'.join(block[:80])
                   i = j + 1
@@ -249,10 +257,24 @@ jobs:
                   w()
                   w('### `%s`  (%d)' % (cn, classes[cn]))
                   for k, c in sorted(keys[cn].items()):
-                      w('- `%s` - %d/%d' % (k, c, classes[cn]))
+                      vs = values[cn][k]
+                      # Distinct values, when there are few enough for the
+                      # list itself to be the finding.
+                      if len(vs) <= 12:
+                          shown = ', '.join(
+                              '`%s`x%d' % (v if v != '' else '(empty)', n)
+                              for v, n in vs.most_common())
+                          w('- `%s` - %d/%d - %s' % (k, c, classes[cn], shown))
+                      else:
+                          w('- `%s` - %d/%d - %d distinct values, e.g. %s'
+                            % (k, c, classes[cn], len(vs),
+                               ', '.join('`%s`' % v for v, _ in
+                                         vs.most_common(4))))
 
           json.dump({'classes': classes,
-                     'keys': {k: dict(v) for k, v in keys.items()}},
+                     'keys': {k: dict(v) for k, v in keys.items()},
+                     'values': {c: {k: dict(v) for k, v in ks.items()}
+                                for c, ks in values.items()}},
                     open('out/classnames.json', 'w'), indent=1, sort_keys=True)
 
           with open('out/examples.md', 'w', encoding='utf-8') as fh:
@@ -266,6 +288,66 @@ jobs:
           json.dump(fams, open('out/families.json', 'w'), indent=1)
           print('%d classnames, %d entities' % (len(classes), sum(classes.values())))
           print('prefix families:', ', '.join(fams))
+
+      - name: Entity outputs
+        timeout-minutes: 15
+        shell: python
+        run: |
+          import re, os, collections
+
+          # THE OTHER GAP IN THE FIRST RUN. Connections do not live in
+          # EditGameClassProps, so a census of keyvalues cannot see what an
+          # entity fires when it dies - which is the whole question for the
+          # lid. DmeConnectionData blocks carry it. Dumped whole, ungrouped
+          # by relevance, same rule as everything else here.
+          SRC = 'work/example.txt'
+          lines = open(SRC, encoding='utf-8', errors='replace').read().split('\n')
+          two = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
+          three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
+
+          conns = []
+          i, n = 0, len(lines)
+          while i < n:
+              if 'DmeConnectionData' in lines[i]:
+                  depth, block, j = 0, [], i
+                  while j < n:
+                      t = lines[j]
+                      depth += t.count('{') - t.count('}')
+                      block.append(t)
+                      if depth <= 0 and len(block) > 1:
+                          break
+                      j += 1
+                  d = {}
+                  for t in block:
+                      u = t.strip()
+                      m = three.match(u) or two.match(u)
+                      if m:
+                          d[m.group(1)] = m.group(len(m.groups()))
+                  conns.append(d)
+                  i = j + 1
+                  continue
+              i += 1
+
+          outs = collections.Counter(c.get('m_outputName', '?') for c in conns)
+          with open('out/outputs.md', 'w', encoding='utf-8') as fh:
+              def w(s=''):
+                  fh.write(s + '\n')
+              w('# Entity IO in the fixture')
+              w()
+              w('%d connections.' % len(conns))
+              w()
+              w('| output | count |')
+              w('|---|---|')
+              for k, c in outs.most_common():
+                  w('| `%s` | %d |' % (k, c))
+              w()
+              w('## Every connection, verbatim')
+              w()
+              for c in conns:
+                  w('- `%s` -> `%s` . `%s`  (%s)'
+                    % (c.get('m_outputName', '?'), c.get('m_targetName', '?'),
+                       c.get('m_inputName', '?'), c.get('m_overrideParam', '')))
+          print('%d connections, %d distinct outputs' % (len(conns), len(outs)))
 
       # ---- SOURCE B ---------------------------------------------------
       - name: What binaries are here

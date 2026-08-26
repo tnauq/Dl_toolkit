@@ -42,7 +42,17 @@ Two caveats remain, neither of them a classname probe:
 
 Ordered by what blocks the most work.
 
-### 1. Teleporter
+### 1. Teleporter — not reachable from CI
+
+Absent from dl_example, and the binary scan is worthless for this: the CS2
+binaries contain no Deadlock entity strings at all. `citadel_` matched two
+generic tokens, and `catapult` and `climb_rope` — both of which we KNOW are
+real — matched nothing. So source B answers nothing about Deadlock, and a
+negative there means nothing either way.
+
+This one needs a desktop install, or a shipped map to survey.
+
+Original note:
 Blocks: 2 entities, positions already read and sitting in batch16 behind
 `EMIT_UNKNOWN`. Two rooms are already built for them.
 Search for: `teleport` as a substring of any classname; also `warp`, `portal`.
@@ -50,25 +60,46 @@ Expect a pair — an entrance and a destination, or one entity with a `target`
 pointing at a marker, the way `trigger_catapult` does. Note which, because
 the destination marker needs authoring too.
 
-### 2. Sinner's Sacrifice
+### 2. Sinner's Sacrifice — not reachable from CI, same reason as item 1
+
+Worth noting `citadel_breakable_prop` takes a `subclass_name` (dl_example
+uses `citadel_breakable_wooden_crate_03`), so if the sinner is a breakable
+the answer may be a subclass string rather than a classname.
+
+Original note:
 Blocks: 4 entities, positions already read and held in batch16.
 Search for: `sinner`, `sacrifice`, `soul`, `idol`. May well not be an entity
 at all — it could be a `citadel_breakable_prop` or similar with a specific
 model and a keyvalue for the soul payout, in which case the model path
 matters as much as the classname.
 
-### 3. The midboss NPC
-Blocks: the boss itself. Its shield volume is already placed in the hexagon
-room, so this is the last piece of that fight.
-Search for: `npc_` prefixed names near the ones batch13 already uses
-(`npc_boss_tier2`, `npc_boss_tier3`, `npc_barrack_boss`). Also `midboss`,
-`rejuv`, `patron`.
-Wanted alongside the classname: the keyvalues. The tier bosses in batch13
-carry `BossName`, `lanenum`, `teamnumber`, `CoverGroupID` and a set of
-`*_cover_id` keys. A neutral midboss presumably drops the team and lane keys,
-but that is an assumption, not a reading.
+### 3. The midboss NPC — ANSWERED 2026-08-26, and it is not an npc
 
-### 4. Camp tiers
+There is no `npc_` classname for the midboss. IT IS A CAMP:
+
+    info_neutral_trooper_camp
+      subclass_name                neutral_camp_midboss
+      ENeutralTrooperType          5
+      CampName                     mid_boss_neutral
+      InitialSpawnDelayInSeconds   -1
+      SpawnIntervalInSeconds       -1
+
+with one `info_neutral_trooper_spawn` carrying `teamnumber 4`,
+`HateCrateAttacker 1` and a `CoverGroupID`. The -1 timings say it does not
+respawn on a clock, which is the behaviour you would want and is a reading,
+not an inference.
+
+Placed in batch16 at the hexagon centre, standing over the hole.
+
+### 4. Camp tiers — PARTLY ANSWERED
+
+`neutral_camp_midboss` at type 5 is confirmed, which shows the family is
+`neutral_camp_*` and that types run at least to 5. The 11 camps in the
+fixture will name the rest, but the first probe run reported key NAMES and
+not key VALUES, so the artifact says every camp has a `subclass_name`
+without saying what they are. Fixed in the workflow; rerun answers it.
+
+Original note:
 Blocks: nothing — the camps are placed and working — but 16 of the 19 carry a
 guessed `subclass_name`.
 Confirmed: `neutral_camp_weak`, on the camp batch13 already had.
@@ -79,7 +110,22 @@ unread.
 Search for: `neutral_camp` as a substring — the whole family should appear
 together, which also settles the tier count.
 
-### 5. The lid, and the crystal drop
+### 5. The lid, and the crystal drop — a candidate, from the same run
+
+`func_conditional_collidable` exists in the fixture, with `interactas` and
+`interactwith` keys — dl_example sets `interactas` to
+`blocklos, Citadel_Obscured`. That is collision that applies conditionally,
+which is the shape the lid wants. It is a CANDIDATE, not an answer: nothing
+yet says it can be toggled at runtime or what the condition list may contain.
+
+`logic_relay` is also present with 10 instances, so the wiring half of the
+mechanism exists.
+
+The outputs question is still open, and for the same reason as item 4: the
+first run could not see connections at all, because they do not live in
+EditGameClassProps. The workflow now dumps every DmeConnectionData block
+verbatim, so the rerun says what dl_example's `destroyable_building` fires
+when it dies.
 Blocks: the whole midboss-over-the-hole idea.
 
 Two separate unknowns, and the second is the harder one:
