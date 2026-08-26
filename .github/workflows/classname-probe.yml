@@ -333,9 +333,21 @@ jobs:
           two = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
           three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
 
+          # WHO FIRES IT. A connection block says what it triggers but not
+          # what fires it, and that is the question: whether the shop disable
+          # hangs off npc_boss_tier3 or off something else decides whether
+          # tier3 is the guardian or the patron. The owner is the nearest
+          # classname ABOVE the block in the file, so the walk tracks it.
+          owner = '?'
+          cls_re = re.compile(r'"classname"\s+"string"\s+"([^"]*)"')
+
           blocks = []
+          owners = []
           i, n = 0, len(lines)
           while i < n:
+              m = cls_re.search(lines[i])
+              if m:
+                  owner = m.group(1)
               if 'DmeConnectionData' in lines[i]:
                   depth, block, j = 0, [], i
                   while j < n:
@@ -346,12 +358,29 @@ jobs:
                           break
                       j += 1
                   blocks.append(block)
+                  owners.append(owner)
                   i = j + 1
                   continue
               i += 1
 
           keys = collections.Counter()
           values = collections.defaultdict(collections.Counter)
+          pairs = collections.Counter()
+          for own, block in zip(owners, blocks):
+              out_name = tgt = inp = '?'
+              for t in block:
+                  u = t.strip()
+                  m = three.match(u)
+                  if not m:
+                      continue
+                  if m.group(1) == 'outputName':
+                      out_name = m.group(3)
+                  elif m.group(1) == 'targetName':
+                      tgt = m.group(3)
+                  elif m.group(1) == 'inputName':
+                      inp = m.group(3)
+              pairs[(own, out_name, inp, tgt)] += 1
+
           for block in blocks:
               for t in block:
                   u = t.strip()
@@ -379,6 +408,17 @@ jobs:
               w('|---|---|---|')
               for k, c in keys.most_common():
                   w('| `%s` | %d | %d |' % (k, c, len(values[k])))
+              w()
+              w('## Who fires what')
+              w()
+              w('The owner is the nearest classname above the block in the')
+              w('file. Read this to settle which entity a death output')
+              w('actually hangs off.')
+              w()
+              w('| owner | output | input | target | n |')
+              w('|---|---|---|---|---|')
+              for (own, o, i2, t), c in pairs.most_common():
+                  w('| `%s` | `%s` | `%s` | `%s` | %d |' % (own, o, i2, t, c))
               w()
               w('## Values per field')
               for k, _ in keys.most_common():
