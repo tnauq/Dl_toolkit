@@ -38,6 +38,11 @@ name: classname probe
 #                        union of keyvalue names each one uses, and how many
 #                        of its instances set each key
 #   out/classnames.json  the same, machine-readable, for a later script
+#   out/outputs-context.md
+#                        each connection with the raw lines before it, for
+#                        reading ownership by eye
+#   out/classname-lines.md
+#                        every classname with its line number
 #   out/entities.md      one ROW PER ENTITY, so keyvalues can be read
 #                        together - which type goes with which subclass, and
 #                        which interval with which camp
@@ -333,77 +338,42 @@ jobs:
           two = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
           three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
 
-          # WHO FIRES IT.
+          # WHO FIRES IT — TWO FAILED MODELS, SO NO THIRD MODEL.
           #
-          # THE LAST VERSION GOT THIS WRONG and the output was believed for a
-          # while, which is worse than not having it. It used "the nearest
-          # classname above the block", which reported light_omni2 firing
-          # OnTrooperKilled and info_cover_point killing grate brushes -
-          # neither of which can be true. An entity's children (meshes, other
-          # entities) sit between its classprops and its connection array, so
-          # the nearest classname above a connection is usually a SIBLING.
+          # Attempt 1 used "the nearest classname above the block" and
+          # reported light_omni2 firing OnTrooperKilled. Attempt 2 tracked
+          # brace depth and reported every one of the 89 connections as
+          # unnested. Both were guesses about a file structure nobody had
+          # looked at, and both produced confident output that was wrong -
+          # which is worse than no output, because it got believed.
           #
-          # This version tracks brace depth and keeps a stack of open blocks.
-          # The owner is the classname of the innermost block still open at
-          # the connection, which is the entity the connection is nested in.
-          # Where no block is open, the owner is reported as (unnested)
-          # rather than guessed at.
-          cls_re = re.compile(r'"classname"\s+"string"\s+"([^"]*)"')
+          # So this version does not infer an owner at all. It writes the RAW
+          # LINES AROUND EACH CONNECTION and lets a human see what encloses
+          # it. Slower to read, impossible to be quietly wrong about.
+          #
+          # Read outputs-context.md, find FinalShielded, and look upward for
+          # the classname it belongs to. That single answer decides whether
+          # npc_boss_tier3 is the patron or the lane objective.
+          SRC = 'work/example.txt'
+          lines = open(SRC, encoding='utf-8', errors='replace').read().split('\n')
+          two = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
+          three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
 
-          blocks = []
-          owners = []
-          stack = []          # (depth_when_seen, classname)
-          depth = 0
-          i, n = 0, len(lines)
-          while i < n:
-              m = cls_re.search(lines[i])
-              if m:
-                  # A classname belongs to the block two levels out: its own
-                  # classprops block, inside the entity block. Recording it
-                  # against the entity's depth is what keeps it alive while
-                  # the entity's children come and go.
-                  stack.append((depth - 2, m.group(1)))
-              owner = stack[-1][1] if stack else '(unnested)'
-              if 'DmeConnectionData' in lines[i]:
-                  depth, block, j = 0, [], i
-                  while j < n:
-                      t = lines[j]
-                      depth += t.count('{') - t.count('}')
-                      block.append(t)
-                      if depth <= 0 and len(block) > 1:
-                          break
-                      j += 1
-                  blocks.append(block)
-                  owners.append(owner)
-                  depth += sum(t.count('{') - t.count('}') for t in block)
-                  while stack and stack[-1][0] >= depth:
-                      stack.pop()
-                  i = j + 1
-                  continue
-              depth += lines[i].count('{') - lines[i].count('}')
-              while stack and stack[-1][0] >= depth:
-                  stack.pop()
-              i += 1
+          starts = [i for i, t in enumerate(lines) if 'DmeConnectionData' in t]
 
           keys = collections.Counter()
           values = collections.defaultdict(collections.Counter)
-          pairs = collections.Counter()
-          for own, block in zip(owners, blocks):
-              out_name = tgt = inp = '?'
-              for t in block:
-                  u = t.strip()
-                  m = three.match(u)
-                  if not m:
-                      continue
-                  if m.group(1) == 'outputName':
-                      out_name = m.group(3)
-                  elif m.group(1) == 'targetName':
-                      tgt = m.group(3)
-                  elif m.group(1) == 'inputName':
-                      inp = m.group(3)
-              pairs[(own, out_name, inp, tgt)] += 1
-
-          for block in blocks:
+          rows = []
+          for i in starts:
+              depth, block, j = 0, [], i
+              while j < len(lines):
+                  t = lines[j]
+                  depth += t.count('{') - t.count('}')
+                  block.append(t)
+                  if depth <= 0 and len(block) > 1:
+                      break
+                  j += 1
+              d = {}
               for t in block:
                   u = t.strip()
                   m = three.match(u)
@@ -414,36 +384,27 @@ jobs:
                       if not m or m.group(1) == 'DmeConnectionData':
                           continue
                       k, v = m.group(1), m.group(2)
+                  d[k] = v
                   keys[k] += 1
                   values[k][v] += 1
+              rows.append((i, d))
 
           with open('out/outputs.md', 'w', encoding='utf-8') as fh:
               def w(s=''):
                   fh.write(s + '\n')
               w('# Entity IO in the fixture')
               w()
-              w('%d connection blocks. The field names below are whatever'
-                % len(blocks))
-              w('the blocks actually contain - nothing was looked for.')
+              w('%d connection blocks. NO OWNER COLUMN: two attempts at'
+                % len(rows))
+              w('inferring one were both wrong, so ownership is left to')
+              w('outputs-context.md, which shows the raw surroundings.')
               w()
-              w('| field | times seen | distinct values |')
-              w('|---|---|---|')
-              for k, c in keys.most_common():
-                  w('| `%s` | %d | %d |' % (k, c, len(values[k])))
-              w()
-              w('## Who fires what')
-              w()
-              w('The owner is the innermost block still OPEN at the')
-              w('connection, by brace depth - not the nearest classname')
-              w('above it, which reported light_omni2 firing OnTrooperKilled')
-              w('and was wrong. Sanity-check the column before trusting it:')
-              w('if anything implausible appears again, the nesting')
-              w('assumption is still not right.')
-              w()
-              w('| owner | output | input | target | n |')
+              w('| line | output | input | target | param |')
               w('|---|---|---|---|---|')
-              for (own, o, i2, t), c in pairs.most_common():
-                  w('| `%s` | `%s` | `%s` | `%s` | %d |' % (own, o, i2, t, c))
+              for i, d in rows:
+                  w('| %d | `%s` | `%s` | `%s` | `%s` |'
+                    % (i + 1, d.get('outputName', '?'), d.get('inputName', '?'),
+                       d.get('targetName', '?'), d.get('overrideParam', '')))
               w()
               w('## Values per field')
               for k, _ in keys.most_common():
@@ -454,16 +415,38 @@ jobs:
                       w('- `%s` x%d' % (v if v != '' else '(empty)', c))
                   if len(vs) > 60:
                       w('- ... %d more' % (len(vs) - 60))
-              w()
-              w('## Every block, verbatim')
-              for block in blocks:
-                  w()
-                  w('```')
-                  for t in block:
-                      w(t.rstrip())
-                  w('```')
-          print('%d connection blocks, fields: %s'
-                % (len(blocks), ', '.join(sorted(keys))))
+
+          # The context dump. 80 lines before each connection is enough to
+          # reach back past an entity's children to its classprops in every
+          # case seen so far; if a block still shows no classname above it,
+          # raise the number rather than inferring.
+          BACK = 80
+          with open('out/outputs-context.md', 'w', encoding='utf-8') as fh:
+              fh.write('# Each connection, with the %d lines before it\n' % BACK)
+              fh.write('\nFind the nearest `"classname"` reading UPWARD from')
+              fh.write(' a block\nto see what owns it.\n')
+              for i, d in rows:
+                  fh.write('\n## line %d - `%s` -> `%s` . `%s`\n\n```\n'
+                           % (i + 1, d.get('outputName', '?'),
+                              d.get('targetName', '?'),
+                              d.get('inputName', '?')))
+                  for t in lines[max(0, i - BACK):i + 12]:
+                      fh.write(t.rstrip() + '\n')
+                  fh.write('```\n')
+
+          # And a straight index: every classname line with its line number,
+          # so the context blocks can be located against it without scrolling.
+          cls_re = re.compile(r'"classname"\s+"string"\s+"([^"]*)"')
+          with open('out/classname-lines.md', 'w', encoding='utf-8') as fh:
+              fh.write('# Every classname, by line number\n\n')
+              fh.write('| line | classname |\n|---|---|\n')
+              for n2, t in enumerate(lines):
+                  m = cls_re.search(t)
+                  if m:
+                      fh.write('| %d | `%s` |\n' % (n2 + 1, m.group(1)))
+
+          print('%d connections; context and classname index written'
+                % len(rows))
 
       # ---- SOURCE B ---------------------------------------------------
       - name: What binaries are here
