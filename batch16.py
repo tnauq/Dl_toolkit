@@ -163,9 +163,57 @@ POWERUPS = [
     ("powerup_1", [-706.0, 5390.0, 640.0], "m_corner_plat_n"),
 ]
 
+# ---------------------------------------------------------------------------
+# BRUSH VOLUMES. Same shape batch13 emits: the child mesh rides in "mesh" and
+# carries the extents. Both classnames here are READ - batch13 took them from
+# dl_example - so unlike the teleporters and sinners these go straight in.
+#
+# A volume centred on the mirror point is NOT twinned, the same rule batch13
+# applies: its twin would be itself, in the same place, doubled.
+# ---------------------------------------------------------------------------
+BRUSHES = [
+    {
+        # Moved up out of the old pit into the hexagon room. batch13 puts
+        # this at the map centre but at z 435, which is now three floors
+        # below the fight. Same classname and keys, new position and size.
+        # The SIZE is invented: batch13's 1024 square was for a pit, and
+        # this wants to cover the room's middle without reaching the walls,
+        # so a team has to commit inside it.
+        "name": "midboss_shield",
+        "classname": "trigger_midboss_shield",
+        "origin": [460.1, 6085.05, 1707.1],
+        "extents": [1600.0, 1600.0, 800.0],
+        "properties": {"StartDisabled": "0", "spawnflags": "4097"},
+    },
+    {
+        # Down the triangle hole beside hex3_blk_300. 640 tall, matching the
+        # rope batch13 already carries, hung from the room floor at 1307.1 -
+        # so it ends at 667.1, and merged_84's top is 666.9. That is luck
+        # rather than design, but it lands.
+        "name": "rope_tri_300",
+        "classname": "citadel_trigger_climb_rope",
+        "origin": [1111.55, 4956.7, 987.1],
+        "extents": [96.0, 96.0, 640.0],
+        "properties": {"targetname": "", "spawnflags": "4097"},
+    },
+    {
+        # Beside hex3_blk_240. Nothing under this one: the rope ends in air
+        # at 667.1 and the drop below that is open to z 107 at best. Left
+        # floating on purpose.
+        "name": "rope_tri_240",
+        "classname": "citadel_trigger_climb_rope",
+        "origin": [-191.35, 4956.75, 987.1],
+        "extents": [96.0, 96.0, 640.0],
+        "properties": {"targetname": "", "spawnflags": "4097"},
+    },
+]
+
 # Placeholders this file supersedes. Deleted by name, with their m_ twins and,
 # for the camp, its creature spawns.
-SUPERSEDED = ["camp_west_weak", "crate_west_1", "bridge_buff_west"]
+SUPERSEDED = ["camp_west_weak", "crate_west_1", "bridge_buff_west",
+              # batch13's midboss shield sits at the old pit height; the
+              # one in BRUSHES above replaces it.
+              "midboss_shield"]
 
 # Warn if a site and its own twin end up closer than this: on a rotationally
 # symmetric map anything near the mirror point pairs with itself.
@@ -308,6 +356,32 @@ def make_camp(name, origin, tier):
     return out
 
 
+def on_mirror_point(o, tol=1.0):
+    return (abs(o[0] - X_PLANE) < tol and abs(o[1] - Y_PLANE) < tol)
+
+
+def make_brush(spec):
+    """A volume, in the shape batch13 emits: extents live on a child mesh."""
+    e = {
+        "name": spec["name"],
+        "classname": spec["classname"],
+        "origin": [round(v, 4) for v in spec["origin"]],
+        "angles": list(spec.get("angles", [0.0, 0.0, 0.0])),
+        "properties": dict(spec["properties"]),
+        "mesh": {
+            "name": spec["name"] + "_vol",
+            "origin": [0.0, 0.0, 0.0],
+            "extents": [round(v, 4) for v in spec["extents"]],
+            "angles": [0.0, 0.0, 0.0],
+        },
+        MARK: True,
+    }
+    out = [e]
+    if not on_mirror_point(e["origin"]):
+        out.append(twin_of(e))
+    return out
+
+
 def make_point(name, origin, classname, props=None):
     e = {
         "name": name,
@@ -371,6 +445,17 @@ def main():
             new += make_camp(name, origin, tier)
             sites.append((name, origin, note))
 
+    # Volumes are NOT added to `sites`. Every check that runs over sites -
+    # what is underneath it, how close it is to its own twin, whether it is
+    # the mirror of another - is a check about a point on the floor, and a
+    # volume hanging in the air fails all three for no reason. They get
+    # their own checks below.
+    brushes = []
+    for spec in BRUSHES:
+        made = make_brush(spec)
+        new += made
+        brushes.append((spec, len(made)))
+
     filled = rows(POWERUPS)
     have["powerup"] = len(filled)
     for name, origin, note in filled:
@@ -395,6 +480,30 @@ def main():
     plan.setdefault("entities", []).extend(new)
 
     # ---- checks -------------------------------------------------------
+    log.append("")
+    for spec, n_made in brushes:
+        e = spec["extents"]
+        o = spec["origin"]
+        log.append("%-16s %-30s %8.1f %9.1f  z %.1f..%.1f%s"
+                   % (spec["name"], spec["classname"], o[0], o[1],
+                      o[2] - e[2] / 2.0, o[2] + e[2] / 2.0,
+                      "  (on the mirror point, not twinned)"
+                      if n_made == 1 else ""))
+    # A rope wants its top at the floor you step off, and the shield wants
+    # its bottom on the floor the fight happens on. Both are 1307.1 now.
+    ROOM_FLOOR = 1307.1
+    for spec, _ in brushes:
+        top = spec["origin"][2] + spec["extents"][2] / 2.0
+        bot = spec["origin"][2] - spec["extents"][2] / 2.0
+        if spec["classname"] == "citadel_trigger_climb_rope":
+            if abs(top - ROOM_FLOOR) > 1.0:
+                problems.append("%s's top is %.1f, not the room floor %.1f"
+                                % (spec["name"], top, ROOM_FLOOR))
+        if spec["classname"] == "trigger_midboss_shield":
+            if abs(bot - ROOM_FLOOR) > 1.0:
+                problems.append("%s's base is %.1f, not the room floor %.1f"
+                                % (spec["name"], bot, ROOM_FLOOR))
+
     log.append("")
     log.append("%-18s %10s %10s %9s  %s  %-22s %s"
                % ("name", "x", "y", "z", "side", "stands on", "note"))
