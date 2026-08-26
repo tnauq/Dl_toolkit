@@ -165,7 +165,19 @@ def twin_box(b):
     return t
 
 
+MIN_EXTENT = 0.1
+
+
 def box(name, x0, x1, y0, y1, z0, z1, mat=MAT_WALL):
+    """None if the piece has no thickness in some axis.
+
+    A sill is only needed where the wall starts BELOW the room floor. On
+    axis_451 the two are the same height, so the sill is nothing at all -
+    and a zero-extent box is exactly what batch14's check fails on. Better
+    to not make it than to make it and have the next script reject it.
+    """
+    if min(x1 - x0, y1 - y0, z1 - z0) < MIN_EXTENT:
+        return None
     return {
         "name": name,
         "origin": [round((x0 + x1) / 2.0, 4), round((y0 + y1) / 2.0, 4),
@@ -239,10 +251,19 @@ def build_room(spec, src, log, problems):
     top = spec["wall_top"] or (ceil_bot + CEIL_T)
 
     new = []
-    new.append(box("%s_sill" % w, wx0, wx1, wy0, wy1, spec["wall_z0"], ft))
-    new.append(box("%s_jamb_w" % w, wx0, ox0, wy0, wy1, ft, crown))
-    new.append(box("%s_jamb_e" % w, ox1, wx1, wy0, wy1, ft, crown))
-    new.append(box("%s_hdr" % w, wx0, wx1, wy0, wy1, crown, spec["wall_z1"]))
+    skipped = []
+
+    def add(b, why=""):
+        if b is None:
+            skipped.append(why)
+        else:
+            new.append(b)
+
+    add(box("%s_sill" % w, wx0, wx1, wy0, wy1, spec["wall_z0"], ft), "sill")
+    add(box("%s_jamb_w" % w, wx0, ox0, wy0, wy1, ft, crown), "west jamb")
+    add(box("%s_jamb_e" % w, ox1, wx1, wy0, wy1, ft, crown), "east jamb")
+    add(box("%s_hdr" % w, wx0, wx1, wy0, wy1, crown, spec["wall_z1"]),
+        "header")
     arch = scaled_arch(src, tag, open_c, crown, (wy0 + wy1) / 2.0)
     new += arch
 
@@ -252,16 +273,16 @@ def build_room(spec, src, log, problems):
         nm, from_y = spec["floor_ext"]
         fy0, fy1 = (from_y, ry1) if side > 0 else (ry0 - 26.7, from_y)
         pad = 0.0 if side > 0 else 26.7
-        new.append(box(nm, rx0 - pad, rx1 + pad, fy0, fy1,
-                       spec["floor_bot"], ft, MAT_FLOOR))
+        add(box(nm, rx0 - pad, rx1 + pad, fy0, fy1,
+                spec["floor_bot"], ft, MAT_FLOOR), "floor extension")
 
     for nm, axis, a, b_ in spec["walls"]:
         if axis == "x":
-            new.append(box(nm, a, b_, ry0, ry1, ft, top))
+            add(box(nm, a, b_, ry0, ry1, ft, top), nm)
         else:
-            new.append(box(nm, rx0 - 26.7, rx1 + 26.7, a, b_, ft, top))
-    new.append(box("ceiling_%s" % tag, rx0, rx1, ry0, ry1,
-                   ceil_bot, ceil_bot + CEIL_T))
+            add(box(nm, rx0 - 26.7, rx1 + 26.7, a, b_, ft, top), nm)
+    add(box("ceiling_%s" % tag, rx0, rx1, ry0, ry1,
+            ceil_bot, ceil_bot + CEIL_T), "ceiling")
 
     tele = [round(open_c, 2), round((ry0 + ry1) / 2.0, 2), ft]
 
@@ -272,6 +293,9 @@ def build_room(spec, src, log, problems):
                % (NEW_OPEN_W, ox0, ox1, crown))
     log.append("        jambs %.2f and %.2f" % (ox0 - wx0, wx1 - ox1))
     log.append("        teleporter at %s" % tele)
+    if skipped:
+        log.append("        no %s needed here: the wall does not extend "
+                   "below the floor" % ", ".join(skipped))
 
     ax0 = min(aabb(b)[0] for b in arch)
     ax1 = max(aabb(b)[1] for b in arch)
