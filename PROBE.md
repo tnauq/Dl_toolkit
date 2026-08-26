@@ -106,6 +106,24 @@ is a test, not a probe: place the boss over the hole with no lid and watch.
 
 ---
 
+## The workflow that answers this
+
+`.github/workflows/classname-probe.yml`, run by hand. It takes no needle list
+on purpose - a search term cannot find a name nobody has thought of, which is
+the failure mode for items 1, 2 and 5a. It pulls two things whole:
+
+- every classname in `dl_example.vmap`, with its real keyvalues and how many
+  instances set each one, plus one verbatim entity per classname
+- every identifier-shaped token in every CSDK binary, grouped by prefix, with
+  a histogram of EVERY prefix so an unfamiliar family is visible by reading
+  down it
+
+The fixture answers with certainty but only about what the gym map contains.
+The binaries answer broadly but they are CS2's, not Deadlock's, so a hit
+there is a lead and not a fact. If both are silent on an item, that is itself
+the finding: the string is not reachable from CI and the answer has to come
+off a desktop install.
+
 ## What to search
 
 The rift was found by scanning shipped strings, so the same route applies.

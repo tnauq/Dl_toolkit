@@ -1,0 +1,397 @@
+name: classname probe
+
+# PULLS EVERYTHING. No needle list, no guessed names, no search terms.
+#
+# Every open item in PROBE.md is blocked on a classname string. Every previous
+# probe here has worked by naming what to look for, which cannot find a thing
+# nobody has named yet - if the sinner's sacrifice is called something none of
+# us would think to type, a needle list will never see it. So this one asks a
+# different question: WHAT ENTITY TYPES EXIST AT ALL, and dumps the answer
+# whole.
+#
+# TWO SOURCES, because they fail in opposite directions.
+#
+#   A. dl_example.vmap, the Deadlock gym fixture already in the repo. Every
+#      classname in it is REAL and comes with its REAL keyvalues, which is
+#      what batch13 was built from. But it is a gym: it shows one of each of
+#      the things it happens to contain, and anything it does not contain is
+#      invisible here. If the teleporter is absent from the gym, source A is
+#      silent about it.
+#
+#   B. the CSDK binaries, from the csdk-12 release. Class names survive in
+#      binaries as plain strings, so a type can show up here even when no map
+#      in the repo uses it. But these are the CS2 binaries, NOT Deadlock's,
+#      so citadel_* types may be entirely absent - and a string here proves
+#      only that the token exists somewhere, not that it is an entity, not
+#      what its keyvalues are, and not that Deadlock still uses it.
+#
+# A ANSWERS WITH CERTAINTY BUT NARROWLY. B ANSWERS BROADLY BUT WEAKLY. Read
+# both, and treat anything found only in B as a lead to confirm, not a fact.
+#
+# NEITHER SOURCE IS DEADLOCK'S SHIPPED GAME. If both come back empty on an
+# item, that is the finding: the string is not reachable from CI, and the
+# answer has to come off a desktop install - which is a different job and
+# wants saying out loud rather than discovering after the fifth empty run.
+#
+# WHAT COMES OUT
+#   out/classnames.md    every classname in dl_example, with counts, the full
+#                        union of keyvalue names each one uses, and how many
+#                        of its instances set each key
+#   out/classnames.json  the same, machine-readable, for a later script
+#   out/examples.md      one verbatim entity per classname, keyvalues and all
+#   out/tokens.txt.gz    every underscore-bearing lowercase token in every
+#                        CSDK binary, sorted, deduplicated
+#   out/tokens-by-family.md
+#                        those tokens grouped by prefix, where the prefixes
+#                        are the ones dl_example ACTUALLY USES - derived from
+#                        source A at runtime, not typed in here
+#   out/binaries.md      what was scanned, so an empty result can be told
+#                        apart from a scan that never ran
+#
+# The token dump is the raw pull and will be large. It is deliberately not
+# filtered by relevance, because filtering by relevance is the same mistake
+# as a needle list.
+
+on: workflow_dispatch
+
+env:
+  FIXTURE: dl_example.vmap
+  RELEASE_TAG: csdk-12
+  # A token has to look like an identifier to be worth keeping. This is the
+  # only shape rule in the file and it is mechanical, not a guess about
+  # naming: lowercase, starts with a letter, contains an underscore.
+  TOKEN_MIN: 5
+  TOKEN_MAX: 64
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cheap checks first: a missing fixture should cost seconds, not the
+      # download.
+      - name: Before
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          [ -s "$FIXTURE" ] || { echo "::error::no $FIXTURE"; exit 1; }
+          wc -c "$FIXTURE"
+
+      - name: Fetch, reassemble, extract
+        id: get
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          tag = os.environ['RELEASE_TAG']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/{tag}'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          if not conv:
+              print("::error::dmxconvert.exe missing"); sys.exit(1)
+          print("dmxconvert:", conv)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+
+      - name: Binary to keyvalues2_noids text
+        timeout-minutes: 20
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/$FIXTURE" -ie binary \
+            -o "$ROOT/work/example.txt" -oe keyvalues2_noids > out/conv.txt 2>&1 || RC=$?
+          cat out/conv.txt
+          echo "exit: $RC" | tee -a out/conv.txt
+          [ -s work/example.txt ] || { echo "::error::no text out"; exit 1; }
+          wc -c work/example.txt | tee -a out/conv.txt
+
+      # ---- SOURCE A ---------------------------------------------------
+      - name: Census every classname in the fixture
+        timeout-minutes: 20
+        shell: python
+        run: |
+          import re, json, collections, os
+
+          SRC = 'work/example.txt'
+
+          # An entity's keyvalues sit in an EditGameClassProps block. Rather
+          # than parse the whole DMX, walk it with a brace depth counter and
+          # record every key seen between the block opening and closing. That
+          # is enough to answer "which keys does this classname use" without
+          # a full reader, and it cannot be fooled by an unfamiliar type.
+          three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
+          two = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
+
+          classes = collections.Counter()
+          keys = collections.defaultdict(collections.Counter)
+          examples = {}
+
+          lines = open(SRC, encoding='utf-8', errors='replace').read().split('\n')
+          i = 0
+          n = len(lines)
+          while i < n:
+              s = lines[i].strip()
+              if 'EditGameClassProps' in s:
+                  depth = 0
+                  block = []
+                  j = i
+                  while j < n:
+                      t = lines[j]
+                      depth += t.count('{') - t.count('}')
+                      block.append(t)
+                      if depth <= 0 and len(block) > 1:
+                          break
+                      j += 1
+                  props = {}
+                  for t in block:
+                      u = t.strip()
+                      m = three.match(u)
+                      if m:
+                          if m.group(1) != 'entity_properties':
+                              props[m.group(1)] = m.group(3)
+                          continue
+                      m = two.match(u)
+                      # entity_properties is the block header, not a
+                      # keyvalue; it would otherwise appear as a key on
+                      # every single classname.
+                      if m and m.group(1) not in ('EditGameClassProps',
+                                                  'entity_properties'):
+                          props[m.group(1)] = m.group(2)
+                  cn = props.get('classname')
+                  if cn:
+                      classes[cn] += 1
+                      for k in props:
+                          keys[cn][k] += 1
+                      if cn not in examples:
+                          examples[cn] = '\n'.join(block[:80])
+                  i = j + 1
+                  continue
+              i += 1
+
+          os.makedirs('out', exist_ok=True)
+          with open('out/classnames.md', 'w', encoding='utf-8') as fh:
+              def w(s=''):
+                  fh.write(s + '\n')
+              w('# Every classname in %s' % os.environ['FIXTURE'])
+              w()
+              w('%d distinct classnames, %d entities.'
+                % (len(classes), sum(classes.values())))
+              w()
+              w('This is the WHOLE list. Nothing was searched for and nothing')
+              w('was filtered out. A type missing from here is missing from')
+              w('the gym map, which is not the same as missing from the game.')
+              w()
+              w('| classname | count |')
+              w('|---|---|')
+              for cn, c in sorted(classes.items()):
+                  w('| `%s` | %d |' % (cn, c))
+              w()
+              w('## Keyvalues, per classname')
+              w()
+              w('The number beside a key is how many instances of that')
+              w('classname set it. A key set by some instances and not others')
+              w('is optional; a key on every instance is probably required.')
+              for cn in sorted(classes):
+                  w()
+                  w('### `%s`  (%d)' % (cn, classes[cn]))
+                  for k, c in sorted(keys[cn].items()):
+                      w('- `%s` - %d/%d' % (k, c, classes[cn]))
+
+          json.dump({'classes': classes,
+                     'keys': {k: dict(v) for k, v in keys.items()}},
+                    open('out/classnames.json', 'w'), indent=1, sort_keys=True)
+
+          with open('out/examples.md', 'w', encoding='utf-8') as fh:
+              fh.write('# One verbatim entity per classname\n')
+              for cn in sorted(examples):
+                  fh.write('\n## %s\n\n```\n%s\n```\n' % (cn, examples[cn]))
+
+          # The prefix families, DERIVED from what the fixture uses. Source B
+          # groups by these rather than by a list typed into this file.
+          fams = sorted({cn.split('_')[0] for cn in classes if '_' in cn})
+          json.dump(fams, open('out/families.json', 'w'), indent=1)
+          print('%d classnames, %d entities' % (len(classes), sum(classes.values())))
+          print('prefix families:', ', '.join(fams))
+
+      # ---- SOURCE B ---------------------------------------------------
+      - name: What binaries are here
+        shell: python
+        run: |
+          import os, json
+          rows = []
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if os.path.splitext(f)[1].lower() in ('.dll', '.exe', '.so'):
+                      p = os.path.join(root, f)
+                      rows.append((os.path.relpath(p, 'csdk').replace('\\', '/'),
+                                   os.path.getsize(p)))
+          rows.sort()
+          with open('out/binaries.md', 'w') as fh:
+              fh.write('# Binaries scanned\n\n| path | bytes |\n|---|---|\n')
+              for p, n in rows:
+                  fh.write('| %s | %d |\n' % (p, n))
+          json.dump([p for p, _ in rows], open('out/binaries.json', 'w'), indent=1)
+          print('%d binaries' % len(rows))
+
+      - name: Pull every identifier-shaped token
+        timeout-minutes: 25
+        shell: python
+        run: |
+          import os, re, json, gzip, collections
+
+          lo = int(os.environ['TOKEN_MIN'])
+          hi = int(os.environ['TOKEN_MAX'])
+          # Lowercase, starts with a letter, contains an underscore. That is
+          # the whole rule. It is a SHAPE test, not a relevance test - the
+          # point of this run is to avoid deciding in advance what matters.
+          pat = re.compile(rb'[a-z][a-z0-9_]{%d,%d}' % (lo - 1, hi - 1))
+
+          seen = collections.Counter()
+          where = collections.defaultdict(set)
+          for rel in json.load(open('out/binaries.json')):
+              path = os.path.join('csdk', rel.replace('/', os.sep))
+              try:
+                  data = open(path, 'rb').read()
+              except Exception as ex:
+                  print('  skip %s: %s' % (rel, ex))
+                  continue
+              n = 0
+              for m in pat.finditer(data):
+                  t = m.group(0)
+                  if b'_' not in t:
+                      continue
+                  s = t.decode('ascii')
+                  seen[s] += 1
+                  if len(where[s]) < 6:
+                      where[s].add(rel)
+                  n += 1
+              print('  %-50s %d' % (rel, n))
+
+          with gzip.open('out/tokens.txt.gz', 'wt', encoding='utf-8') as fh:
+              for t in sorted(seen):
+                  fh.write('%s\t%d\n' % (t, seen[t]))
+          print('%d distinct tokens' % len(seen))
+
+          fams = json.load(open('out/families.json'))
+          with open('out/tokens-by-family.md', 'w', encoding='utf-8') as fh:
+              def w(s=''):
+                  fh.write(s + '\n')
+              w('# Tokens grouped by the prefixes dl_example uses')
+              w()
+              w('The prefix list is derived from source A, not typed in. A')
+              w('token here is a STRING IN A CS2 BINARY and nothing more: it')
+              w('may not be an entity, it may be dead, and Deadlock may have')
+              w('renamed it. Confirm anything before authoring it.')
+              w()
+              w('%d distinct tokens overall. The full dump is tokens.txt.gz.'
+                % len(seen))
+              for fam in fams:
+                  pre = fam + '_'
+                  hits = sorted(t for t in seen if t.startswith(pre))
+                  w()
+                  w('## `%s*`  - %d token(s)' % (pre, len(hits)))
+                  if not hits:
+                      w('- none, in any scanned binary')
+                      continue
+                  for t in hits[:400]:
+                      w('- `%s` (%d) %s'
+                        % (t, seen[t], ' '.join(sorted(where[t]))))
+                  if len(hits) > 400:
+                      w('- ... %d more, see tokens.txt.gz' % (len(hits) - 400))
+
+              # EVERY prefix, not just the familiar ones. The grouped
+              # sections above can only show families the gym map already
+              # uses, which cannot surface a name nobody has thought of -
+              # the exact failure this run exists to avoid. This histogram
+              # is the whole prefix space, so an unfamiliar family is
+              # visible by reading down it.
+              pre = collections.Counter()
+              for t in seen:
+                  pre[t.split('_')[0]] += 1
+              w()
+              w('## Every prefix seen, by how many tokens share it')
+              w()
+              w('%d distinct prefixes. Families already in dl_example are'
+                % len(pre))
+              w('marked. Read down this list for anything unfamiliar, then')
+              w('pull it out of tokens.txt.gz.')
+              w()
+              w('| prefix | tokens | in fixture |')
+              w('|---|---|---|')
+              for k, c in pre.most_common():
+                  w('| `%s_` | %d | %s |' % (k, c, 'yes' if k in fams else ''))
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          echo "--- classnames in the fixture ---"
+          head -40 out/classnames.md || true
+          echo
+          echo "--- families ---"
+          cat out/families.json || true
+          echo
+          ls -l out
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: classname-probe
+          path: out/**
+          if-no-files-found: warn
