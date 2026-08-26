@@ -639,9 +639,7 @@ def main():
             # The midboss stands over the square hole on purpose: whatever
             # covers that hole does not exist yet, so no floor under it is
             # the expected state, not a fault.
-            note_txt = ("%s has no box under it within 400 u" % name
-                        + (" - expected, it stands over the hole"
-                           if name == "midboss" else ""))
+            note_txt = "%s has no box under it within 400 u" % name
             (problems if name.startswith("camp_") else warnings).append(note_txt)
         d_twin = math.hypot(o[0] - (2 * X_PLANE - o[0]),
                             o[1] - (2 * Y_PLANE - o[1]))

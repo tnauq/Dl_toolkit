@@ -179,7 +179,13 @@ candidate, but nothing yet confirms it answers `Kill`. The fixture's own
 `*_grate_brush` entities would say, except their targetnames do not appear in
 the census — worth a look in `entities.md` on the next run.
 
-THE PLAN FORMAT CANNOT EXPRESS THIS YET. batch13 emits keyvalues only; no
+SHELVED 2026-08-26. The lid is in as SOLID GEOMETRY - `midboss_lid`, a slab
+flush with the room floor, built by batch18 behind a `LID` switch. The
+midboss now stands on it. The deck below stays cut, so on the day the lid
+becomes killable the shaft is already open to the bridge floor and nothing
+has to be recut. Flip `LID` to False and the square opens again.
+
+THE PLAN FORMAT CANNOT EXPRESS THE REAL MECHANISM YET. batch13 emits keyvalues only; no
 script here writes a connection, and the converter has never been asked to.
 Wiring the lid means teaching the plan about DmeConnectionData - outputName,
 targetType 7, targetName, inputName, overrideParam, delay, timesToFire - which

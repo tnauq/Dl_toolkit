@@ -123,6 +123,21 @@ TRI_APEX_DEG = 120.0
 TRI_FACE_OFF = 106.7           # half of a block's 213.4 depth
 DECK_Z = (1253.7, 1280.3)      # the deck under two of them
 
+# THE LID over the square hole, flush with the room floor, so the midboss has
+# something to stand on. SOLID GEOMETRY, not an entity: the real mechanism is
+# a named brush killed by the boss's OnTrooperKilled output, and the plan
+# format cannot express a connection yet - see PROBE.md item 5. Shelved on
+# purpose rather than half-built.
+#
+# The deck cut below it stays open, so when the lid does become killable the
+# shaft is already clear all the way to the bridge floor. Nothing has to be
+# recut later.
+#
+# It is centred on the mirror point, so like the rest of the room it is not
+# twinned.
+LID = True
+LID_NAME = "midboss_lid"
+
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
 
@@ -384,6 +399,12 @@ def build():
             b["origin"][0] = round(b["origin"][0] + dx, 4)
             b["origin"][1] = round(b["origin"][1] + dy, 4)
 
+    if LID:
+        new.append(rotbox(LID_NAME, (HOLE_X0 + HOLE_X1) / 2.0,
+                          (HOLE_Y0 + HOLE_Y1) / 2.0, DECK, FLOOR_TOP,
+                          HOLE_X1 - HOLE_X0, HOLE_Y1 - HOLE_Y0, 0.0,
+                          MAT_FLOOR))
+
     # six walls, one per side, standing just outside the floor edge
     for k in range(6):
         theta = 30.0 + 60.0 * k
@@ -535,7 +556,7 @@ def main():
     # them is exactly the kind of construction that looks right and leaks.
     zf = DECK + FLOOR_T / 2.0
     floor_boxes = [q for q in new if "_floor_" in q["name"]
-                   or "_tri_" in q["name"]]
+                   or "_tri_" in q["name"] or q["name"] == LID_NAME]
     # Bounding boxes first: the sample grid runs to tens of thousands of
     # points and an exact test against every piece is minutes, not seconds.
     bb = []
@@ -564,7 +585,10 @@ def main():
                        and HOLE_Y0 + 1 <= y <= HOLE_Y1 - 1)
             if in_hole:
                 inside_hole += 1
-                if floored(x, y):
+                # With the lid in, the square must be SOLID; without it, the
+                # square must be OPEN. Same sample, opposite expectation, so
+                # the check follows the switch rather than being turned off.
+                if floored(x, y) != LID:
                     extra += 1
             elif in_hex_pt and not floored(x, y):
                 if not any(in_tri(t, x, y, -step) for _, t in tris):
@@ -574,13 +598,16 @@ def main():
             x += step
         y += step
     if extra:
-        problems.append("the floor covers %d sample(s) inside the square hole"
-                        % extra)
+        problems.append(
+            "%d sample(s) inside the square are %s"
+            % (extra, "not covered, but the lid is on"
+               if LID else "covered, but the lid is off"))
     if miss:
         problems.append("the floor has %d unwanted gap(s), e.g. %s"
                         % (miss, gaps))
-    log.append("floor sampled at %.0f u: %d points in the square hole all "
-               "open, %d unwanted gaps elsewhere" % (step, inside_hole, miss))
+    log.append("floor sampled at %.0f u: %d points in the square, all %s, "
+               "%d unwanted gaps elsewhere"
+               % (step, inside_hole, "lidded" if LID else "open", miss))
 
     # Each triangle must be open, and open all the way to its own edges.
     for nm, t in tris:
@@ -663,6 +690,12 @@ def main():
                % (DECK, FLOOR_TOP, CEIL_BOT, CEIL_BOT + CEIL_T))
     log.append("hole  x %.1f..%.1f  y %.1f..%.1f, aligned to the bridge "
                "opening" % (HOLE_X0, HOLE_X1, HOLE_Y0, HOLE_Y1))
+    log.append("lid   %s - %s"
+               % ("ON" if LID else "OFF",
+                  "%s fills the square flush with the floor; the deck below "
+                  "is still cut, so the shaft is ready for the day the lid "
+                  "can be killed" % LID_NAME if LID
+                  else "the square is open all the way down"))
     log.append("NO DOOR: six solid walls, the floor hole is the only way in")
     log.append("")
     log.append("added %d boxes, none mirrored; boxes %d -> %d"
