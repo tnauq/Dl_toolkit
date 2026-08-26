@@ -333,21 +333,37 @@ jobs:
           two = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
           three = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*)"\s*,?$')
 
-          # WHO FIRES IT. A connection block says what it triggers but not
-          # what fires it, and that is the question: whether the shop disable
-          # hangs off npc_boss_tier3 or off something else decides whether
-          # tier3 is the guardian or the patron. The owner is the nearest
-          # classname ABOVE the block in the file, so the walk tracks it.
-          owner = '?'
+          # WHO FIRES IT.
+          #
+          # THE LAST VERSION GOT THIS WRONG and the output was believed for a
+          # while, which is worse than not having it. It used "the nearest
+          # classname above the block", which reported light_omni2 firing
+          # OnTrooperKilled and info_cover_point killing grate brushes -
+          # neither of which can be true. An entity's children (meshes, other
+          # entities) sit between its classprops and its connection array, so
+          # the nearest classname above a connection is usually a SIBLING.
+          #
+          # This version tracks brace depth and keeps a stack of open blocks.
+          # The owner is the classname of the innermost block still open at
+          # the connection, which is the entity the connection is nested in.
+          # Where no block is open, the owner is reported as (unnested)
+          # rather than guessed at.
           cls_re = re.compile(r'"classname"\s+"string"\s+"([^"]*)"')
 
           blocks = []
           owners = []
+          stack = []          # (depth_when_seen, classname)
+          depth = 0
           i, n = 0, len(lines)
           while i < n:
               m = cls_re.search(lines[i])
               if m:
-                  owner = m.group(1)
+                  # A classname belongs to the block two levels out: its own
+                  # classprops block, inside the entity block. Recording it
+                  # against the entity's depth is what keeps it alive while
+                  # the entity's children come and go.
+                  stack.append((depth - 2, m.group(1)))
+              owner = stack[-1][1] if stack else '(unnested)'
               if 'DmeConnectionData' in lines[i]:
                   depth, block, j = 0, [], i
                   while j < n:
@@ -359,8 +375,14 @@ jobs:
                       j += 1
                   blocks.append(block)
                   owners.append(owner)
+                  depth += sum(t.count('{') - t.count('}') for t in block)
+                  while stack and stack[-1][0] >= depth:
+                      stack.pop()
                   i = j + 1
                   continue
+              depth += lines[i].count('{') - lines[i].count('}')
+              while stack and stack[-1][0] >= depth:
+                  stack.pop()
               i += 1
 
           keys = collections.Counter()
@@ -411,9 +433,12 @@ jobs:
               w()
               w('## Who fires what')
               w()
-              w('The owner is the nearest classname above the block in the')
-              w('file. Read this to settle which entity a death output')
-              w('actually hangs off.')
+              w('The owner is the innermost block still OPEN at the')
+              w('connection, by brace depth - not the nearest classname')
+              w('above it, which reported light_omni2 firing OnTrooperKilled')
+              w('and was wrong. Sanity-check the column before trusting it:')
+              w('if anything implausible appears again, the nesting')
+              w('assumption is still not right.')
               w()
               w('| owner | output | input | target | n |')
               w('|---|---|---|---|---|')
