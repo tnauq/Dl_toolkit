@@ -84571,43 +84571,6 @@
    "_batch13": true
   },
   {
-   "name": "midboss_shield",
-   "classname": "trigger_midboss_shield",
-   "origin": [
-    460.1,
-    6085.05,
-    435.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "StartDisabled": "0",
-    "spawnflags": "4097"
-   },
-   "mesh": {
-    "name": "midboss_shield_vol",
-    "origin": [
-     0.0,
-     0.0,
-     0.0
-    ],
-    "extents": [
-     1024.0,
-     1024.0,
-     512.0
-    ],
-    "angles": [
-     0.0,
-     0.0,
-     0.0
-    ]
-   },
-   "_batch13": true
-  },
-  {
    "name": "rope_west",
    "classname": "citadel_trigger_climb_rope",
    "origin": [
@@ -90898,6 +90861,191 @@
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
     "HateCrateAttacker": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "midboss_shield",
+   "classname": "trigger_midboss_shield",
+   "origin": [
+    460.1,
+    6085.05,
+    1707.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "StartDisabled": "0",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "midboss_shield_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     1600.0,
+     1600.0,
+     800.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "rope_tri_300",
+   "classname": "citadel_trigger_climb_rope",
+   "origin": [
+    1111.55,
+    4956.7,
+    987.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "rope_tri_300_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     96.0,
+     96.0,
+     640.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_rope_tri_300",
+   "classname": "citadel_trigger_climb_rope",
+   "origin": [
+    -191.35,
+    7213.4,
+    987.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "rope_tri_300_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     96.0,
+     96.0,
+     640.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "rope_tri_240",
+   "classname": "citadel_trigger_climb_rope",
+   "origin": [
+    -191.35,
+    4956.75,
+    987.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "rope_tri_240_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     96.0,
+     96.0,
+     640.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_rope_tri_240",
+   "classname": "citadel_trigger_climb_rope",
+   "origin": [
+    1111.55,
+    7213.35,
+    987.1
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "rope_tri_240_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     96.0,
+     96.0,
+     640.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
    },
    "_batch16": true
   },
