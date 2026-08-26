@@ -11,9 +11,15 @@ TWO ROOMS, same dimensions, same arch, different surroundings. Both are
 authored on the BASE half and mirrored, so every number here is the mirror of
 what was read on the m_ half.
 
-    room     arch wall   floor             what had to be built
-    tele_a   axis_571    axis_546 + strip  1 wall, 1 ceiling
-    tele_b   axis_451    gapfill_39_8      3 walls, 1 ceiling
+    room     arch wall   floor                what had to be built
+    tele_a   axis_571    axis_546 + strip     1 wall, 1 ceiling
+    tele_b   axis_451    gapfill_39_8 + slab  3 walls, 1 ceiling
+
+A room sits on ONE side of its arch wall, given by "side": +1 puts it on the
++y face, -1 on the -y face. Room A opens off the alcove in front of its wall;
+room B sits BEHIND its wall, so from the gapfill_39_8 floor you see only
+axis_451 with an arch in it, and the room is through the arch. That side has
+no floor of its own, so the floor is carried past the wall to meet it.
 
 "Identical" means the interior: 226.7 wide, 160 deep, 373.3 floor to ceiling,
 with a 160 u arch opening whose crown is 371.1 above the floor. It does not
@@ -100,6 +106,7 @@ DEPTH = 160.0
 ROOMS = [
     {
         "name": "tele_a",
+        "side": +1,
         "wall": "axis_571",
         "wall_x0": -466.75, "wall_x1": -240.05,
         "wall_y0": 400.05, "wall_y1": 426.75,
@@ -115,19 +122,24 @@ ROOMS = [
     },
     {
         "name": "tele_b",
+        "side": -1,             # behind the wall, not out on the open floor
         "wall": "axis_451",
         "wall_x0": 1947.0, "wall_x1": 2267.2,
         "wall_y0": 0.0, "wall_y1": 26.6,
         "wall_z0": 213.4, "wall_z1": 1067.0,
         # centred in a wall longer than the room: 46.65 of wall each side
         "room_x0": 1993.75, "room_x1": 2220.45,
-        "floor_top": 213.4, "floor_bot": None,
-        "floor_ext": None,       # gapfill_39_8 and _39_9 already floor it
+        "floor_top": 213.4, "floor_bot": 0.0,
+        # There is no floor behind axis_451 for most of this span - only
+        # gapfill_40_7, which stops at x 2080 and y -80. So the floor is
+        # carried past the wall under the whole room and its walls, from the
+        # wall's own far face out to the back wall.
+        "floor_ext": ("gapfill_39_8_ext451", 26.6),
         "walls": [("axis_451_room_w", "x", 1967.05, 1993.75),
                   ("axis_451_room_e", "x", 2220.45, 2247.15),
-                  ("axis_451_room_n", "y", 186.6, 213.3)],
-        "wall_top": None,        # free-standing: only as tall as the room
-        "needs": ["gapfill_39_8", "gapfill_39_9"],
+                  ("axis_451_room_n", "y", -186.6, -160.0)],
+        "wall_top": None,       # only as tall as the room
+        "needs": ["gapfill_39_8", "gapfill_40_7"],
     },
 ]
 
@@ -215,7 +227,11 @@ def build_room(spec, src, log, problems):
     rx0, rx1 = spec["room_x0"], spec["room_x1"]
     ft = spec["floor_top"]
     wy0, wy1 = spec["wall_y0"], spec["wall_y1"]
-    ry0, ry1 = wy1, wy1 + DEPTH           # the room is on the +y face
+    side = spec["side"]
+    if side > 0:
+        ry0, ry1 = wy1, wy1 + DEPTH
+    else:
+        ry0, ry1 = wy0 - DEPTH, wy0
     crown = ft + OPEN_H
     ceil_bot = ft + ROOM_H
     open_c = (rx0 + rx1) / 2.0
@@ -231,8 +247,12 @@ def build_room(spec, src, log, problems):
     new += arch
 
     if spec["floor_ext"]:
+        # Floor from wherever the existing floor stops, to the room's back
+        # wall, and wide enough to carry the side walls too.
         nm, from_y = spec["floor_ext"]
-        new.append(box(nm, rx0, rx1, from_y, ry1,
+        fy0, fy1 = (from_y, ry1) if side > 0 else (ry0 - 26.7, from_y)
+        pad = 0.0 if side > 0 else 26.7
+        new.append(box(nm, rx0 - pad, rx1 + pad, fy0, fy1,
                        spec["floor_bot"], ft, MAT_FLOOR))
 
     for nm, axis, a, b_ in spec["walls"]:

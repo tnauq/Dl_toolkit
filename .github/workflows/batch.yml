@@ -44,7 +44,7 @@ name: batch
 # internally as well, which is belt and braces on purpose: an edit-in-place
 # script is the easy way to lose a box by accident.
 #
-# batch17 CHANGES THE BOX COUNT, 4179 -> 4269: it splits axis_571 and
+# batch17 CHANGES THE BOX COUNT, 4179 -> 4271: it splits axis_571 and
 # axis_451 to set an arch into each, and builds the two teleporter rooms. EXPECT_BOXES moved with it
 # deliberately. It must run after batch13, which rebuilds the wall it eats,
 # and before batch16, which only reads entities.
@@ -52,7 +52,7 @@ name: batch
 # batch16 RUNS LAST. It reads the entity set batch13 rebuilt, adds the camps
 # and the powerup from crosshair readings, and removes three batch13
 # placeholders it supersedes by name. It touches ENTITIES only, so
-# EXPECT_BOXES is still the right tripwire, now 4269 after batch17. It
+# EXPECT_BOXES is still the right tripwire, now 4271 after batch17. It
 # asserts the same count internally and refuses to write the plan at all if
 # a reading has nothing under it.
 #
@@ -66,7 +66,7 @@ env:
   # Space-separated, run in this order. Repo root.
   SCRIPTS: batch13.py batch14.py batch15.py batch17.py batch16.py
   PLAN: docs/plans/dust2_full.json
-  EXPECT_BOXES: "4269"
+  EXPECT_BOXES: "4271"
   COMMIT_PLAN: "true"
 
 jobs:

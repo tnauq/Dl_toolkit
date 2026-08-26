@@ -141,7 +141,7 @@ TELEPORTERS = [
     # centre of the batch17 room, computed not read: it is the
     # midpoint of the four faces, so it moves if the room does.
     ("tele_1", [-353.4, 506.75, 426.75], "axis_546_ext571"),
-    ("tele_2", [2107.1, 106.6, 213.4], "gapfill_39_8"),
+    ("tele_2", [2107.1, -80.0, 213.4], "gapfill_39_8_ext451"),
 ]
 
 # Four sinner sites. The "double" is not one entity: in the game it is two
