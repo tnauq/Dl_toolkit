@@ -197,6 +197,35 @@ BRUSHES = [
         "properties": {"targetname": "", "spawnflags": "4097"},
     },
     {
+        # ---- jump pads ------------------------------------------------
+        # trigger_catapult and its info_target_server_only landing marker
+        # are both READ, off dl_example via batch13. `target` names the
+        # marker, so the pair has to be authored together or the pad
+        # launches at nothing.
+        #
+        # The pad's SIZE and launch_speed are invented - batch13's 128
+        # square and 800 are the only precedent, and neither was measured.
+        # The speed in particular is not derived from the distance to the
+        # landing marker: whether 800 carries a player 1550 u is unknown
+        # and wants testing in game.
+        "name": "catapult_a",
+        "classname": "trigger_catapult",
+        "origin": [-574.0, 5259.0, 640.0],
+        "extents": [128.0, 128.0, 64.0],
+        "properties": {"targetname": "catapult_a",
+                       "target": "catapult_a_land",
+                       "launch_speed": "800", "spawnflags": "4097"},
+    },
+    {
+        "name": "catapult_b",
+        "classname": "trigger_catapult",
+        "origin": [1795.0, 4052.0, 667.0],
+        "extents": [128.0, 128.0, 64.0],
+        "properties": {"targetname": "catapult_b",
+                       "target": "catapult_b_land",
+                       "launch_speed": "800", "spawnflags": "4097"},
+    },
+    {
         # Beside hex3_blk_240. Nothing under this one: the rope ends in air
         # at 667.1 and the drop below that is open to z 107 at best. Left
         # floating on purpose.
@@ -208,12 +237,22 @@ BRUSHES = [
     },
 ]
 
+# Landing markers for the pads above. A point, not a volume, and the name
+# must match the pad's `target` exactly - that string is the whole wiring.
+LANDINGS = [
+    ("catapult_a_land", [640.0, 3747.0, 667.0], "axis_363_slab_ns"),
+    ("catapult_b_land", [3176.0, 5248.0, 401.0], "axis_42"),
+]
+
 # Placeholders this file supersedes. Deleted by name, with their m_ twins and,
 # for the camp, its creature spawns.
 SUPERSEDED = ["camp_west_weak", "crate_west_1", "bridge_buff_west",
               # batch13's midboss shield sits at the old pit height; the
               # one in BRUSHES above replaces it.
-              "midboss_shield"]
+              "midboss_shield",
+              # batch13's invented jump pad and its marker; the two real
+              # pads above replace them.
+              "catapult_west", "catapult_west_land"]
 
 # Warn if a site and its own twin end up closer than this: on a rotationally
 # symmetric map anything near the mirror point pairs with itself.
@@ -456,6 +495,11 @@ def main():
         new += made
         brushes.append((spec, len(made)))
 
+    for name, origin, note in LANDINGS:
+        new += make_point(name, origin, "info_target_server_only",
+                          {"targetname": name})
+        sites.append((name, origin, note))
+
     filled = rows(POWERUPS)
     have["powerup"] = len(filled)
     for name, origin, note in filled:
@@ -503,6 +547,20 @@ def main():
             if abs(bot - ROOM_FLOOR) > 1.0:
                 problems.append("%s's base is %.1f, not the room floor %.1f"
                                 % (spec["name"], bot, ROOM_FLOOR))
+
+    marks = {n: o for n, o, _ in LANDINGS}
+    for spec, _ in brushes:
+        tgt = spec["properties"].get("target")
+        if not tgt:
+            continue
+        if tgt not in marks:
+            problems.append("%s launches at %s, which nothing defines"
+                            % (spec["name"], tgt))
+            continue
+        o, m = spec["origin"], marks[tgt]
+        log.append("%-16s throws %.0f u out and %+.0f u up, to %s"
+                   % (spec["name"], math.hypot(m[0] - o[0], m[1] - o[1]),
+                      m[2] - o[2], tgt))
 
     log.append("")
     log.append("%-18s %10s %10s %9s  %s  %-22s %s"

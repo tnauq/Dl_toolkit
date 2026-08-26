@@ -22,15 +22,19 @@ section before probing anything.
 | directional push (fan) | `citadel_trigger_push` | batch13, read from dl_example |
 
 **The jump pad is the thing described as an air vent.** `trigger_catapult`
-takes a `target` naming a landing marker entity, plus `launch_speed`. batch13
-already carries one as `catapult_west` with an invented origin and speed, and
-a `catapult_west_land` marker under POINTS. So this needs positions, not a
-probe: crosshair a pad and its landing spot and it goes in like the camps did.
+takes a `target` naming a landing marker entity, plus `launch_speed`. Two
+pads and their markers are now placed from readings, `catapult_a` and
+`catapult_b`, with twins.
 
-The one caveat: `trigger_catapult` is what dl_example uses. If the shipped
-maps use something else for the vents specifically — a push volume aimed up,
-say — then this is the wrong entity and it needs the probe below after all.
-Worth confirming against a shipped map before authoring six of them.
+Two caveats remain, neither of them a classname probe:
+
+- `trigger_catapult` is what dl_example uses. If the shipped vents are
+  something else — a push volume aimed up, say — this is the wrong entity.
+  Worth confirming against a shipped map.
+- `launch_speed` is invented at 800, batch13's placeholder value. It is NOT
+  derived from the distance to the marker, and the two pads throw 1939 u and
+  1827 u. Whether 800 covers that is a question for the game, not the plan.
+  If the pad undershoots, this is the number to change.
 
 ---
 
