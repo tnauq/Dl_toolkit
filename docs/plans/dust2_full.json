@@ -66841,44 +66841,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "bridge_ceil_b_e",
-   "origin": [
-    963.525,
-    6085.05,
-    1267.0
-   ],
-   "extents": [
-    1006.85,
-    800.1,
-    26.6
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_bridge_ceil_b_e",
-   "origin": [
-    -43.325,
-    6085.05,
-    1267.0
-   ],
-   "extents": [
-    1006.85,
-    800.1,
-    26.6
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "bridge_floor_b_e",
    "origin": [
     1030.2,
@@ -82118,6 +82080,366 @@
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "bridge_ceil_b_e_s",
+   "origin": [
+    963.55,
+    5818.35,
+    1267.0
+   ],
+   "extents": [
+    1006.9,
+    266.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "bridge_ceil_b_e_n",
+   "origin": [
+    963.55,
+    6351.75,
+    1267.0
+   ],
+   "extents": [
+    1006.9,
+    266.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "bridge_ceil_b_e_e",
+   "origin": [
+    1030.25,
+    6085.05,
+    1267.0
+   ],
+   "extents": [
+    873.5,
+    266.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_bridge_ceil_b_e_s",
+   "origin": [
+    -43.35,
+    5818.35,
+    1267.0
+   ],
+   "extents": [
+    1006.9,
+    266.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_bridge_ceil_b_e_n",
+   "origin": [
+    -43.35,
+    6351.75,
+    1267.0
+   ],
+   "extents": [
+    1006.9,
+    266.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_bridge_ceil_b_e_w",
+   "origin": [
+    -110.0,
+    6085.05,
+    1267.0
+   ],
+   "extents": [
+    873.6,
+    266.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_ring_90",
+   "origin": [
+    460.1,
+    6985.05,
+    1387.2
+   ],
+   "extents": [
+    800.0,
+    53.4,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_ring_30",
+   "origin": [
+    1239.5,
+    6535.05,
+    1387.2
+   ],
+   "extents": [
+    800.0,
+    53.4,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    -60,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_ring_330",
+   "origin": [
+    1239.5,
+    5635.05,
+    1387.2
+   ],
+   "extents": [
+    800.0,
+    53.4,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    -120,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_ring_270",
+   "origin": [
+    460.1,
+    5185.05,
+    1387.2
+   ],
+   "extents": [
+    800.0,
+    53.4,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    -180,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_ring_210",
+   "origin": [
+    -319.3,
+    5635.05,
+    1387.2
+   ],
+   "extents": [
+    800.0,
+    53.4,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    -240,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_ring_150",
+   "origin": [
+    -319.3,
+    6535.05,
+    1387.2
+   ],
+   "extents": [
+    800.0,
+    53.4,
+    160.1
+   ],
+   "angles": [
+    0.0,
+    60,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_blk_0",
+   "origin": [
+    1610.1,
+    6085.05,
+    1413.8
+   ],
+   "extents": [
+    320.1,
+    213.4,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    -90,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_blk_60",
+   "origin": [
+    1035.1,
+    7080.95,
+    1413.8
+   ],
+   "extents": [
+    320.1,
+    213.4,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    -30,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_blk_120",
+   "origin": [
+    -114.9,
+    7080.95,
+    1413.8
+   ],
+   "extents": [
+    320.1,
+    213.4,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    30,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_blk_180",
+   "origin": [
+    -689.9,
+    6085.05,
+    1413.8
+   ],
+   "extents": [
+    320.1,
+    213.4,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    90,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_blk_240",
+   "origin": [
+    -114.9,
+    5089.15,
+    1413.8
+   ],
+   "extents": [
+    320.1,
+    213.4,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    150,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "hex3_blk_300",
+   "origin": [
+    1035.1,
+    5089.15,
+    1413.8
+   ],
+   "extents": [
+    320.1,
+    213.4,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    210,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
    "_batch18": true
   }
  ],
