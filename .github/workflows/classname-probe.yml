@@ -38,6 +38,9 @@ name: classname probe
 #                        union of keyvalue names each one uses, and how many
 #                        of its instances set each key
 #   out/classnames.json  the same, machine-readable, for a later script
+#   out/entities.md      one ROW PER ENTITY, so keyvalues can be read
+#                        together - which type goes with which subclass, and
+#                        which interval with which camp
 #   out/examples.md      one verbatim entity per classname, keyvalues and all
 #   out/tokens.txt.gz    every underscore-bearing lowercase token in every
 #                        CSDK binary, sorted, deduplicated
@@ -179,6 +182,7 @@ jobs:
           classes = collections.Counter()
           keys = collections.defaultdict(collections.Counter)
           examples = {}
+          rows_by_class = collections.defaultdict(list)
           # THE FIRST RUN OF THIS PROBE REPORTED KEY NAMES BUT NOT VALUES,
           # which answered "does a camp have a subclass_name" and not "what
           # are the subclass names" - and the second is the question. Values
@@ -224,6 +228,7 @@ jobs:
                       for k, v in props.items():
                           keys[cn][k] += 1
                           values[cn][k][v] += 1
+                      rows_by_class[cn].append(props)
                       if cn not in examples:
                           examples[cn] = '\n'.join(block[:80])
                   i = j + 1
@@ -276,6 +281,23 @@ jobs:
                      'values': {c: {k: dict(v) for k, v in ks.items()}
                                 for c, ks in values.items()}},
                     open('out/classnames.json', 'w'), indent=1, sort_keys=True)
+
+          # PER-ENTITY ROWS. The value census answers "what values does this
+          # key take" but not "which values go together on one entity" -
+          # which is the whole question for the camps: nothing so far pairs
+          # neutral_camp_vaults with a trooper type, or a 360 second interval
+          # with the strong camp. One row per entity settles it.
+          with open('out/entities.md', 'w', encoding='utf-8') as fh:
+              fh.write('# Every entity, one row each\n')
+              for cn in sorted(classes):
+                  ks = sorted(keys[cn])
+                  fh.write('\n## `%s`\n\n' % cn)
+                  fh.write('| %s |\n' % ' | '.join(ks))
+                  fh.write('|%s|\n' % '|'.join('---' for _ in ks))
+                  for row in rows_by_class[cn]:
+                      fh.write('| %s |\n' % ' | '.join(
+                          ('`%s`' % row[k]) if row.get(k) else ''
+                          for k in ks))
 
           with open('out/examples.md', 'w', encoding='utf-8') as fh:
               fh.write('# One verbatim entity per classname\n')

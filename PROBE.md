@@ -60,7 +60,21 @@ Expect a pair — an entrance and a destination, or one entity with a `target`
 pointing at a marker, the way `trigger_catapult` does. Note which, because
 the destination marker needs authoring too.
 
-### 2. Sinner's Sacrifice — not reachable from CI, same reason as item 1
+### 2. Sinner's Sacrifice — treated as the vault camp, on your read
+
+`neutral_camp_vaults` is a real subclass of `info_neutral_trooper_camp`, read
+off dl_example. The pairing of "vault" to "sinner" is YOURS; the fixture does
+not use the word sinner anywhere. All four are now emitted as vault camps
+rather than held back, because the classname and subclass are both real.
+
+One field is still blank: `ENeutralTrooperType`. Two of the eleven camps in
+the fixture leave it empty and one of those is plausibly the vault, but the
+value census reports values per key, not per entity, so nothing pairs them.
+The workflow now also writes `entities.md`, one row per entity, which settles
+it in a single rerun. If the vault camp turns out to carry a type, put it in
+TIERS and rerun the batch.
+
+Original note, now superseded:
 
 Worth noting `citadel_breakable_prop` takes a `subclass_name` (dl_example
 uses `citadel_breakable_wooden_crate_03`), so if the sinner is a breakable
@@ -137,7 +151,41 @@ unread.
 Search for: `neutral_camp` as a substring — the whole family should appear
 together, which also settles the tier count.
 
-### 5. The lid, and the crystal drop — a candidate, from the same run
+### 5. The lid — ANSWERED 2026-08-26. It is a brush that gets killed.
+
+The shrine mechanism you remembered is real and it is simpler than expected.
+`destroyable_building` fires:
+
+    OnDestroyed -> <named brush> . Kill    delay 0, timesToFire -1
+
+twelve times in the fixture, against targets named `*_grate_prop`,
+`*_grate_brush` and `*_ladder_brush`. Geometry does not move or toggle: a
+named entity is destroyed outright, and the hole it was blocking is open from
+then on. That transfers to the lid directly.
+
+Two more outputs matter here, both read from the same dump:
+
+    OnBossKilled     -> counter . Add 1
+    OnTrooperKilled  x9
+
+`OnTrooperKilled` is fired by neutral camps — and the midboss IS a camp — so
+the wiring is: midboss camp `OnTrooperKilled` -> lid `Kill`. Every string in
+that sentence is now read rather than guessed.
+
+WHAT IS STILL UNKNOWN is which classname the lid brush should be.
+`func_conditional_collidable` is the only brush-model non-trigger in the
+fixture (it carries `interactas` / `interactwith` and a mesh), so it is the
+candidate, but nothing yet confirms it answers `Kill`. The fixture's own
+`*_grate_brush` entities would say, except their targetnames do not appear in
+the census — worth a look in `entities.md` on the next run.
+
+THE PLAN FORMAT CANNOT EXPRESS THIS YET. batch13 emits keyvalues only; no
+script here writes a connection, and the converter has never been asked to.
+Wiring the lid means teaching the plan about DmeConnectionData - outputName,
+targetType 7, targetName, inputName, overrideParam, delay, timesToFire - which
+is a converter job, not an entity-placement job.
+
+Old note:
 
 `func_conditional_collidable` exists in the fixture, with `interactas` and
 `interactwith` keys — dl_example sets `interactas` to

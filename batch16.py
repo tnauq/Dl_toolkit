@@ -86,6 +86,9 @@ TIERS = {
     "t1": {"subclass": "neutral_camp_weak",     # read
            "trooper_type": "1",                 # read
            "creatures": 3,
+           # Interval by tier: shortest for t1, longest for t3. Your call,
+           # matching the camp sizes; the fixture uses 120/300/360 but does
+           # not say which belongs to which.
            "initial_delay": "120", "interval": "120"},
     "t2": {"subclass": "neutral_camp_medium",   # read
            "trooper_type": "2",                 # read
@@ -95,6 +98,17 @@ TIERS = {
            "trooper_type": "3",                 # read
            "creatures": 4,
            "initial_delay": "120", "interval": "360"},
+    # SINNER'S SACRIFICE, on your read that sinner = vault. The subclass
+    # string is READ off dl_example; the pairing to "sinner" is YOURS, not
+    # something the fixture says. ENeutralTrooperType is the one field still
+    # unread: two of the eleven camps leave it empty and one of those is
+    # probably this, but the probe reports values per key rather than per
+    # entity, so nothing pairs them. Empty is what goes in until that is
+    # settled - see PROBE.md.
+    "vault": {"subclass": "neutral_camp_vaults",      # read
+              "trooper_type": "",                     # UNREAD, see above
+              "creatures": 3,
+              "initial_delay": "120", "interval": "300"},
     # THE MIDBOSS IS A CAMP: there is no npc_ classname for it. Both timings
     # at -1, so it does not respawn on a clock.
     "midboss": {"subclass": "neutral_camp_midboss",   # read
@@ -506,6 +520,8 @@ def main():
 
     wanted = {"camp_t1": 3, "camp_t2": 10, "camp_t3": 6, "teleporter": 2,
               "sinner": 4, "powerup": 1}
+    # SINNERS is consumed above as camps, so it must not be walked again
+    # below or every one would be emitted twice.
     have = {}
     new = []
     sites = []
@@ -548,8 +564,16 @@ def main():
     # are still checked and reported so a bad one is caught now rather than
     # on the day the classname turns up.
     held = []
-    for label, table, cls in (("teleporter", TELEPORTERS, TELEPORTER_CLASS),
-                              ("sinner", SINNERS, SINNER_CLASS)):
+    # Sinners are now emitted as vault camps rather than held back: the
+    # classname and subclass are both real. Only the trooper type is a
+    # blank.
+    filled = rows(SINNERS)
+    have["sinner"] = len(filled)
+    for name, origin, note in filled:
+        new += make_camp(name, origin, "vault")
+        sites.append((name, origin, note))
+
+    for label, table, cls in (("teleporter", TELEPORTERS, TELEPORTER_CLASS),):
         filled = rows(table)
         have[label] = len(filled)
         for name, origin, note in filled:
