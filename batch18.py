@@ -80,6 +80,28 @@ HOLE_Y0, HOLE_Y1 = 5951.7, 6218.4
 HALF_DIAG = math.hypot(HOLE_X1 - HOLE_X0, HOLE_Y1 - HOLE_Y0) / 2.0
 GAP = math.ceil(HALF_DIAG * 10) / 10.0
 
+# The bridge ceiling under the room. Both halves of it reach the hole - the
+# hole straddles x 460.1, the mirror line - so BOTH get cut.
+# Their geometry is written out here rather than read from the plan, because
+# after the first run the originals are gone - this file ate them - and a
+# rerun still has to rebuild the same pieces. Same reason batch17 carries
+# axis_571's extents instead of looking them up. READ off the plan 2026-08-26.
+CEIL_CUT = [
+    # name, x0, x1, y0, y1, z0, z1
+    ("bridge_ceil_b_e", 460.1, 1467.0, 5685.0, 6485.1, 1253.7, 1280.3),
+    ("m_bridge_ceil_b_e", -546.8, 460.1, 5685.0, 6485.1, 1253.7, 1280.3),
+]
+
+# Cover copied from the patron room, which is centred here and whose floor
+# top is this, so a piece moves by the difference.
+PATRON_C = (0.0, -3799.6)
+PATRON_FLOOR_TOP = 426.8
+# hex_blk_* and hex_ring_*. NOT the three-step stairs (hex_step_*), and NOT
+# hex_dais_*: the dais is 480.1 x 831.6 centred on the room and would floor
+# over the hole it is meant to sit around. Say the word and it comes back as
+# pieces around the hole instead.
+COVER_PREFIX = ("hex_blk_", "hex_ring_")
+
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
 
@@ -128,6 +150,74 @@ def floor_ring(yaw, half_gap, tag, square=False):
         out.append(rotbox("hex3_floor_%s_stub%d" % (tag, i), cx, cy,
                           DECK, FLOOR_TOP, half_gap * 2.0, stub_l, yaw,
                           MAT_FLOOR))
+    return out
+
+
+def cut_ceiling(by, log):
+    """The marked ceiling, rebuilt as pieces around the square.
+
+    The room's own hole only drops one step without this: the floor opens,
+    and then the bridge ceiling 27 u below it is still solid.
+    """
+    out = []
+    for n, x0, x1, y0, y1, z0, z1 in CEIL_CUT:
+        b = by.get(n)
+        if b is not None:
+            o, e = b["origin"], b["extents"]
+            got = (o[0] - e[0] / 2.0, o[0] + e[0] / 2.0,
+                   o[1] - e[1] / 2.0, o[1] + e[1] / 2.0)
+            if any(abs(u - v) > 0.1
+                   for u, v in zip(got, (x0, x1, y0, y1))):
+                log.append("WARNING: %s has moved since these extents were "
+                           "read; the cut may not line up" % n)
+        mat = MAT_WALL
+        hx0, hx1 = max(x0, HOLE_X0), min(x1, HOLE_X1)
+        # south and north of the hole, full width
+        out.append(rotbox("%s_s" % n, (x0 + x1) / 2.0, (y0 + HOLE_Y0) / 2.0,
+                          z0, z1, x1 - x0, HOLE_Y0 - y0, 0.0, mat))
+        out.append(rotbox("%s_n" % n, (x0 + x1) / 2.0, (HOLE_Y1 + y1) / 2.0,
+                          z0, z1, x1 - x0, y1 - HOLE_Y1, 0.0, mat))
+        # and the part beside the hole, in the band the hole sits in
+        if x1 - hx1 > 0.1:
+            out.append(rotbox("%s_e" % n, (hx1 + x1) / 2.0,
+                              (HOLE_Y0 + HOLE_Y1) / 2.0, z0, z1,
+                              x1 - hx1, HOLE_Y1 - HOLE_Y0, 0.0, mat))
+        if hx0 - x0 > 0.1:
+            out.append(rotbox("%s_w" % n, (x0 + hx0) / 2.0,
+                              (HOLE_Y0 + HOLE_Y1) / 2.0, z0, z1,
+                              hx0 - x0, HOLE_Y1 - HOLE_Y0, 0.0, mat))
+        log.append("cut %s into %d pieces around the hole%s"
+                   % (n, len([q for q in out if q["name"].startswith(n)]),
+                      "" if b is not None else " (original already gone, "
+                      "rebuilt from this file's own extents)"))
+    return out
+
+
+def copy_cover(boxes, log):
+    """Patron cover pieces, moved onto this room.
+
+    Copied whole rather than re-derived: the ring and block positions carry
+    the patron room's spacing, and the point is that this room matches it.
+    """
+    out = []
+    dz = FLOOR_TOP - PATRON_FLOOR_TOP
+    for b in boxes:
+        n = b["name"]
+        if n.startswith("m_") or not n.startswith(COVER_PREFIX):
+            continue
+        o = b["origin"]
+        out.append({
+            "name": n.replace("hex_", "hex3_"),
+            "origin": [round(o[0] - PATRON_C[0] + CX, 4),
+                       round(o[1] - PATRON_C[1] + CY, 4),
+                       round(o[2] + dz, 4)],
+            "extents": list(b["extents"]),
+            "angles": list(b["angles"]),
+            "material": b.get("material", MAT_WALL),
+            MARK: True,
+        })
+    log.append("copied %d cover pieces from the patron room, raised %.1f"
+               % (len(out), dz))
     return out
 
 
@@ -199,13 +289,21 @@ def main():
                % (start - len(boxes)))
 
     by = {b["name"]: b for b in boxes}
-    for n in ("bridge_ceil_b_e", "bridge_floor_b_s", "m_bridge_floor_b_s",
-              "hex_floor_0", "hex_roof_0"):
+    rebuilt = start != len(boxes)
+    need = ["bridge_floor_b_s", "m_bridge_floor_b_s", "hex_floor_0",
+            "hex_roof_0", "hex_blk_0", "hex_ring_90"]
+    if not rebuilt:
+        need += [c[0] for c in CEIL_CUT]
+    for n in need:
         if n not in by:
             print("::error::batch18: %s is missing" % n)
             sys.exit(1)
 
     new = build()
+    new += cut_ceiling(by, log)
+    new += copy_cover(boxes, log)
+    dead = {c[0] for c in CEIL_CUT}
+    boxes = [b for b in boxes if b["name"] not in dead]
     problems = []
 
     # 1. THE FLOOR MUST BE SOLID EXCEPT FOR THE HOLE, and the hole must be
@@ -225,7 +323,8 @@ def main():
             in_hex = r <= lim - 1.0
             in_hole = (HOLE_X0 + 1 <= x <= HOLE_X1 - 1
                        and HOLE_Y0 + 1 <= y <= HOLE_Y1 - 1)
-            solid = any(covers(b, x, y, zf) for b in new)
+            solid = any(covers(b, x, y, zf) for b in new
+                        if "_floor_" in b["name"])
             if in_hole:
                 inside_hole += 1
                 if solid:
@@ -248,6 +347,9 @@ def main():
     # 0.1 off their partners by construction - and an exact key also trips
     # on float rounding landing either side of a .5. TOL is tight enough to
     # catch a piece in the wrong place and loose enough to ignore both.
+    # TOL covers extents as well as position: the bridge is 0.05 off the
+    # mirror point, so a piece cut to the hole on one side is 0.1 wider than
+    # its partner on the other.
     TOL = 0.25
     worst = 0.0
     for b in new:
@@ -258,7 +360,7 @@ def main():
         for c in new:
             if (abs(c["angles"][1] % 180.0 - myaw) > 0.01
                     or abs(c["origin"][2] - b["origin"][2]) > 0.01
-                    or any(abs(u - v) > 0.01
+                    or any(abs(u - v) > TOL
                            for u, v in zip(c["extents"], b["extents"]))):
                 continue
             d = math.hypot(c["origin"][0] - mx, c["origin"][1] - my)
@@ -276,11 +378,18 @@ def main():
                    "offset %.2f u), so no twins are made" % (len(new), worst))
 
     # 3. It must actually sit on the bridge ceiling.
-    deck = by["bridge_ceil_b_e"]
-    top = deck["origin"][2] + deck["extents"][2] / 2.0
-    if abs(top - DECK) > 0.1:
-        problems.append("bridge_ceil_b_e's top is %.2f, not the %.2f this "
-                        "file builds on" % (top, DECK))
+    # After the first run the deck is this file's own cut pieces, so check
+    # against whichever is present.
+    deck = by.get("bridge_ceil_b_e") or by.get("bridge_ceil_b_e_s")
+    deck = deck or next((b for b in new
+                         if b["name"] == "bridge_ceil_b_e_s"), None)
+    if deck is None:
+        problems.append("nothing found to stand the room on")
+    else:
+        top = deck["origin"][2] + deck["extents"][2] / 2.0
+        if abs(top - DECK) > 0.1:
+            problems.append("the deck's top is %.2f, not the %.2f this file "
+                            "builds on" % (top, DECK))
 
     boxes.extend(new)
     plan["boxes"] = boxes
