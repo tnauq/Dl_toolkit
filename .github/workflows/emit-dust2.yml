@@ -41,6 +41,25 @@ name: emit dust2
 # NOT the mesh count. A DmeConnectionData carries no EditGameClassProps and
 # no DmePlugList, which is why 56 wires add exactly 56 elements.
 #
+# UPDATED 2026-08-26 for the batch13/17/18/14/15/16 chain. What moved since
+# the 2026-08-23 numbers, and why:
+#
+#   boxes     4179 -> 4347. batch17 splits axis_571 and axis_451 to set an
+#             arch into each and builds two teleporter rooms; batch18 builds
+#             the hexagon room over the sky bridge, cuts a square through the
+#             room floor and the bridge ceiling, cuts four triangles off the
+#             cover blocks, and lays the midboss lid.
+#   entities   113 -> 329. 19 camps with their creature spawns, the midboss
+#             camp, four vault camps, two jump pads with landing markers,
+#             four climb ropes, the powerup pair and the relocated shield.
+#   brush      27 -> 33: the six added volumes are two catapults, two ropes
+#             and the shield, plus twins where they are not on the mirror
+#             point.
+#   wires      unchanged at 56.
+#
+# COUNTED off the plan this chain produces, not derived by hand - the 2026-08
+# -23 note below is the reason to distrust hand arithmetic here.
+#
 # UPDATED 2026-08-23 for batch13 with the real survey coordinates, then
 # corrected the same day. The first attempt said 61 entities, counting only
 # what batch13 writes, and the run came back with 63: the plan also carried
@@ -80,23 +99,23 @@ on: workflow_dispatch
 env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
-  EXPECT_BOXES: 4179
-  EXPECT_ENTS: 113
-  # 4179 boxes + 27 brush entities, each carrying an inline child mesh.
-  EXPECT_MAPMESH: 4206
-  EXPECT_POLYMESH: 4206
-  EXPECT_ENTITY: 113
+  EXPECT_BOXES: 4347
+  EXPECT_ENTS: 329
+  # 4347 boxes + 33 brush entities, each carrying an inline child mesh.
+  EXPECT_MAPMESH: 4380
+  EXPECT_POLYMESH: 4380
+  EXPECT_ENTITY: 329
   EXPECT_PATH: 15
   EXPECT_PATHNODE: 236
-  EXPECT_DATAARRAY: 16824      # 4 x 4206
-  EXPECT_STREAM: 46266         # 11 x 4206
-  EXPECT_SUBDIV: 4206
-  # 364 nodes plus the world's own.
-  EXPECT_CLASSPROPS: 365
-  EXPECT_PLUGLIST: 365
-  EXPECT_ELEMENTS: 76864
-  # ENTITY IO, batch15. 5 relays per shop x 5 shops x 2 halves = 50 entities,
-  # and 56 wires: 5 per shop network, plus one guardian kill wire per lane.
+  EXPECT_DATAARRAY: 17520      # 4 x 4380
+  EXPECT_STREAM: 48180         # 11 x 4380
+  EXPECT_SUBDIV: 4380
+  # 580 nodes plus the world's own.
+  EXPECT_CLASSPROPS: 581
+  EXPECT_PLUGLIST: 581
+  EXPECT_ELEMENTS: 80644
+  # ENTITY IO, batch15. Unchanged: nothing since has written a connection,
+  # and the midboss lid deliberately does not - see PROBE.md item 5.
   EXPECT_CONN: 56
 
 jobs:
