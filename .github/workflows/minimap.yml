@@ -1,0 +1,74 @@
+name: minimap
+
+# Renders docs/plans/dust2_full.json as a top-down PNG, marked up to the
+# in-game legend, and uploads it. It does NOT edit the plan - the assert at
+# the end is there to keep it that way.
+#
+# Run it after `batch` to see what the last chain actually produced. The
+# markers come from the plan's entities, so anything batch16 did not place
+# is absent from the picture, and the ones known to be missing are listed in
+# the margin rather than quietly left out.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/minimap.py'
+      - '.github/workflows/minimap.yml'
+
+env:
+  PLAN: docs/plans/dust2_full.json
+  OUT: minimap.png
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cheap checks before the pip install.
+      - name: Before
+        run: |
+          set -euo pipefail
+          [ -s "$PLAN" ] || { echo "::error::no $PLAN"; exit 1; }
+          [ -s tools/minimap.py ] || { echo "::error::no renderer"; exit 1; }
+          python3 - <<'PY'
+          import json, os
+          p = json.load(open(os.environ["PLAN"]))
+          print("boxes", len(p["boxes"]), "entities", len(p.get("entities", [])))
+          PY
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install matplotlib
+        run: pip install --quiet matplotlib
+
+      - name: Render
+        run: |
+          set -uo pipefail
+          RC=0
+          timeout 900 python3 tools/minimap.py "$PLAN" "$OUT" \
+            > render.log 2>&1 || RC=$?
+          cat render.log
+          [ "$RC" -eq 0 ] || { echo "::error::render failed ($RC)"; exit 1; }
+          ls -l "$OUT"
+
+      - name: Assert the plan did not move
+        run: |
+          set -euo pipefail
+          git diff --quiet -- "$PLAN" \
+            || { echo "::error::the renderer edited the plan"; exit 1; }
+          echo "plan unchanged"
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: minimap
+          path: |
+            minimap.png
+            render.log
+          if-no-files-found: warn
