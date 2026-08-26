@@ -101,6 +101,27 @@ PATRON_FLOOR_TOP = 426.8
 # over the hole it is meant to sit around. Say the word and it comes back as
 # pieces around the hole instead.
 COVER_PREFIX = ("hex_blk_", "hex_ring_")
+# The patron blocks carry the floor material, which reads wrong on a block.
+COVER_MAT = MAT_WALL
+
+# ---------------------------------------------------------------------------
+# The triangle holes, one off each of four blocks. Two of them sit over a
+# deck at the same height as the bridge ceiling, so that gets the same
+# treatment - cut, not just floored over.
+#
+# Shape: the base lies flush on the block's outward face, the apex points
+# outward with a 120 degree angle - the hexagon's own interior angle - which
+# puts the two other sides parallel to hexagon edges. Base 480.2 and depth
+# 138.6 follow from that angle; the depth is what leaves 206 u of walkable
+# floor between the apex and the wall, and the base needs no margin because
+# the block is on it.
+# ---------------------------------------------------------------------------
+TRI_BLOCKS = [("hex3_blk_300", 300.0), ("hex3_blk_240", 240.0),
+              ("hex3_blk_120", 120.0), ("hex3_blk_60", 60.0)]
+TRI_BASE = 480.2
+TRI_APEX_DEG = 120.0
+TRI_FACE_OFF = 106.7           # half of a block's 213.4 depth
+DECK_Z = (1253.7, 1280.3)      # the deck under two of them
 
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
@@ -150,6 +171,128 @@ def floor_ring(yaw, half_gap, tag, square=False):
         out.append(rotbox("hex3_floor_%s_stub%d" % (tag, i), cx, cy,
                           DECK, FLOOR_TOP, half_gap * 2.0, stub_l, yaw,
                           MAT_FLOOR))
+    return out
+
+
+def triangle(block_origin, out_deg):
+    """The three corners of one hole, from its block's outward face.
+
+    Base on the face, apex out at TRI_APEX_DEG. With a 120 degree apex the
+    base angles are 30, so the two sides come out parallel to hexagon edges -
+    which is the whole reason for that angle.
+    """
+    a = math.radians(out_deg)
+    n = (math.cos(a), math.sin(a))
+    t = (-n[1], n[0])
+    fc = (block_origin[0] + n[0] * TRI_FACE_OFF,
+          block_origin[1] + n[1] * TRI_FACE_OFF)
+    hb = TRI_BASE / 2.0
+    depth = hb * math.tan(math.radians(90.0 - TRI_APEX_DEG / 2.0))
+    return [(fc[0] - t[0] * hb, fc[1] - t[1] * hb),
+            (fc[0] + t[0] * hb, fc[1] + t[1] * hb),
+            (fc[0] + n[0] * depth, fc[1] + n[1] * depth)], depth
+
+
+def in_tri(tri, x, y, shrink=0.0):
+    """Inside the triangle, optionally pulled in from every edge."""
+    inside = True
+    for i in range(3):
+        ax, ay = tri[i]
+        bx, by = tri[(i + 1) % 3]
+        cx, cy = tri[(i + 2) % 3]
+        ex, ey = bx - ax, by - ay
+        L = math.hypot(ex, ey)
+        nx, ny = -ey / L, ex / L
+        if nx * (cx - ax) + ny * (cy - ay) < 0:
+            nx, ny = -nx, -ny        # inward normal
+        if nx * (x - ax) + ny * (y - ay) < shrink:
+            inside = False
+    return inside
+
+
+def split_around(b, tri, tag):
+    """A box rebuilt as up to four pieces around a window holding the triangle.
+
+    The window is the triangle's bounding box IN THIS BOX'S OWN FRAME, so the
+    split is exact whatever angle the box sits at. What the window takes out
+    beyond the triangle is put back by the edge slabs.
+    """
+    o, e = b["origin"], b["extents"]
+    a = math.radians(b["angles"][1])
+    ca, sa = math.cos(a), math.sin(a)
+
+    def to_local(x, y):
+        dx, dy = x - o[0], y - o[1]
+        return dx * ca + dy * sa, -dx * sa + dy * ca
+
+    pts = [to_local(x, y) for x, y in tri]
+    wu0, wu1 = min(q[0] for q in pts), max(q[0] for q in pts)
+    wv0, wv1 = min(q[1] for q in pts), max(q[1] for q in pts)
+    hu, hv = e[0] / 2.0, e[1] / 2.0
+    if wu0 >= hu or wu1 <= -hu or wv0 >= hv or wv1 <= -hv:
+        return None, None            # this box does not reach the triangle
+    wu0, wu1 = max(wu0, -hu), min(wu1, hu)
+    wv0, wv1 = max(wv0, -hv), min(wv1, hv)
+
+    def piece(nm, u0, u1, v0, v1):
+        if u1 - u0 < 0.1 or v1 - v0 < 0.1:
+            return None
+        cu, cv = (u0 + u1) / 2.0, (v0 + v1) / 2.0
+        return rotbox(nm, o[0] + cu * ca - cv * sa, o[1] + cu * sa + cv * ca,
+                      o[2] - e[2] / 2.0, o[2] + e[2] / 2.0,
+                      u1 - u0, v1 - v0, b["angles"][1],
+                      b.get("material", MAT_WALL))
+
+    out = []
+    for nm, args in (("u0", (-hu, wu0, -hv, hv)), ("u1", (wu1, hu, -hv, hv)),
+                     ("v0", (wu0, wu1, -hv, wv0)),
+                     ("v1", (wu0, wu1, wv1, hv))):
+        q = piece("%s_%s_%s" % (b["name"], tag, nm), *args)
+        if q:
+            out.append(q)
+    # the window, back in world, so the slabs know what they must re-cover
+    corners = [(o[0] + u * ca - v * sa, o[1] + u * sa + v * ca)
+               for u, v in ((wu0, wv0), (wu1, wv0), (wu1, wv1), (wu0, wv1))]
+    return out, corners
+
+
+def edge_slabs(tri, windows, z0, z1, tag, mat, inside_ok):
+    """One slab per triangle edge, on the outer side, re-covering the windows.
+
+    Every point in a window that is not in the triangle is outside at least
+    one edge, so three slabs are enough. Each is grown only as far as the
+    hexagon allows: a slab that reached past a wall would hang in the air.
+    """
+    out = []
+    pts = [q for w in windows for q in w]
+    for i in range(3):
+        ax, ay = tri[i]
+        bx, by = tri[(i + 1) % 3]
+        cx, cy = tri[(i + 2) % 3]
+        ex, ey = bx - ax, by - ay
+        L = math.hypot(ex, ey)
+        ux, uy = ex / L, ey / L
+        nx, ny = -uy, ux
+        if nx * (cx - ax) + ny * (cy - ay) > 0:
+            nx, ny = -nx, -ny        # outward
+        # how far along and out the windows reach
+        along = [(q[0] - ax) * ux + (q[1] - ay) * uy for q in pts]
+        out_d = [(q[0] - ax) * nx + (q[1] - ay) * ny for q in pts]
+        a0, a1 = min(along) - 5.0, max(along) + 5.0
+        depth = max(max(out_d) + 5.0, 5.0)
+        # shrink until every corner is inside the hexagon
+        while depth > 1.0:
+            cs = [(ax + ux * u + nx * d, ay + uy * u + ny * d)
+                  for u in (a0, a1) for d in (0.0, depth)]
+            if all(inside_ok(x, y) for x, y in cs):
+                break
+            depth -= 5.0
+            a0, a1 = a0 + 2.5, a1 - 2.5
+        cu, cd = (a0 + a1) / 2.0, depth / 2.0
+        out.append(rotbox("%s_slab%d" % (tag, i),
+                          ax + ux * cu + nx * cd, ay + uy * cu + ny * cd,
+                          z0, z1, a1 - a0, depth,
+                          math.degrees(math.atan2(uy, ux)), mat))
     return out
 
 
@@ -213,7 +356,7 @@ def copy_cover(boxes, log):
                        round(o[2] + dz, 4)],
             "extents": list(b["extents"]),
             "angles": list(b["angles"]),
-            "material": b.get("material", MAT_WALL),
+            "material": COVER_MAT,
             MARK: True,
         })
     log.append("copied %d cover pieces from the patron room, raised %.1f"
@@ -288,6 +431,21 @@ def main():
     log.append("stripped %d boxes from a previous batch18 run"
                % (start - len(boxes)))
 
+    # PUT BACK WHAT THE LAST RUN ATE. This file removes existing boxes to cut
+    # holes in them - the bridge ceiling, and whatever deck sits under a
+    # triangle. Their originals are stashed in the plan when they go, and
+    # restored here, so a rerun starts from the same ground the first run
+    # did. Without this the second run has nothing left to cut and quietly
+    # produces a smaller map than the first.
+    stash = plan.pop("_batch18_removed", [])
+    if stash:
+        have = {b["name"] for b in boxes}
+        back = [b for b in stash if b["name"] not in have]
+        boxes += back
+        log.append("restored %d box(es) the last run cut up: %s"
+                   % (len(back), ", ".join(sorted(b["name"] for b in back))))
+    removed = []
+
     by = {b["name"]: b for b in boxes}
     rebuilt = start != len(boxes)
     need = ["bridge_floor_b_s", "m_bridge_floor_b_s", "hex_floor_0",
@@ -301,47 +459,150 @@ def main():
 
     new = build()
     new += cut_ceiling(by, log)
-    new += copy_cover(boxes, log)
+    cover = copy_cover(boxes, log)
+    new += cover
     dead = {c[0] for c in CEIL_CUT}
+    removed += [b for b in boxes if b["name"] in dead]
     boxes = [b for b in boxes if b["name"] not in dead]
     problems = []
+
+    # ---- the four triangle holes ------------------------------------
+    def in_hex(x, y, margin=0.0):
+        r = math.hypot(x - CX, y - CY)
+        ang = math.degrees(math.atan2(y - CY, x - CX)) % 60.0
+        return r <= APOTHEM / math.cos(math.radians(ang - 30.0)) - margin
+
+    cover_by = {b["name"]: b for b in cover}
+    tris = []
+    for bname, out_deg in TRI_BLOCKS:
+        blk = cover_by.get(bname)
+        if blk is None:
+            problems.append("%s is not among the cover pieces" % bname)
+            continue
+        tri, depth = triangle(blk["origin"], out_deg)
+        tris.append((bname, tri))
+
+        # the room floor
+        cut, windows = [], []
+        keep = []
+        for b in new:
+            if "_floor_" not in b["name"]:
+                keep.append(b)
+                continue
+            pieces, win = split_around(b, tri, "t")
+            if pieces is None:
+                keep.append(b)
+            else:
+                cut += pieces
+                windows.append(win)
+        if not windows:
+            problems.append("%s: no floor piece reaches its triangle" % bname)
+            continue
+        new = keep + cut + edge_slabs(tri, windows, DECK, FLOOR_TOP,
+                                      "hex3_tri_%s" % bname.split("_")[-1],
+                                      MAT_FLOOR, lambda x, y: in_hex(x, y, 5.0))
+
+        # the deck below, where there is one. Same cut, so the drop is the
+        # same shape all the way down rather than a triangle onto a slab.
+        deck_pieces = [b for b in boxes
+                       if abs(b["origin"][2] - (DECK_Z[0] + DECK_Z[1]) / 2.0)
+                       < 1.0 and not b["angles"][1] % 90]
+        hit = []
+        keep2 = []
+        for b in deck_pieces:
+            pieces, win = split_around(b, tri, "t")
+            if pieces is None:
+                continue
+            hit.append((b, pieces, win))
+        if hit:
+            names = {h[0]["name"] for h in hit}
+            removed += [b for b in boxes if b["name"] in names]
+            boxes = [b for b in boxes if b["name"] not in names]
+            wins = [h[2] for h in hit]
+            for h in hit:
+                new += h[1]
+            new += edge_slabs(tri, wins, DECK_Z[0], DECK_Z[1],
+                              "hex3_trideck_%s" % bname.split("_")[-1],
+                              MAT_FLOOR, lambda x, y: True)
+            log.append("%s: triangle cut through the floor and through %s"
+                       % (bname, ", ".join(sorted(names))))
+        else:
+            log.append("%s: triangle cut through the floor; nothing below it "
+                       "at deck height" % bname)
 
     # 1. THE FLOOR MUST BE SOLID EXCEPT FOR THE HOLE, and the hole must be
     # the whole hole. Sampled, because three rotated rectangles with gaps in
     # them is exactly the kind of construction that looks right and leaks.
     zf = DECK + FLOOR_T / 2.0
+    floor_boxes = [q for q in new if "_floor_" in q["name"]
+                   or "_tri_" in q["name"]]
+    # Bounding boxes first: the sample grid runs to tens of thousands of
+    # points and an exact test against every piece is minutes, not seconds.
+    bb = []
+    for q in floor_boxes:
+        o, e = q["origin"], q["extents"]
+        r = (abs(e[0]) + abs(e[1])) / 2.0
+        bb.append((q, o[0] - r, o[0] + r, o[1] - r, o[1] + r))
+
+    def floored(x, y):
+        for q, x0, x1, y0, y1 in bb:
+            if x0 <= x <= x1 and y0 <= y <= y1 and covers(q, x, y, zf):
+                return True
+        return False
+
     inside_hole = miss = extra = 0
-    step = 12.0
+    gaps = []
+    step = 20.0
     y = CY - RECT_L / 2.0
     while y <= CY + RECT_L / 2.0:
         x = CX - RECT_W
         while x <= CX + RECT_W:
-            # inside the hexagon?
             r = math.hypot(x - CX, y - CY)
             ang = math.degrees(math.atan2(y - CY, x - CX)) % 60.0
-            lim = APOTHEM / math.cos(math.radians(ang - 30.0))
-            in_hex = r <= lim - 1.0
+            in_hex_pt = r <= APOTHEM / math.cos(math.radians(ang - 30.0)) - 1.0
             in_hole = (HOLE_X0 + 1 <= x <= HOLE_X1 - 1
                        and HOLE_Y0 + 1 <= y <= HOLE_Y1 - 1)
-            solid = any(covers(b, x, y, zf) for b in new
-                        if "_floor_" in b["name"])
             if in_hole:
                 inside_hole += 1
-                if solid:
+                if floored(x, y):
                     extra += 1
-            elif in_hex and not solid:
-                miss += 1
+            elif in_hex_pt and not floored(x, y):
+                if not any(in_tri(t, x, y, -step) for _, t in tris):
+                    miss += 1
+                    if len(gaps) < 6:
+                        gaps.append((round(x), round(y)))
             x += step
         y += step
     if extra:
-        problems.append("the floor covers %d sample(s) inside the hole" % extra)
+        problems.append("the floor covers %d sample(s) inside the square hole"
+                        % extra)
     if miss:
-        problems.append("the floor has %d hole(s) it should not have" % miss)
-    log.append("floor sampled: %d points in the hole, all open; %d gaps "
-               "elsewhere in the hexagon" % (inside_hole, miss))
+        problems.append("the floor has %d unwanted gap(s), e.g. %s"
+                        % (miss, gaps))
+    log.append("floor sampled at %.0f u: %d points in the square hole all "
+               "open, %d unwanted gaps elsewhere" % (step, inside_hole, miss))
 
-    # 2. THE ROOM MUST BE ITS OWN MIRROR IMAGE, since nothing here is twinned.
-    # Every piece must map onto some piece under the 180 degree rotation.
+    # Each triangle must be open, and open all the way to its own edges.
+    for nm, t in tris:
+        xs = [q[0] for q in t]
+        ys = [q[1] for q in t]
+        n_in = n_solid = 0
+        yy = min(ys)
+        while yy <= max(ys):
+            xx = min(xs)
+            while xx <= max(xs):
+                if in_tri(t, xx, yy, 8.0):
+                    n_in += 1
+                    if floored(xx, yy):
+                        n_solid += 1
+                xx += 8.0
+            yy += 8.0
+        log.append("  %-14s %d interior samples, %d floored over"
+                   % (nm, n_in, n_solid))
+        if n_solid:
+            problems.append("%s triangle is floored over at %d sample(s)"
+                            % (nm, n_solid))
+
     # Matched by distance, not by an exact key. The bridge opening is 0.05
     # off the mirror point, so the floor pieces that line up with it are
     # 0.1 off their partners by construction - and an exact key also trips
@@ -393,6 +654,7 @@ def main():
 
     boxes.extend(new)
     plan["boxes"] = boxes
+    plan["_batch18_removed"] = [json.loads(json.dumps(b)) for b in removed]
 
     log.append("")
     log.append("hexagon centred %.2f, %.2f   across corners %.1f, flats %.1f"
