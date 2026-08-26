@@ -80281,26 +80281,6 @@
    "_batch17": true
   },
   {
-   "name": "axis_451_sill",
-   "origin": [
-    2107.1,
-    13.3,
-    213.4
-   ],
-   "extents": [
-    320.2,
-    26.6,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch17": true
-  },
-  {
    "name": "axis_451_jamb_w",
    "origin": [
     1987.05,
@@ -80681,10 +80661,30 @@
    "_batch17": true
   },
   {
+   "name": "gapfill_39_8_ext451",
+   "origin": [
+    2107.1,
+    -80.05,
+    106.7
+   ],
+   "extents": [
+    280.1,
+    213.3,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch17": true
+  },
+  {
    "name": "axis_451_room_w",
    "origin": [
     1980.4,
-    106.6,
+    -80.0,
     413.3994
    ],
    "extents": [
@@ -80704,7 +80704,7 @@
    "name": "axis_451_room_e",
    "origin": [
     2233.8,
-    106.6,
+    -80.0,
     413.3994
    ],
    "extents": [
@@ -80724,12 +80724,12 @@
    "name": "axis_451_room_n",
    "origin": [
     2107.1,
-    199.95,
+    -173.3,
     413.3994
    ],
    "extents": [
     280.1,
-    26.7,
+    26.6,
     399.9988
    ],
    "angles": [
@@ -80744,7 +80744,7 @@
    "name": "ceiling_451",
    "origin": [
     2107.1,
-    106.6,
+    -80.0,
     600.0488
    ],
    "extents": [
@@ -81221,26 +81221,6 @@
    "_batch17": true
   },
   {
-   "name": "m_axis_451_sill",
-   "origin": [
-    -1186.9,
-    12156.8,
-    213.4
-   ],
-   "extents": [
-    320.2,
-    26.6,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch17": true
-  },
-  {
    "name": "m_axis_451_jamb_w",
    "origin": [
     -1066.85,
@@ -81621,10 +81601,30 @@
    "_batch17": true
   },
   {
+   "name": "m_gapfill_39_8_ext451",
+   "origin": [
+    -1186.9,
+    12250.15,
+    106.7
+   ],
+   "extents": [
+    280.1,
+    213.3,
+    213.4
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch17": true
+  },
+  {
    "name": "m_axis_451_room_w",
    "origin": [
     -1060.2,
-    12063.5,
+    12250.1,
     413.3994
    ],
    "extents": [
@@ -81644,7 +81644,7 @@
    "name": "m_axis_451_room_e",
    "origin": [
     -1313.6,
-    12063.5,
+    12250.1,
     413.3994
    ],
    "extents": [
@@ -81664,12 +81664,12 @@
    "name": "m_axis_451_room_n",
    "origin": [
     -1186.9,
-    11970.15,
+    12343.4,
     413.3994
    ],
    "extents": [
     280.1,
-    26.7,
+    26.6,
     399.9988
    ],
    "angles": [
@@ -81684,7 +81684,7 @@
    "name": "m_ceiling_451",
    "origin": [
     -1186.9,
-    12063.5,
+    12250.1,
     600.0488
    ],
    "extents": [
