@@ -86,9 +86,8 @@ TIERS = {
     "t1": {"subclass": "neutral_camp_weak",     # read
            "trooper_type": "1",                 # read
            "creatures": 3,
-           # Interval by tier: shortest for t1, longest for t3. Your call,
-           # matching the camp sizes; the fixture uses 120/300/360 but does
-           # not say which belongs to which.
+           # CONFIRMED per-entity 2026-08-26: weak 120/120, medium 120/300,
+           # strong 120/360. Your shortest-to-longest ordering was right.
            "initial_delay": "120", "interval": "120"},
     "t2": {"subclass": "neutral_camp_medium",   # read
            "trooper_type": "2",                 # read
@@ -105,10 +104,13 @@ TIERS = {
     # probably this, but the probe reports values per key rather than per
     # entity, so nothing pairs them. Empty is what goes in until that is
     # settled - see PROBE.md.
+    # READ per-entity 2026-08-26: the vault camp carries an EMPTY trooper
+    # type and 120/120 timings. The blank is deliberate in the fixture, not
+    # missing data - dl_example labels it "Neutral Trooper Type - None".
     "vault": {"subclass": "neutral_camp_vaults",      # read
-              "trooper_type": "",                     # UNREAD, see above
+              "trooper_type": "",                     # read, genuinely empty
               "creatures": 3,
-              "initial_delay": "120", "interval": "300"},
+              "initial_delay": "120", "interval": "120"},
     # THE MIDBOSS IS A CAMP: there is no npc_ classname for it. Both timings
     # at -1, so it does not respawn on a clock.
     "midboss": {"subclass": "neutral_camp_midboss",   # read
@@ -213,7 +215,11 @@ BRUSHES = [
         # The SIZE is invented: batch13's 1024 square was for a pit, and
         # this wants to cover the room's middle without reaching the walls,
         # so a team has to commit inside it.
-        "name": "midboss_shield",
+        # NOT called midboss_shield. batch13 emits an entity of that name and
+        # runs FIRST, so both existed at once and batch13 died on a duplicate
+        # before batch16 could ever strip the placeholder. The rename breaks
+        # that ordering trap; the strip below still removes batch13's.
+        "name": "midboss_shield_hex",
         "classname": "trigger_midboss_shield",
         "origin": [460.1, 6085.05, 1707.1],
         "extents": [1600.0, 1600.0, 800.0],

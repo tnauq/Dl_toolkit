@@ -42,7 +42,29 @@ Two caveats remain, neither of them a classname probe:
 
 Ordered by what blocks the most work.
 
-### 1. Teleporter — not reachable from CI
+### 1. Teleporter — absent from the fixture, and the fixture is thorough
+
+Rechecked 2026-08-26 against the full 54-classname census and every string
+value in it. Nothing matching tele, port, warp, rift or gate. The nearest
+things that DO exist:
+
+    citadel_zipline_path / _node    ziplines, 8 paths and 270 nodes
+    trigger_catapult                labelled "Fan Catapult" in the gym
+    citadel_trigger_push            labelled as the MID BOSS VENT EXITS
+    citadel_trigger_speed_boost     side exits of the base
+
+That last pair is worth reading twice: dl_example says `citadel_trigger_push`
+is "usually found on the side exits of the base or in the mid Boss Vent
+Exits", with tuning 40 for base and 400 for midboss. So the VENTS are push
+volumes, and the catapult is the fan.
+
+The map's own header says it was made by pulling apart the current dev
+shipped map, so a genuinely old asset should be here. Three readings of that:
+the teleporter is not an entity at all, it is called something none of the
+searched words cover, or the gym omits it. Nothing in CI can tell those
+apart.
+
+Old note:
 
 Absent from dl_example, and the binary scan is worthless for this: the CS2
 binaries contain no Deadlock entity strings at all. `citadel_` matched two
@@ -66,6 +88,12 @@ the destination marker needs authoring too.
 off dl_example. The pairing of "vault" to "sinner" is YOURS; the fixture does
 not use the word sinner anywhere. All four are now emitted as vault camps
 rather than held back, because the classname and subclass are both real.
+
+ANSWERED 2026-08-26 by the per-entity dump: the vault camp carries an EMPTY
+`ENeutralTrooperType` and 120/120 timings. The blank is deliberate — the gym
+labels it "Neutral Trooper Type - None" — not missing data. batch16 matches.
+
+Old note:
 
 One field is still blank: `ENeutralTrooperType`. Two of the eleven camps in
 the fixture leave it empty and one of those is plausibly the vault, but the
@@ -124,6 +152,12 @@ wrong in batch16 since the camps went in:
 
 - every one of the 32 spawns carries `teamnumber 4`, not 0
 - every one carries `HateCrateAttacker 1`, not 0
+
+CONFIRMED 2026-08-26, per entity: weak 120/120, medium 120/300, strong
+120/360, midboss -1/-1, vaults 120/120. Shortest to longest by size, as you
+said. batch16 already matched and now says so.
+
+Old note:
 
 Still inferred: WHICH interval belongs to which tier. Camps use
 InitialSpawnDelay 120 (9 of 11) and intervals of 120, 300 and 360, but the
