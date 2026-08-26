@@ -91,7 +91,34 @@ not an inference.
 
 Placed in batch16 at the hexagon centre, standing over the hole.
 
-### 4. Camp tiers — PARTLY ANSWERED
+### 4. Camp tiers — ANSWERED 2026-08-26
+
+The whole family, off dl_example's 11 camps:
+
+    neutral_camp_weak      type 1
+    neutral_camp_medium    type 2
+    neutral_camp_strong    type 3
+    neutral_camp_vaults    type ?
+    neutral_camp_midboss   type 5
+
+THERE IS NO `neutral_camp_normal`. That was the guess in batch16 for all ten
+t2 camps and it was wrong; they are `neutral_camp_medium` now. The types 1/2/3
+guess was right. Type 12 also appears, on spawns only.
+
+Two more corrections came out of the same read, both of which had been sitting
+wrong in batch16 since the camps went in:
+
+- every one of the 32 spawns carries `teamnumber 4`, not 0
+- every one carries `HateCrateAttacker 1`, not 0
+
+Still inferred: WHICH interval belongs to which tier. Camps use
+InitialSpawnDelay 120 (9 of 11) and intervals of 120, 300 and 360, but the
+probe reports values per key rather than per entity, so nothing pairs a 360
+with the strong camp. batch16 uses the obvious mapping and says so.
+
+`neutral_camp_vaults` is a fifth kind nobody has asked about yet.
+
+Original note:
 
 `neutral_camp_midboss` at type 5 is confirmed, which shows the family is
 `neutral_camp_*` and that types run at least to 5. The 11 camps in the
@@ -121,11 +148,16 @@ yet says it can be toggled at runtime or what the condition list may contain.
 `logic_relay` is also present with 10 instances, so the wiring half of the
 mechanism exists.
 
-The outputs question is still open, and for the same reason as item 4: the
-first run could not see connections at all, because they do not live in
-EditGameClassProps. The workflow now dumps every DmeConnectionData block
-verbatim, so the rerun says what dl_example's `destroyable_building` fires
-when it dies.
+The outputs question is still open, and the second run did not answer it
+either — for a reason worth recording. It found 89 connection blocks and
+reported every field as `?`, because it looked for `m_outputName`,
+`m_targetName` and `m_inputName`: field names nobody had read. That is the
+same mistake this workflow exists to avoid, made inside the workflow itself.
+
+The third version names nothing. It censuses whatever fields the blocks turn
+out to have, lists their values, and dumps all 89 blocks verbatim. The
+connections ARE there — 89 of them — so this should answer what
+`destroyable_building` fires on death, which is the precedent for the lid.
 Blocks: the whole midboss-over-the-hole idea.
 
 Two separate unknowns, and the second is the harder one:

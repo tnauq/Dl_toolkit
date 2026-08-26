@@ -72,29 +72,35 @@ SINNER_CLASS = "UNKNOWN"
 # Camp tiers. subclass_name and ENeutralTrooperType decide what spawns.
 # neutral_camp_weak is READ, off the camp batch13 already carries. The other
 # two are GUESSES with the shape of the family.
+# READ 2026-08-26 off dl_example's own 11 camps, via the classname probe.
+# The family is neutral_camp_weak / _medium / _strong / _vaults / _midboss.
+# There is NO neutral_camp_normal - that was a guess and it was wrong.
+# ENeutralTrooperType runs 1, 2, 3, 5 on camps (12 also appears on spawns).
+#
+# STILL INFERRED: which interval goes with which tier. The fixture uses
+# InitialSpawnDelayInSeconds 120 on 9 of 11 camps, and SpawnIntervalInSeconds
+# of 120, 300 and 360 - but the probe reports values per key, not per entity,
+# so nothing here says the 360 belongs to the strong camp. The mapping below
+# is the obvious one, not a reading.
 TIERS = {
-    "t1": {"subclass": "neutral_camp_weak",   # read
-           "trooper_type": "1",
+    "t1": {"subclass": "neutral_camp_weak",     # read
+           "trooper_type": "1",                 # read
            "creatures": 3,
            "initial_delay": "120", "interval": "120"},
-    "t2": {"subclass": "neutral_camp_normal",  # GUESS
-           "trooper_type": "2",
+    "t2": {"subclass": "neutral_camp_medium",   # read
+           "trooper_type": "2",                 # read
            "creatures": 4,
-           "initial_delay": "150", "interval": "150"},
-    # READ 2026-08-26 off dl_example, via the classname probe. The MIDBOSS
-    # IS A CAMP: there is no npc_ classname for it. It is an
-    # info_neutral_trooper_camp whose subclass is neutral_camp_midboss and
-    # whose type is 5, with both spawn timings at -1 - it does not respawn on
-    # a clock. Its spawn carries teamnumber 4 and HateCrateAttacker 1.
+           "initial_delay": "120", "interval": "300"},
+    "t3": {"subclass": "neutral_camp_strong",   # read
+           "trooper_type": "3",                 # read
+           "creatures": 4,
+           "initial_delay": "120", "interval": "360"},
+    # THE MIDBOSS IS A CAMP: there is no npc_ classname for it. Both timings
+    # at -1, so it does not respawn on a clock.
     "midboss": {"subclass": "neutral_camp_midboss",   # read
                 "trooper_type": "5",                  # read
                 "creatures": 1,
-                "hate_crate": "1",                    # read
                 "initial_delay": "-1", "interval": "-1"},  # read
-    "t3": {"subclass": "neutral_camp_strong",  # GUESS
-           "trooper_type": "3",
-           "creatures": 4,
-           "initial_delay": "180", "interval": "180"},
 }
 
 # Creature offsets from the camp origin, by creature count. A ring, so a camp
@@ -368,7 +374,13 @@ def rows(table):
     return [(n, o, note) for n, o, note in table if o is not None]
 
 
-def make_camp(name, origin, tier, team="0"):
+# READ: every one of dl_example's 32 trooper spawns carries teamnumber 4 and
+# HateCrateAttacker 1, midboss and jungle camps alike. Both were 0 here.
+SPAWN_TEAM = "4"
+SPAWN_HATE = "1"
+
+
+def make_camp(name, origin, tier, team=SPAWN_TEAM):
     spec = TIERS[tier]
     camp_name = name + "_neutrals"
     out = []
@@ -406,7 +418,7 @@ def make_camp(name, origin, tier, team="0"):
                 "CampName": camp_name,
                 "ENeutralTrooperType": spec["trooper_type"],
                 "CoverGroupID": "",
-                "HateCrateAttacker": spec.get("hate_crate", "0"),
+                "HateCrateAttacker": SPAWN_HATE,
             },
             MARK: True,
         }
@@ -518,7 +530,7 @@ def main():
 
     tier, origin, note = MIDBOSS
     # teamnumber 4 on the spawn, read off dl_example's own midboss camp.
-    new += make_camp("midboss", origin, tier, team="4")
+    new += make_camp("midboss", origin, tier)
     sites.append(("midboss", origin, note))
 
     for name, origin, note in LANDINGS:
