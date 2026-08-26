@@ -81707,6 +81707,26 @@
    "_batch18": true
   },
   {
+   "name": "midboss_lid",
+   "origin": [
+    460.15,
+    6085.05,
+    1293.7
+   ],
+   "extents": [
+    266.7,
+    266.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
    "name": "hex3_wall_30",
    "origin": [
     1671.8427,
@@ -84645,84 +84665,6 @@
    "_batch13": true
   },
   {
-   "name": "catapult_west",
-   "classname": "trigger_catapult",
-   "origin": [
-    -1800.0,
-    4000.0,
-    435.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "catapult_west",
-    "target": "catapult_west_land",
-    "launch_speed": "800",
-    "spawnflags": "4097"
-   },
-   "mesh": {
-    "name": "catapult_west_vol",
-    "origin": [
-     0.0,
-     0.0,
-     0.0
-    ],
-    "extents": [
-     128.0,
-     128.0,
-     64.0
-    ],
-    "angles": [
-     0.0,
-     0.0,
-     0.0
-    ]
-   },
-   "_batch13": true
-  },
-  {
-   "name": "m_catapult_west",
-   "classname": "trigger_catapult",
-   "origin": [
-    2720.2,
-    8170.1,
-    435.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "m_catapult_west",
-    "target": "m_catapult_west_land",
-    "launch_speed": "800",
-    "spawnflags": "4097"
-   },
-   "mesh": {
-    "name": "catapult_west_vol",
-    "origin": [
-     0.0,
-     0.0,
-     0.0
-    ],
-    "extents": [
-     128.0,
-     128.0,
-     64.0
-    ],
-    "angles": [
-     0.0,
-     180.0,
-     0.0
-    ]
-   },
-   "_batch13": true
-  },
-  {
    "name": "push_west",
    "classname": "citadel_trigger_push",
    "origin": [
@@ -84830,42 +84772,6 @@
     0.0
    ],
    "properties": {},
-   "_batch13": true
-  },
-  {
-   "name": "catapult_west_land",
-   "classname": "info_target_server_only",
-   "origin": [
-    -1800.0,
-    5200.0,
-    900.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "catapult_west_land"
-   },
-   "_batch13": true
-  },
-  {
-   "name": "m_catapult_west_land",
-   "classname": "info_target_server_only",
-   "origin": [
-    2720.2,
-    6970.1,
-    900.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "m_catapult_west_land"
-   },
    "_batch13": true
   },
   {
@@ -86512,11 +86418,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_1_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86536,11 +86442,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_1_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86560,11 +86466,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_1_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86584,11 +86490,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_1_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86608,11 +86514,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_1_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86632,11 +86538,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_1_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86704,11 +86610,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_2_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86728,11 +86634,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_2_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86752,11 +86658,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_2_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86776,11 +86682,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_2_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86800,11 +86706,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_2_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86824,11 +86730,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_2_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86896,11 +86802,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_3_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86920,11 +86826,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_3_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86944,11 +86850,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_3_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86968,11 +86874,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_3_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -86992,11 +86898,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t1_3_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87016,11 +86922,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t1_3_neutrals",
     "ENeutralTrooperType": "1",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87042,9 +86948,9 @@
     "vscripts": "",
     "CampName": "camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87066,9 +86972,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87088,11 +86994,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87112,11 +87018,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87136,11 +87042,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87160,11 +87066,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87184,11 +87090,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87208,11 +87114,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87232,11 +87138,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87256,11 +87162,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_1_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87282,9 +87188,9 @@
     "vscripts": "",
     "CampName": "camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87306,9 +87212,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87328,11 +87234,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87352,11 +87258,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87376,11 +87282,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87400,11 +87306,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87424,11 +87330,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87448,11 +87354,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87472,11 +87378,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87496,11 +87402,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_2_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87522,9 +87428,9 @@
     "vscripts": "",
     "CampName": "camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87546,9 +87452,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87568,11 +87474,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87592,11 +87498,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87616,11 +87522,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87640,11 +87546,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87664,11 +87570,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87688,11 +87594,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87712,11 +87618,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87736,11 +87642,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_3_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87762,9 +87668,9 @@
     "vscripts": "",
     "CampName": "camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87786,9 +87692,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -87808,11 +87714,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87832,11 +87738,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87856,11 +87762,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87880,11 +87786,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87904,11 +87810,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87928,11 +87834,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87952,11 +87858,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -87976,11 +87882,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_4_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88002,9 +87908,9 @@
     "vscripts": "",
     "CampName": "camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88026,9 +87932,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88048,11 +87954,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88072,11 +87978,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88096,11 +88002,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88120,11 +88026,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88144,11 +88050,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88168,11 +88074,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88192,11 +88098,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88216,11 +88122,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_5_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88242,9 +88148,9 @@
     "vscripts": "",
     "CampName": "camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88266,9 +88172,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88288,11 +88194,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88312,11 +88218,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88336,11 +88242,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88360,11 +88266,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88384,11 +88290,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88408,11 +88314,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88432,11 +88338,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88456,11 +88362,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_6_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88482,9 +88388,9 @@
     "vscripts": "",
     "CampName": "camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88506,9 +88412,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88528,11 +88434,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88552,11 +88458,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88576,11 +88482,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88600,11 +88506,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88624,11 +88530,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88648,11 +88554,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88672,11 +88578,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88696,11 +88602,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_7_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88722,9 +88628,9 @@
     "vscripts": "",
     "CampName": "camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88746,9 +88652,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88768,11 +88674,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88792,11 +88698,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88816,11 +88722,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88840,11 +88746,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88864,11 +88770,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88888,11 +88794,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88912,11 +88818,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88936,11 +88842,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_8_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -88962,9 +88868,9 @@
     "vscripts": "",
     "CampName": "camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -88986,9 +88892,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -89008,11 +88914,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89032,11 +88938,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89056,11 +88962,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89080,11 +88986,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89104,11 +89010,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89128,11 +89034,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89152,11 +89058,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89176,11 +89082,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_9_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89202,9 +89108,9 @@
     "vscripts": "",
     "CampName": "camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -89226,9 +89132,9 @@
     "vscripts": "",
     "CampName": "m_camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
-    "subclass_name": "neutral_camp_normal",
-    "InitialSpawnDelayInSeconds": "150",
-    "SpawnIntervalInSeconds": "150"
+    "subclass_name": "neutral_camp_medium",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "300"
    },
    "_batch16": true
   },
@@ -89248,11 +89154,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89272,11 +89178,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89296,11 +89202,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89320,11 +89226,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89344,11 +89250,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89368,11 +89274,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89392,11 +89298,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89416,11 +89322,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t2_10_neutrals",
     "ENeutralTrooperType": "2",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89443,8 +89349,8 @@
     "CampName": "camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -89467,8 +89373,8 @@
     "CampName": "m_camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -89488,11 +89394,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89512,11 +89418,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89536,11 +89442,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89560,11 +89466,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89584,11 +89490,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89608,11 +89514,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89632,11 +89538,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89656,11 +89562,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_1_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89683,8 +89589,8 @@
     "CampName": "camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -89707,8 +89613,8 @@
     "CampName": "m_camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -89728,11 +89634,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89752,11 +89658,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89776,11 +89682,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89800,11 +89706,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89824,11 +89730,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89848,11 +89754,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89872,11 +89778,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89896,11 +89802,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_2_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89923,8 +89829,8 @@
     "CampName": "camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -89947,8 +89853,8 @@
     "CampName": "m_camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -89968,11 +89874,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -89992,11 +89898,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90016,11 +89922,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90040,11 +89946,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90064,11 +89970,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90088,11 +89994,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90112,11 +90018,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90136,11 +90042,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_3_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90163,8 +90069,8 @@
     "CampName": "camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -90187,8 +90093,8 @@
     "CampName": "m_camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -90208,11 +90114,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90232,11 +90138,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90256,11 +90162,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90280,11 +90186,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90304,11 +90210,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90328,11 +90234,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90352,11 +90258,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90376,11 +90282,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_4_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90403,8 +90309,8 @@
     "CampName": "camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -90427,8 +90333,8 @@
     "CampName": "m_camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -90448,11 +90354,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90472,11 +90378,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90496,11 +90402,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90520,11 +90426,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90544,11 +90450,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90568,11 +90474,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90592,11 +90498,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90616,11 +90522,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_5_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90643,8 +90549,8 @@
     "CampName": "camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -90667,8 +90573,8 @@
     "CampName": "m_camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "subclass_name": "neutral_camp_strong",
-    "InitialSpawnDelayInSeconds": "180",
-    "SpawnIntervalInSeconds": "180"
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "360"
    },
    "_batch16": true
   },
@@ -90688,11 +90594,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90712,11 +90618,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90736,11 +90642,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90760,11 +90666,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90784,11 +90690,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90808,11 +90714,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90832,11 +90738,11 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
@@ -90856,16 +90762,16 @@
    "properties": {
     "targetname": "",
     "vscripts": "",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "CampName": "m_camp_t3_6_neutrals",
     "ENeutralTrooperType": "3",
     "CoverGroupID": "",
-    "HateCrateAttacker": "0"
+    "HateCrateAttacker": "1"
    },
    "_batch16": true
   },
   {
-   "name": "midboss_shield",
+   "name": "midboss_shield_hex",
    "classname": "trigger_midboss_shield",
    "origin": [
     460.1,
@@ -90882,7 +90788,7 @@
     "spawnflags": "4097"
    },
    "mesh": {
-    "name": "midboss_shield_vol",
+    "name": "midboss_shield_hex_vol",
     "origin": [
      0.0,
      0.0,
@@ -90976,6 +90882,162 @@
    "_batch16": true
   },
   {
+   "name": "catapult_a",
+   "classname": "trigger_catapult",
+   "origin": [
+    -574.0,
+    5259.0,
+    640.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "catapult_a",
+    "target": "catapult_a_land",
+    "launch_speed": "800",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "catapult_a_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     128.0,
+     128.0,
+     64.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_catapult_a",
+   "classname": "trigger_catapult",
+   "origin": [
+    1494.2,
+    6911.1,
+    640.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_catapult_a",
+    "target": "m_catapult_a_land",
+    "launch_speed": "800",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "catapult_a_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     128.0,
+     128.0,
+     64.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "catapult_b",
+   "classname": "trigger_catapult",
+   "origin": [
+    1795.0,
+    4052.0,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "catapult_b",
+    "target": "catapult_b_land",
+    "launch_speed": "800",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "catapult_b_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     128.0,
+     128.0,
+     64.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_catapult_b",
+   "classname": "trigger_catapult",
+   "origin": [
+    -874.8,
+    8118.1,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_catapult_b",
+    "target": "m_catapult_b_land",
+    "launch_speed": "800",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "catapult_b_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     128.0,
+     128.0,
+     64.0
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch16": true
+  },
+  {
    "name": "rope_tri_240",
    "classname": "citadel_trigger_climb_rope",
    "origin": [
@@ -91050,6 +91112,126 @@
    "_batch16": true
   },
   {
+   "name": "midboss",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    460.15,
+    6085.05,
+    1307.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "midboss_neutrals",
+    "ENeutralTrooperType": "5",
+    "subclass_name": "neutral_camp_midboss",
+    "InitialSpawnDelayInSeconds": "-1",
+    "SpawnIntervalInSeconds": "-1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "midboss_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    460.15,
+    6085.05,
+    1307.1
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "midboss_neutrals",
+    "ENeutralTrooperType": "5",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "catapult_a_land",
+   "classname": "info_target_server_only",
+   "origin": [
+    640.0,
+    3747.0,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "catapult_a_land"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_catapult_a_land",
+   "classname": "info_target_server_only",
+   "origin": [
+    280.2,
+    8423.1,
+    667.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_catapult_a_land"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "catapult_b_land",
+   "classname": "info_target_server_only",
+   "origin": [
+    3176.0,
+    5248.0,
+    401.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "catapult_b_land"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_catapult_b_land",
+   "classname": "info_target_server_only",
+   "origin": [
+    -2255.8,
+    6922.1,
+    401.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "m_catapult_b_land"
+   },
+   "_batch16": true
+  },
+  {
    "name": "powerup_1",
    "classname": "citadel_item_powerup_spawner",
    "origin": [
@@ -91079,6 +91261,774 @@
     0.0
    ],
    "properties": {},
+   "_batch16": true
+  },
+  {
+   "name": "sinner_1",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    1721.0,
+    9719.0,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_1",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    -800.8,
+    2451.1,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "m_sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_1_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    1831.0,
+    9719.0,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_1_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    -910.8,
+    2451.1,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_1_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    1666.0,
+    9814.26,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_1_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    -745.8,
+    2355.84,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_1_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    1666.0,
+    9623.74,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_1_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    -745.8,
+    2546.36,
+    253.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_1_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_2",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    -1647.0,
+    6766.0,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_2",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    2567.2,
+    5404.1,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "m_sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_2_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    -1537.0,
+    6766.0,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_2_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    2457.2,
+    5404.1,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_2_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    -1702.0,
+    6861.26,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_2_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    2622.2,
+    5308.84,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_2_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    -1702.0,
+    6670.74,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_2_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    2622.2,
+    5499.36,
+    0.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_2_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_3",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    324.0,
+    12027.0,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_3",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    596.2,
+    143.1,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "m_sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_3_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    434.0,
+    12027.0,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_3_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    486.2,
+    143.1,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_3_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    269.0,
+    12122.26,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_3_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    651.2,
+    47.84,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_3_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    269.0,
+    11931.74,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_3_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    651.2,
+    238.36,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_3_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_4",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    216.0,
+    11344.0,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_4",
+   "classname": "info_neutral_trooper_camp",
+   "origin": [
+    704.2,
+    826.1,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "CampName": "m_sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "subclass_name": "neutral_camp_vaults",
+    "InitialSpawnDelayInSeconds": "120",
+    "SpawnIntervalInSeconds": "120"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_4_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    326.0,
+    11344.0,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_4_spawn0",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    594.2,
+    826.1,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_4_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    161.0,
+    11439.26,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_4_spawn1",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    759.2,
+    730.84,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sinner_4_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    161.0,
+    11248.74,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_sinner_4_spawn2",
+   "classname": "info_neutral_trooper_spawn",
+   "origin": [
+    759.2,
+    921.36,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "4",
+    "CampName": "m_sinner_4_neutrals",
+    "ENeutralTrooperType": "",
+    "CoverGroupID": "",
+    "HateCrateAttacker": "1"
+   },
    "_batch16": true
   }
  ],
