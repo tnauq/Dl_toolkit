@@ -93667,7 +93667,7 @@
    "properties": {
     "targetname": "rebels_building_final",
     "vscripts": "",
-    "model": "",
+    "model": "models/props_street/generator.vmdl",
     "skin": "default",
     "bodygroups": "",
     "disableshadows": "0",
@@ -93697,7 +93697,7 @@
    "properties": {
     "targetname": "combine_building_final",
     "vscripts": "",
-    "model": "",
+    "model": "models/props_street/generator.vmdl",
     "skin": "default",
     "bodygroups": "",
     "disableshadows": "0",
@@ -93764,6 +93764,52 @@
     "sub_objective_lane_3": "6",
     "sub_objective_4": "",
     "sub_objective_lane_4": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sky_entity",
+   "classname": "env_sky",
+   "origin": [
+    460.1,
+    6085.05,
+    2800.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "sky_entity",
+    "skyname": "materials/skybox/light_test_psa_low_moon.vmat",
+    "tint_color": "203 215 226",
+    "StartDisabled": "0",
+    "vscripts": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "sun",
+   "classname": "light_environment",
+   "origin": [
+    460.1,
+    6085.05,
+    2800.0
+   ],
+   "angles": [
+    -60.0,
+    45.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "skytexture": "sky_entity",
+    "color": "228 184 134",
+    "brightness": "6",
+    "enabled": "1",
+    "castshadows": "1",
+    "vscripts": ""
    },
    "_batch16": true
   },
