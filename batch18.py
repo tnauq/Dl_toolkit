@@ -225,27 +225,22 @@ NOTCHES = [
 # so a raised rectangle and the flat lid beside it share a face and no
 # skirts are needed.
 #
-# CAP_Z IS 1280, YOUR READING, AND THE RAISES ARE COMPUTED.
+# THE CAP IS ONE PLANE AT 1280 WITH HOLES WHERE THE WALLS ARE.
 #
-# Two earlier attempts failed in opposite directions. A stepped cap that
-# followed the roofline everywhere dipped into playable space, because the
-# smoothing that keeps a balcony clear also drops a lid into a courtyard. A
-# flat lid at 1280 with three hand-drawn rectangles cut through 3805 columns
-# of wall, because walls between 1280 and 1565 are scattered all over the
-# map and no small set of rectangles covers them.
+# A lid tile goes in every cell where the plane at CAP_Z is OPEN AIR. Where a
+# wall already occupies 1280 no tile is needed - the wall is the seal there,
+# and whatever it carries on up to is unreachable, because the only way above
+# 1280 is through the plane and the plane is closed everywhere else.
 #
-# So: the lid is FLAT AT 1280 and it is RAISED ONLY WHERE SOMETHING POKES
-# THROUGH IT. The raised patches are found rather than drawn - the columns
-# whose geometry tops 1280 are grouped into connected regions, and each
-# region gets a lid at its own tallest point plus CAP_CLEAR.
+# That is the whole algorithm. Three earlier versions tried to follow the
+# roofline - stepped levels, connected regions, per-column raises - and each
+# one traded a new failure for the last. None were needed.
 #
-# The cap NEVER GOES BELOW 1280, so it cannot dip into anything: the only
-# places it rises are directly over geometry that is already solid there.
-# A flyer over open ground is stopped at 1280; the higher lid over a wall is
-# only reachable by being inside the wall.
-#
-# CAP_EXCEPTIONS is still there for anything you want to override by hand,
-# and a hand row always wins over a computed one.
+# THE ONE THING IT CANNOT SEE is playable space that lives ENTIRELY ABOVE the
+# plane. The hexagon room floors at 1307 and roofs at 2587, so at 1280 there
+# is nothing but air beneath it, and a plain plane would seal the room off
+# under its own floor. Those go in CAP_EXCEPTIONS by hand, which is what you
+# wanted to be marking anyway.
 SKY_CAP = True
 CAP_CELL = 100.0           # sampling grid for the rectangle decomposition
 CAP_Z = 1280.0             # your reading off ceiling_80_68
@@ -259,11 +254,27 @@ CAP_CLEAR = 160.0
 CAP_GROW = 1
 MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 
-# HAND OVERRIDES, empty by default now that the raises are computed. A row
-# here wins over anything computed, so this is where to force a patch higher
-# than the geometry needs - or, with a height below 1280, lower.
+# ROOMS THAT LIVE ABOVE THE PLANE, and anything else you want lidded at a
+# different height. A row here replaces the 1280 plane across its rectangle.
 CAP_EXCEPTIONS = [
     # name, x0, x1, y0, y1, lid height
+    ("hexagon", -1350.0, 2250.0, 4450.0, 7750.0, 2750.0),
+    # The bases, for the same reason: their arch heads (the *_hxpar* pieces)
+    # START above 1280, so the plane passes underneath and slices them. The
+    # clearance report named 122 of them.
+    ("base_s", -2300.0, 2300.0, -6700.0, -2200.0, 1910.0),
+    ("base_n", -1400.0, 3300.0, 14400.0, 18800.0, 1910.0),
+    # The side tunnels and the urn rooms, found the same way: every box whose
+    # BOTTOM is above 1280 was grouped by name and bounded. These are what
+    # was left after the bases and the hexagon.
+    ("xtun_w", -4700.0, -2100.0, 2950.0, 5800.0, 1690.0),
+    ("xtun_e", 3000.0, 5620.0, 6370.0, 9220.0, 1690.0),
+    # The urn rooms. My first rectangles for these were taken from box
+    # ORIGINS rather than extents and were both too small and, for the east
+    # one, in the wrong place entirely - the clearance report kept naming
+    # hex2_ceil_* until they were measured properly.
+    ("hex2_w", -4480.0, -2900.0, 2020.0, 3810.0, 1620.0),
+    ("hex2_e", 3820.0, 5410.0, 8360.0, 10150.0, 1620.0),
 ]
 
 NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
@@ -662,6 +673,7 @@ def build_skycap(boxes, log):
 
     geo = [[False] * ny for _ in range(nx)]
     top = [[-9e9] * ny for _ in range(nx)]
+    solid = [[False] * ny for _ in range(nx)]     # spans CAP_Z
     for b in boxes:
         if b["name"].startswith("skycap"):
             continue
@@ -675,78 +687,34 @@ def build_skycap(boxes, log):
         j0 = max(0, int((o[1] - hy - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
         z = o[2] + e[2] / 2.0
+        spans = (o[2] - e[2] / 2.0) <= CAP_Z <= z
         for i in range(i0, i1):
-            gi, ti = geo[i], top[i]
+            gi, ti, si = geo[i], top[i], solid[i]
             for j in range(j0, j1):
                 gi[j] = True
                 if z > ti[j]:
                     ti[j] = z
+                if spans:
+                    si[j] = True
 
-    # COMPUTED RAISES. Group the columns that poke through CAP_Z into
-    # connected regions and give each one a lid at its own tallest point
-    # plus CAP_CLEAR. Grown by CAP_GROW cells first so a lid never ends
-    # flush with the wall edge it covers.
-    # A column is raised when its roof is within CAP_MIN_HEAD of the lid,
-    # not only when it pokes through. Testing "above CAP_Z" left roofs at
-    # 1253.6 with 26 of headroom and one at 1280.3 being sliced by 0.3 - the
-    # clearance report caught all of them.
-    tall = [[top[i][j] > CAP_Z - CAP_MIN_HEAD for j in range(ny)]
-            for i in range(nx)]
-    for _ in range(CAP_GROW):
-        grown = [row[:] for row in tall]
-        for i in range(nx):
-            for j in range(ny):
-                if not tall[i][j]:
-                    continue
-                for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    u, v = i + di, j + dj
-                    if 0 <= u < nx and 0 <= v < ny and geo[u][v]:
-                        grown[u][v] = True
-        tall = grown
-
-    # THE RAISE IS PER COLUMN, NOT PER REGION. Grouping the tall columns
-    # into connected regions and giving each its own maximum put a 2750 lid
-    # over most of the map, because one continuous run of tall walls links
-    # the hexagon room to everything else. Each column instead takes its own
-    # roof plus CAP_CLEAR, maximised over its immediate neighbours so a lid
-    # never ends flush with the wall edge it covers.
-    #
-    # This cannot dip into playable space the way the old stepped cap did:
-    # the level is the MAXIMUM of CAP_Z and the local roof, so it is never
-    # below 1280 and never below the thing it covers.
-    raise_z = [[None] * ny for _ in range(nx)]
-    n_reg = 0
-    for i in range(nx):
-        for j in range(ny):
-            if not tall[i][j]:
-                continue
-            peak = -9e9
-            for di in range(-CAP_GROW, CAP_GROW + 1):
-                for dj in range(-CAP_GROW, CAP_GROW + 1):
-                    u, v = i + di, j + dj
-                    if 0 <= u < nx and 0 <= v < ny and top[u][v] > peak:
-                        peak = top[u][v]
-            raise_z[i][j] = math.ceil((peak + CAP_CLEAR) / 10.0) * 10.0
-            n_reg += 1
-
-    # level per cell: CAP_Z, raised where something pokes through, and a
-    # hand row in CAP_EXCEPTIONS overriding either.
+    # A cell needs a tile when the plane at CAP_Z is open there. `solid`
+    # is filled above, from any box whose z range spans CAP_Z.
     lvl = [[None] * ny for _ in range(nx)]
+    n_open = 0
     for i in range(nx):
         for j in range(ny):
-            if not geo[i][j]:
-                continue
-            lvl[i][j] = raise_z[i][j] if raise_z[i][j] is not None else CAP_Z
+            if geo[i][j] and not solid[i][j]:
+                lvl[i][j] = CAP_Z
+                n_open += 1
     for nm, x0, x1, y0, y1, z in CAP_EXCEPTIONS:
         i0 = max(0, int((x0 - xs0) / S))
         i1 = min(nx, int(math.ceil((x1 - xs0) / S)))
         j0 = max(0, int((y0 - ys0) / S))
         j1 = min(ny, int(math.ceil((y1 - ys0) / S)))
         for i in range(i0, i1):
-            li = lvl[i]
             for j in range(j0, j1):
-                if li[j] is not None:
-                    li[j] = z
+                if geo[i][j]:
+                    lvl[i][j] = z
 
     levels = sorted({v for row in lvl for v in row if v is not None})
     top_z = max(levels) + CAP_TOP_MARGIN if levels else CAP_Z + 200.0
@@ -793,9 +761,12 @@ def build_skycap(boxes, log):
                 xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
                 float(v), top_z,
                 (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
-    log.append("sky cap: flat at %.0f, %d column(s) raised where geometry "
-               "pokes through, %d hand override(s), %d boxes up to %.0f"
-               % (CAP_Z, n_reg, len(CAP_EXCEPTIONS), len(made), top_z))
+    log.append("sky cap: one plane at %.0f, %d open cell(s) tiled, %d cell(s) "
+               "already sealed by a wall, %d exception(s), %d boxes up to %.0f"
+               % (CAP_Z, n_open,
+                  sum(1 for i in range(nx) for j in range(ny)
+                      if geo[i][j] and solid[i][j]),
+                  len(CAP_EXCEPTIONS), len(made), top_z))
     hi = sorted({v for row in lvl for v in row if v is not None})
     log.append("   lid heights: %s" % [int(v) for v in hi][:14])
     return made
@@ -862,21 +833,34 @@ def clearance_report(plan, log, problems):
             tight.append((gap, b["name"], round(o[0], 1), round(o[1], 1),
                           round(t, 1)))
     tight.sort()
+    # A NEGATIVE gap is a fault: the cap is inside that box, and the box
+    # needs a row in CAP_EXCEPTIONS. A SMALL POSITIVE gap is not - it is a
+    # roof sitting just under a plane that was asked to be flush, which is
+    # the whole point of a flush cap. They are counted separately so the
+    # faults are not lost among them.
+    sliced = [q for q in tight if q[0] < 0.0]
+    close = [q for q in tight if q[0] >= 0.0]
     log.append("")
     log.append("CLEARANCE over every surface in the plan, against the cap:")
-    if not tight:
-        log.append("  nothing has less than %.0f of headroom. No surface "
-                   "needs looking at by hand." % CAP_MIN_HEAD)
-        return
-    log.append("  %d surface(s) with less than %.0f of headroom, worst "
-               "first - each one wants a row in CAP_EXCEPTIONS:"
-               % (len(tight), CAP_MIN_HEAD))
-    for gap, nm, x, y, t in tight[:25]:
-        log.append("    %7.1f  %-28s at %9.1f %9.1f top %8.1f"
-                   % (gap, nm, x, y, t))
-    if len(tight) > 25:
-        log.append("    ... and %d more" % (len(tight) - 25))
-    log.append("  A NEGATIVE gap means the cap is INSIDE that box.")
+    if not sliced:
+        log.append("  NOTHING IS SLICED: the cap is above every surface in "
+                   "the plan.")
+    else:
+        log.append("  %d SURFACE(S) THE CAP CUTS INTO, worst first - each "
+                   "wants a row in CAP_EXCEPTIONS:" % len(sliced))
+        for gap, nm, x, y, t in sliced[:25]:
+            log.append("    %7.1f  %-28s at %9.1f %9.1f top %8.1f"
+                       % (gap, nm, x, y, t))
+        if len(sliced) > 25:
+            log.append("    ... and %d more" % (len(sliced) - 25))
+    if close:
+        log.append("  %d surface(s) sit within %.0f of the cap without being "
+                   "cut - tightest %.0f. Expected with a flush cap; listed "
+                   "so a genuinely awkward one can be spotted."
+                   % (len(close), CAP_MIN_HEAD, close[0][0]))
+        for gap, nm, x, y, t in close[:6]:
+            log.append("    %7.1f  %-28s at %9.1f %9.1f top %8.1f"
+                       % (gap, nm, x, y, t))
 
 
 def covers(b, x, y, z):
