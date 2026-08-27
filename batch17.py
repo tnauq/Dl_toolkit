@@ -435,22 +435,41 @@ def main():
     # removed again immediately below; this exists only to make the count
     # independent of history.
     have = {b["name"] for b in boxes}
+
+    def restore_pair(q):
+        """Add whichever of a wall and its twin is actually absent.
+
+        A WALL AND ITS TWIN DO NOT ALWAYS GO MISSING TOGETHER. In the repo's
+        plan axis_451 and axis_571 are gone but m_axis_451 and m_axis_571 are
+        still there - an older version of this file removed the base copy and
+        left the twin. Adding both back made a duplicate twin, and since the
+        removal below filters by NAME it then took three boxes out where a
+        pristine plan takes two. That is the whole of the missing four.
+        """
+        made = []
+        for c in (q, twin_box(q)):
+            if c["name"] not in have:
+                c.pop(MARK, None)
+                boxes.append(c)
+                have.add(c["name"])
+                made.append(c["name"])
+        if made:
+            log.append("reconstructed %s, missing from both the plan and "
+                       "the stash" % ", ".join(made))
+
     for spec in ROOMS:
         w = spec["wall"]
-        if w in have:
+        if w in have and PREFIX + w in have:
             continue
         q = box(w, spec["wall_x0"], spec["wall_x1"],
                 spec["wall_y0"], spec["wall_y1"],
                 spec["wall_z0"], spec["wall_z1"])
         if q:
-            q.pop(MARK, None)
-            boxes += [q, twin_box(q)]
-            log.append("reconstructed %s, missing from both the plan and the "
-                       "stash" % w)
+            restore_pair(q)
     for name, wall, origin, yaw, length, uc in ANGLED_DOORS:
-        if wall in have:
+        if wall in have and PREFIX + wall in have:
             continue
-        q = {
+        restore_pair({
             "name": wall,
             "origin": [origin[0], origin[1],
                        round((ANGLED_Z[0] + ANGLED_Z[1]) / 2.0, 4)],
@@ -458,10 +477,7 @@ def main():
                         round(ANGLED_Z[1] - ANGLED_Z[0], 4)],
             "angles": [0.0, yaw, 0.0],
             "material": MAT_WALL,
-        }
-        boxes += [q, twin_box(q)]
-        log.append("reconstructed %s, missing from both the plan and the "
-                   "stash" % wall)
+        })
     log.append("stripped %d boxes from a previous batch17 run"
                % (start - len(boxes)))
 
