@@ -225,71 +225,45 @@ NOTCHES = [
 # so a raised rectangle and the flat lid beside it share a face and no
 # skirts are needed.
 #
-# CAP_Z IS 1720, NOT THE 1280 YOU READ, and here is why. Outside the three
-# exception rectangles, measured column by column with every box present:
+# CAP_Z IS 1280, YOUR READING, AND THE RAISES ARE COMPUTED.
 #
-#     roof p50 1027    p90 1280    p99 1565    max 1565
-#     above 1280: 3805 columns     above 1500: 547
-#     above 1400: 1113 columns     above 1600: 0
+# Two earlier attempts failed in opposite directions. A stepped cap that
+# followed the roofline everywhere dipped into playable space, because the
+# smoothing that keeps a balcony clear also drops a lid into a courtyard. A
+# flat lid at 1280 with three hand-drawn rectangles cut through 3805 columns
+# of wall, because walls between 1280 and 1565 are scattered all over the
+# map and no small set of rectangles covers them.
 #
-# 1280 is the NINETIETH PERCENTILE of the roofline, not its top. A lid there
-# cuts through 3805 columns of wall - the clearance report listed 709
-# surfaces and a worst gap of -285, meaning the lid was inside them.
+# So: the lid is FLAT AT 1280 and it is RAISED ONLY WHERE SOMETHING POKES
+# THROUGH IT. The raised patches are found rather than drawn - the columns
+# whose geometry tops 1280 are grouped into connected regions, and each
+# region gets a lid at its own tallest point plus CAP_CLEAR.
 #
-# 1720 clears everything outside the rectangles with 155 to spare. The cost
-# is that the median roof sits 693 below it, which is the gap you are
-# seeing. THE ONLY WAY TO CLOSE THAT IS MORE RECTANGLES: each one lets a
-# patch of the map have its own lower lid.
+# The cap NEVER GOES BELOW 1280, so it cannot dip into anything: the only
+# places it rises are directly over geometry that is already solid there.
+# A flyer over open ground is stopped at 1280; the higher lid over a wall is
+# only reachable by being inside the wall.
 #
-# Mark the areas you want lower and add them as rows. The clearance report
-# names anything a rectangle cuts into, so a row that is too low tells you
-# so by name and coordinate.
-#
-# THE EXCEPTIONS ARE MEASURED, NOT CHOSEN: the map was sampled column by
-# column on a 100 u grid and the ones rising above each threshold grouped.
-#
-# THE FIRST ATTEMPT AT THIS WAS WRONG TWICE OVER and left a 1200 gap over
-# most of the map. It measured the plan BEFORE batch18 built its own rooms,
-# so the hexagon room was invisible; and it took one connected region above
-# 1280 - which spans nearly the whole map, because a single continuous run
-# of tall walls links everything - and gave the whole bounding box the
-# height of its tallest part. Most of that rectangle is roofed at 1400.
-#
-# Measured again with every box present, and split by height rather than by
-# connectivity:
-#
-#   above 1650   x -2200..2200   y -6600..-2300   top 1746.5   the S base
-#                x -1300..3200   y 14500..18700   top 1746.5   the N base
-#                x -1200..2100   y  4600.. 7600   top 2587.5   the hexagon
-#   above 1900   x -1200..2100   y  4600.. 7600   top 2587.5   only the hexagon
-#
-# So three rectangles, and everything outside them is roofed below 1650. The
-# hexagon rectangle sits inside nothing else, so it needs its own row rather
-# than being swallowed by a bigger one.
-#
-# ADD, EDIT AND DELETE THESE FREELY. A rectangle is x0, x1, y0, y1 and the
-# height its lid sits at; anything not inside one gets CAP_Z. The clearance
-# report at the end of every run says whether the result clears every
-# surface, so an exception that is too low shows up by name.
+# CAP_EXCEPTIONS is still there for anything you want to override by hand,
+# and a hand row always wins over a computed one.
 SKY_CAP = True
 CAP_CELL = 100.0           # sampling grid for the rectangle decomposition
-CAP_Z = 1720.0             # clears every roof outside the rectangles
+CAP_Z = 1280.0             # your reading off ceiling_80_68
 CAP_TOP_MARGIN = 200.0     # how far above the tallest lid the boxes reach
 # What the clearance report complains below. A hero is about 98 tall.
 CAP_MIN_HEAD = 150.0
+# How far a computed raise sits above the tallest thing under it.
+CAP_CLEAR = 160.0
+# A raised patch is grown by this many cells first, so a lid never ends
+# exactly flush with the wall edge it covers.
+CAP_GROW = 1
 MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 
+# HAND OVERRIDES, empty by default now that the raises are computed. A row
+# here wins over anything computed, so this is where to force a patch higher
+# than the geometry needs - or, with a height below 1280, lower.
 CAP_EXCEPTIONS = [
     # name, x0, x1, y0, y1, lid height
-    ("base_s", -2200.0, 2200.0, -6600.0, -2300.0, 1900.0),
-    ("base_n", -1300.0, 3200.0, 14500.0, 18700.0, 1900.0),
-    # Widened from -1200..2100 / 4600..7600: the room's own walls stick out
-    # past the footprint of its floor, and the flat lid was cutting 841 into
-    # hex3_wall_270. The clearance report named it.
-    ("hexagon", -1350.0, 2250.0, 4450.0, 7750.0, 2750.0),
-    # Rows below here are yours to add: a patch of map that can take a
-    # lower lid than 1720. For example, the sky bridge deck is roofed at
-    # 1280 over a wide area and would take a 1440 lid comfortably.
 ]
 
 NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
@@ -687,6 +661,7 @@ def build_skycap(boxes, log):
     ny = int((18900.0 - ys0) / S)
 
     geo = [[False] * ny for _ in range(nx)]
+    top = [[-9e9] * ny for _ in range(nx)]
     for b in boxes:
         if b["name"].startswith("skycap"):
             continue
@@ -699,16 +674,69 @@ def build_skycap(boxes, log):
         i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
         j0 = max(0, int((o[1] - hy - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
+        z = o[2] + e[2] / 2.0
         for i in range(i0, i1):
-            gi = geo[i]
+            gi, ti = geo[i], top[i]
             for j in range(j0, j1):
                 gi[j] = True
+                if z > ti[j]:
+                    ti[j] = z
 
-    # level per cell: CAP_Z, overridden by any exception covering it. Later
-    # exceptions win, and a taller one always wins over a shorter, so two
-    # overlapping rectangles cannot leave a hole between them.
-    lvl = [[CAP_Z if geo[i][j] else None for j in range(ny)]
-           for i in range(nx)]
+    # COMPUTED RAISES. Group the columns that poke through CAP_Z into
+    # connected regions and give each one a lid at its own tallest point
+    # plus CAP_CLEAR. Grown by CAP_GROW cells first so a lid never ends
+    # flush with the wall edge it covers.
+    # A column is raised when its roof is within CAP_MIN_HEAD of the lid,
+    # not only when it pokes through. Testing "above CAP_Z" left roofs at
+    # 1253.6 with 26 of headroom and one at 1280.3 being sliced by 0.3 - the
+    # clearance report caught all of them.
+    tall = [[top[i][j] > CAP_Z - CAP_MIN_HEAD for j in range(ny)]
+            for i in range(nx)]
+    for _ in range(CAP_GROW):
+        grown = [row[:] for row in tall]
+        for i in range(nx):
+            for j in range(ny):
+                if not tall[i][j]:
+                    continue
+                for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    u, v = i + di, j + dj
+                    if 0 <= u < nx and 0 <= v < ny and geo[u][v]:
+                        grown[u][v] = True
+        tall = grown
+
+    # THE RAISE IS PER COLUMN, NOT PER REGION. Grouping the tall columns
+    # into connected regions and giving each its own maximum put a 2750 lid
+    # over most of the map, because one continuous run of tall walls links
+    # the hexagon room to everything else. Each column instead takes its own
+    # roof plus CAP_CLEAR, maximised over its immediate neighbours so a lid
+    # never ends flush with the wall edge it covers.
+    #
+    # This cannot dip into playable space the way the old stepped cap did:
+    # the level is the MAXIMUM of CAP_Z and the local roof, so it is never
+    # below 1280 and never below the thing it covers.
+    raise_z = [[None] * ny for _ in range(nx)]
+    n_reg = 0
+    for i in range(nx):
+        for j in range(ny):
+            if not tall[i][j]:
+                continue
+            peak = -9e9
+            for di in range(-CAP_GROW, CAP_GROW + 1):
+                for dj in range(-CAP_GROW, CAP_GROW + 1):
+                    u, v = i + di, j + dj
+                    if 0 <= u < nx and 0 <= v < ny and top[u][v] > peak:
+                        peak = top[u][v]
+            raise_z[i][j] = math.ceil((peak + CAP_CLEAR) / 10.0) * 10.0
+            n_reg += 1
+
+    # level per cell: CAP_Z, raised where something pokes through, and a
+    # hand row in CAP_EXCEPTIONS overriding either.
+    lvl = [[None] * ny for _ in range(nx)]
+    for i in range(nx):
+        for j in range(ny):
+            if not geo[i][j]:
+                continue
+            lvl[i][j] = raise_z[i][j] if raise_z[i][j] is not None else CAP_Z
     for nm, x0, x1, y0, y1, z in CAP_EXCEPTIONS:
         i0 = max(0, int((x0 - xs0) / S))
         i1 = min(nx, int(math.ceil((x1 - xs0) / S)))
@@ -717,7 +745,7 @@ def build_skycap(boxes, log):
         for i in range(i0, i1):
             li = lvl[i]
             for j in range(j0, j1):
-                if li[j] is not None and z > li[j]:
+                if li[j] is not None:
                     li[j] = z
 
     levels = sorted({v for row in lvl for v in row if v is not None})
@@ -765,20 +793,27 @@ def build_skycap(boxes, log):
                 xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
                 float(v), top_z,
                 (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
-    log.append("sky cap: flat at %.0f with %d exception(s) %s, %d boxes up "
-               "to %.0f" % (CAP_Z, len(CAP_EXCEPTIONS),
-                            [e[0] for e in CAP_EXCEPTIONS], len(made), top_z))
+    log.append("sky cap: flat at %.0f, %d column(s) raised where geometry "
+               "pokes through, %d hand override(s), %d boxes up to %.0f"
+               % (CAP_Z, n_reg, len(CAP_EXCEPTIONS), len(made), top_z))
+    hi = sorted({v for row in lvl for v in row if v is not None})
+    log.append("   lid heights: %s" % [int(v) for v in hi][:14])
     return made
 
 
 def clearance_report(plan, log, problems):
     """Headroom over every surface in the plan, after the cap goes in.
 
-    THIS IS THE CHECK THAT REPLACES CROSSHAIRING: it measures the gap from
-    the top of every box to whatever the cap puts above it. Plain Python for
-    the same reason as above.
+    THIS IS THE CHECK THAT REPLACES CROSSHAIRING.
+
+    IT SAMPLES THE CELLS A BOX ACTUALLY COVERS, at the cap's own resolution.
+    An earlier version took one 200 u cell around the box's origin, which
+    straddles columns the box does not occupy - it reported four surfaces
+    sliced by up to 213 when the cap above them was 1680 and 1450, well
+    clear. A check that cries wolf is worse than no check, because the real
+    entries get lost among the false ones.
     """
-    S = 200.0
+    S = CAP_CELL
     xs0, ys0 = -5400.0, -6700.0
     nx = int((6300.0 - xs0) / S)
     ny = int((18900.0 - ys0) / S)
@@ -805,14 +840,24 @@ def clearance_report(plan, log, problems):
         if b["name"].startswith("skycap"):
             continue
         o, e = b["origin"], b["extents"]
+        a = math.radians(b["angles"][1])
+        c, s_ = abs(math.cos(a)), abs(math.sin(a))
+        hx = (e[0] * c + e[1] * s_) / 2.0
+        hy = (e[0] * s_ + e[1] * c) / 2.0
         t = o[2] + e[2] / 2.0
-        i = int((o[0] - xs0) / S)
-        j = int((o[1] - ys0) / S)
-        if not (0 <= i < nx and 0 <= j < ny):
+        i0 = max(0, int((o[0] - hx - xs0) / S))
+        i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
+        j0 = max(0, int((o[1] - hy - ys0) / S))
+        j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
+        worst = BIG
+        for i in range(i0, i1):
+            ci = capz[i]
+            for j in range(j0, j1):
+                if ci[j] < worst:
+                    worst = ci[j]
+        if worst >= BIG:
             continue
-        if capz[i][j] >= BIG:
-            continue
-        gap = capz[i][j] - t
+        gap = worst - t
         if gap < CAP_MIN_HEAD - 1.0:
             tight.append((gap, b["name"], round(o[0], 1), round(o[1], 1),
                           round(t, 1)))
@@ -824,7 +869,7 @@ def clearance_report(plan, log, problems):
                    "needs looking at by hand." % CAP_MIN_HEAD)
         return
     log.append("  %d surface(s) with less than %.0f of headroom, worst "
-               "first - each one wants an exception rectangle:"
+               "first - each one wants a row in CAP_EXCEPTIONS:"
                % (len(tight), CAP_MIN_HEAD))
     for gap, nm, x, y, t in tight[:25]:
         log.append("    %7.1f  %-28s at %9.1f %9.1f top %8.1f"
