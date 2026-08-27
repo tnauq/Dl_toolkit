@@ -211,66 +211,51 @@ NOTCHES = [
 # 60 degree line. The floor stays axis-aligned: it lives below 426.8 where
 # the wall starts, so it cannot poke out of anything.
 # ---------------------------------------------------------------------------
-# THE SKY CAP. Deadlock has flying heroes, so anything reachable has to be
-# sealed - not just the map's outer edge but the top of every roof, or people
-# stand on them.
+# THE SKY CAP. A FLAT LID plus a table of exceptions.
 #
-# STEPPED, AND MADE OF FILL BOXES. Each tile runs from its own level UP to a
-# single top, so a tall tile and a short one beside it simply share a face.
-# No skirts, which is what the first design needed and what made it 473
-# boxes plus hundreds more.
+# The stepped version followed the roofline automatically and dipped into
+# playable space doing it. No amount of tuning fixed that - reach, headroom
+# and step trade a tighter ceiling against a lower one, and the smoothing
+# that keeps a balcony clear is the same smoothing that drops a lid into a
+# courtyard. So the automatic version is gone.
 #
-# THE LEVEL FIELD IS SMOOTHED, and that is the balcony fix. Taking each
-# column's own roof height would put a ceiling REACH above a balcony's floor
-# while the plaza beside it stays open - a player standing on the balcony
-# bumps their head on nothing. So a column's level is the maximum over
-# everything within CAP_REACH of it, plus CAP_HEAD. Nothing is ever capped
-# lower than the tallest thing near it.
+# What is left is simple enough to predict by eye: one lid at CAP_Z over the
+# whole map, and a rectangle in CAP_EXCEPTIONS wherever that is too low.
+# Every piece is a FILL BOX running from its own height up to a common top,
+# so a raised rectangle and the flat lid beside it share a face and no
+# skirts are needed.
 #
-# A hero is about 98 tall and some are larger, so CAP_HEAD is three times
-# that. Level with a roofline is fine by design: standing on a roof is the
-# thing being prevented.
+# CAP_Z 1280 is your reading off ceiling_80_68.
 #
-# NOT MIRRORED and NOT symmetric. The level field is symmetric because the
-# map is, but the rectangle decomposition is greedy and does not have to
-# produce mirrored rectangles. The pieces are excluded from this file's
-# mirror check for that reason - the SHAPE is symmetric even where the box
-# boundaries are not.
+# THE THREE EXCEPTIONS BELOW ARE MEASURED, NOT CHOSEN: they are the only
+# places where geometry rises above 1280, found by sampling the whole map on
+# a 100 u grid and grouping the columns that do. Their bounds are the
+# bounding boxes of those groups, so they are conservative - a group's
+# rectangle covers everything, including the low ground between its tall
+# parts.
 #
-# VERIFY WITH THE CLEARANCE REPORT, printed at the end of this run. It walks
-# every standing surface in the plan and measures the gap to whatever is
-# above it. That is the check that answers "does this need crosshairing" -
-# if nothing is listed, nothing is.
+#   the middle of the map   x -4700..5600   y  -300..12500   top 1564.9
+#   the team-2 base         x -2200..2200   y -6600..-2300   top 1746.5
+#   the team-3 base         x -1300..3200   y 14500..18700   top 1746.5
+#
+# ADD, EDIT AND DELETE THESE FREELY. A rectangle is x0, x1, y0, y1 and the
+# height its lid sits at; anything not inside one gets CAP_Z. The clearance
+# report at the end of every run says whether the result clears every
+# surface, so an exception that is too low shows up by name.
 SKY_CAP = True
-# TIGHTENED 2026-08-27: 600/300/200 left the ceiling visibly far above the
-# roofs - measured, a median gap of 493 and 320 at its tightest. The three
-# numbers each add to that gap: reach picks the tallest roof nearby, headroom
-# is added on top, and the step rounds up again.
-#
-#   reach head step   boxes   min gap  median  p90
-#     600  300  200     192       320     493  1600
-#     300  150  100     303       154     220  1287
-#     200  150  100     408       154     220  1135
-#     200  120   50     459       122     162  1085
-#
-# 300/150/100 is the pick: it halves the median gap for 111 more boxes.
-# Tighter than that buys little - going to reach 200 costs another 105 boxes
-# and does not move the median at all, because at that point the gap is set
-# by headroom and step, not by reach.
-#
-# 150 of headroom over a 98 tall hero is deliberate and is the floor for
-# these numbers. Do not drop CAP_HEAD below about 120 without checking the
-# clearance report: it is what stops the cap sitting on someone's head.
-#
-# The p90 stays high whatever the settings - that is the hexagon room and
-# the two bases, which are genuinely tall and have open ground beside them.
-CAP_CELL = 100.0           # sampling grid
-CAP_REACH = 300.0          # a column inherits the tallest roof within this
-CAP_HEAD = 150.0           # clearance above that, ~3 hero heights
-CAP_STEP = 100.0           # levels are quantised to this
-CAP_TOP = 3000.0           # every tile runs up to here
-CAP_T = 26.7
+CAP_CELL = 100.0           # sampling grid for the rectangle decomposition
+CAP_Z = 1280.0             # the flat lid, your reading
+CAP_TOP_MARGIN = 200.0     # how far above the tallest lid the boxes reach
+# What the clearance report complains below. A hero is about 98 tall.
+CAP_MIN_HEAD = 150.0
 MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
+
+CAP_EXCEPTIONS = [
+    # name, x0, x1, y0, y1, lid height
+    ("mid", -4700.0, 5600.0, -300.0, 12500.0, 2900.0),
+    ("base_s", -2200.0, 2200.0, -6600.0, -2300.0, 1900.0),
+    ("base_n", -1300.0, 3200.0, 14500.0, 18700.0, 1900.0),
+]
 
 NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
 ANGLED_HALF = 313.4    # half of hex_wall_ne_l's 626.8 length
@@ -655,21 +640,18 @@ def build():
 
 
 def build_skycap(boxes, log):
-    """Stepped fill boxes over every roof.
+    """A flat lid at CAP_Z, raised inside each exception rectangle.
 
-    PLAIN PYTHON, NO NUMPY. The batch workflow installs nothing, and an
-    earlier version of this said so in its own docstring and then imported
-    numpy on the next line - which ran here and died in CI. Lists of floats
-    over a 117 x 256 grid are fast enough that the dependency bought nothing.
+    PLAIN PYTHON, NO NUMPY: the batch workflow installs nothing, and an
+    earlier version claimed as much in its docstring and then imported numpy
+    on the next line, which died in CI.
     """
     S = CAP_CELL
     xs0, ys0 = -5400.0, -6700.0
     nx = int((6300.0 - xs0) / S)
     ny = int((18900.0 - ys0) / S)
-    NEG = -9e9
-    top = [[NEG] * ny for _ in range(nx)]
-    geo = [[False] * ny for _ in range(nx)]
 
+    geo = [[False] * ny for _ in range(nx)]
     for b in boxes:
         if b["name"].startswith("skycap"):
             continue
@@ -682,68 +664,33 @@ def build_skycap(boxes, log):
         i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
         j0 = max(0, int((o[1] - hy - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
-        z = o[2] + e[2] / 2.0
         for i in range(i0, i1):
-            ti, gi = top[i], geo[i]
+            gi = geo[i]
             for j in range(j0, j1):
-                if z > ti[j]:
-                    ti[j] = z
                 gi[j] = True
 
-    # maximum filter, radius CAP_REACH, done as separable passes
-    r = int(round(CAP_REACH / S))
-    sm = [row[:] for row in top]
-    for _ in range(r):
-        for i in range(nx):
-            row = sm[i]
-            prev = row[0]
-            for j in range(1, ny):
-                cur = row[j]
-                if prev > cur:
-                    row[j] = prev
-                prev = cur
-            nxt = row[ny - 1]
-            for j in range(ny - 2, -1, -1):
-                cur = row[j]
-                if nxt > cur:
-                    row[j] = nxt
-                nxt = cur
-        for j in range(ny):
-            prev = sm[0][j]
-            for i in range(1, nx):
-                cur = sm[i][j]
-                if prev > cur:
-                    sm[i][j] = prev
-                prev = cur
-            nxt = sm[nx - 1][j]
-            for i in range(nx - 2, -1, -1):
-                cur = sm[i][j]
-                if nxt > cur:
-                    sm[i][j] = nxt
-                nxt = cur
+    # level per cell: CAP_Z, overridden by any exception covering it. Later
+    # exceptions win, and a taller one always wins over a shorter, so two
+    # overlapping rectangles cannot leave a hole between them.
+    lvl = [[CAP_Z if geo[i][j] else None for j in range(ny)]
+           for i in range(nx)]
+    for nm, x0, x1, y0, y1, z in CAP_EXCEPTIONS:
+        i0 = max(0, int((x0 - xs0) / S))
+        i1 = min(nx, int(math.ceil((x1 - xs0) / S)))
+        j0 = max(0, int((y0 - ys0) / S))
+        j1 = min(ny, int(math.ceil((y1 - ys0) / S)))
+        for i in range(i0, i1):
+            li = lvl[i]
+            for j in range(j0, j1):
+                if li[j] is not None and z > li[j]:
+                    li[j] = z
 
-    lvl = [[None] * ny for _ in range(nx)]
-    levels = set()
-    for i in range(nx):
-        for j in range(ny):
-            if not geo[i][j]:
-                continue
-            v = math.ceil((sm[i][j] + CAP_HEAD) / CAP_STEP) * CAP_STEP
-            lvl[i][j] = v
-            levels.add(v)
-    levels = sorted(levels)
-    # THE TOP FOLLOWS THE TALLEST LEVEL. Fixed at 3000 it collided with the
-    # 3000 level over the hexagon room and produced zero-height boxes, which
-    # batch14 rejects.
-    top_z = max(levels) + CAP_STEP if levels else CAP_TOP
+    levels = sorted({v for row in lvl for v in row if v is not None})
+    top_z = max(levels) + CAP_TOP_MARGIN if levels else CAP_Z + 200.0
 
     def decompose(mask):
-        """Greedy maximal rectangles, largest first.
-
-        SINGLE CELLS ARE KEPT. Dropping them left 21 columns uncapped -
-        isolated squares at the edge of a roof that no larger rectangle
-        could reach. A hole is a hole whatever its size.
-        """
+        """Greedy maximal rectangles, largest first. Single cells kept -
+        dropping them once left 21 isolated columns uncapped."""
         m = [row[:] for row in mask]
         out = []
         while True:
@@ -783,12 +730,9 @@ def build_skycap(boxes, log):
                 xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
                 float(v), top_z,
                 (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
-    log.append("sky cap: %d levels %s, %d fill boxes from their own level up "
-               "to %.0f" % (len(levels), [int(v) for v in levels],
-                            len(made), top_z))
-    log.append("   reach %.0f, headroom %.0f, step %.0f - a column is capped "
-               "at the tallest roof within reach, never its own"
-               % (CAP_REACH, CAP_HEAD, CAP_STEP))
+    log.append("sky cap: flat at %.0f with %d exception(s) %s, %d boxes up "
+               "to %.0f" % (CAP_Z, len(CAP_EXCEPTIONS),
+                            [e[0] for e in CAP_EXCEPTIONS], len(made), top_z))
     return made
 
 
@@ -834,7 +778,7 @@ def clearance_report(plan, log, problems):
         if capz[i][j] >= BIG:
             continue
         gap = capz[i][j] - t
-        if gap < CAP_HEAD - 1.0:
+        if gap < CAP_MIN_HEAD - 1.0:
             tight.append((gap, b["name"], round(o[0], 1), round(o[1], 1),
                           round(t, 1)))
     tight.sort()
@@ -842,10 +786,11 @@ def clearance_report(plan, log, problems):
     log.append("CLEARANCE over every surface in the plan, against the cap:")
     if not tight:
         log.append("  nothing has less than %.0f of headroom. No surface "
-                   "needs looking at by hand." % CAP_HEAD)
+                   "needs looking at by hand." % CAP_MIN_HEAD)
         return
-    log.append("  %d surface(s) with less than %.0f of headroom, worst first:"
-               % (len(tight), CAP_HEAD))
+    log.append("  %d surface(s) with less than %.0f of headroom, worst "
+               "first - each one wants an exception rectangle:"
+               % (len(tight), CAP_MIN_HEAD))
     for gap, nm, x, y, t in tight[:25]:
         log.append("    %7.1f  %-28s at %9.1f %9.1f top %8.1f"
                    % (gap, nm, x, y, t))
