@@ -249,6 +249,22 @@ ANGLED_DOORS = [
     ("shrine_door_e", "hex_wall_ne_l", (955.0, -2655.4), -60.0, 626.8, -193.4),
     ("shrine_door_w", "hex_wall_nw_r", (-955.0, -2655.4), 60.0, 626.8, 193.4),
 ]
+# WALLS THIS FILE ONCE ATE AND NO LONGER USES.
+#
+# An earlier version cut the shrine doors into hex_wall_n_l and hex_wall_n_r,
+# which meant removing them and rebuilding them as sill, jambs and header.
+# The doors then moved to the angled walls, so those pieces are no longer
+# made - but they are still in the committed plan carrying this file's mark,
+# so every run strips them and nothing puts the original walls back. The
+# result is four boxes short AND A HOLE IN THE BASE HEXAGON, which the count
+# check caught and the eye would have caught later.
+#
+# Restored, never cut. READ off the plan before they were consumed.
+ORPHANED_WALLS = [
+    ("hex_wall_n_l", (-513.4, -2400.4, 1067.0), (626.8, 26.7, 1280.4), 0.0),
+    ("hex_wall_n_r", (513.4, -2400.4, 1067.0), (626.8, 26.7, 1280.4), 0.0),
+]
+
 ANGLED_T = 26.7
 ANGLED_Z = (426.8, 1707.2)
 ANGLED_FLOOR = 426.8
@@ -481,6 +497,17 @@ def main():
         if made:
             log.append("reconstructed %s, missing from both the plan and "
                        "the stash" % ", ".join(made))
+
+    for nm, o, e, yaw in ORPHANED_WALLS:
+        if nm in have and PREFIX + nm in have:
+            continue
+        restore_pair({
+            "name": nm,
+            "origin": [o[0], o[1], o[2]],
+            "extents": [e[0], e[1], e[2]],
+            "angles": [0.0, yaw, 0.0],
+            "material": MAT_WALL,
+        })
 
     for spec in ROOMS:
         w = spec["wall"]
