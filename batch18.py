@@ -635,21 +635,21 @@ def build():
 def build_skycap(boxes, log):
     """Stepped fill boxes over every roof.
 
-    Pure numpy, no scipy: the batch workflow installs nothing, so the maximum
-    filter and the rectangle decomposition are written out by hand rather
-    than imported.
+    PLAIN PYTHON, NO NUMPY. The batch workflow installs nothing, and an
+    earlier version of this said so in its own docstring and then imported
+    numpy on the next line - which ran here and died in CI. Lists of floats
+    over a 117 x 256 grid are fast enough that the dependency bought nothing.
     """
-    import numpy as np
-
     S = CAP_CELL
-    xs0, xs1 = -5400.0, 6300.0
-    ys0, ys1 = -6700.0, 18900.0
-    nx = int((xs1 - xs0) / S)
-    ny = int((ys1 - ys0) / S)
-    top = np.full((nx, ny), -9e9)
-    geo = np.zeros((nx, ny), bool)
+    xs0, ys0 = -5400.0, -6700.0
+    nx = int((6300.0 - xs0) / S)
+    ny = int((18900.0 - ys0) / S)
+    NEG = -9e9
+    top = [[NEG] * ny for _ in range(nx)]
+    geo = [[False] * ny for _ in range(nx)]
+
     for b in boxes:
-        if b.get(MARK) and b["name"].startswith("skycap"):
+        if b["name"].startswith("skycap"):
             continue
         o, e = b["origin"], b["extents"]
         a = math.radians(b["angles"][1])
@@ -660,63 +660,102 @@ def build_skycap(boxes, log):
         i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
         j0 = max(0, int((o[1] - hy - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
-        if i1 <= i0 or j1 <= j0:
-            continue
-        np.maximum(top[i0:i1, j0:j1], o[2] + e[2] / 2.0,
-                   out=top[i0:i1, j0:j1])
-        geo[i0:i1, j0:j1] = True
+        z = o[2] + e[2] / 2.0
+        for i in range(i0, i1):
+            ti, gi = top[i], geo[i]
+            for j in range(j0, j1):
+                if z > ti[j]:
+                    ti[j] = z
+                gi[j] = True
 
-    # maximum filter by shifting, radius CAP_REACH
+    # maximum filter, radius CAP_REACH, done as separable passes
     r = int(round(CAP_REACH / S))
-    sm = top.copy()
+    sm = [row[:] for row in top]
     for _ in range(r):
-        sm[1:, :] = np.maximum(sm[1:, :], sm[:-1, :])
-        sm[:-1, :] = np.maximum(sm[:-1, :], sm[1:, :])
-        sm[:, 1:] = np.maximum(sm[:, 1:], sm[:, :-1])
-        sm[:, :-1] = np.maximum(sm[:, :-1], sm[:, 1:])
+        for i in range(nx):
+            row = sm[i]
+            prev = row[0]
+            for j in range(1, ny):
+                cur = row[j]
+                if prev > cur:
+                    row[j] = prev
+                prev = cur
+            nxt = row[ny - 1]
+            for j in range(ny - 2, -1, -1):
+                cur = row[j]
+                if nxt > cur:
+                    row[j] = nxt
+                nxt = cur
+        for j in range(ny):
+            prev = sm[0][j]
+            for i in range(1, nx):
+                cur = sm[i][j]
+                if prev > cur:
+                    sm[i][j] = prev
+                prev = cur
+            nxt = sm[nx - 1][j]
+            for i in range(nx - 2, -1, -1):
+                cur = sm[i][j]
+                if nxt > cur:
+                    sm[i][j] = nxt
+                nxt = cur
 
-    lvl = np.where(geo, np.ceil((sm + CAP_HEAD) / CAP_STEP) * CAP_STEP,
-                   np.nan)
+    lvl = [[None] * ny for _ in range(nx)]
+    levels = set()
+    for i in range(nx):
+        for j in range(ny):
+            if not geo[i][j]:
+                continue
+            v = math.ceil((sm[i][j] + CAP_HEAD) / CAP_STEP) * CAP_STEP
+            lvl[i][j] = v
+            levels.add(v)
+    levels = sorted(levels)
+    # THE TOP FOLLOWS THE TALLEST LEVEL. Fixed at 3000 it collided with the
+    # 3000 level over the hexagon room and produced zero-height boxes, which
+    # batch14 rejects.
+    top_z = max(levels) + CAP_STEP if levels else CAP_TOP
 
     def decompose(mask):
-        """Greedy maximal rectangles, largest first."""
-        m = mask.copy()
+        """Greedy maximal rectangles, largest first.
+
+        SINGLE CELLS ARE KEPT. Dropping them left 21 columns uncapped -
+        isolated squares at the edge of a roof that no larger rectangle
+        could reach. A hole is a hole whatever its size.
+        """
+        m = [row[:] for row in mask]
         out = []
-        while m.any():
-            best = (0, None)
-            h = np.zeros(m.shape[1], int)
-            for i in range(m.shape[0]):
-                h = np.where(m[i], h + 1, 0)
+        while True:
+            best_area, best = 0, None
+            h = [0] * ny
+            for i in range(nx):
+                mi = m[i]
+                for j in range(ny):
+                    h[j] = h[j] + 1 if mi[j] else 0
                 stack = []
-                for j in range(m.shape[1] + 1):
-                    cur = h[j] if j < m.shape[1] else 0
+                for j in range(ny + 1):
+                    cur = h[j] if j < ny else 0
                     start = j
                     while stack and stack[-1][1] >= cur:
                         sj, sh = stack.pop()
                         area = sh * (j - sj)
-                        if area > best[0]:
-                            best = (area, (i - sh + 1, i, sj, j - 1))
+                        if area > best_area:
+                            best_area = area
+                            best = (i - sh + 1, i, sj, j - 1)
                         start = sj
                     stack.append((start, cur))
-            area, rect = best
-            # SINGLE CELLS ARE KEPT. Dropping them left 21 columns uncapped -
-            # isolated 100 u squares at the edge of a roof that no rectangle
-            # of two or more cells could reach. A hole is a hole whatever its
-            # size, and a flyer is 98 tall, not 100 wide.
-            if area < 1:
-                break
-            out.append(rect)
-            m[rect[0]:rect[1] + 1, rect[2]:rect[3] + 1] = False
-        return out
+            if best_area < 1:
+                return out
+            out.append(best)
+            i0, i1, j0, j1 = best
+            for i in range(i0, i1 + 1):
+                mi = m[i]
+                for j in range(j0, j1 + 1):
+                    mi[j] = False
 
     made = []
-    levels = sorted({v for v in np.unique(lvl) if not np.isnan(v)})
-    # THE TOP FOLLOWS THE TALLEST LEVEL. Fixed at 3000 it collided with the
-    # 3000 level over the hexagon room and produced three zero-height boxes,
-    # which batch14 rejects.
-    top_z = max(levels) + CAP_STEP if levels else CAP_TOP
     for v in levels:
-        for k, (i0, i1, j0, j1) in enumerate(decompose(lvl == v)):
+        mask = [[lvl[i][j] == v for j in range(ny)] for i in range(nx)]
+        for k, (i0, i1, j0, j1) in enumerate(decompose(mask)):
             made.append(rotbox(
                 "skycap_%d_%d" % (int(v), k),
                 xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
@@ -732,34 +771,35 @@ def build_skycap(boxes, log):
 
 
 def clearance_report(plan, log, problems):
-    """Headroom over every standing surface, after the cap goes in.
+    """Headroom over every surface in the plan, after the cap goes in.
 
-    THIS IS THE CHECK THAT REPLACES CROSSHAIRING. It samples the top face of
-    every box in the plan and measures the gap to whatever is above it. A
-    surface with less than CAP_HEAD of room is listed with its coordinates
-    and the box it belongs to.
+    THIS IS THE CHECK THAT REPLACES CROSSHAIRING: it measures the gap from
+    the top of every box to whatever the cap puts above it. Plain Python for
+    the same reason as above.
     """
-    import numpy as np
-
     S = 200.0
     xs0, ys0 = -5400.0, -6700.0
-    tight = []
+    nx = int((6300.0 - xs0) / S)
+    ny = int((18900.0 - ys0) / S)
     caps = [b for b in plan["boxes"] if b["name"].startswith("skycap")]
     if not caps:
         return
-    # cap level per cell, for a fast lookup
-    nx = int((6300.0 - xs0) / S)
-    ny = int((18900.0 - ys0) / S)
-    capz = np.full((nx, ny), 9e9)
+    BIG = 9e9
+    capz = [[BIG] * ny for _ in range(nx)]
     for b in caps:
         o, e = b["origin"], b["extents"]
         i0 = max(0, int((o[0] - e[0] / 2 - xs0) / S))
         i1 = min(nx, int(math.ceil((o[0] + e[0] / 2 - xs0) / S)))
         j0 = max(0, int((o[1] - e[1] / 2 - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + e[1] / 2 - ys0) / S)))
-        np.minimum(capz[i0:i1, j0:j1], o[2] - e[2] / 2.0,
-                   out=capz[i0:i1, j0:j1])
+        z = o[2] - e[2] / 2.0
+        for i in range(i0, i1):
+            ci = capz[i]
+            for j in range(j0, j1):
+                if z < ci[j]:
+                    ci[j] = z
 
+    tight = []
     for b in plan["boxes"]:
         if b["name"].startswith("skycap"):
             continue
@@ -769,7 +809,9 @@ def clearance_report(plan, log, problems):
         j = int((o[1] - ys0) / S)
         if not (0 <= i < nx and 0 <= j < ny):
             continue
-        gap = capz[i, j] - t
+        if capz[i][j] >= BIG:
+            continue
+        gap = capz[i][j] - t
         if gap < CAP_HEAD - 1.0:
             tight.append((gap, b["name"], round(o[0], 1), round(o[1], 1),
                           round(t, 1)))
@@ -787,10 +829,7 @@ def clearance_report(plan, log, problems):
                    % (gap, nm, x, y, t))
     if len(tight) > 25:
         log.append("    ... and %d more" % (len(tight) - 25))
-    log.append("  A NEGATIVE gap means the cap is INSIDE that box. Anything")
-    log.append("  small and positive is a roof the cap sits just above,")
-    log.append("  which is the intent - check the named box before assuming")
-    log.append("  it is a fault.")
+    log.append("  A NEGATIVE gap means the cap is INSIDE that box.")
 
 
 def covers(b, x, y, z):
