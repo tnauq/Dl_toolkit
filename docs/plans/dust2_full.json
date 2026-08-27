@@ -85471,6 +85471,46 @@
    "_batch18": true
   },
   {
+   "name": "gapwall_562",
+   "origin": [
+    1600.2,
+    -577.9,
+    1173.5
+   ],
+   "extents": [
+    400.045,
+    26.7,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    -179.1406,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_gapwall_562",
+   "origin": [
+    -680.0,
+    12748.0,
+    1173.5
+   ],
+   "extents": [
+    400.045,
+    26.7,
+    213.0
+   ],
+   "angles": [
+    0.0,
+    0.8594,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
    "name": "skycap_1280_0",
    "origin": [
     -1350.0,
@@ -87153,13 +87193,13 @@
   {
    "name": "skycap_1280_84",
    "origin": [
-    1650.0,
-    -700.0,
+    1700.0,
+    -750.0,
     2115.0
    ],
    "extents": [
-    300.0,
     400.0,
+    300.0,
     1670.0
    ],
    "angles": [
@@ -87953,26 +87993,6 @@
   {
    "name": "skycap_1280_124",
    "origin": [
-    -650.0,
-    12750.0,
-    2115.0
-   ],
-   "extents": [
-    300.0,
-    100.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_125",
-   "origin": [
     450.0,
     3450.0,
     2115.0
@@ -87991,7 +88011,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_126",
+   "name": "skycap_1280_125",
    "origin": [
     1650.0,
     8050.0,
@@ -88011,27 +88031,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_127",
-   "origin": [
-    1850.0,
-    -750.0,
-    2115.0
-   ],
-   "extents": [
-    100.0,
-    300.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_128",
+   "name": "skycap_1280_126",
    "origin": [
     -4650.0,
     8200.0,
@@ -88051,7 +88051,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_129",
+   "name": "skycap_1280_127",
    "origin": [
     -3600.0,
     6550.0,
@@ -88071,7 +88071,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_130",
+   "name": "skycap_1280_128",
    "origin": [
     -3600.0,
     7050.0,
@@ -88091,7 +88091,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_131",
+   "name": "skycap_1280_129",
    "origin": [
     -2150.0,
     2100.0,
@@ -88111,7 +88111,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_132",
+   "name": "skycap_1280_130",
    "origin": [
     -1200.0,
     11150.0,
@@ -88131,7 +88131,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_133",
+   "name": "skycap_1280_131",
    "origin": [
     -550.0,
     8900.0,
@@ -88151,7 +88151,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_134",
+   "name": "skycap_1280_132",
    "origin": [
     600.0,
     12150.0,
@@ -88171,7 +88171,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_135",
+   "name": "skycap_1280_133",
    "origin": [
     1450.0,
     -700.0,
@@ -88191,7 +88191,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_136",
+   "name": "skycap_1280_134",
    "origin": [
     1450.0,
     3300.0,
@@ -88211,7 +88211,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_137",
+   "name": "skycap_1280_135",
    "origin": [
     1600.0,
     1050.0,
@@ -88231,7 +88231,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_138",
+   "name": "skycap_1280_136",
    "origin": [
     2100.0,
     -50.0,
@@ -88251,7 +88251,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_139",
+   "name": "skycap_1280_137",
    "origin": [
     2100.0,
     1050.0,
@@ -88271,7 +88271,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_140",
+   "name": "skycap_1280_138",
    "origin": [
     2200.0,
     13050.0,
@@ -88291,7 +88291,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_141",
+   "name": "skycap_1280_139",
    "origin": [
     3050.0,
     10100.0,
@@ -88311,7 +88311,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_142",
+   "name": "skycap_1280_140",
    "origin": [
     4450.0,
     10300.0,
@@ -88331,7 +88331,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_143",
+   "name": "skycap_1280_141",
    "origin": [
     5600.0,
     3950.0,
@@ -88351,7 +88351,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_144",
+   "name": "skycap_1280_142",
    "origin": [
     -4650.0,
     7650.0,
@@ -88371,7 +88371,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_145",
+   "name": "skycap_1280_143",
    "origin": [
     -3950.0,
     6550.0,
@@ -88391,7 +88391,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_146",
+   "name": "skycap_1280_144",
    "origin": [
     -3950.0,
     7050.0,
@@ -88411,7 +88411,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_147",
+   "name": "skycap_1280_145",
    "origin": [
     -1850.0,
     3650.0,
@@ -88431,7 +88431,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_148",
+   "name": "skycap_1280_146",
    "origin": [
     -950.0,
     12250.0,
@@ -88451,7 +88451,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_149",
+   "name": "skycap_1280_147",
    "origin": [
     -450.0,
     12850.0,
@@ -88471,7 +88471,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_150",
+   "name": "skycap_1280_148",
    "origin": [
     -350.0,
     350.0,
@@ -88491,7 +88491,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_151",
+   "name": "skycap_1280_149",
    "origin": [
     250.0,
     1550.0,
@@ -88511,7 +88511,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_152",
+   "name": "skycap_1280_150",
    "origin": [
     350.0,
     50.0,
@@ -88531,7 +88531,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_153",
+   "name": "skycap_1280_151",
    "origin": [
     350.0,
     1050.0,
@@ -88551,7 +88551,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_154",
+   "name": "skycap_1280_152",
    "origin": [
     1150.0,
     8050.0,
@@ -88571,7 +88571,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_155",
+   "name": "skycap_1280_153",
    "origin": [
     1250.0,
     11850.0,
@@ -88591,7 +88591,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_156",
+   "name": "skycap_1280_154",
    "origin": [
     1850.0,
     4050.0,
@@ -88611,7 +88611,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_157",
+   "name": "skycap_1280_155",
    "origin": [
     3250.0,
     3450.0,
@@ -88631,7 +88631,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_158",
+   "name": "skycap_1280_156",
    "origin": [
     4050.0,
     3550.0,
@@ -88651,7 +88651,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_159",
+   "name": "skycap_1280_157",
    "origin": [
     4050.0,
     5650.0,
@@ -88671,7 +88671,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_160",
+   "name": "skycap_1280_158",
    "origin": [
     4550.0,
     5650.0,
@@ -88691,7 +88691,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_161",
+   "name": "skycap_1280_159",
    "origin": [
     4850.0,
     5650.0,
@@ -88711,7 +88711,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_162",
+   "name": "skycap_1280_160",
    "origin": [
     5350.0,
     5650.0,
@@ -88731,7 +88731,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_163",
+   "name": "skycap_1280_161",
    "origin": [
     5550.0,
     4550.0,
