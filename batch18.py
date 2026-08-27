@@ -303,7 +303,18 @@ MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 #
 # name, name prefix, lid height, margin in cells
 CAP_EXCEPT_FOOTPRINT = [
-    ("hexagon", "hex3_", 2750.0, 0),
+    ("hexagon", "hex3_", 2750.0, 1),
+]
+
+# SHAFTS THE FLAT PLANE MUST NOT CLOSE. Everywhere else the 1280 plane goes
+# in wherever it is open, including under a raised lid. This is the midboss
+# hole through the hexagon room's floor, which has to stay open all the way
+# down to the bridge.
+# Thickness of a flat tile where it sits under a raised lid.
+CAP_T = 26.7
+
+CAP_SHAFTS = [
+    ("midboss_shaft", 326.8, 593.5, 5951.7, 6218.4),
 ]
 
 CAP_EXCEPTIONS = [
@@ -774,8 +785,10 @@ def build_skycap(boxes, log):
             if geo[i][j] and not solid[i][j]:
                 lvl[i][j] = CAP_Z
                 n_open += 1
+    ring = [[False] * ny for _ in range(nx)]     # footprint overshoot
     for nm, prefix, z, margin in CAP_EXCEPT_FOOTPRINT:
         hit = [[False] * ny for _ in range(nx)]
+        inner = [[False] * ny for _ in range(nx)]
         n_box = 0
         for b in boxes:
             if not b["name"].startswith(prefix):
@@ -794,12 +807,27 @@ def build_skycap(boxes, log):
                 hi = hit[i]
                 for j in range(j0, j1):
                     hi[j] = True
+            # the cells this box covers WHOLLY, which are the ones its floor
+            # can actually hold a lid up over
+            for i in range(max(0, int(math.ceil((o[0] - hx - xs0) / S))),
+                           min(nx, int((o[0] + hx - xs0) / S))):
+                ii = inner[i]
+                for j in range(max(0, int(math.ceil((o[1] - hy - ys0) / S))),
+                               min(ny, int((o[1] + hy - ys0) / S))):
+                    ii[j] = True
         n_cell = 0
         for i in range(nx):
             for j in range(ny):
                 if hit[i][j] and lvl[i][j] is not None:
                     lvl[i][j] = z
                     n_cell += 1
+                    if not inner[i][j]:
+                        # RAISED BUT UNSUPPORTED: the lid covers this cell
+                        # because the room touches it, but the room's floor
+                        # does not reach it. Without something at 1280 here
+                        # there is a hole right round the room, which is what
+                        # showed in the viewer.
+                        ring[i][j] = True
         log.append("   %s: raised to %.0f over the footprint of %d %s* "
                    "boxes, %d cells" % (nm, z, n_box, prefix, n_cell))
 
@@ -812,6 +840,47 @@ def build_skycap(boxes, log):
             for j in range(j0, j1):
                 if geo[i][j]:
                     lvl[i][j] = z
+
+    # A RAISED CELL KEEPS ITS FLAT TILE AS WELL.
+    #
+    # The raise has to cover every cell the room TOUCHES, or the 1280 plane
+    # slices the room's own walls where they sit on the boundary. But
+    # covering them means the raise overshoots the floor that supports it,
+    # and the ring around the room had a 2750 lid with nothing under it - a
+    # hole all the way round, which is what showed in the viewer.
+    #
+    # Both lids, then: the flat plane still goes in wherever it is open,
+    # under the raised one. The only place that must NOT happen is a shaft
+    # that is meant to be open - the midboss hole through the hexagon floor.
+    # THIN WHERE SOMETHING IS RAISED ABOVE IT. Every other lid in this file
+    # is a FILL box running up to a common top, which is what makes
+    # neighbours share faces. A fill box under the hexagon room would fill
+    # the room - 1280 straight up through 2560 of interior. So under a raise
+    # the flat plane is a slab CAP_T thick and nothing more; the room's own
+    # walls seal the space between it and the raised lid.
+    flat_fill = [[False] * ny for _ in range(nx)]
+    flat_thin = [[False] * ny for _ in range(nx)]
+    for i in range(nx):
+        for j in range(ny):
+            if not geo[i][j] or solid[i][j]:
+                continue
+            if ring[i][j]:
+                # a thin slab, only in the overshoot ring. A FILL box here
+                # would fill the room above it, and a thin one anywhere else
+                # under a raise would slice the base interiors at 1280.
+                flat_thin[i][j] = True
+            elif lvl[i][j] is None or lvl[i][j] <= CAP_Z + 0.01:
+                flat_fill[i][j] = True
+    for nm, x0, x1, y0, y1 in CAP_SHAFTS:
+        # inner cells: a shaft must not be narrowed by a tile clipping it
+        i0 = max(0, int(math.ceil((x0 - xs0) / S)))
+        i1 = min(nx, int((x1 - xs0) / S))
+        j0 = max(0, int(math.ceil((y0 - ys0) / S)))
+        j1 = min(ny, int((y1 - ys0) / S))
+        for i in range(max(0, i0 - 1), min(nx, i1 + 1)):
+            for j in range(max(0, j0 - 1), min(ny, j1 + 1)):
+                flat_fill[i][j] = False
+                flat_thin[i][j] = False
 
     levels = sorted({v for row in lvl for v in row if v is not None})
     top_z = max(levels) + CAP_TOP_MARGIN if levels else CAP_Z + 200.0
@@ -850,7 +919,21 @@ def build_skycap(boxes, log):
                     mi[j] = False
 
     made = []
+    for k, (i0, i1, j0, j1) in enumerate(decompose(flat_fill)):
+        made.append(rotbox(
+            "skycap_%d_%d" % (int(CAP_Z), k),
+            xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
+            CAP_Z, top_z,
+            (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
+    for k, (i0, i1, j0, j1) in enumerate(decompose(flat_thin)):
+        made.append(rotbox(
+            "skycap_thin_%d" % k,
+            xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
+            CAP_Z, CAP_Z + CAP_T,
+            (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
     for v in levels:
+        if abs(v - CAP_Z) < 0.01:
+            continue                      # the flat plane, done above
         mask = [[lvl[i][j] == v for j in range(ny)] for i in range(nx)]
         for k, (i0, i1, j0, j1) in enumerate(decompose(mask)):
             made.append(rotbox(
@@ -889,19 +972,22 @@ def clearance_report(plan, log, problems):
     if not caps:
         return
     BIG = 9e9
-    capz = [[BIG] * ny for _ in range(nx)]
+    # PER CELL, EVERY CAP TILE OVER IT, not just the lowest. There are two
+    # lids stacked in places now - a thin slab at 1280 under a raised one -
+    # and a check that only remembers the lowest reports the thin slab as
+    # cutting the room above it, which it does not.
+    cells = [[[] for _ in range(ny)] for _ in range(nx)]
     for b in caps:
         o, e = b["origin"], b["extents"]
         i0 = max(0, int((o[0] - e[0] / 2 - xs0) / S))
         i1 = min(nx, int(math.ceil((o[0] + e[0] / 2 - xs0) / S)))
         j0 = max(0, int((o[1] - e[1] / 2 - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + e[1] / 2 - ys0) / S)))
-        z = o[2] - e[2] / 2.0
+        z0, z1 = o[2] - e[2] / 2.0, o[2] + e[2] / 2.0
         for i in range(i0, i1):
-            ci = capz[i]
+            ci = cells[i]
             for j in range(j0, j1):
-                if z < ci[j]:
-                    ci[j] = z
+                ci[j].append((z0, z1))
 
     tight = []
     for b in plan["boxes"]:
@@ -913,16 +999,28 @@ def clearance_report(plan, log, problems):
         hx = (e[0] * c + e[1] * s_) / 2.0
         hy = (e[0] * s_ + e[1] * c) / 2.0
         t = o[2] + e[2] / 2.0
+        bot = o[2] - e[2] / 2.0
         i0 = max(0, int((o[0] - hx - xs0) / S))
         i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
         j0 = max(0, int((o[1] - hy - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
         worst = BIG
         for i in range(i0, i1):
-            ci = capz[i]
+            ci = cells[i]
             for j in range(j0, j1):
-                if ci[j] < worst:
-                    worst = ci[j]
+                for z0, z1 in ci[j]:
+                    if z1 <= bot + 0.01:
+                        continue          # entirely below this box
+                    if z1 - z0 <= CAP_T + 1.0:
+                        # A THIN RING SLAB. It sits at 1280 in the overshoot
+                        # ring around a raised room and deliberately overlaps
+                        # that room's floor edge by 27 - two solids in the
+                        # same place, which is what closes the hole. Counting
+                        # it as a cut buried the real entries under 18 of
+                        # these.
+                        continue
+                    if z0 < worst:
+                        worst = z0
         if worst >= BIG:
             continue
         gap = worst - t
