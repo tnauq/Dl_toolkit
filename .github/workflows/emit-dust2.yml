@@ -102,20 +102,20 @@ env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
   EXPECT_BOXES: 4451
-  EXPECT_ENTS: 349
+  EXPECT_ENTS: 351
   # 4451 boxes + 33 brush entities, each carrying an inline child mesh.
   EXPECT_MAPMESH: 4484
   EXPECT_POLYMESH: 4484
-  EXPECT_ENTITY: 349
+  EXPECT_ENTITY: 351
   EXPECT_PATH: 15
   EXPECT_PATHNODE: 236
   EXPECT_DATAARRAY: 17936      # 4 x 4484
   EXPECT_STREAM: 49324         # 11 x 4484
   EXPECT_SUBDIV: 4484
-  # 600 nodes plus the world's own.
-  EXPECT_CLASSPROPS: 601
-  EXPECT_PLUGLIST: 601
-  EXPECT_ELEMENTS: 82576
+  # 602 nodes plus the world's own.
+  EXPECT_CLASSPROPS: 603
+  EXPECT_PLUGLIST: 603
+  EXPECT_ELEMENTS: 82582
   # ENTITY IO, batch15. Unchanged: nothing since has written a connection,
   # and the midboss lid deliberately does not - see PROBE.md item 5.
   EXPECT_CONN: 56

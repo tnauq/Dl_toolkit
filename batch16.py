@@ -358,6 +358,58 @@ PATRON = ("patron", [-17.8, -3810.9, 533.0], "hex_dais_0")
 # dl_example's own team-3 proxy does.
 PROXY_LANES = ["1", "3", "6"]
 
+# ---------------------------------------------------------------------------
+# THE SKY AND THE SUN. READ off dl_example, which carries exactly one of each
+# and wires them together: light_environment.skytexture names the env_sky's
+# targetname, so the pair has to be authored as one thing.
+#
+# NEITHER IS A CEILING. env_sky is a point entity, not a lid - it does not cap
+# the map and its elevation does not matter, which is why the roofline varying
+# from 797.9 (median) to 2587.5 (the hexagon room's roof) is not a problem for
+# it. What a varying roofline WOULD complicate is capping the map with
+# sky-textured geometry, and nothing here does that. See the note in the
+# handoff about whether the map wants a lid at all.
+#
+# Placed at the map centre and NOT twinned: one sky for both halves.
+#
+# The fixture's light_environment carries about forty keyvalues - cascades,
+# shadow resolutions, occlusion tuning. Only the handful that were READ go in
+# here; the rest are left for the compiler to default. That may look wrong
+# without being broken, and is the first thing to tune if the map compiles
+# dark or flat.
+SKY_NAME = "sky_entity"
+SKY = [
+    {
+        "name": "sky_entity",
+        "classname": "env_sky",
+        "origin": [X_PLANE, Y_PLANE, 2800.0],
+        "properties": {
+            "targetname": SKY_NAME,
+            "skyname": "materials/skybox/light_test_psa_low_moon.vmat",
+            "tint_color": "203 215 226",
+            "StartDisabled": "0",
+            "vscripts": "",
+        },
+    },
+    {
+        "name": "sun",
+        "classname": "light_environment",
+        "origin": [X_PLANE, Y_PLANE, 2800.0],
+        # angles are INVENTED: nothing was read for the sun's direction, and
+        # this is a plain overhead-ish angle rather than anything considered.
+        "angles": [-60.0, 45.0, 0.0],
+        "properties": {
+            "targetname": "",
+            "skytexture": SKY_NAME,      # names the env_sky above
+            "color": "228 184 134",
+            "brightness": "6",
+            "enabled": "1",
+            "castshadows": "1",
+            "vscripts": "",
+        },
+    },
+]
+
 # Landing markers for the pads above. A point, not a volume, and the name
 # must match the pad's `target` exactly - that string is the whole wiring.
 LANDINGS = [
@@ -756,6 +808,19 @@ def main():
     # it and is findable in the viewer; nothing depends on where it is.
     new += make_objective("final_objective_proxy", origin,
                           "citadel_final_objective_proxy", proxy)
+
+    for spec in SKY:
+        e = {
+            "name": spec["name"],
+            "classname": spec["classname"],
+            "origin": [round(v, 4) for v in spec["origin"]],
+            "angles": list(spec.get("angles", [0.0, 0.0, 0.0])),
+            "properties": dict(spec["properties"]),
+            MARK: True,
+        }
+        new.append(e)          # one sky for the whole map, never twinned
+        log.append("%-16s %-24s at %.1f, %.1f, %.1f"
+                   % (spec["name"], spec["classname"], *spec["origin"]))
 
     for name, origin, note in LANDINGS:
         new += make_point(name, origin, "info_target_server_only",
