@@ -101,21 +101,21 @@ on: workflow_dispatch
 env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
-  EXPECT_BOXES: 4669
+  EXPECT_BOXES: 4702
   EXPECT_ENTS: 391
-  # 4669 boxes + 33 brush entities, each carrying an inline child mesh.
-  EXPECT_MAPMESH: 4702
-  EXPECT_POLYMESH: 4702
+  # 4702 boxes + 33 brush entities, each carrying an inline child mesh.
+  EXPECT_MAPMESH: 4735
+  EXPECT_POLYMESH: 4735
   EXPECT_ENTITY: 391
   EXPECT_PATH: 15
   EXPECT_PATHNODE: 236
-  EXPECT_DATAARRAY: 18808      # 4 x 4702
-  EXPECT_STREAM: 51722         # 11 x 4702
-  EXPECT_SUBDIV: 4702
+  EXPECT_DATAARRAY: 18940      # 4 x 4735
+  EXPECT_STREAM: 52085         # 11 x 4735
+  EXPECT_SUBDIV: 4735
   # 642 nodes plus the world's own, 40 of them the spelling probe.
   EXPECT_CLASSPROPS: 643
   EXPECT_PLUGLIST: 643
-  EXPECT_ELEMENTS: 86626
+  EXPECT_ELEMENTS: 87220
   # ENTITY IO, batch15. Unchanged: nothing since has written a connection,
   # and the midboss lid deliberately does not - see PROBE.md item 5.
   EXPECT_CONN: 56

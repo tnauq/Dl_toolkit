@@ -296,9 +296,21 @@ MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 
 # ROOMS THAT LIVE ABOVE THE PLANE, and anything else you want lidded at a
 # different height. A row here replaces the 1280 plane across its rectangle.
+# EXCEPTIONS THAT FOLLOW A ROOM'S OWN FOOTPRINT rather than a rectangle
+# around it. The cells raised are the ones the named boxes actually cover,
+# grown by MARGIN cells, so the lid hugs the exterior walls and the corners
+# outside them stay at CAP_Z.
+#
+# name, name prefix, lid height, margin in cells
+CAP_EXCEPT_FOOTPRINT = [
+    ("hexagon", "hex3_", 2750.0, 0),
+]
+
 CAP_EXCEPTIONS = [
     # name, x0, x1, y0, y1, lid height
-    ("hexagon", -1350.0, 2250.0, 4450.0, 7750.0, 2750.0),
+    # The hexagon room is handled by CAP_EXCEPT_FOOTPRINT below instead: a
+    # rectangle over a hexagon raises its four corners to 2750 as well, and
+    # those corners are open sky that wants 1280.
     # The bases, for the same reason: their arch heads (the *_hxpar* pieces)
     # START above 1280, so the plane passes underneath and slices them. The
     # clearance report named 122 of them.
@@ -762,6 +774,35 @@ def build_skycap(boxes, log):
             if geo[i][j] and not solid[i][j]:
                 lvl[i][j] = CAP_Z
                 n_open += 1
+    for nm, prefix, z, margin in CAP_EXCEPT_FOOTPRINT:
+        hit = [[False] * ny for _ in range(nx)]
+        n_box = 0
+        for b in boxes:
+            if not b["name"].startswith(prefix):
+                continue
+            n_box += 1
+            o, e = b["origin"], b["extents"]
+            a = math.radians(b["angles"][1])
+            c, s_ = abs(math.cos(a)), abs(math.sin(a))
+            hx = (e[0] * c + e[1] * s_) / 2.0
+            hy = (e[0] * s_ + e[1] * c) / 2.0
+            i0 = max(0, int((o[0] - hx - xs0) / S) - margin)
+            i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)) + margin)
+            j0 = max(0, int((o[1] - hy - ys0) / S) - margin)
+            j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)) + margin)
+            for i in range(i0, i1):
+                hi = hit[i]
+                for j in range(j0, j1):
+                    hi[j] = True
+        n_cell = 0
+        for i in range(nx):
+            for j in range(ny):
+                if hit[i][j] and lvl[i][j] is not None:
+                    lvl[i][j] = z
+                    n_cell += 1
+        log.append("   %s: raised to %.0f over the footprint of %d %s* "
+                   "boxes, %d cells" % (nm, z, n_box, prefix, n_cell))
+
     for nm, x0, x1, y0, y1, z in CAP_EXCEPTIONS:
         i0 = max(0, int((x0 - xs0) / S))
         i1 = min(nx, int(math.ceil((x1 - xs0) / S)))
