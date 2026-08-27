@@ -423,6 +423,45 @@ def main():
         log.append("restored %d wall(s) the last run cut up: %s"
                    % (len(back), ", ".join(sorted(b["name"] for b in back))))
     removed = []
+
+    # RECONSTRUCT ANY ORIGINAL THAT IS NEITHER IN THE PLAN NOR IN THE STASH.
+    # axis_451 and axis_571 were eaten by a version of this file that had no
+    # stash, so they are gone from the committed plan for good. Without this
+    # the run removes two fewer walls than a run against a pristine plan and
+    # lands four boxes low - 4459 against 4463, which is what CI caught.
+    #
+    # Rebuilt from the extents this file already carries for them, so the
+    # arithmetic is the same whatever state the plan starts in. They are
+    # removed again immediately below; this exists only to make the count
+    # independent of history.
+    have = {b["name"] for b in boxes}
+    for spec in ROOMS:
+        w = spec["wall"]
+        if w in have:
+            continue
+        q = box(w, spec["wall_x0"], spec["wall_x1"],
+                spec["wall_y0"], spec["wall_y1"],
+                spec["wall_z0"], spec["wall_z1"])
+        if q:
+            q.pop(MARK, None)
+            boxes += [q, twin_box(q)]
+            log.append("reconstructed %s, missing from both the plan and the "
+                       "stash" % w)
+    for name, wall, origin, yaw, length, uc in ANGLED_DOORS:
+        if wall in have:
+            continue
+        q = {
+            "name": wall,
+            "origin": [origin[0], origin[1],
+                       round((ANGLED_Z[0] + ANGLED_Z[1]) / 2.0, 4)],
+            "extents": [length, ANGLED_T,
+                        round(ANGLED_Z[1] - ANGLED_Z[0], 4)],
+            "angles": [0.0, yaw, 0.0],
+            "material": MAT_WALL,
+        }
+        boxes += [q, twin_box(q)]
+        log.append("reconstructed %s, missing from both the plan and the "
+                   "stash" % wall)
     log.append("stripped %d boxes from a previous batch17 run"
                % (start - len(boxes)))
 
