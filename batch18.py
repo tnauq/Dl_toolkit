@@ -200,10 +200,19 @@ SHRINE_BASEWALL = [(-826.8, -200.0), (200.0, 826.8)]
 # floor may overlap into the base without touching it. Same trick the south
 # wall already uses.
 NOTCHES = [
-    # tag, x0, x1, y_far  (y_near is the room's south face)
-    ("notch_e", 826.8, 1200.0, -2570.0),
-    ("notch_w", -1200.0, -826.8, -2570.0),
+    # tag, x0, x1, y_far, wall origin, wall yaw  (y_near is the room's south
+    # face). The wall is the notch's diagonal side.
+    ("notch_e", 826.8, 1200.0, -2570.0, (955.0, -2655.4), -60.0),
+    ("notch_w", -1200.0, -826.8, -2570.0, (-955.0, -2655.4), 60.0),
 ]
+# The ceiling and far wall are ROTATED to the wall's angle and set flush on
+# its outer face. Axis-aligned ones stuck out past the wall by up to 78 u at
+# the far end, which was visible in the viewer - a rectangle cannot follow a
+# 60 degree line. The floor stays axis-aligned: it lives below 426.8 where
+# the wall starts, so it cannot poke out of anything.
+NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
+ANGLED_HALF = 313.4    # half of hex_wall_ne_l's 626.8 length
+ANGLED_T = 26.7        # its thickness, same as batch17 uses
 
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
@@ -728,30 +737,34 @@ def main():
         new += shrine_pieces
 
         # the corner notches
-        for ntag, nx0, nx1, ny in NOTCHES:
+        for ntag, nx0, nx1, ny, worg, wyaw in NOTCHES:
             top = SHRINE_FLOOR + SHRINE_H
+            aw = math.radians(wyaw)
+            ux, uy = math.cos(aw), math.sin(aw)
+            nxv, nyv = -math.sin(aw), math.cos(aw)   # outward from the wall
             Q = []
+            # floor: axis-aligned, and free to overlap the base because it
+            # sits below the wall.
             Q.append(rotbox("%s_floor" % ntag, (nx0 + nx1) / 2.0,
                             (ny + SHRINE_Y0) / 2.0,
                             SHRINE_FLOOR - FLOOR_T, SHRINE_FLOOR,
                             nx1 - nx0, SHRINE_Y0 - ny, 0.0, MAT_FLOOR))
-            Q.append(rotbox("%s_ceil" % ntag, (nx0 + nx1) / 2.0,
-                            (ny + SHRINE_Y0) / 2.0, top, top + CEIL_T,
-                            nx1 - nx0, SHRINE_Y0 - ny, 0.0, MAT_WALL))
+            # ceiling and far wall: flush on the wall, so their inner face
+            # lies exactly on its outer face.
+            half = ANGLED_HALF
+            cx = worg[0] + nxv * (ANGLED_T / 2.0 + NOTCH_BAND / 2.0)
+            cy = worg[1] + nyv * (ANGLED_T / 2.0 + NOTCH_BAND / 2.0)
+            Q.append(rotbox("%s_ceil" % ntag, cx, cy, top, top + CEIL_T,
+                            2.0 * half, NOTCH_BAND, wyaw, MAT_WALL))
             # the outboard wall, continuing the room's own side wall down
             wx = nx1 + SHRINE_T / 2.0 if nx1 > 0 else nx0 - SHRINE_T / 2.0
             Q.append(rotbox("%s_wall_out" % ntag, wx,
                             (ny + SHRINE_Y0) / 2.0, SHRINE_FLOOR, top,
                             SHRINE_T, SHRINE_Y0 - ny, 0.0, MAT_WALL))
-            # and the far end
-            Q.append(rotbox("%s_wall_far" % ntag, (nx0 + nx1) / 2.0,
-                            ny - SHRINE_T / 2.0, SHRINE_FLOOR, top,
-                            nx1 - nx0 + 2 * SHRINE_T, SHRINE_T, 0.0,
-                            MAT_WALL))
             Q += [twin_box(q) for q in Q]
             new += Q
             log.append("%s: x %.1f..%.1f, y %.1f..%.1f - the room's corner "
-                       "extended to the angled wall, door opens into it"
+                       "extended to the angled wall; ceiling flush on it"
                        % (ntag, nx0, nx1, ny, SHRINE_Y0))
 
     new += cut_ceiling(by, log)
