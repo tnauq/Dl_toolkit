@@ -409,6 +409,20 @@ def main():
     start = len(boxes)
     boxes = [b for b in boxes if not b.get(MARK)]
     rebuilt = start != len(boxes)
+
+    # PUT BACK THE WALLS THIS FILE EATS. It removes each arch wall and
+    # rebuilds it as sill, jambs and header. On a rerun those originals are
+    # already gone, so nothing gets removed the second time and the box count
+    # lands higher than the first run - which is exactly what CI caught,
+    # 4467 against 4463. batch18 already worked this way; batch17 did not.
+    stash = plan.pop("_batch17_removed", [])
+    if stash:
+        have = {b["name"] for b in boxes}
+        back = [b for b in stash if b["name"] not in have]
+        boxes += back
+        log.append("restored %d wall(s) the last run cut up: %s"
+                   % (len(back), ", ".join(sorted(b["name"] for b in back))))
+    removed = []
     log.append("stripped %d boxes from a previous batch17 run"
                % (start - len(boxes)))
 
@@ -432,6 +446,7 @@ def main():
     new, teles, volumes = [], [], []
     for spec in ROOMS:
         w = spec["wall"]
+        removed += [b for b in boxes if b["name"] in (w, PREFIX + w)]
         boxes = [b for b in boxes if b["name"] not in (w, PREFIX + w)]
         made, tele, vol = build_room(spec, src, log, problems)
         new += made
@@ -443,12 +458,14 @@ def main():
         if wall not in by and not rebuilt:
             print("::error::batch17: %s is missing" % wall)
             sys.exit(1)
+        removed += [b for b in boxes if b["name"] in (wall, PREFIX + wall)]
         boxes = [b for b in boxes if b["name"] not in (wall, PREFIX + wall)]
         new += angled_door(name, wall, origin, yaw, length, uc, src, log)
 
     boxes.extend(new)
     boxes.extend([twin_box(b) for b in new])
     plan["boxes"] = boxes
+    plan["_batch17_removed"] = [json.loads(json.dumps(b)) for b in removed]
 
     # What already stands inside a room. Overlapping solids are harmless to
     # the converter, but a column through the middle of a room is a decision,
