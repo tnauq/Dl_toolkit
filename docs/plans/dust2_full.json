@@ -4880,12 +4880,12 @@
    "origin": [
     1933.7,
     -400.1,
-    640.2
+    746.7
    ],
    "extents": [
     26.7,
     853.5,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -4956,12 +4956,12 @@
    "origin": [
     320.1,
     506.8,
-    1040.3
+    1146.825
    ],
    "extents": [
     213.4,
     800.2,
-    53.3
+    266.35
    ],
    "angles": [
     0.0,
@@ -5165,12 +5165,12 @@
    "origin": [
     -800.1,
     -813.5,
-    640.2
+    746.7
    ],
    "extents": [
     1200.2,
     26.7,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -6064,12 +6064,12 @@
    "origin": [
     -1960.4,
     440.8,
-    640.2
+    746.7
    ],
    "extents": [
     80.0,
     1735.2,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -6255,12 +6255,12 @@
    "origin": [
     1340.2,
     -573.4,
-    640.2
+    746.7
    ],
    "extents": [
     120.0,
     26.7,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -6274,12 +6274,12 @@
    "origin": [
     1186.9,
     -726.3,
-    640.2
+    746.7
    ],
    "extents": [
     26.7,
     147.8,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -6293,12 +6293,12 @@
    "origin": [
     1226.9,
     -626.8,
-    640.2
+    746.7
    ],
    "extents": [
     106.7,
     133.4,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -19923,12 +19923,12 @@
    "origin": [
     960.3,
     560.1,
-    1053.7
+    1160.175
    ],
    "extents": [
     1013.5,
     1067.0,
-    26.7
+    239.65
    ],
    "angles": [
     0.0,
@@ -22260,12 +22260,12 @@
    "origin": [
     800.1,
     -813.5,
-    640.2
+    746.7
    ],
    "extents": [
     1200.2,
     26.8,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -22640,12 +22640,12 @@
    "origin": [
     1860.3,
     -573.4,
-    640.2
+    746.7
    ],
    "extents": [
     120.0,
     26.8,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -38156,12 +38156,12 @@
    "origin": [
     -1013.5,
     12570.2,
-    640.2
+    746.7
    ],
    "extents": [
     26.7,
     853.5,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -38232,12 +38232,12 @@
    "origin": [
     600.1,
     11663.3,
-    1040.3
+    1146.825
    ],
    "extents": [
     213.4,
     800.2,
-    53.3
+    266.35
    ],
    "angles": [
     0.0,
@@ -38441,12 +38441,12 @@
    "origin": [
     1720.3,
     12983.6,
-    640.2
+    746.7
    ],
    "extents": [
     1200.2,
     26.7,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -39340,12 +39340,12 @@
    "origin": [
     2880.6,
     11729.3,
-    640.2
+    746.7
    ],
    "extents": [
     80.0,
     1735.2,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -39531,12 +39531,12 @@
    "origin": [
     -420.0,
     12743.5,
-    640.2
+    746.7
    ],
    "extents": [
     120.0,
     26.7,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -39550,12 +39550,12 @@
    "origin": [
     -266.7,
     12896.4,
-    640.2
+    746.7
    ],
    "extents": [
     26.7,
     147.8,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -39569,12 +39569,12 @@
    "origin": [
     -306.7,
     12796.9,
-    640.2
+    746.7
    ],
    "extents": [
     106.7,
     133.4,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -53199,12 +53199,12 @@
    "origin": [
     -40.1,
     11610.0,
-    1053.7
+    1160.175
    ],
    "extents": [
     1013.5,
     1067.0,
-    26.7
+    239.65
    ],
    "angles": [
     0.0,
@@ -55536,12 +55536,12 @@
    "origin": [
     120.1,
     12983.6,
-    640.2
+    746.7
    ],
    "extents": [
     1200.2,
     26.8,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -55916,12 +55916,12 @@
    "origin": [
     -940.1,
     12743.5,
-    640.2
+    746.7
    ],
    "extents": [
     120.0,
     26.8,
-    853.6
+    1066.6
    ],
    "angles": [
     0.0,
@@ -80135,12 +80135,12 @@
    "origin": [
     2107.1,
     13.3,
-    825.7494
+    932.2494
    ],
    "extents": [
     320.2,
     26.6,
-    482.5012
+    695.5012
    ],
    "angles": [
     0.0,
@@ -81835,12 +81835,12 @@
    "origin": [
     -1186.9,
     12156.8,
-    825.7494
+    932.2494
    ],
    "extents": [
     320.2,
     26.6,
-    482.5012
+    695.5012
    ],
    "angles": [
     0.0,
@@ -85353,13 +85353,13 @@
   {
    "name": "skycap_1280_0",
    "origin": [
-    -1450.0,
-    650.0,
+    -1350.0,
+    700.0,
     2115.0
    ],
    "extents": [
-    1300.0,
-    3100.0,
+    1100.0,
+    3000.0,
     1670.0
    ],
    "angles": [
@@ -85373,13 +85373,13 @@
   {
    "name": "skycap_1280_1",
    "origin": [
-    2350.0,
-    11500.0,
+    2250.0,
+    11450.0,
     2115.0
    ],
    "extents": [
-    1300.0,
-    3000.0,
+    1100.0,
+    2900.0,
     1670.0
    ],
    "angles": [
@@ -85392,46 +85392,6 @@
   },
   {
    "name": "skycap_1280_2",
-   "origin": [
-    1250.0,
-    50.0,
-    2115.0
-   ],
-   "extents": [
-    1900.0,
-    1900.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_3",
-   "origin": [
-    -300.0,
-    12100.0,
-    2115.0
-   ],
-   "extents": [
-    2000.0,
-    1800.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_4",
    "origin": [
     0.0,
     -1850.0,
@@ -85451,7 +85411,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_5",
+   "name": "skycap_1280_3",
    "origin": [
     900.0,
     14050.0,
@@ -85471,7 +85431,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_6",
+   "name": "skycap_1280_4",
    "origin": [
     3400.0,
     200.0,
@@ -85491,7 +85451,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_7",
+   "name": "skycap_1280_5",
    "origin": [
     -2500.0,
     11950.0,
@@ -85511,7 +85471,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_8",
+   "name": "skycap_1280_6",
    "origin": [
     -2550.0,
     8300.0,
@@ -85531,7 +85491,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_9",
+   "name": "skycap_1280_7",
    "origin": [
     2650.0,
     7100.0,
@@ -85551,7 +85511,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_10",
+   "name": "skycap_1280_8",
    "origin": [
     3500.0,
     3850.0,
@@ -85571,7 +85531,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_11",
+   "name": "skycap_1280_9",
    "origin": [
     -1750.0,
     5050.0,
@@ -85591,7 +85551,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_12",
+   "name": "skycap_1280_10",
    "origin": [
     -4900.0,
     6250.0,
@@ -85611,15 +85571,15 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_13",
+   "name": "skycap_1280_11",
    "origin": [
     400.0,
-    10000.0,
+    9900.0,
     2115.0
    ],
    "extents": [
     600.0,
-    2400.0,
+    2200.0,
     1670.0
    ],
    "angles": [
@@ -85631,7 +85591,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_14",
+   "name": "skycap_1280_12",
    "origin": [
     2550.0,
     3350.0,
@@ -85651,27 +85611,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_15",
-   "origin": [
-    550.0,
-    2200.0,
-    2115.0
-   ],
-   "extents": [
-    500.0,
-    2400.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_16",
+   "name": "skycap_1280_13",
    "origin": [
     5850.0,
     5900.0,
@@ -85691,7 +85631,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_17",
+   "name": "skycap_1280_14",
+   "origin": [
+    550.0,
+    2250.0,
+    2115.0
+   ],
+   "extents": [
+    500.0,
+    2300.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_15",
    "origin": [
     -2800.0,
     1600.0,
@@ -85711,7 +85671,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_18",
+   "name": "skycap_1280_16",
    "origin": [
     3700.0,
     10600.0,
@@ -85731,7 +85691,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_19",
+   "name": "skycap_1280_17",
    "origin": [
     -1650.0,
     8800.0,
@@ -85751,7 +85711,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_20",
+   "name": "skycap_1280_18",
+   "origin": [
+    150.0,
+    -550.0,
+    2115.0
+   ],
+   "extents": [
+    1900.0,
+    500.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_19",
    "origin": [
     2800.0,
     4550.0,
@@ -85760,6 +85740,26 @@
    "extents": [
     1000.0,
     900.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_20",
+   "origin": [
+    -150.0,
+    12450.0,
+    2115.0
+   ],
+   "extents": [
+    1700.0,
+    500.0,
     1670.0
    ],
    "angles": [
@@ -85833,13 +85833,13 @@
   {
    "name": "skycap_1280_24",
    "origin": [
-    -3500.0,
-    11250.0,
+    1650.0,
+    -250.0,
     2115.0
    ],
    "extents": [
-    800.0,
-    900.0,
+    300.0,
+    2500.0,
     1670.0
    ],
    "angles": [
@@ -85853,13 +85853,13 @@
   {
    "name": "skycap_1280_25",
    "origin": [
-    0.0,
-    -900.0,
+    -3500.0,
+    11250.0,
     2115.0
    ],
    "extents": [
-    600.0,
-    1200.0,
+    800.0,
+    900.0,
     1670.0
    ],
    "angles": [
@@ -85913,6 +85913,46 @@
   {
    "name": "skycap_1280_28",
    "origin": [
+    -1500.0,
+    12600.0,
+    2115.0
+   ],
+   "extents": [
+    800.0,
+    800.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_29",
+   "origin": [
+    2400.0,
+    -500.0,
+    2115.0
+   ],
+   "extents": [
+    800.0,
+    800.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_30",
+   "origin": [
     4400.0,
     900.0,
     2115.0
@@ -85931,7 +85971,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_29",
+   "name": "skycap_1280_31",
    "origin": [
     4600.0,
     5400.0,
@@ -85951,55 +85991,15 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_30",
-   "origin": [
-    -1700.0,
-    9750.0,
-    2115.0
-   ],
-   "extents": [
-    1200.0,
-    500.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_31",
-   "origin": [
-    -550.0,
-    -300.0,
-    2115.0
-   ],
-   "extents": [
-    500.0,
-    1200.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
    "name": "skycap_1280_32",
    "origin": [
-    950.0,
-    13100.0,
+    -950.0,
+    11650.0,
     2115.0
    ],
    "extents": [
-    500.0,
-    1200.0,
+    700.0,
+    900.0,
     1670.0
    ],
    "angles": [
@@ -86013,13 +86013,13 @@
   {
    "name": "skycap_1280_33",
    "origin": [
-    1450.0,
-    12450.0,
+    -1700.0,
+    9750.0,
     2115.0
    ],
    "extents": [
+    1200.0,
     500.0,
-    1100.0,
     1670.0
    ],
    "angles": [
@@ -86053,13 +86053,13 @@
   {
    "name": "skycap_1280_35",
    "origin": [
-    -650.0,
-    13350.0,
+    1450.0,
+    12400.0,
     2115.0
    ],
    "extents": [
-    700.0,
-    700.0,
+    500.0,
+    1000.0,
     1670.0
    ],
    "angles": [
@@ -86073,7 +86073,7 @@
   {
    "name": "skycap_1280_36",
    "origin": [
-    2450.0,
+    -650.0,
     13350.0,
     2115.0
    ],
@@ -86093,13 +86093,13 @@
   {
    "name": "skycap_1280_37",
    "origin": [
-    -1600.0,
-    12600.0,
+    2450.0,
+    13350.0,
     2115.0
    ],
    "extents": [
-    600.0,
-    800.0,
+    700.0,
+    700.0,
     1670.0
    ],
    "angles": [
@@ -86112,26 +86112,6 @@
   },
   {
    "name": "skycap_1280_38",
-   "origin": [
-    2500.0,
-    -500.0,
-    2115.0
-   ],
-   "extents": [
-    600.0,
-    800.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_39",
    "origin": [
     -150.0,
     4250.0,
@@ -86151,7 +86131,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_40",
+   "name": "skycap_1280_39",
    "origin": [
     -1550.0,
     -1200.0,
@@ -86171,15 +86151,15 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_41",
+   "name": "skycap_1280_40",
    "origin": [
-    1550.0,
-    -1200.0,
+    900.0,
+    13350.0,
     2115.0
    ],
    "extents": [
-    700.0,
     600.0,
+    700.0,
     1670.0
    ],
    "angles": [
@@ -86191,7 +86171,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_42",
+   "name": "skycap_1280_41",
    "origin": [
     3050.0,
     1800.0,
@@ -86211,7 +86191,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_43",
+   "name": "skycap_1280_42",
    "origin": [
     -3250.0,
     10150.0,
@@ -86231,7 +86211,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_44",
+   "name": "skycap_1280_43",
    "origin": [
     3150.0,
     5650.0,
@@ -86251,7 +86231,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_45",
+   "name": "skycap_1280_44",
    "origin": [
     -750.0,
     8400.0,
@@ -86271,15 +86251,35 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_46",
+   "name": "skycap_1280_45",
    "origin": [
-    -350.0,
-    11000.0,
+    0.0,
+    -1200.0,
     2115.0
    ],
    "extents": [
+    600.0,
+    600.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_46",
+   "origin": [
     900.0,
-    400.0,
+    -150.0,
+    2115.0
+   ],
+   "extents": [
+    1200.0,
+    300.0,
     1670.0
    ],
    "angles": [
@@ -86293,13 +86293,13 @@
   {
    "name": "skycap_1280_47",
    "origin": [
-    1250.0,
-    1200.0,
+    1650.0,
+    3800.0,
     2115.0
    ],
    "extents": [
-    900.0,
-    400.0,
+    300.0,
+    1200.0,
     1670.0
    ],
    "angles": [
@@ -86313,13 +86313,13 @@
   {
    "name": "skycap_1280_48",
    "origin": [
-    1650.0,
-    3800.0,
+    2000.0,
+    550.0,
     2115.0
    ],
    "extents": [
-    300.0,
-    1200.0,
+    400.0,
+    900.0,
     1670.0
    ],
    "angles": [
@@ -86393,6 +86393,26 @@
   {
    "name": "skycap_1280_52",
    "origin": [
+    -550.0,
+    0.0,
+    2115.0
+   ],
+   "extents": [
+    500.0,
+    600.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_53",
+   "origin": [
     1050.0,
     7900.0,
     2115.0
@@ -86411,7 +86431,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_53",
+   "name": "skycap_1280_54",
    "origin": [
     -2900.0,
     10100.0,
@@ -86431,7 +86451,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_54",
+   "name": "skycap_1280_55",
+   "origin": [
+    500.0,
+    12800.0,
+    2115.0
+   ],
+   "extents": [
+    1400.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_56",
    "origin": [
     4200.0,
     2000.0,
@@ -86451,7 +86491,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_55",
+   "name": "skycap_1280_57",
    "origin": [
     5100.0,
     5950.0,
@@ -86471,7 +86511,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_56",
+   "name": "skycap_1280_58",
+   "origin": [
+    1250.0,
+    1250.0,
+    2115.0
+   ],
+   "extents": [
+    900.0,
+    300.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_59",
    "origin": [
     3800.0,
     2050.0,
@@ -86491,7 +86551,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_57",
+   "name": "skycap_1280_60",
    "origin": [
     -2550.0,
     2150.0,
@@ -86511,7 +86571,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_58",
+   "name": "skycap_1280_61",
    "origin": [
     3450.0,
     10050.0,
@@ -86531,7 +86591,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_59",
+   "name": "skycap_1280_62",
    "origin": [
     -3750.0,
     6800.0,
@@ -86551,7 +86611,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_60",
+   "name": "skycap_1280_63",
    "origin": [
     500.0,
     8250.0,
@@ -86571,7 +86631,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_61",
+   "name": "skycap_1280_64",
    "origin": [
     2500.0,
     5350.0,
@@ -86591,7 +86651,47 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_62",
+   "name": "skycap_1280_65",
+   "origin": [
+    -350.0,
+    10900.0,
+    2115.0
+   ],
+   "extents": [
+    900.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_66",
+   "origin": [
+    1350.0,
+    -1200.0,
+    2115.0
+   ],
+   "extents": [
+    300.0,
+    600.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_67",
    "origin": [
     5650.0,
     5400.0,
@@ -86611,7 +86711,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_63",
+   "name": "skycap_1280_68",
+   "origin": [
+    -2000.0,
+    1800.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    800.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_69",
    "origin": [
     -1600.0,
     6800.0,
@@ -86631,7 +86751,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_64",
+   "name": "skycap_1280_70",
    "origin": [
     400.0,
     3900.0,
@@ -86651,7 +86771,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_65",
+   "name": "skycap_1280_71",
+   "origin": [
+    2900.0,
+    10400.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    800.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_72",
    "origin": [
     4200.0,
     5100.0,
@@ -86671,7 +86811,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_66",
+   "name": "skycap_1280_73",
    "origin": [
     -1150.0,
     7950.0,
@@ -86691,7 +86831,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_67",
+   "name": "skycap_1280_74",
    "origin": [
     -750.0,
     1450.0,
@@ -86711,7 +86851,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_68",
+   "name": "skycap_1280_75",
    "origin": [
     2050.0,
     4250.0,
@@ -86731,7 +86871,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_69",
+   "name": "skycap_1280_76",
    "origin": [
     -3000.0,
     8950.0,
@@ -86751,7 +86891,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_70",
+   "name": "skycap_1280_77",
    "origin": [
     -2900.0,
     8150.0,
@@ -86771,7 +86911,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_71",
+   "name": "skycap_1280_78",
    "origin": [
     -2550.0,
     2800.0,
@@ -86791,7 +86931,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_72",
+   "name": "skycap_1280_79",
    "origin": [
     1650.0,
     10700.0,
@@ -86811,7 +86951,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_73",
+   "name": "skycap_1280_80",
    "origin": [
     3900.0,
     3250.0,
@@ -86831,7 +86971,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_74",
+   "name": "skycap_1280_81",
    "origin": [
     -3000.0,
     7400.0,
@@ -86851,7 +86991,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_75",
+   "name": "skycap_1280_82",
    "origin": [
     -2200.0,
     6100.0,
@@ -86871,7 +87011,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_76",
+   "name": "skycap_1280_83",
    "origin": [
     -1250.0,
     4200.0,
@@ -86891,7 +87031,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_77",
+   "name": "skycap_1280_84",
    "origin": [
     3500.0,
     9400.0,
@@ -86911,7 +87051,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_78",
+   "name": "skycap_1280_85",
    "origin": [
     3800.0,
     4000.0,
@@ -86931,7 +87071,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_79",
+   "name": "skycap_1280_86",
    "origin": [
     4300.0,
     5750.0,
@@ -86951,7 +87091,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_80",
+   "name": "skycap_1280_87",
    "origin": [
     5100.0,
     5100.0,
@@ -86971,7 +87111,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_81",
+   "name": "skycap_1280_88",
+   "origin": [
+    -750.0,
+    12900.0,
+    2115.0
+   ],
+   "extents": [
+    500.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_89",
    "origin": [
     200.0,
     1250.0,
@@ -86991,7 +87151,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_82",
+   "name": "skycap_1280_90",
    "origin": [
     800.0,
     10950.0,
@@ -87011,7 +87171,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_83",
+   "name": "skycap_1280_91",
+   "origin": [
+    950.0,
+    12600.0,
+    2115.0
+   ],
+   "extents": [
+    500.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_92",
    "origin": [
     3900.0,
     4750.0,
@@ -87031,7 +87211,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_84",
+   "name": "skycap_1280_93",
+   "origin": [
+    1850.0,
+    -1050.0,
+    2115.0
+   ],
+   "extents": [
+    100.0,
+    900.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_94",
    "origin": [
     2150.0,
     7950.0,
@@ -87051,7 +87251,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_85",
+   "name": "skycap_1280_95",
    "origin": [
     -3600.0,
     6000.0,
@@ -87071,7 +87271,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_86",
+   "name": "skycap_1280_96",
    "origin": [
     -2150.0,
     800.0,
@@ -87091,7 +87291,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_87",
+   "name": "skycap_1280_97",
+   "origin": [
+    -2000.0,
+    -700.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    400.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_98",
    "origin": [
     500.0,
     8700.0,
@@ -87111,7 +87331,47 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_88",
+   "name": "skycap_1280_99",
+   "origin": [
+    1300.0,
+    -400.0,
+    2115.0
+   ],
+   "extents": [
+    400.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_100",
+   "origin": [
+    2900.0,
+    12800.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    400.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_101",
    "origin": [
     3050.0,
     11400.0,
@@ -87131,7 +87391,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_89",
+   "name": "skycap_1280_102",
    "origin": [
     -5150.0,
     4550.0,
@@ -87151,7 +87411,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_90",
+   "name": "skycap_1280_103",
    "origin": [
     -5150.0,
     7950.0,
@@ -87171,27 +87431,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_91",
-   "origin": [
-    650.0,
-    13350.0,
-    2115.0
-   ],
-   "extents": [
-    100.0,
-    700.0,
-    1670.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/skybox/light_test_psa_low_moon.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "skycap_1280_92",
+   "name": "skycap_1280_104",
    "origin": [
     2950.0,
     5350.0,
@@ -87211,7 +87451,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_93",
+   "name": "skycap_1280_105",
    "origin": [
     6050.0,
     4250.0,
@@ -87231,7 +87471,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_94",
+   "name": "skycap_1280_106",
    "origin": [
     -4450.0,
     6800.0,
@@ -87251,7 +87491,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_95",
+   "name": "skycap_1280_107",
    "origin": [
     -2000.0,
     8150.0,
@@ -87271,7 +87511,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_96",
+   "name": "skycap_1280_108",
+   "origin": [
+    1850.0,
+    -200.0,
+    2115.0
+   ],
+   "extents": [
+    100.0,
+    600.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_109",
    "origin": [
     2300.0,
     2150.0,
@@ -87291,7 +87551,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_97",
+   "name": "skycap_1280_110",
    "origin": [
     3000.0,
     4050.0,
@@ -87311,7 +87571,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_98",
+   "name": "skycap_1280_111",
    "origin": [
     3900.0,
     5750.0,
@@ -87331,7 +87591,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_99",
+   "name": "skycap_1280_112",
    "origin": [
     6050.0,
     7600.0,
@@ -87351,7 +87611,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_100",
+   "name": "skycap_1280_113",
    "origin": [
     -1350.0,
     10050.0,
@@ -87371,7 +87631,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_101",
+   "name": "skycap_1280_114",
    "origin": [
     2550.0,
     -50.0,
@@ -87391,7 +87651,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_102",
+   "name": "skycap_1280_115",
    "origin": [
     4550.0,
     1350.0,
@@ -87411,7 +87671,67 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_103",
+   "name": "skycap_1280_116",
+   "origin": [
+    -1700.0,
+    -850.0,
+    2115.0
+   ],
+   "extents": [
+    400.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_117",
+   "origin": [
+    -700.0,
+    11100.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_118",
+   "origin": [
+    -800.0,
+    12150.0,
+    2115.0
+   ],
+   "extents": [
+    400.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_119",
    "origin": [
     0.0,
     8900.0,
@@ -87431,7 +87751,47 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_104",
+   "name": "skycap_1280_120",
+   "origin": [
+    0.0,
+    -850.0,
+    2115.0
+   ],
+   "extents": [
+    400.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_121",
+   "origin": [
+    600.0,
+    11100.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_122",
    "origin": [
     900.0,
     3300.0,
@@ -87451,7 +87811,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_105",
+   "name": "skycap_1280_123",
    "origin": [
     2250.0,
     8300.0,
@@ -87471,7 +87831,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_106",
+   "name": "skycap_1280_124",
+   "origin": [
+    2600.0,
+    12950.0,
+    2115.0
+   ],
+   "extents": [
+    400.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_125",
    "origin": [
     -1350.0,
     3850.0,
@@ -87491,7 +87871,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_107",
+   "name": "skycap_1280_126",
+   "origin": [
+    -650.0,
+    12750.0,
+    2115.0
+   ],
+   "extents": [
+    300.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_127",
    "origin": [
     450.0,
     3450.0,
@@ -87511,7 +87911,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_108",
+   "name": "skycap_1280_128",
+   "origin": [
+    950.0,
+    12950.0,
+    2115.0
+   ],
+   "extents": [
+    300.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_129",
    "origin": [
     1650.0,
     8050.0,
@@ -87531,7 +87951,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_109",
+   "name": "skycap_1280_130",
    "origin": [
     -4650.0,
     8200.0,
@@ -87551,7 +87971,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_110",
+   "name": "skycap_1280_131",
    "origin": [
     -3600.0,
     6550.0,
@@ -87571,7 +87991,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_111",
+   "name": "skycap_1280_132",
    "origin": [
     -3600.0,
     7050.0,
@@ -87591,7 +88011,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_112",
+   "name": "skycap_1280_133",
    "origin": [
     -2150.0,
     2100.0,
@@ -87611,7 +88031,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_113",
+   "name": "skycap_1280_134",
    "origin": [
     -1200.0,
     11150.0,
@@ -87631,7 +88051,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_114",
+   "name": "skycap_1280_135",
    "origin": [
     -550.0,
     8900.0,
@@ -87651,7 +88071,47 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_115",
+   "name": "skycap_1280_136",
+   "origin": [
+    600.0,
+    12150.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_137",
+   "origin": [
+    1450.0,
+    -700.0,
+    2115.0
+   ],
+   "extents": [
+    100.0,
+    200.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_138",
    "origin": [
     1450.0,
     3300.0,
@@ -87671,7 +88131,47 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_116",
+   "name": "skycap_1280_139",
+   "origin": [
+    1600.0,
+    1050.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_140",
+   "origin": [
+    2100.0,
+    -50.0,
+    2115.0
+   ],
+   "extents": [
+    200.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_141",
    "origin": [
     2100.0,
     1050.0,
@@ -87691,7 +88191,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_117",
+   "name": "skycap_1280_142",
    "origin": [
     3050.0,
     10100.0,
@@ -87711,7 +88211,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_118",
+   "name": "skycap_1280_143",
    "origin": [
     4450.0,
     10300.0,
@@ -87731,7 +88231,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_119",
+   "name": "skycap_1280_144",
    "origin": [
     5600.0,
     3950.0,
@@ -87751,7 +88251,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_120",
+   "name": "skycap_1280_145",
    "origin": [
     -4650.0,
     7650.0,
@@ -87771,7 +88271,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_121",
+   "name": "skycap_1280_146",
    "origin": [
     -3950.0,
     6550.0,
@@ -87791,7 +88291,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_122",
+   "name": "skycap_1280_147",
    "origin": [
     -3950.0,
     7050.0,
@@ -87811,7 +88311,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_123",
+   "name": "skycap_1280_148",
    "origin": [
     -1850.0,
     3650.0,
@@ -87831,7 +88331,27 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_124",
+   "name": "skycap_1280_149",
+   "origin": [
+    -450.0,
+    12850.0,
+    2115.0
+   ],
+   "extents": [
+    100.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_150",
    "origin": [
     -350.0,
     350.0,
@@ -87851,7 +88371,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_125",
+   "name": "skycap_1280_151",
    "origin": [
     250.0,
     1550.0,
@@ -87871,7 +88391,47 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_126",
+   "name": "skycap_1280_152",
+   "origin": [
+    350.0,
+    50.0,
+    2115.0
+   ],
+   "extents": [
+    100.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_153",
+   "origin": [
+    350.0,
+    1050.0,
+    2115.0
+   ],
+   "extents": [
+    100.0,
+    100.0,
+    1670.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/skybox/light_test_psa_low_moon.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_1280_154",
    "origin": [
     1150.0,
     8050.0,
@@ -87891,7 +88451,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_127",
+   "name": "skycap_1280_155",
    "origin": [
     1250.0,
     11850.0,
@@ -87911,7 +88471,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_128",
+   "name": "skycap_1280_156",
    "origin": [
     1850.0,
     4050.0,
@@ -87931,7 +88491,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_129",
+   "name": "skycap_1280_157",
    "origin": [
     3250.0,
     3450.0,
@@ -87951,7 +88511,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_130",
+   "name": "skycap_1280_158",
    "origin": [
     4050.0,
     3550.0,
@@ -87971,7 +88531,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_131",
+   "name": "skycap_1280_159",
    "origin": [
     4050.0,
     5650.0,
@@ -87991,7 +88551,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_132",
+   "name": "skycap_1280_160",
    "origin": [
     4550.0,
     5650.0,
@@ -88011,7 +88571,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_133",
+   "name": "skycap_1280_161",
    "origin": [
     4850.0,
     5650.0,
@@ -88031,7 +88591,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_134",
+   "name": "skycap_1280_162",
    "origin": [
     5350.0,
     5650.0,
@@ -88051,7 +88611,7 @@
    "_batch18": true
   },
   {
-   "name": "skycap_1280_135",
+   "name": "skycap_1280_163",
    "origin": [
     5550.0,
     4550.0,
