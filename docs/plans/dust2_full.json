@@ -83451,46 +83451,6 @@
    "_batch18": true
   },
   {
-   "name": "shrine_w_wall_s0",
-   "origin": [
-    -1154.9324,
-    -2390.65,
-    713.55
-   ],
-   "extents": [
-    90.1352,
-    26.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "shrine_w_wall_s1",
-   "origin": [
-    -908.3324,
-    -2390.65,
-    713.55
-   ],
-   "extents": [
-    163.0648,
-    26.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
    "name": "m_shrine_w_floor",
    "origin": [
     1652.7,
@@ -83579,46 +83539,6 @@
    ],
    "extents": [
     988.4,
-    26.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_shrine_w_wall_s0",
-   "origin": [
-    2075.1324,
-    14560.75,
-    713.55
-   ],
-   "extents": [
-    90.1352,
-    26.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_shrine_w_wall_s1",
-   "origin": [
-    1828.5324,
-    14560.75,
-    713.55
-   ],
-   "extents": [
-    163.0648,
     26.7,
     573.5
    ],
@@ -83731,46 +83651,6 @@
    "_batch18": true
   },
   {
-   "name": "shrine_e_wall_s0",
-   "origin": [
-    908.3324,
-    -2390.65,
-    713.55
-   ],
-   "extents": [
-    163.0648,
-    26.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "shrine_e_wall_s1",
-   "origin": [
-    1154.9324,
-    -2390.65,
-    713.55
-   ],
-   "extents": [
-    90.1352,
-    26.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
    "name": "m_shrine_e_floor",
    "origin": [
     187.7,
@@ -83871,14 +83751,154 @@
    "_batch18": true
   },
   {
-   "name": "m_shrine_e_wall_s0",
+   "name": "notch_e_floor",
    "origin": [
-    11.8676,
-    14560.75,
+    1013.4,
+    -2473.65,
+    413.4
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "notch_e_ceil",
+   "origin": [
+    1013.4,
+    -2473.65,
+    1013.6
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "notch_e_wall_out",
+   "origin": [
+    1213.35,
+    -2473.65,
     713.55
    ],
    "extents": [
-    163.0648,
+    26.7,
+    192.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "notch_e_wall_far",
+   "origin": [
+    1013.4,
+    -2583.35,
+    713.55
+   ],
+   "extents": [
+    426.6,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_e_floor",
+   "origin": [
+    -93.2,
+    14643.75,
+    413.4
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_e_ceil",
+   "origin": [
+    -93.2,
+    14643.75,
+    1013.6
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_e_wall_out",
+   "origin": [
+    -293.15,
+    14643.75,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    192.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_e_wall_far",
+   "origin": [
+    -93.2,
+    14753.45,
+    713.55
+   ],
+   "extents": [
+    426.6,
     26.7,
     573.5
    ],
@@ -83891,15 +83911,135 @@
    "_batch18": true
   },
   {
-   "name": "m_shrine_e_wall_s1",
+   "name": "notch_w_floor",
    "origin": [
-    -234.7324,
-    14560.75,
+    -1013.4,
+    -2473.65,
+    413.4
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "notch_w_ceil",
+   "origin": [
+    -1013.4,
+    -2473.65,
+    1013.6
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "notch_w_wall_out",
+   "origin": [
+    -1213.35,
+    -2473.65,
     713.55
    ],
    "extents": [
-    90.1352,
     26.7,
+    192.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "notch_w_wall_far",
+   "origin": [
+    -1013.4,
+    -2583.35,
+    713.55
+   ],
+   "extents": [
+    426.6,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_w_floor",
+   "origin": [
+    1933.6,
+    14643.75,
+    413.4
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_w_ceil",
+   "origin": [
+    1933.6,
+    14643.75,
+    1013.6
+   ],
+   "extents": [
+    373.2,
+    192.7,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_notch_w_wall_out",
+   "origin": [
+    2133.55,
+    14643.75,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    192.7,
     573.5
    ],
    "angles": [
@@ -83911,320 +84051,20 @@
    "_batch18": true
   },
   {
-   "name": "pass_e_floor",
+   "name": "m_notch_w_wall_far",
    "origin": [
-    954.0824,
-    -2432.6,
-    413.4
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.8
-   ],
-   "angles": [
-    0.0,
-    -60.0,
-    0.0
-   ],
-   "material": "materials/dev/dev_measuregeneric01.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_e_ceil",
-   "origin": [
-    954.0824,
-    -2432.6,
-    1013.6
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.6
-   ],
-   "angles": [
-    0.0,
-    -60.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_e_wall_a",
-   "origin": [
-    907.4074,
-    -2351.7565,
+    1933.6,
+    14753.45,
     713.55
    ],
    "extents": [
+    426.6,
     26.7,
-    221.2,
     573.5
    ],
    "angles": [
     0.0,
-    -60.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_e_wall_b",
-   "origin": [
-    1000.7574,
-    -2513.4435,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    -60.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_e_floor",
-   "origin": [
-    -33.8824,
-    14602.7,
-    413.4
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.8
-   ],
-   "angles": [
-    0.0,
-    120.0,
-    0.0
-   ],
-   "material": "materials/dev/dev_measuregeneric01.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_e_ceil",
-   "origin": [
-    -33.8824,
-    14602.7,
-    1013.6
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.6
-   ],
-   "angles": [
-    0.0,
-    120.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_e_wall_a",
-   "origin": [
-    12.7926,
-    14521.8565,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    120.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_e_wall_b",
-   "origin": [
-    -80.5574,
-    14683.5435,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    120.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_w_floor",
-   "origin": [
-    -954.0824,
-    -2432.6,
-    413.4
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.8
-   ],
-   "angles": [
-    0.0,
-    60.0,
-    0.0
-   ],
-   "material": "materials/dev/dev_measuregeneric01.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_w_ceil",
-   "origin": [
-    -954.0824,
-    -2432.6,
-    1013.6
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.6
-   ],
-   "angles": [
-    0.0,
-    60.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_w_wall_a",
-   "origin": [
-    -1000.7574,
-    -2513.4435,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    60.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "pass_w_wall_b",
-   "origin": [
-    -907.4074,
-    -2351.7565,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    60.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_w_floor",
-   "origin": [
-    1874.2824,
-    14602.7,
-    413.4
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.8
-   ],
-   "angles": [
-    0.0,
-    -120.0,
-    0.0
-   ],
-   "material": "materials/dev/dev_measuregeneric01.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_w_ceil",
-   "origin": [
-    1874.2824,
-    14602.7,
-    1013.6
-   ],
-   "extents": [
-    160.0,
-    221.2,
-    26.6
-   ],
-   "angles": [
-    0.0,
-    -120.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_w_wall_a",
-   "origin": [
-    1920.9574,
-    14683.5435,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    -120.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_pass_w_wall_b",
-   "origin": [
-    1827.6074,
-    14521.8565,
-    713.55
-   ],
-   "extents": [
-    26.7,
-    221.2,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    -120.0,
+    180.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
