@@ -13,11 +13,23 @@ classnames below. Where the game's legend word and the plan's classname
 differ, this file uses the plan and says so:
 
     legend         drawn from
-    Patron         nothing - ABSENT from the plan, never surveyed
-    Titan          nothing - ABSENT
-    Base Guard     nothing - ABSENT
-    Guardian       npc_boss_tier3   (batch13's own word for these)
+    Patron         destroyable_building with final 1
+    Shrine         destroyable_building with final 0
     Walker         npc_boss_tier2
+    Guardian       npc_boss_tier3 AND npc_barrack_boss, together
+
+The last two are one entry on purpose. The lane objective and the pair in the
+base do much the same job - stand in the way, die, open something up - so
+splitting them into "Guardian" and "Base Guard" made the legend longer
+without telling you anything. One word, both classnames, count of all of
+them.
+
+SHRINE was called Titan here until 2026-08-27. The fixture's objective proxy
+names its sub-objectives titan_<colour>, but what the map actually contains
+at those points is the shrine pair, so the legend follows the map.
+
+The objectives are SIZED IN CHAIN ORDER: guardian smallest, then walker, then
+shrine, then patron. Reading the map, a bigger marker is a later objective.
     Rejuvenator    the midboss camp, subclass neutral_camp_midboss
     Soul Urn       citadel_trigger_idol_return
     Sinner's       the vault camps, subclass neutral_camp_vaults
@@ -26,9 +38,19 @@ differ, this file uses the plan and says so:
     Teleporter     nothing yet - held back, classname unknown
     Camps T1/2/3   neutral_camp_weak / _medium / _strong
 
-Note the Guardian/Walker pairing follows batch13, where npc_boss_tier3 is the
-guardian and npc_boss_tier2 the walker. If the game means the opposite, the
-two swap here and nowhere else.
+The Guardian/Walker pairing follows batch13 and is CONFIRMED 2026-08-26: with
+connection ownership finally read correctly, npc_boss_tier3 is what fires
+OnBossKilled, and the entity owning the patron's FinalShielded / FinalExposed
+outputs is citadel_final_objective_proxy - a separate class entirely.
+
+That proxy is a wiring entity, not a body. It names its bodies in keyvalues:
+
+    final_objective        125_rebels_building_final     <- the PATRON
+    sub_objective_1..4     125_rebels_titan_<colour>     <- the TITANS
+    sub_objective_lane_1..4  1, 3, 4, 6
+
+So a Titan is per-lane, four per team, and the Patron is the single final
+building. Neither is in this plan yet, which is why both draw nothing.
 
 Amber and Sapphire come from `teamnumber`: batch13 uses TEAM_A for the
 authored half and flips it on the mirror, so team is read per entity rather
@@ -150,14 +172,31 @@ def main():
         return True
 
     missing = []
-    # bosses
-    mark(ents(plan, "npc_boss_tier3"), "D", 90, team_colour, "Guardian")
-    mark(ents(plan, "npc_boss_tier2"), "D", 70, team_colour, "Walker")
-    for word, cls in (("Patron", "npc_patron"),
-                      ("Titan", "npc_titan"),
-                      ("Base Guard", "npc_base_guard")):
-        if not ents(plan, cls):
-            missing.append(word)
+    # bosses, sized in chain order - see the header
+    guards = ents(plan, "npc_boss_tier3") + ents(plan, "npc_barrack_boss")
+    if guards:
+        mark(guards, "D", 55, team_colour, "Guardian")
+    else:
+        missing.append("Guardian")
+    mark(ents(plan, "npc_boss_tier2"), "D", 110, team_colour, "Walker")
+    # The patron and titans are destroyable_building entities distinguished
+    # by their `final` keyvalue, not by classname - so they are looked up by
+    # that rather than by a class that does not exist.
+    dbs = ents(plan, "destroyable_building")
+    patron = [e for e in dbs
+              if (e.get("properties") or {}).get("final") == "1"]
+    titans = [e for e in dbs
+              if (e.get("properties") or {}).get("final") not in ("1",)]
+    # `titans` is the shrine pair; the name is left from when the legend
+    # called them Titans.
+    if titans:
+        mark(titans, "h", 190, team_colour, "Shrine")
+    else:
+        missing.append("Shrine")
+    if patron:
+        mark(patron, "h", 320, team_colour, "Patron")
+    else:
+        missing.append("Patron")
 
     # objectives and pickups
     mark(camps(plan, "neutral_camp_midboss"), "*", 320, GOLD, "Rejuvenator")
