@@ -66,7 +66,7 @@ env:
   # Space-separated, run in this order. Repo root.
   SCRIPTS: preclean.py batch13.py batch17.py batch18.py batch14.py batch15.py batch16.py
   PLAN: docs/plans/dust2_full.json
-  EXPECT_BOXES: "4443"
+  EXPECT_BOXES: "4463"
   COMMIT_PLAN: "true"
 
 jobs:

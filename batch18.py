@@ -187,6 +187,24 @@ SHRINE_Y1 = -1587.05
 # x 826.8 and the room's own south wall. Reported from the viewer, both sides.
 SHRINE_BASEWALL = [(-826.8, -200.0), (200.0, 826.8)]
 
+# THE PASSAGES from the angled doors batch17 cuts into hex_wall_ne_l and
+# hex_wall_nw_r. Those walls run AWAY from the rooms, so the door lands about
+# 110 u short of the room's south wall and needs joining up.
+#
+# Each passage is a box rotated to its wall's angle: 160 wide to match the
+# opening, running along the wall's outward normal until it reaches the room.
+# 221.2 is that distance - 110.6 of y divided by the normal's y component,
+# 0.5 - not a chosen number.
+#
+# Where a passage meets the room, the room's south wall is SPLIT around it,
+# or the passage would run into a solid wall.
+PASSAGES = [
+    # tag, door centre, wall yaw, length
+    ("pass_e", (858.3, -2487.9), -60.0, 221.2),
+    ("pass_w", (-858.3, -2487.9), 60.0, 221.2),
+]
+PASS_W = 160.0
+
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
 
@@ -648,10 +666,33 @@ def main():
             # south face: only the stretch the base wall does not already
             # close, which is why this is one piece and not two.
             sx0, sx1 = (ix0, bw0) if ix0 < bw0 else (bw1, ix1)
-            if sx1 - sx0 > 1.0:
-                P.append(rotbox("%s_wall_s" % tag, (sx0 + sx1) / 2.0,
-                                SHRINE_Y0 - SHRINE_T / 2.0, SHRINE_FLOOR,
-                                top, sx1 - sx0, SHRINE_T, 0.0, MAT_WALL))
+            # ... minus the stretch a passage comes through.
+            gaps = []
+            for ptag, (dx, dy), pyaw, plen in PASSAGES:
+                a = math.radians(pyaw)
+                nx, ny = -math.sin(a), math.cos(a)
+                ex = dx + nx * plen
+                if sx0 - 200 <= ex <= sx1 + 200:
+                    half = (PASS_W / 2.0) * abs(math.cos(a)) + 20.0
+                    gaps.append((ex - half, ex + half))
+            segs = [(sx0, sx1)]
+            for g0, g1 in gaps:
+                nxt = []
+                for a0, a1 in segs:
+                    if g1 <= a0 or g0 >= a1:
+                        nxt.append((a0, a1))
+                        continue
+                    if a0 < g0:
+                        nxt.append((a0, g0))
+                    if g1 < a1:
+                        nxt.append((g1, a1))
+                segs = nxt
+            for k, (a0, a1) in enumerate(segs):
+                if a1 - a0 > 1.0:
+                    P.append(rotbox("%s_wall_s%d" % (tag, k),
+                                    (a0 + a1) / 2.0,
+                                    SHRINE_Y0 - SHRINE_T / 2.0, SHRINE_FLOOR,
+                                    top, a1 - a0, SHRINE_T, 0.0, MAT_WALL))
             # TWINNED, unlike everything else in this file. The central
             # hexagon sits on the mirror point and is its own reflection;
             # these sit in one team's base and the other team needs its own.
@@ -662,8 +703,17 @@ def main():
             # test is AABB, which for a 60 degree box claims a rectangle it
             # does not fill. Overlapping solids cost nothing; an open slot
             # does. Everything else still fails the run.
-            allowed = {"hex_wall_nw_r", "hex_wall_ne_l",
-                       "m_hex_wall_nw_r", "m_hex_wall_ne_l"}
+            # The angled walls, and the pieces batch17 rebuilt them as once
+            # it cut the doors - same geometry, new names. Both are the wall
+            # the south face deliberately overlaps.
+            allowed = set()
+            for w in ("hex_wall_nw_r", "hex_wall_ne_l"):
+                for pre in ("", "m_"):
+                    allowed.add(pre + w)
+                    for suf in ("_hdr", "_sill", "_jamb_a", "_jamb_b"):
+                        allowed.add(pre + w + suf)
+            allowed |= {b["name"] for b in boxes
+                        if "_shrine_door_" in b["name"]}
             real = sorted(clash - allowed)
             if real:
                 problems.append("%s clips %s" % (tag, ", ".join(real)[:120]))
@@ -680,6 +730,32 @@ def main():
                        % ((ix0 + ix1) / 2.0, (SHRINE_Y0 + SHRINE_Y1) / 2.0,
                           SHRINE_FLOOR))
         new += shrine_pieces
+
+        # the passages themselves
+        for ptag, (dx, dy), pyaw, plen in PASSAGES:
+            a = math.radians(pyaw)
+            ux, uy = math.cos(a), math.sin(a)
+            nx, ny = -math.sin(a), math.cos(a)
+            top = SHRINE_FLOOR + SHRINE_H
+            cx = dx + nx * plen / 2.0
+            cy = dy + ny * plen / 2.0
+            Q = []
+            Q.append(rotbox("%s_floor" % ptag, cx, cy,
+                            SHRINE_FLOOR - FLOOR_T, SHRINE_FLOOR,
+                            PASS_W, plen, pyaw, MAT_FLOOR))
+            Q.append(rotbox("%s_ceil" % ptag, cx, cy, top, top + CEIL_T,
+                            PASS_W, plen, pyaw, MAT_WALL))
+            for side in (-1, 1):
+                wx = cx + ux * side * (PASS_W + SHRINE_T) / 2.0
+                wy = cy + uy * side * (PASS_W + SHRINE_T) / 2.0
+                Q.append(rotbox("%s_wall_%s" % (ptag, "ab"[side > 0]),
+                                wx, wy, SHRINE_FLOOR, top,
+                                SHRINE_T, plen, pyaw, MAT_WALL))
+            Q += [twin_box(q) for q in Q]
+            new += Q
+            log.append("%s: %.1f long from the door at %.1f, %.1f, %.0f "
+                       "degrees, %.0f wide"
+                       % (ptag, plen, dx, dy, pyaw, PASS_W))
 
     new += cut_ceiling(by, log)
     cover = copy_cover(boxes, log)

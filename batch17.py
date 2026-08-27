@@ -120,44 +120,6 @@ ROOMS = [
         "wall_top": 1280.35,
         "needs": ["axis_546", "axis_572", "yaw_570", "yaw_573"],
     },
-    # ARCH ONLY, no room: batch18 builds the shrine rooms these open into,
-    # because they are boxes rather than the rectangular alcove this file's
-    # builder makes. All this does here is cut the door.
-    #
-    # The doors sit at the INNER corner of each room, not the middle of its
-    # south face: hex_wall_n_l only spans x -826.8..-200, so a door centred
-    # on the room at x -765 would open into the gap beside the wall rather
-    # than into the base.
-    {
-        "name": "shrine_door_w",
-        "side": +1,
-        "arch_only": True,
-        "wall": "hex_wall_n_l",
-        "wall_x0": -826.8, "wall_x1": -200.0,
-        "wall_y0": -2413.75, "wall_y1": -2387.05,
-        "wall_z0": 426.8, "wall_z1": 1707.2,
-        "room_x0": -445.0, "room_x1": -285.0,
-        "floor_top": 426.8, "floor_bot": None,
-        "floor_ext": None,
-        "walls": [],
-        "wall_top": None,
-        "needs": ["hex_wall_nw_r"],
-    },
-    {
-        "name": "shrine_door_e",
-        "side": +1,
-        "arch_only": True,
-        "wall": "hex_wall_n_r",
-        "wall_x0": 200.0, "wall_x1": 826.8,
-        "wall_y0": -2413.75, "wall_y1": -2387.05,
-        "wall_z0": 426.8, "wall_z1": 1707.2,
-        "room_x0": 285.0, "room_x1": 445.0,
-        "floor_top": 426.8, "floor_bot": None,
-        "floor_ext": None,
-        "walls": [],
-        "wall_top": None,
-        "needs": ["hex_wall_ne_l"],
-    },
     {
         "name": "tele_b",
         "side": -1,             # behind the wall, not out on the open floor
@@ -267,6 +229,96 @@ def scaled_arch(src, tag, open_c, crown, wall_c):
             "material": b.get("material", MAT_WALL),
             MARK: True,
         })
+    return out
+
+
+# ---------------------------------------------------------------------------
+# ANGLED DOORS. The shrine entrances moved from hex_wall_n_r / _n_l to the
+# 60 degree walls beside them, at the corner where the two meet.
+#
+# The ROOMS table above cannot express these: every wall in it is thin in y
+# with the room on one side, and these run at 60 degrees. So they get their
+# own builder, which works in the wall's own frame - u along it, t through it
+# - and emits pieces at the wall's yaw.
+#
+# READ off the plan: both walls are 626.8 long, 26.7 thick, z 426.8..1707.2,
+# origin at their centre. The door sits 120 u from the end that meets the
+# axis wall, which is a 160 opening with a 40 jamb outboard of it.
+ANGLED_DOORS = [
+    # name, wall, origin, yaw, length, u of the door centre
+    ("shrine_door_e", "hex_wall_ne_l", (955.0, -2655.4), -60.0, 626.8, -193.4),
+    ("shrine_door_w", "hex_wall_nw_r", (-955.0, -2655.4), 60.0, 626.8, 193.4),
+]
+ANGLED_T = 26.7
+ANGLED_Z = (426.8, 1707.2)
+ANGLED_FLOOR = 426.8
+
+
+def angled_door(name, wall, origin, yaw, length, u_centre, src, log):
+    """One arch cut into a wall at any angle.
+
+    Same shape as the axis-aligned version - the wall comes out and goes back
+    as sill, two jambs and a header, with the scaled _d574 assembly in the
+    gap - but every piece is placed in the wall's frame and emitted at its
+    yaw, so the geometry does not care what angle the wall sits at.
+    """
+    a = math.radians(yaw)
+    ux, uy = math.cos(a), math.sin(a)
+
+    def at(u):
+        return origin[0] + ux * u, origin[1] + uy * u
+
+    def piece(nm, u0, u1, z0, z1):
+        if u1 - u0 < 0.1 or z1 - z0 < 0.1:
+            return None
+        cx, cy = at((u0 + u1) / 2.0)
+        return {
+            "name": nm,
+            "origin": [round(cx, 4), round(cy, 4), round((z0 + z1) / 2.0, 4)],
+            "extents": [round(u1 - u0, 4), ANGLED_T, round(z1 - z0, 4)],
+            "angles": [0.0, yaw, 0.0],
+            "material": MAT_WALL,
+            MARK: True,
+        }
+
+    half = length / 2.0
+    o0, o1 = u_centre - NEW_OPEN_W / 2.0, u_centre + NEW_OPEN_W / 2.0
+    crown = ANGLED_FLOOR + OPEN_H
+    out = []
+    for nm, args in ((("%s_jamb_a" % wall), (-half, o0, ANGLED_FLOOR, crown)),
+                     (("%s_jamb_b" % wall), (o1, half, ANGLED_FLOOR, crown)),
+                     (("%s_hdr" % wall), (-half, half, crown, ANGLED_Z[1]))):
+        q = piece(nm, *args)
+        if q:
+            out.append(q)
+    if ANGLED_FLOOR - ANGLED_Z[0] > 0.1:
+        q = piece("%s_sill" % wall, -half, half, ANGLED_Z[0], ANGLED_FLOOR)
+        if q:
+            out.append(q)
+
+    # the arch, rotated into the wall's frame
+    cx, cy = at(u_centre)
+    for b in src:
+        u = b["origin"][1] - SRC_OPEN_C
+        t = b["origin"][0] - SRC_WALL_X
+        w = b["origin"][2] - SRC_CROWN
+        ba = b["angles"]
+        px = cx + ux * (SCALE * u) - uy * (SCALE * t)
+        py = cy + uy * (SCALE * u) + ux * (SCALE * t)
+        out.append({
+            "name": b["name"].replace("_d574", "_%s" % name),
+            "origin": [round(px, 4), round(py, 4),
+                       round(crown + SCALE * w, 4)],
+            "extents": [round(v * SCALE, 4) for v in b["extents"]],
+            "angles": [ba[0], norm(ba[1] + 90.0 + yaw), ba[2]],
+            "material": b.get("material", MAT_WALL),
+            MARK: True,
+        })
+    log.append("")
+    log.append("%s: arch in %s at %.0f degrees, opening %.1f centred %.1f "
+               "from its middle, crown %.1f"
+               % (name, wall, yaw, NEW_OPEN_W, u_centre, crown))
+    log.append("        door centre at %.1f, %.1f" % (cx, cy))
     return out
 
 
@@ -386,6 +438,13 @@ def main():
         if not spec.get("arch_only"):
             teles.append((spec["name"], tele))
             volumes.append((spec["name"], vol))
+
+    for name, wall, origin, yaw, length, uc in ANGLED_DOORS:
+        if wall not in by and not rebuilt:
+            print("::error::batch17: %s is missing" % wall)
+            sys.exit(1)
+        boxes = [b for b in boxes if b["name"] not in (wall, PREFIX + wall)]
+        new += angled_door(name, wall, origin, yaw, length, uc, src, log)
 
     boxes.extend(new)
     boxes.extend([twin_box(b) for b in new])
