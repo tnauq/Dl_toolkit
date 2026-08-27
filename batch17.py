@@ -434,7 +434,31 @@ def main():
     # arithmetic is the same whatever state the plan starts in. They are
     # removed again immediately below; this exists only to make the count
     # independent of history.
+    # DEDUPE BY NAME, FIRST. The committed plan has picked up duplicate
+    # boxes from earlier versions of this file - the log showed 166 boxes
+    # stripped where a clean plan strips 162. Removal filters by NAME, so a
+    # duplicate takes two boxes out where one went in, and the count drifts
+    # by a different amount every run depending on what is doubled.
+    #
+    # Whatever the history, the plan is made canonical here: one box per
+    # name, keeping the first. That makes the arithmetic below depend only
+    # on the names present, never on how many copies of each.
+    seen_names = set()
+    deduped = []
+    dropped = []
+    for b in boxes:
+        if b["name"] in seen_names:
+            dropped.append(b["name"])
+            continue
+        seen_names.add(b["name"])
+        deduped.append(b)
+    if dropped:
+        log.append("dropped %d duplicate box(es): %s"
+                   % (len(dropped), ", ".join(sorted(set(dropped)))[:160]))
+    boxes = deduped
+
     have = {b["name"] for b in boxes}
+    reconstructed = set()
 
     def restore_pair(q):
         """Add whichever of a wall and its twin is actually absent.
@@ -452,6 +476,7 @@ def main():
                 c.pop(MARK, None)
                 boxes.append(c)
                 have.add(c["name"])
+                reconstructed.add(c["name"])
                 made.append(c["name"])
         if made:
             log.append("reconstructed %s, missing from both the plan and "
@@ -490,9 +515,11 @@ def main():
     for w in [sp["wall"] for sp in ROOMS] + [d[1] for d in ANGLED_DOORS]:
         for nm in (w, PREFIX + w):
             if nm in {b["name"] for b in boxes}:
-                where = ("restored" if nm in {b["name"] for b in stash}
-                         else "reconstructed"
-                         if any("reconstructed %s" % nm in l for l in log)
+                # Read off what actually happened, not off this log's own
+                # wording - the previous version grepped its own text and
+                # reported a reconstructed box as "in the plan".
+                where = ("reconstructed" if nm in reconstructed
+                         else "restored" if nm in {b["name"] for b in stash}
                          else "in the plan")
             else:
                 where = "MISSING - it will not be removed and the count "\
