@@ -85534,7 +85534,7 @@
  "entities": [
   {
    "name": "guardian_l3",
-   "classname": "npc_boss_tier3",
+   "classname": "npc_boss_tier1",
    "origin": [
     -1753.0,
     4750.0,
@@ -85551,8 +85551,8 @@
     "teamnumber": "2",
     "lanenum": "3",
     "BackdoorProtectionTrigger": "",
-    "BossName": "rebels_t3_boss_orange",
-    "subclass_name": "npc_boss_tier3",
+    "BossName": "rebels_t1_boss_orange",
+    "subclass_name": "npc_boss_tier1",
     "CoverGroupID": "",
     "dying_cover_id": "",
     "vulnerable_cover_id": ""
@@ -85573,7 +85573,7 @@
   },
   {
    "name": "m_guardian_l3",
-   "classname": "npc_boss_tier3",
+   "classname": "npc_boss_tier1",
    "origin": [
     2673.2,
     7420.1,
@@ -85590,8 +85590,8 @@
     "teamnumber": "3",
     "lanenum": "3",
     "BackdoorProtectionTrigger": "",
-    "BossName": "combine_t3_boss_orange",
-    "subclass_name": "alt_npc_boss_tier3",
+    "BossName": "combine_t1_boss_orange",
+    "subclass_name": "alt_npc_boss_tier1",
     "CoverGroupID": "",
     "dying_cover_id": "",
     "vulnerable_cover_id": ""
@@ -85612,7 +85612,7 @@
   },
   {
    "name": "guardian_l1",
-   "classname": "npc_boss_tier3",
+   "classname": "npc_boss_tier1",
    "origin": [
     425.0,
     4126.0,
@@ -85629,8 +85629,8 @@
     "teamnumber": "2",
     "lanenum": "1",
     "BackdoorProtectionTrigger": "",
-    "BossName": "rebels_t3_boss_yellow",
-    "subclass_name": "npc_boss_tier3",
+    "BossName": "rebels_t1_boss_yellow",
+    "subclass_name": "npc_boss_tier1",
     "CoverGroupID": "",
     "dying_cover_id": "",
     "vulnerable_cover_id": ""
@@ -85651,7 +85651,7 @@
   },
   {
    "name": "m_guardian_l1",
-   "classname": "npc_boss_tier3",
+   "classname": "npc_boss_tier1",
    "origin": [
     495.2,
     8044.1,
@@ -85668,8 +85668,8 @@
     "teamnumber": "3",
     "lanenum": "1",
     "BackdoorProtectionTrigger": "",
-    "BossName": "combine_t3_boss_yellow",
-    "subclass_name": "alt_npc_boss_tier3",
+    "BossName": "combine_t1_boss_yellow",
+    "subclass_name": "alt_npc_boss_tier1",
     "CoverGroupID": "",
     "dying_cover_id": "",
     "vulnerable_cover_id": ""
@@ -85690,7 +85690,7 @@
   },
   {
    "name": "guardian_l6",
-   "classname": "npc_boss_tier3",
+   "classname": "npc_boss_tier1",
    "origin": [
     3467.0,
     4143.0,
@@ -85707,8 +85707,8 @@
     "teamnumber": "2",
     "lanenum": "6",
     "BackdoorProtectionTrigger": "",
-    "BossName": "rebels_t3_boss_purple",
-    "subclass_name": "npc_boss_tier3",
+    "BossName": "rebels_t1_boss_purple",
+    "subclass_name": "npc_boss_tier1",
     "CoverGroupID": "",
     "dying_cover_id": "",
     "vulnerable_cover_id": ""
@@ -85729,7 +85729,7 @@
   },
   {
    "name": "m_guardian_l6",
-   "classname": "npc_boss_tier3",
+   "classname": "npc_boss_tier1",
    "origin": [
     -2546.8,
     8027.1,
@@ -85746,8 +85746,8 @@
     "teamnumber": "3",
     "lanenum": "6",
     "BackdoorProtectionTrigger": "",
-    "BossName": "combine_t3_boss_purple",
-    "subclass_name": "alt_npc_boss_tier3",
+    "BossName": "combine_t1_boss_purple",
+    "subclass_name": "alt_npc_boss_tier1",
     "CoverGroupID": "",
     "dying_cover_id": "",
     "vulnerable_cover_id": ""
@@ -93727,7 +93727,7 @@
    "properties": {
     "targetname": "rebels_w_shrine",
     "vscripts": "",
-    "model": "models/props_street/generator.vmdl",
+    "model": "models/npc/shrine_amber/shrine_amber.vmdl",
     "skin": "default",
     "bodygroups": "",
     "disableshadows": "0",
@@ -93757,7 +93757,7 @@
    "properties": {
     "targetname": "combine_w_shrine",
     "vscripts": "",
-    "model": "models/props_street/generator.vmdl",
+    "model": "models/npc/shrine_amber/shrine_amber.vmdl",
     "skin": "default",
     "bodygroups": "",
     "disableshadows": "0",
@@ -93787,7 +93787,7 @@
    "properties": {
     "targetname": "rebels_e_shrine",
     "vscripts": "",
-    "model": "models/props_street/generator.vmdl",
+    "model": "models/npc/shrine_amber/shrine_amber.vmdl",
     "skin": "default",
     "bodygroups": "",
     "disableshadows": "0",
@@ -93817,7 +93817,7 @@
    "properties": {
     "targetname": "combine_e_shrine",
     "vscripts": "",
-    "model": "models/props_street/generator.vmdl",
+    "model": "models/npc/shrine_amber/shrine_amber.vmdl",
     "skin": "default",
     "bodygroups": "",
     "disableshadows": "0",
@@ -93833,7 +93833,7 @@
   },
   {
    "name": "patron",
-   "classname": "destroyable_building",
+   "classname": "npc_boss_tier3",
    "origin": [
     -17.8,
     -3810.9,
@@ -93847,23 +93847,20 @@
    "properties": {
     "targetname": "rebels_building_final",
     "vscripts": "",
-    "model": "models/props_street/generator.vmdl",
-    "skin": "default",
-    "bodygroups": "",
-    "disableshadows": "0",
-    "add_attribute": "",
-    "add_modifier": "",
     "teamnumber": "2",
-    "lanenum": "1",
-    "BackdoorProtectionTrigger": "",
-    "building_health": "8000",
-    "final": "1"
+    "lanenum": "3",
+    "BossName": "rebels_patron",
+    "subclass_name": "npc_boss_tier3",
+    "CoverGroupID": "",
+    "dying_cover_id": "",
+    "vulnerable_cover_id": "",
+    "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
   },
   {
    "name": "m_patron",
-   "classname": "destroyable_building",
+   "classname": "npc_boss_tier3",
    "origin": [
     938.0,
     15981.0,
@@ -93877,17 +93874,14 @@
    "properties": {
     "targetname": "combine_building_final",
     "vscripts": "",
-    "model": "models/props_street/generator.vmdl",
-    "skin": "default",
-    "bodygroups": "",
-    "disableshadows": "0",
-    "add_attribute": "",
-    "add_modifier": "",
     "teamnumber": "3",
-    "lanenum": "1",
-    "BackdoorProtectionTrigger": "",
-    "building_health": "8000",
-    "final": "1"
+    "lanenum": "3",
+    "BossName": "combine_patron",
+    "subclass_name": "npc_boss_tier3",
+    "CoverGroupID": "",
+    "dying_cover_id": "",
+    "vulnerable_cover_id": "",
+    "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
   },
