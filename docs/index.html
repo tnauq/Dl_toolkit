@@ -194,6 +194,7 @@
   <button id="spd">speed: walk</button>
   <button id="noclip">fly: off</button>
   <button id="detail">detail: normal</button>
+  <button id="cap">cap: hidden</button>
   <button id="respawn">respawn</button>
   <button id="fs">fullscreen</button>
   <label class="file" tabindex="0">open
@@ -393,6 +394,11 @@ const DETAIL = [
   { name:'fine',   px:11 }
 ];
 let detailIx = 1;
+/* The cap is hidden by DEFAULT. It seals the map, so with it drawn the view
+   from outside is a solid lid and nothing underneath can be checked. It
+   still COLLIDES either way - this hides it, it does not remove it, which
+   is the point: you can fly up and feel the ceiling that you cannot see. */
+let showCap = false;
 /* Anything past this is not drawn. The map is roughly 14000 units corner
    to corner, so this only bites on the very longest sightlines, and the
    screen-space tiling has already made those nearly free. */
@@ -448,7 +454,12 @@ function prepare(p){
     // need a matching edit here.
     const floor = typeof b.material === 'string' &&
                   /measure|reflectivity_(50|70|90)/.test(b.material);
-    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad, floor,
+    // THE SKY CAP is 192 fill boxes sealing every roof, and drawn it hides
+    // most of the map from above. Flagged here so the button below can skip
+    // it. Matched on the name rather than the material: the material is a
+    // guess at a real sky vmat and may change, the name prefix will not.
+    const skycap = typeof b.name === 'string' && b.name.startsWith('skycap');
+    return { i, name:b.name||('box['+i+']'), o, e, h, R, cell, rad, floor, skycap,
              aabb:[o[0]-h[0],o[1]-h[1],o[2]-h[2],o[0]+h[0],o[1]+h[1],o[2]+h[2]] };
   });
   buildGrid();
@@ -613,6 +624,7 @@ function render(){
   let nbox = 0;
 
   for(const sol of solids){
+    if(sol.skycap && !showCap) continue;   // see the "cap" button
     /* Sphere cull, once per box, BEFORE any face or tile work. This is
        what stops an off-screen ground plate from costing anything at all.
        A sphere is used rather than the AABB because it is rotation-proof
@@ -1321,6 +1333,19 @@ el('detail').addEventListener('click', ()=>{
   showDetail();
 });
 showDetail();
+
+/* Show or hide the sky cap. Hidden by default; collision is unaffected
+   either way, so with it hidden you can still fly up and stop against a
+   ceiling that is not drawn. That is the useful state for checking the
+   cap: fly at a roof and see where you are held. */
+function showCapBtn(){
+  el('cap').textContent = 'cap: ' + (showCap ? 'shown' : 'hidden');
+}
+el('cap').addEventListener('click', ()=>{
+  showCap = !showCap;
+  showCapBtn();
+});
+showCapBtn();
 
 /* Copy the aim point. Clipboard writes need a user gesture, which a
    button click is; the textarea path is the fallback for browsers that

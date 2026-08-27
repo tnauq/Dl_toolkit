@@ -211,47 +211,44 @@ NOTCHES = [
 # 60 degree line. The floor stays axis-aligned: it lives below 426.8 where
 # the wall starts, so it cannot poke out of anything.
 # ---------------------------------------------------------------------------
-# THE SKY CAP. Deadlock has flying heroes and jump items, so the map needs a
-# lid or they leave it.
+# THE SKY CAP. Deadlock has flying heroes, so anything reachable has to be
+# sealed - not just the map's outer edge but the top of every roof, or people
+# stand on them.
 #
-# HEIGHT, MEASURED not chosen. The highest geometry per column, sampled on a
-# 200 u grid over the whole map:
+# STEPPED, AND MADE OF FILL BOXES. Each tile runs from its own level UP to a
+# single top, so a tall tile and a short one beside it simply share a face.
+# No skirts, which is what the first design needed and what made it 473
+# boxes plus hundreds more.
 #
-#     above 1300   32.7% of columns      the general roofline
-#     above 1750    6.0%
-#     above 1800    6.0%  - and those 224 columns are EXACTLY the hexagon
-#                           room's footprint, nothing else
+# THE LEVEL FIELD IS SMOOTHED, and that is the balcony fix. Taking each
+# column's own roof height would put a ceiling REACH above a balcony's floor
+# while the plaza beside it stays open - a player standing on the balcony
+# bumps their head on nothing. So a column's level is the maximum over
+# everything within CAP_REACH of it, plus CAP_HEAD. Nothing is ever capped
+# lower than the tallest thing near it.
 #
-# So 1800 clears everything on the map except the hexagon room, whose roof is
-# at 2587.5. The median box top is 797.9, but that number counts every small
-# box and sits below the sky bridge deck at 1280 - capping there would seal
-# the bridge out of the map.
+# A hero is about 98 tall and some are larger, so CAP_HEAD is three times
+# that. Level with a roofline is fine by design: standing on a roof is the
+# thing being prevented.
 #
-# SHAPE: one lid at 1800 with a rectangular hole over the hexagon, a second
-# lid at 2620 over that hole, and four skirt walls joining them. Nine boxes.
-# The hole is rectangular although the room is a hexagon - it is a ceiling
-# nobody stands on, and a rectangle is four pieces instead of twelve.
+# NOT MIRRORED and NOT symmetric. The level field is symmetric because the
+# map is, but the rectangle decomposition is greedy and does not have to
+# produce mirrored rectangles. The pieces are excluded from this file's
+# mirror check for that reason - the SHAPE is symmetric even where the box
+# boundaries are not.
 #
-# The map's bounding box is symmetric about the mirror point, and so is the
-# hexagon, so every piece here is its own reflection. Not twinned.
-#
-# THE MATERIAL IS A GUESS. Nothing has been read about which material makes
-# geometry render as sky in Source 2 - dl_example's env_sky names a skybox
-# vmat but that is the sky entity, not a surface. This uses the same dev
-# material as everything else, so the lid will look like a solid ceiling
-# rather than sky. It stops people leaving; making it look right is a later
-# job.
+# VERIFY WITH THE CLEARANCE REPORT, printed at the end of this run. It walks
+# every standing surface in the plan and measures the gap to whatever is
+# above it. That is the check that answers "does this need crosshairing" -
+# if nothing is listed, nothing is.
 SKY_CAP = True
-CAP_Z = 1800.0             # measured, see above
-CAP_HEX_Z = 2620.0         # clears the hexagon roof at 2587.5
+CAP_CELL = 100.0           # sampling grid
+CAP_REACH = 600.0          # a column inherits the tallest roof within this
+CAP_HEAD = 300.0           # clearance above that, ~3 hero heights
+CAP_STEP = 200.0           # levels are quantised to this
+CAP_TOP = 3000.0           # every tile runs up to here
 CAP_T = 26.7
-CAP_MARGIN = 200.0
-# the map's own bounding box, READ off the plan
-CAP_X0, CAP_X1 = -5179.7, 6099.9
-CAP_Y0, CAP_Y1 = -6505.95, 18676.05
-# the hexagon room's footprint, from RECT_W and RECT_L
-HEX_X0, HEX_X1 = CX - 1600.2, CX + 1600.2
-HEX_Y0, HEX_Y1 = CY - 1385.85, CY + 1385.85
+MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 
 NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
 ANGLED_HALF = 313.4    # half of hex_wall_ne_l's 626.8 length
@@ -635,6 +632,167 @@ def build():
     return new
 
 
+def build_skycap(boxes, log):
+    """Stepped fill boxes over every roof.
+
+    Pure numpy, no scipy: the batch workflow installs nothing, so the maximum
+    filter and the rectangle decomposition are written out by hand rather
+    than imported.
+    """
+    import numpy as np
+
+    S = CAP_CELL
+    xs0, xs1 = -5400.0, 6300.0
+    ys0, ys1 = -6700.0, 18900.0
+    nx = int((xs1 - xs0) / S)
+    ny = int((ys1 - ys0) / S)
+    top = np.full((nx, ny), -9e9)
+    geo = np.zeros((nx, ny), bool)
+    for b in boxes:
+        if b.get(MARK) and b["name"].startswith("skycap"):
+            continue
+        o, e = b["origin"], b["extents"]
+        a = math.radians(b["angles"][1])
+        c, s_ = abs(math.cos(a)), abs(math.sin(a))
+        hx = (e[0] * c + e[1] * s_) / 2.0
+        hy = (e[0] * s_ + e[1] * c) / 2.0
+        i0 = max(0, int((o[0] - hx - xs0) / S))
+        i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
+        j0 = max(0, int((o[1] - hy - ys0) / S))
+        j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
+        if i1 <= i0 or j1 <= j0:
+            continue
+        np.maximum(top[i0:i1, j0:j1], o[2] + e[2] / 2.0,
+                   out=top[i0:i1, j0:j1])
+        geo[i0:i1, j0:j1] = True
+
+    # maximum filter by shifting, radius CAP_REACH
+    r = int(round(CAP_REACH / S))
+    sm = top.copy()
+    for _ in range(r):
+        sm[1:, :] = np.maximum(sm[1:, :], sm[:-1, :])
+        sm[:-1, :] = np.maximum(sm[:-1, :], sm[1:, :])
+        sm[:, 1:] = np.maximum(sm[:, 1:], sm[:, :-1])
+        sm[:, :-1] = np.maximum(sm[:, :-1], sm[:, 1:])
+
+    lvl = np.where(geo, np.ceil((sm + CAP_HEAD) / CAP_STEP) * CAP_STEP,
+                   np.nan)
+
+    def decompose(mask):
+        """Greedy maximal rectangles, largest first."""
+        m = mask.copy()
+        out = []
+        while m.any():
+            best = (0, None)
+            h = np.zeros(m.shape[1], int)
+            for i in range(m.shape[0]):
+                h = np.where(m[i], h + 1, 0)
+                stack = []
+                for j in range(m.shape[1] + 1):
+                    cur = h[j] if j < m.shape[1] else 0
+                    start = j
+                    while stack and stack[-1][1] >= cur:
+                        sj, sh = stack.pop()
+                        area = sh * (j - sj)
+                        if area > best[0]:
+                            best = (area, (i - sh + 1, i, sj, j - 1))
+                        start = sj
+                    stack.append((start, cur))
+            area, rect = best
+            # SINGLE CELLS ARE KEPT. Dropping them left 21 columns uncapped -
+            # isolated 100 u squares at the edge of a roof that no rectangle
+            # of two or more cells could reach. A hole is a hole whatever its
+            # size, and a flyer is 98 tall, not 100 wide.
+            if area < 1:
+                break
+            out.append(rect)
+            m[rect[0]:rect[1] + 1, rect[2]:rect[3] + 1] = False
+        return out
+
+    made = []
+    levels = sorted({v for v in np.unique(lvl) if not np.isnan(v)})
+    # THE TOP FOLLOWS THE TALLEST LEVEL. Fixed at 3000 it collided with the
+    # 3000 level over the hexagon room and produced three zero-height boxes,
+    # which batch14 rejects.
+    top_z = max(levels) + CAP_STEP if levels else CAP_TOP
+    for v in levels:
+        for k, (i0, i1, j0, j1) in enumerate(decompose(lvl == v)):
+            made.append(rotbox(
+                "skycap_%d_%d" % (int(v), k),
+                xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
+                float(v), top_z,
+                (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
+    log.append("sky cap: %d levels %s, %d fill boxes from their own level up "
+               "to %.0f" % (len(levels), [int(v) for v in levels],
+                            len(made), top_z))
+    log.append("   reach %.0f, headroom %.0f, step %.0f - a column is capped "
+               "at the tallest roof within reach, never its own"
+               % (CAP_REACH, CAP_HEAD, CAP_STEP))
+    return made
+
+
+def clearance_report(plan, log, problems):
+    """Headroom over every standing surface, after the cap goes in.
+
+    THIS IS THE CHECK THAT REPLACES CROSSHAIRING. It samples the top face of
+    every box in the plan and measures the gap to whatever is above it. A
+    surface with less than CAP_HEAD of room is listed with its coordinates
+    and the box it belongs to.
+    """
+    import numpy as np
+
+    S = 200.0
+    xs0, ys0 = -5400.0, -6700.0
+    tight = []
+    caps = [b for b in plan["boxes"] if b["name"].startswith("skycap")]
+    if not caps:
+        return
+    # cap level per cell, for a fast lookup
+    nx = int((6300.0 - xs0) / S)
+    ny = int((18900.0 - ys0) / S)
+    capz = np.full((nx, ny), 9e9)
+    for b in caps:
+        o, e = b["origin"], b["extents"]
+        i0 = max(0, int((o[0] - e[0] / 2 - xs0) / S))
+        i1 = min(nx, int(math.ceil((o[0] + e[0] / 2 - xs0) / S)))
+        j0 = max(0, int((o[1] - e[1] / 2 - ys0) / S))
+        j1 = min(ny, int(math.ceil((o[1] + e[1] / 2 - ys0) / S)))
+        np.minimum(capz[i0:i1, j0:j1], o[2] - e[2] / 2.0,
+                   out=capz[i0:i1, j0:j1])
+
+    for b in plan["boxes"]:
+        if b["name"].startswith("skycap"):
+            continue
+        o, e = b["origin"], b["extents"]
+        t = o[2] + e[2] / 2.0
+        i = int((o[0] - xs0) / S)
+        j = int((o[1] - ys0) / S)
+        if not (0 <= i < nx and 0 <= j < ny):
+            continue
+        gap = capz[i, j] - t
+        if gap < CAP_HEAD - 1.0:
+            tight.append((gap, b["name"], round(o[0], 1), round(o[1], 1),
+                          round(t, 1)))
+    tight.sort()
+    log.append("")
+    log.append("CLEARANCE over every surface in the plan, against the cap:")
+    if not tight:
+        log.append("  nothing has less than %.0f of headroom. No surface "
+                   "needs looking at by hand." % CAP_HEAD)
+        return
+    log.append("  %d surface(s) with less than %.0f of headroom, worst first:"
+               % (len(tight), CAP_HEAD))
+    for gap, nm, x, y, t in tight[:25]:
+        log.append("    %7.1f  %-28s at %9.1f %9.1f top %8.1f"
+                   % (gap, nm, x, y, t))
+    if len(tight) > 25:
+        log.append("    ... and %d more" % (len(tight) - 25))
+    log.append("  A NEGATIVE gap means the cap is INSIDE that box. Anything")
+    log.append("  small and positive is a roof the cap sits just above,")
+    log.append("  which is the intent - check the named box before assuming")
+    log.append("  it is a fault.")
+
+
 def covers(b, x, y, z):
     """Is the point inside this box? Yaw only, which is all this file makes."""
     o, e = b["origin"], b["extents"]
@@ -810,34 +968,6 @@ def main():
                        "extended to the angled wall; ceiling flush on it"
                        % (ntag, nx0, nx1, ny, SHRINE_Y0))
 
-    if SKY_CAP:
-        x0, x1 = CAP_X0 - CAP_MARGIN, CAP_X1 + CAP_MARGIN
-        y0, y1 = CAP_Y0 - CAP_MARGIN, CAP_Y1 + CAP_MARGIN
-        # the main lid, in four pieces around the hexagon's hole
-        for nm, a0, a1, b0, b1 in (
-                ("s", x0, x1, y0, HEX_Y0), ("n", x0, x1, HEX_Y1, y1),
-                ("w", x0, HEX_X0, HEX_Y0, HEX_Y1),
-                ("e", HEX_X1, x1, HEX_Y0, HEX_Y1)):
-            new.append(rotbox("skycap_%s" % nm, (a0 + a1) / 2.0,
-                              (b0 + b1) / 2.0, CAP_Z, CAP_Z + CAP_T,
-                              a1 - a0, b1 - b0, 0.0, MAT_WALL))
-        # the raised lid over the hexagon, and the skirt joining the two
-        new.append(rotbox("skycap_hex", (HEX_X0 + HEX_X1) / 2.0,
-                          (HEX_Y0 + HEX_Y1) / 2.0, CAP_HEX_Z,
-                          CAP_HEX_Z + CAP_T, HEX_X1 - HEX_X0,
-                          HEX_Y1 - HEX_Y0, 0.0, MAT_WALL))
-        for nm, a0, a1, b0, b1 in (
-                ("s", HEX_X0, HEX_X1, HEX_Y0 - CAP_T, HEX_Y0),
-                ("n", HEX_X0, HEX_X1, HEX_Y1, HEX_Y1 + CAP_T),
-                ("w", HEX_X0 - CAP_T, HEX_X0, HEX_Y0 - CAP_T, HEX_Y1 + CAP_T),
-                ("e", HEX_X1, HEX_X1 + CAP_T, HEX_Y0 - CAP_T,
-                 HEX_Y1 + CAP_T)):
-            new.append(rotbox("skycap_skirt_%s" % nm, (a0 + a1) / 2.0,
-                              (b0 + b1) / 2.0, CAP_Z, CAP_HEX_Z + CAP_T,
-                              a1 - a0, b1 - b0, 0.0, MAT_WALL))
-        log.append("sky cap: %.0f over the map, %.0f over the hexagon, "
-                   "9 boxes, not twinned" % (CAP_Z, CAP_HEX_Z))
-
     new += cut_ceiling(by, log)
     cover = copy_cover(boxes, log)
     new += cover
@@ -999,6 +1129,8 @@ def main():
     TOL = 0.25
     worst = 0.0
     for b in new:
+        if b["name"].startswith("skycap"):
+            continue      # greedy rectangles need not be mirrored; see header
         mx = 2 * X_PLANE - b["origin"][0]
         my = 2 * Y_PLANE - b["origin"][1]
         myaw = (b["angles"][1] + 180.0) % 180.0
@@ -1037,6 +1169,15 @@ def main():
             problems.append("the deck's top is %.2f, not the %.2f this file "
                             "builds on" % (top, DECK))
 
+    # THE CAP GOES LAST, over everything including this run's own work.
+    # Built earlier it saw only the pre-existing boxes, so the hexagon room,
+    # the shrine rooms and the notches were invisible to it and it sliced
+    # straight through them - the clearance report showed -987 inside the
+    # hexagon roof. Anything added after this line will be missed the same
+    # way.
+    if SKY_CAP:
+        new += build_skycap(boxes + new, log)
+
     boxes.extend(new)
     plan["boxes"] = boxes
     plan["_batch18_removed"] = [json.loads(json.dumps(b)) for b in removed]
@@ -1056,6 +1197,7 @@ def main():
                   else "the square is open all the way down"))
     log.append("NO DOOR: six solid walls, the floor hole is the only way in")
     log.append("")
+    clearance_report(plan, log, problems)
     log.append("added %d boxes, none mirrored; boxes %d -> %d"
                % (len(new), start, len(boxes)))
 
