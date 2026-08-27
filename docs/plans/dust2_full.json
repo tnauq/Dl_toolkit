@@ -83773,18 +83773,18 @@
   {
    "name": "notch_e_ceil",
    "origin": [
-    1013.4,
-    -2473.65,
+    1148.4268,
+    -2543.725,
     1013.6
    ],
    "extents": [
-    373.2,
-    192.7,
+    626.8,
+    420.0,
     26.6
    ],
    "angles": [
     0.0,
-    0.0,
+    -60.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
@@ -83800,26 +83800,6 @@
    "extents": [
     26.7,
     192.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "notch_e_wall_far",
-   "origin": [
-    1013.4,
-    -2583.35,
-    713.55
-   ],
-   "extents": [
-    426.6,
-    26.7,
     573.5
    ],
    "angles": [
@@ -83853,18 +83833,18 @@
   {
    "name": "m_notch_e_ceil",
    "origin": [
-    -93.2,
-    14643.75,
+    -228.2268,
+    14713.825,
     1013.6
    ],
    "extents": [
-    373.2,
-    192.7,
+    626.8,
+    420.0,
     26.6
    ],
    "angles": [
     0.0,
-    180.0,
+    120.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
@@ -83880,26 +83860,6 @@
    "extents": [
     26.7,
     192.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_notch_e_wall_far",
-   "origin": [
-    -93.2,
-    14753.45,
-    713.55
-   ],
-   "extents": [
-    426.6,
-    26.7,
     573.5
    ],
    "angles": [
@@ -83933,18 +83893,18 @@
   {
    "name": "notch_w_ceil",
    "origin": [
-    -1013.4,
-    -2473.65,
+    -1148.4268,
+    -2543.725,
     1013.6
    ],
    "extents": [
-    373.2,
-    192.7,
+    626.8,
+    420.0,
     26.6
    ],
    "angles": [
     0.0,
-    0.0,
+    60.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
@@ -83960,26 +83920,6 @@
    "extents": [
     26.7,
     192.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "notch_w_wall_far",
-   "origin": [
-    -1013.4,
-    -2583.35,
-    713.55
-   ],
-   "extents": [
-    426.6,
-    26.7,
     573.5
    ],
    "angles": [
@@ -84013,18 +83953,18 @@
   {
    "name": "m_notch_w_ceil",
    "origin": [
-    1933.6,
-    14643.75,
+    2068.6268,
+    14713.825,
     1013.6
    ],
    "extents": [
-    373.2,
-    192.7,
+    626.8,
+    420.0,
     26.6
    ],
    "angles": [
     0.0,
-    180.0,
+    -120.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
@@ -84040,26 +83980,6 @@
    "extents": [
     26.7,
     192.7,
-    573.5
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat",
-   "_batch18": true
-  },
-  {
-   "name": "m_notch_w_wall_far",
-   "origin": [
-    1933.6,
-    14753.45,
-    713.55
-   ],
-   "extents": [
-    426.6,
-    26.7,
     573.5
    ],
    "angles": [
