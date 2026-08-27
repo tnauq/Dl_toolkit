@@ -69,6 +69,49 @@ EMIT_UNKNOWN = False
 TELEPORTER_CLASS = "UNKNOWN"
 SINNER_CLASS = "UNKNOWN"
 
+# ---------------------------------------------------------------------------
+# THE SPELLING PROBE. Two classnames came from an LLM search and BOTH invert
+# a convention this project has actually read:
+#
+#     it said   trigger_citadel_teleport
+#     but every Deadlock trigger in dl_example is citadel_trigger_* -
+#     climb_rope, push, speed_boost, idol_return. None are trigger_citadel_*.
+#
+#     it said   citadel_sinners_sacrifice
+#     but npc_units.vdata calls the unit neutral_sinners_sacrifice, next to
+#     neutral_camp_* and neutral_trooper_*.
+#
+# Neither string appears in dl_example, in the vdata, or in any search that
+# returned a game file. So they are NOT trusted - but they are free to test,
+# and a compile answers in one run what no amount of searching has.
+#
+# With SPELLING_PROBE on, every candidate spelling is emitted at the SAME
+# position, one entity each, named so the compile log names the spelling:
+#
+#     probe_tele_a__citadel_trigger_teleport
+#     probe_tele_b__trigger_citadel_teleport      <- the LLM's
+#     ...
+#
+# A compiler that rejects unknown classnames will name the ones it does not
+# know, and whatever survives is the right spelling. A compiler that accepts
+# anything tells you nothing, in which case load the map and see which one
+# does something.
+#
+# THIS IS A DIAGNOSTIC, NOT CONTENT. Turn it off before anyone plays the
+# map: it puts several overlapping entities at each teleporter and sinner.
+SPELLING_PROBE = True
+TELEPORTER_SPELLINGS = [
+    "citadel_trigger_teleport",     # follows the convention we have read
+    "trigger_citadel_teleport",     # the LLM's answer
+    "citadel_teleport",
+    "trigger_teleport",             # the Source 1 / generic name
+]
+SINNER_SPELLINGS = [
+    "neutral_sinners_sacrifice",    # the unit name, straight from the vdata
+    "citadel_sinners_sacrifice",    # the LLM's answer
+    "citadel_breakable_prop",       # if it is a breakable with a subclass
+]
+
 # Camp tiers. subclass_name and ENeutralTrooperType decide what spawns.
 # neutral_camp_weak is READ, off the camp batch13 already carries. The other
 # two are GUESSES with the shape of the family.
@@ -889,6 +932,32 @@ def main():
     for name, origin, note in filled:
         new += make_camp(name, origin, "vault")
         sites.append((name, origin, note))
+
+    if SPELLING_PROBE:
+        n_probe = 0
+        for name, origin, note in rows(TELEPORTERS):
+            for cn in TELEPORTER_SPELLINGS:
+                new += make_point("probe_%s__%s" % (name, cn), origin, cn,
+                                  {"targetname": ""})
+                n_probe += 1
+        for name, origin, note in rows(SINNERS):
+            for cn in SINNER_SPELLINGS:
+                props = {"targetname": ""}
+                if cn == "citadel_breakable_prop":
+                    # the one candidate that certainly needs a subclass
+                    props["subclass_name"] = "neutral_sinners_sacrifice"
+                new += make_point("probe_%s__%s" % (name, cn), origin, cn,
+                                  props)
+                n_probe += 1
+        log.append("")
+        log.append("SPELLING PROBE ON: %d extra entities counting twins, %d "
+                   "spellings at each teleporter and %d at each sinner. "
+                   "Diagnostic only - turn SPELLING_PROBE off before anyone "
+                   "plays this."
+                   % (n_probe * 2, len(TELEPORTER_SPELLINGS),
+                      len(SINNER_SPELLINGS)))
+        log.append("   whatever the compiler does not complain about is the "
+                   "right spelling; the name after __ is the candidate.")
 
     for label, table, cls in (("teleporter", TELEPORTERS, TELEPORTER_CLASS),):
         filled = rows(table)
