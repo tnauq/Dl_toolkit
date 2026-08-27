@@ -24213,44 +24213,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "hex_wall_n_l",
-   "origin": [
-    -513.4,
-    -2400.4,
-    1067.0
-   ],
-   "extents": [
-    626.8,
-    26.7,
-    1280.4
-   ],
-   "angles": [
-    0.0,
-    0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "hex_wall_n_r",
-   "origin": [
-    513.4,
-    -2400.4,
-    1067.0
-   ],
-   "extents": [
-    626.8,
-    26.7,
-    1280.4
-   ],
-   "angles": [
-    0.0,
-    0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "hex_wall_n_jl",
    "origin": [
     -182.6,
@@ -57565,44 +57527,6 @@
    "material": "materials/dev/reflectivity_30.vmat"
   },
   {
-   "name": "m_hex_wall_n_l",
-   "origin": [
-    1433.6,
-    14570.5,
-    1067.0
-   ],
-   "extents": [
-    626.8,
-    26.7,
-    1280.4
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
-   "name": "m_hex_wall_n_r",
-   "origin": [
-    406.8,
-    14570.5,
-    1067.0
-   ],
-   "extents": [
-    626.8,
-    26.7,
-    1280.4
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "material": "materials/dev/reflectivity_30.vmat"
-  },
-  {
    "name": "m_hex_wall_n_jl",
    "origin": [
     1102.8,
@@ -80167,6 +80091,766 @@
    "_batch17": true
   },
   {
+   "name": "hex_wall_n_l_jamb_w",
+   "origin": [
+    -635.9,
+    -2400.4,
+    612.3494
+   ],
+   "extents": [
+    381.8,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "hex_wall_n_l_jamb_e",
+   "origin": [
+    -242.5,
+    -2400.4,
+    612.3494
+   ],
+   "extents": [
+    85.0,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "hex_wall_n_l_hdr",
+   "origin": [
+    -513.4,
+    -2400.4,
+    1252.5494
+   ],
+   "extents": [
+    626.8,
+    26.7,
+    909.3012
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_820_l",
+   "origin": [
+    -294.7708,
+    -2400.4,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.71,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_821_l",
+   "origin": [
+    -293.4427,
+    -2400.4,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_822_l",
+   "origin": [
+    -295.087,
+    -2400.4,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_833_l",
+   "origin": [
+    -434.913,
+    -2400.4,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_834_l",
+   "origin": [
+    -436.6206,
+    -2400.4,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_835_l",
+   "origin": [
+    -435.2292,
+    -2400.4,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.69,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_823_l",
+   "origin": [
+    -312.9209,
+    -2400.4,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_824_l",
+   "origin": [
+    -325.8854,
+    -2400.4,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_825_l",
+   "origin": [
+    -336.004,
+    -2400.4,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_826_l",
+   "origin": [
+    -346.7549,
+    -2400.4,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_829_l",
+   "origin": [
+    -383.2451,
+    -2400.4,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_830_l",
+   "origin": [
+    -394.0593,
+    -2400.4,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_831_l",
+   "origin": [
+    -404.1779,
+    -2400.4,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_832_l",
+   "origin": [
+    -417.0791,
+    -2400.4,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "shallow_827_l",
+   "origin": [
+    -357.8854,
+    -2400.4,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "shallow_828_l",
+   "origin": [
+    -372.1146,
+    -2400.4,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "hex_wall_n_r_jamb_w",
+   "origin": [
+    242.5,
+    -2400.4,
+    612.3494
+   ],
+   "extents": [
+    85.0,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "hex_wall_n_r_jamb_e",
+   "origin": [
+    635.9,
+    -2400.4,
+    612.3494
+   ],
+   "extents": [
+    381.8,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "hex_wall_n_r_hdr",
+   "origin": [
+    513.4,
+    -2400.4,
+    1252.5494
+   ],
+   "extents": [
+    626.8,
+    26.7,
+    909.3012
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_820_r",
+   "origin": [
+    435.2292,
+    -2400.4,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.71,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_821_r",
+   "origin": [
+    436.5573,
+    -2400.4,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_822_r",
+   "origin": [
+    434.913,
+    -2400.4,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_833_r",
+   "origin": [
+    295.087,
+    -2400.4,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_834_r",
+   "origin": [
+    293.3794,
+    -2400.4,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp-slab_835_r",
+   "origin": [
+    294.7708,
+    -2400.4,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.69,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_823_r",
+   "origin": [
+    417.0791,
+    -2400.4,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_824_r",
+   "origin": [
+    404.1146,
+    -2400.4,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_825_r",
+   "origin": [
+    393.996,
+    -2400.4,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_826_r",
+   "origin": [
+    383.2451,
+    -2400.4,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_829_r",
+   "origin": [
+    346.7549,
+    -2400.4,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_830_r",
+   "origin": [
+    335.9407,
+    -2400.4,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_831_r",
+   "origin": [
+    325.8221,
+    -2400.4,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "ramp_832_r",
+   "origin": [
+    312.9209,
+    -2400.4,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "shallow_827_r",
+   "origin": [
+    372.1146,
+    -2400.4,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "shallow_828_r",
+   "origin": [
+    357.8854,
+    -2400.4,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
    "name": "axis_451_jamb_w",
    "origin": [
     1987.05,
@@ -81107,6 +81791,766 @@
    "_batch17": true
   },
   {
+   "name": "m_hex_wall_n_l_jamb_w",
+   "origin": [
+    1556.1,
+    14570.5,
+    612.3494
+   ],
+   "extents": [
+    381.8,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_hex_wall_n_l_jamb_e",
+   "origin": [
+    1162.7,
+    14570.5,
+    612.3494
+   ],
+   "extents": [
+    85.0,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_hex_wall_n_l_hdr",
+   "origin": [
+    1433.6,
+    14570.5,
+    1252.5494
+   ],
+   "extents": [
+    626.8,
+    26.7,
+    909.3012
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_820_l",
+   "origin": [
+    1214.9708,
+    14570.5,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.71,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_821_l",
+   "origin": [
+    1213.6427,
+    14570.5,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_822_l",
+   "origin": [
+    1215.287,
+    14570.5,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_833_l",
+   "origin": [
+    1355.113,
+    14570.5,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_834_l",
+   "origin": [
+    1356.8206,
+    14570.5,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_835_l",
+   "origin": [
+    1355.4292,
+    14570.5,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.69,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_823_l",
+   "origin": [
+    1233.1209,
+    14570.5,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_824_l",
+   "origin": [
+    1246.0854,
+    14570.5,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_825_l",
+   "origin": [
+    1256.204,
+    14570.5,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_826_l",
+   "origin": [
+    1266.9549,
+    14570.5,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_829_l",
+   "origin": [
+    1303.4451,
+    14570.5,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_830_l",
+   "origin": [
+    1314.2593,
+    14570.5,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_831_l",
+   "origin": [
+    1324.3779,
+    14570.5,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_832_l",
+   "origin": [
+    1337.2791,
+    14570.5,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_shallow_827_l",
+   "origin": [
+    1278.0854,
+    14570.5,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_shallow_828_l",
+   "origin": [
+    1292.3146,
+    14570.5,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_hex_wall_n_r_jamb_w",
+   "origin": [
+    677.7,
+    14570.5,
+    612.3494
+   ],
+   "extents": [
+    85.0,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_hex_wall_n_r_jamb_e",
+   "origin": [
+    284.3,
+    14570.5,
+    612.3494
+   ],
+   "extents": [
+    381.8,
+    26.7,
+    371.0988
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_hex_wall_n_r_hdr",
+   "origin": [
+    406.8,
+    14570.5,
+    1252.5494
+   ],
+   "extents": [
+    626.8,
+    26.7,
+    909.3012
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_820_r",
+   "origin": [
+    484.9708,
+    14570.5,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.71,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_821_r",
+   "origin": [
+    483.6427,
+    14570.5,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_822_r",
+   "origin": [
+    485.287,
+    14570.5,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_833_r",
+   "origin": [
+    625.113,
+    14570.5,
+    772.7921
+   ],
+   "extents": [
+    46.6087,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    58.86,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_834_r",
+   "origin": [
+    626.8206,
+    14570.5,
+    756.4759
+   ],
+   "extents": [
+    34.9723,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    54.61,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp-slab_835_r",
+   "origin": [
+    625.4292,
+    14570.5,
+    737.6933
+   ],
+   "extents": [
+    28.1423,
+    16.8854,
+    33.7075
+   ],
+   "angles": [
+    40.69,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_823_r",
+   "origin": [
+    503.1209,
+    14570.5,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_824_r",
+   "origin": [
+    516.0854,
+    14570.5,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_825_r",
+   "origin": [
+    526.204,
+    14570.5,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_826_r",
+   "origin": [
+    536.9549,
+    14570.5,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_829_r",
+   "origin": [
+    573.4451,
+    14570.5,
+    791.5747
+   ],
+   "extents": [
+    16.8854,
+    14.6719,
+    12.6482
+   ],
+   "angles": [
+    40.74,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_830_r",
+   "origin": [
+    584.2593,
+    14570.5,
+    788.9186
+   ],
+   "extents": [
+    16.8854,
+    15.8103,
+    17.8972
+   ],
+   "angles": [
+    48.54,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_831_r",
+   "origin": [
+    594.3779,
+    14570.5,
+    785.7565
+   ],
+   "extents": [
+    16.8854,
+    18.3399,
+    24.2213
+   ],
+   "angles": [
+    52.88,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_ramp_832_r",
+   "origin": [
+    607.2791,
+    14570.5,
+    781.5826
+   ],
+   "extents": [
+    16.8854,
+    26.5613,
+    32.6957
+   ],
+   "angles": [
+    50.9,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_shallow_827_r",
+   "origin": [
+    548.0854,
+    14570.5,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
+   "name": "m_shallow_828_r",
+   "origin": [
+    562.3146,
+    14570.5,
+    793.1557
+   ],
+   "extents": [
+    16.8854,
+    14.2292,
+    9.4862
+   ],
+   "angles": [
+    0.0,
+    -90.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch17": true
+  },
+  {
    "name": "m_axis_451_jamb_w",
    "origin": [
     -1066.85,
@@ -81901,6 +83345,486 @@
    "angles": [
     0.0,
     120.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_w_floor",
+   "origin": [
+    -732.5,
+    -2000.4,
+    413.4
+   ],
+   "extents": [
+    935.0,
+    826.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_w_ceil",
+   "origin": [
+    -732.5,
+    -1982.175,
+    1013.6
+   ],
+   "extents": [
+    935.0,
+    790.25,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_w_wall_w",
+   "origin": [
+    -1213.35,
+    -1982.175,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_w_wall_e",
+   "origin": [
+    -251.65,
+    -1982.175,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_w_wall_n",
+   "origin": [
+    -732.5,
+    -1573.7,
+    713.55
+   ],
+   "extents": [
+    988.4,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_w_wall_s",
+   "origin": [
+    -1161.65,
+    -2390.65,
+    713.55
+   ],
+   "extents": [
+    76.7,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_w_floor",
+   "origin": [
+    1652.7,
+    14170.5,
+    413.4
+   ],
+   "extents": [
+    935.0,
+    826.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_w_ceil",
+   "origin": [
+    1652.7,
+    14152.275,
+    1013.6
+   ],
+   "extents": [
+    935.0,
+    790.25,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_w_wall_w",
+   "origin": [
+    2133.55,
+    14152.275,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_w_wall_e",
+   "origin": [
+    1171.85,
+    14152.275,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_w_wall_n",
+   "origin": [
+    1652.7,
+    13743.8,
+    713.55
+   ],
+   "extents": [
+    988.4,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_w_wall_s",
+   "origin": [
+    2081.85,
+    14560.75,
+    713.55
+   ],
+   "extents": [
+    76.7,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_e_floor",
+   "origin": [
+    732.5,
+    -2000.4,
+    413.4
+   ],
+   "extents": [
+    935.0,
+    826.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_e_ceil",
+   "origin": [
+    732.5,
+    -1982.175,
+    1013.6
+   ],
+   "extents": [
+    935.0,
+    790.25,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_e_wall_w",
+   "origin": [
+    251.65,
+    -1982.175,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_e_wall_e",
+   "origin": [
+    1213.35,
+    -1982.175,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_e_wall_n",
+   "origin": [
+    732.5,
+    -1573.7,
+    713.55
+   ],
+   "extents": [
+    988.4,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "shrine_e_wall_s",
+   "origin": [
+    1161.65,
+    -2390.65,
+    713.55
+   ],
+   "extents": [
+    76.7,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_e_floor",
+   "origin": [
+    187.7,
+    14170.5,
+    413.4
+   ],
+   "extents": [
+    935.0,
+    826.7,
+    26.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/dev_measuregeneric01.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_e_ceil",
+   "origin": [
+    187.7,
+    14152.275,
+    1013.6
+   ],
+   "extents": [
+    935.0,
+    790.25,
+    26.6
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_e_wall_w",
+   "origin": [
+    668.55,
+    14152.275,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_e_wall_e",
+   "origin": [
+    -293.15,
+    14152.275,
+    713.55
+   ],
+   "extents": [
+    26.7,
+    790.25,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_e_wall_n",
+   "origin": [
+    187.7,
+    13743.8,
+    713.55
+   ],
+   "extents": [
+    988.4,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "m_shrine_e_wall_s",
+   "origin": [
+    -241.45,
+    14560.75,
+    713.55
+   ],
+   "extents": [
+    76.7,
+    26.7,
+    573.5
+   ],
+   "angles": [
+    0.0,
+    180.0,
     0.0
    ],
    "material": "materials/dev/reflectivity_30.vmat",
@@ -91156,6 +93080,530 @@
     "ENeutralTrooperType": "5",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "guard_nw1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    -1228.7,
+    -3149.7,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "3",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_guard_nw1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    2148.9,
+    15319.8,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "3",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "guard_nw2",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    -1170.3,
+    -3052.3,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "3",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_guard_nw2",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    2090.5,
+    15222.4,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "3",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "guard_n1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    -55.0,
+    -2404.0,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_guard_n1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    975.2,
+    14574.1,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "guard_n2",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    55.0,
+    -2405.0,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_guard_n2",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    865.2,
+    14575.1,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "guard_ne1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    1184.3,
+    -3052.0,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "6",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_guard_ne1",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    -264.1,
+    15222.1,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "6",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "guard_ne2",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    1238.7,
+    -3148.0,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "2",
+    "lanenum": "6",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_guard_ne2",
+   "classname": "npc_barrack_boss",
+   "origin": [
+    -318.5,
+    15318.1,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "vscripts": "",
+    "teamnumber": "3",
+    "lanenum": "6",
+    "LaneSide": "0",
+    "CoverGroupID": "0",
+    "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "shrine_w",
+   "classname": "destroyable_building",
+   "origin": [
+    -732.5,
+    -1982.2,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "rebels_w_shrine",
+    "vscripts": "",
+    "model": "models/props_street/generator.vmdl",
+    "skin": "default",
+    "bodygroups": "",
+    "disableshadows": "0",
+    "add_attribute": "",
+    "add_modifier": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "building_health": "5000",
+    "final": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_shrine_w",
+   "classname": "destroyable_building",
+   "origin": [
+    1652.7,
+    14152.3,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "combine_w_shrine",
+    "vscripts": "",
+    "model": "models/props_street/generator.vmdl",
+    "skin": "default",
+    "bodygroups": "",
+    "disableshadows": "0",
+    "add_attribute": "",
+    "add_modifier": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "building_health": "5000",
+    "final": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "shrine_e",
+   "classname": "destroyable_building",
+   "origin": [
+    732.5,
+    -1982.2,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "rebels_e_shrine",
+    "vscripts": "",
+    "model": "models/props_street/generator.vmdl",
+    "skin": "default",
+    "bodygroups": "",
+    "disableshadows": "0",
+    "add_attribute": "",
+    "add_modifier": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "building_health": "5000",
+    "final": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_shrine_e",
+   "classname": "destroyable_building",
+   "origin": [
+    187.7,
+    14152.3,
+    426.8
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "combine_e_shrine",
+    "vscripts": "",
+    "model": "models/props_street/generator.vmdl",
+    "skin": "default",
+    "bodygroups": "",
+    "disableshadows": "0",
+    "add_attribute": "",
+    "add_modifier": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "building_health": "5000",
+    "final": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "patron",
+   "classname": "destroyable_building",
+   "origin": [
+    -17.8,
+    -3810.9,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "rebels_building_final",
+    "vscripts": "",
+    "model": "",
+    "skin": "default",
+    "bodygroups": "",
+    "disableshadows": "0",
+    "add_attribute": "",
+    "add_modifier": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "building_health": "8000",
+    "final": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_patron",
+   "classname": "destroyable_building",
+   "origin": [
+    938.0,
+    15981.0,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "combine_building_final",
+    "vscripts": "",
+    "model": "",
+    "skin": "default",
+    "bodygroups": "",
+    "disableshadows": "0",
+    "add_attribute": "",
+    "add_modifier": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "BackdoorProtectionTrigger": "",
+    "building_health": "8000",
+    "final": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "final_objective_proxy",
+   "classname": "citadel_final_objective_proxy",
+   "origin": [
+    -17.8,
+    -3810.9,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "final_objective": "rebels_building_final",
+    "teamnumber": "2",
+    "sub_objective_1": "rebels_t2_boss_yellow",
+    "sub_objective_lane_1": "1",
+    "sub_objective_2": "rebels_t2_boss_orange",
+    "sub_objective_lane_2": "3",
+    "sub_objective_3": "rebels_t2_boss_purple",
+    "sub_objective_lane_3": "6",
+    "sub_objective_4": "",
+    "sub_objective_lane_4": "0"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_final_objective_proxy",
+   "classname": "citadel_final_objective_proxy",
+   "origin": [
+    938.0,
+    15981.0,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "final_objective": "combine_building_final",
+    "teamnumber": "3",
+    "sub_objective_1": "combine_t2_boss_yellow",
+    "sub_objective_lane_1": "1",
+    "sub_objective_2": "combine_t2_boss_orange",
+    "sub_objective_lane_2": "3",
+    "sub_objective_3": "combine_t2_boss_purple",
+    "sub_objective_lane_3": "6",
+    "sub_objective_4": "",
+    "sub_objective_lane_4": "0"
    },
    "_batch16": true
   },
