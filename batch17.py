@@ -465,6 +465,25 @@ def main():
     log.append("stripped %d boxes from a previous batch17 run"
                % (start - len(boxes)))
 
+    # AN INVENTORY, because the box count has now been wrong twice for
+    # reasons that were invisible in the log. For every wall this file eats,
+    # say where it came from: already in the plan, put back from the stash,
+    # or rebuilt from this file's constants. Four boxes missing is two walls
+    # and their twins, and this line names which.
+    log.append("")
+    for w in [sp["wall"] for sp in ROOMS] + [d[1] for d in ANGLED_DOORS]:
+        for nm in (w, PREFIX + w):
+            if nm in {b["name"] for b in boxes}:
+                where = ("restored" if nm in {b["name"] for b in stash}
+                         else "reconstructed"
+                         if any("reconstructed %s" % nm in l for l in log)
+                         else "in the plan")
+            else:
+                where = "MISSING - it will not be removed and the count "\
+                        "will come up short"
+            log.append("  %-22s %s" % (nm, where))
+    log.append("")
+
     by = {b["name"]: b for b in boxes}
     need = list(ARCH_PIECES)
     for spec in ROOMS:
