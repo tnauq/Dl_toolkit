@@ -1,0 +1,60 @@
+name: preflight
+
+# Runs the checks most likely to predict a compile failure, against the
+# committed plan. Read-only: it never edits anything.
+#
+# Run it after `batch` and before handing the emitted .vmap to anyone with a
+# desktop. A clean run does NOT mean the map builds - nothing here has ever
+# been through resourcecompiler - it means the faults we can name in advance
+# are absent.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/preflight.py'
+      - '.github/workflows/preflight.yml'
+
+env:
+  PLAN: docs/plans/dust2_full.json
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Before
+        run: |
+          set -euo pipefail
+          [ -s "$PLAN" ] || { echo "::error::no $PLAN"; exit 1; }
+          [ -s tools/preflight.py ] || { echo "::error::no preflight"; exit 1; }
+          wc -c "$PLAN"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Preflight
+        run: |
+          set -uo pipefail
+          RC=0
+          timeout 600 python3 tools/preflight.py "$PLAN" \
+            > preflight.txt 2>&1 || RC=$?
+          cat preflight.txt
+          [ "$RC" -eq 0 ] || { echo "::error::preflight failed ($RC)"; exit 1; }
+
+      - name: Assert the plan did not move
+        run: |
+          set -euo pipefail
+          git diff --quiet -- "$PLAN" \
+            || { echo "::error::preflight edited the plan"; exit 1; }
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preflight
+          path: preflight.txt
+          if-no-files-found: warn

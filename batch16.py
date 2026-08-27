@@ -338,10 +338,13 @@ SHRINES = [
 # dl_example. The name follows the fixture's own pattern, which the objective
 # proxy below refers to by string.
 #
-# THE MODEL IS UNSET. dl_example's generators carry
-# models/props_street/generator.vmdl; no model for a patron has been read, and
-# inventing a path would fail at compile in a way that looks like a bug in
-# something else. It goes in empty and wants filling.
+# THE MODEL IS A PLACEHOLDER. No model for a patron has been read anywhere,
+# and an EMPTY model path is a likely hard compile failure - preflight flags
+# it as the single most probable thing to stop a build. So the patron borrows
+# the shrines' generator model: obviously the wrong prop, obviously not
+# finished, but it compiles and it is visible, and the POSITION - the part
+# that came from a real reading - survives. Replace it when a real one turns
+# up.
 PATRON = ("patron", [-17.8, -3810.9, 533.0], "hex_dais_0")
 
 # TITAN = THE WALKER, on your read. The proxy's sub_objective_N fields name
@@ -724,7 +727,7 @@ def main():
     new += make_objective(name, origin, "destroyable_building", {
         "targetname": "%s_building_final" % TEAM_WORD,
         "vscripts": "",
-        "model": "",                 # UNKNOWN, see PATRON above
+        "model": "models/props_street/generator.vmdl",   # PLACEHOLDER
         "skin": "default",
         "bodygroups": "",
         "disableshadows": "0",
