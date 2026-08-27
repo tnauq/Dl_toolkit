@@ -11,6 +11,84 @@ section before probing anything.
 
 ---
 
+## THE OBJECTIVE CHAIN — ANSWERED 2026-08-26
+
+Settled by reading connection ownership correctly at the fourth attempt. An
+entity lists its connections BEFORE its own properties, so the owner is the
+NEXT classname in the file. Two earlier models looked backwards and were
+confidently wrong; the first was believed for a while, which is the real cost.
+
+    npc_boss_tier3                  fires OnBossKilled     <- GUARDIAN
+    destroyable_building            fires OnDestroyed
+    info_super_trooper_spawn        fires OnTrooperKilled
+    logic_relay                     fires OnTrigger
+    citadel_final_objective_proxy   fires FinalShielded, FinalExposed,
+                                          SubObjective1/2 Destroyed and
+                                          Revitilized
+
+So the patron outputs belong to `citadel_final_objective_proxy` — a class
+that was in the census from the first run and that I mapped to nothing. YOUR
+2026-08-23 CALL STANDS: npc_boss_tier3 is the lane objective, and my case for
+reversing it was wrong.
+
+The proxy is wiring, not a body. It names its bodies in keyvalues:
+
+    final_objective          125_rebels_building_final      the PATRON
+    sub_objective_1..4       125_rebels_titan_<colour>      the TITANS
+    sub_objective_lane_1..4  1, 3, 4, 6
+    teamnumber               2 / 3
+
+which answers the legend outright:
+
+    Patron      a destroyable_building, the one named *_building_final
+    Titan       four per team, one per lane, *_titan_<colour>
+    Base Guard  npc_barrack_boss, most likely - not yet confirmed by output
+
+TITAN IS NOT THE MIDBOSS. It is a per-lane objective between the walker and
+the base. The midboss is the Rejuvenator, already placed.
+
+WHAT THIS NEEDS FROM YOU: positions. A patron per team, four titans per team
+(one per lane, so three on this map), and the base guards you mentioned
+having. The proxy itself needs no reading — it is a logic entity that can sit
+anywhere, and its links are keyvalues rather than connections, so unlike the
+lid it CAN be expressed in the plan today.
+
+## Two files that would close most of this
+
+Neither is reachable from CI; both need a desktop or a clone.
+
+**`citadel.fgd`** — `Deadlock/game/citadel/citadel.fgd`, declared by gameinfo
+as `GameData "citadel.fgd"`. No public copy exists; it ships inside the
+install only. Plain text, and it lists every entity class Hammer knows with
+each keyvalue's name, type and DEFAULT. It would settle the teleporter
+classname, whether the sinner is a class or a subclass, which keyvalues are
+required rather than merely present in one gym map, the light_environment
+defaults this project leaves to the compiler, and whether
+func_conditional_collidable answers Kill.
+
+**`npc_units.vdata`** — tracked publicly at
+github.com/SteamDatabase/GameTracking-Deadlock, under
+`game/citadel/pak01_dir/scripts/`. Defines the units themselves, which should
+name the sinner, the midboss and the objective family outright.
+
+WHAT THE INTERNET HAS ALREADY GIVEN, all UNVERIFIED and none of it from a
+game file:
+
+  - a console guide lists `neutral_sinners_sacrifice` as a spawnable unit -
+    the sinner is a UNIT name, not a classname prefix, which is why no
+    classname search ever found it
+  - the same guide labels `npc_boss_tier3` as "throne" and lists Guardians as
+    `npc_boss_tier1` and `npc_barrack_boss`, and `npc_super_neutral` as the
+    mid-boss. This project uses tier3 as the lane objective on your
+    2026-08-23 call and does not use tier1 at all.
+  - an NPC reference describes the Titan as guarding the Patron and needing
+    to die before the Patron can be damaged - the shrine's job, not the
+    walker's
+
+Treat all three as leads. `npc_create` unit names are not necessarily map
+entity classnames; that distinction is exactly why `neutral_camp_weak` is a
+subclass and not a class.
+
 ## Already known — do not probe these
 
 | what | classname | where it came from |

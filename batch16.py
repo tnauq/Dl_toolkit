@@ -347,16 +347,28 @@ SHRINES = [
 # up.
 PATRON = ("patron", [-17.8, -3810.9, 533.0], "hex_dais_0")
 
-# TITAN = THE WALKER, on your read. The proxy's sub_objective_N fields name
-# entities by targetname, and batch13 already gives every walker one
-# (<team>_t2_boss_<colour>), so the proxy points at the walkers that exist
-# rather than at new bodies. If a titan turns out to be its own entity, this
-# is the line that changes.
+# THE PROXY'S SUB-OBJECTIVES ARE THE SHRINES, changed 2026-08-27.
 #
-# The fixture's proxy has four sub-objectives on lanes 1, 3, 4 and 6. This map
-# has three lanes, so slot 4 is left empty with lane 0 - which is exactly what
-# dl_example's own team-3 proxy does.
-PROXY_LANES = ["1", "3", "6"]
+# They were wired to the WALKERS on the reading that titan = walker. Two
+# independent signals now say otherwise:
+#
+#   - the wiki's objective chain: base guardians, then the shrine pair, then
+#     the patron. Walkers are lane structures, not base ones.
+#   - a Deadlock NPC reference describing the Titan as the thing that guards
+#     the Patron and must be destroyed before the Patron can take damage -
+#     which is the shrine's job. The same page describes the Walker
+#     separately as front-line lane defence.
+#
+# Neither is a game file, so this is still a READ OFF THE INTERNET, not off
+# the game. It is one line to put back: swap SHRINES for the walker names
+# below. citadel.fgd or npc_units.vdata would settle it outright.
+#
+# The fixture's proxy has four sub-objective slots on lanes 1, 3, 4 and 6.
+# This map has TWO shrines per team and they are not per-lane, so slots 3 and
+# 4 are left empty and every lane field is 0 - dl_example's own team-3 proxy
+# leaves its unused slots empty the same way. The lane fields being 0 is a
+# GUESS: nothing says what a non-lane sub-objective should carry.
+PROXY_SUBS = ["w", "e"]
 
 # ---------------------------------------------------------------------------
 # THE SKY AND THE SUN. READ off dl_example, which carries exactly one of each
@@ -798,12 +810,12 @@ def main():
         "final_objective": "%s_building_final" % TEAM_WORD,
         "teamnumber": SPAWN_TEAM_OBJ,
     }
-    for i, lane in enumerate(PROXY_LANES, start=1):
-        proxy["sub_objective_%d" % i] = "%s_t2_boss_%s" % (TEAM_WORD,
-                                                           LANE_COLOUR[lane])
-        proxy["sub_objective_lane_%d" % i] = lane
-    proxy["sub_objective_4"] = ""
-    proxy["sub_objective_lane_4"] = "0"
+    for i, side in enumerate(PROXY_SUBS, start=1):
+        proxy["sub_objective_%d" % i] = "%s_%s_shrine" % (TEAM_WORD, side)
+        proxy["sub_objective_lane_%d" % i] = "0"
+    for i in range(len(PROXY_SUBS) + 1, 5):
+        proxy["sub_objective_%d" % i] = ""
+        proxy["sub_objective_lane_%d" % i] = "0"
     # A logic entity with no body. It sits on the patron so it mirrors with
     # it and is findable in the viewer; nothing depends on where it is.
     new += make_objective("final_objective_proxy", origin,
