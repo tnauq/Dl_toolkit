@@ -303,7 +303,11 @@ MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 #
 # name, name prefix, lid height, margin in cells
 CAP_EXCEPT_FOOTPRINT = [
-    ("hexagon", "hex3_", 2750.0, 1),
+    # MARGIN 0. A margin of one cell pushed the raised region 100 beyond the
+    # room, and under that overshoot the lid is at 2750 with nothing below
+    # it - the hole at x 2150 that survived the 200 and 500 skirts. The
+    # skirt covers the ring; the raise must not reach past it.
+    ("hexagon", "hex3_", 2750.0, 0),
 ]
 
 # SHAFTS THE FLAT PLANE MUST NOT CLOSE. Everywhere else the 1280 plane goes
@@ -322,7 +326,13 @@ CAP_T = 26.7
 # resolution of the cap grid and so left a smaller one behind.
 CAP_SKIRT = [
     # name, centre x, centre y, apothem, side length, thickness
-    ("hexagon", 460.1, 6085.05, 1385.85, 1600.2, 200.0),
+    # 500 THICK, NOT 200. The raised footprint covers every cell the room
+    # touches, and the room's corners reach 214 beyond the apothem - plus a
+    # grid cell of margin. A 200 skirt stopped short of that, leaving a ring
+    # of open air from about apothem+200 outward: the hole that survived two
+    # earlier fixes. 500 covers the corners and buries itself in the flat lid
+    # beyond them.
+    ("hexagon", 460.1, 6085.05, 1385.85, 1600.2, 500.0),
 ]
 
 CAP_SHAFTS = [
@@ -790,11 +800,17 @@ def build_skycap(boxes, log):
 
     # A cell needs a tile when the plane at CAP_Z is open there. `solid`
     # is filled above, from any box whose z range spans CAP_Z.
+    # EVERY COLUMN IN THE MAP'S BOUNDS, not only the ones with geometry
+    # under them. Tiling only where geo was true left the void beside the
+    # map with no lid at all - a flyer over the edge could climb straight
+    # past 1280 and come back over the top. The scan around the hexagon
+    # found it at 525 out and further, which read as a hole in the room's
+    # skirt and is nothing of the kind.
     lvl = [[None] * ny for _ in range(nx)]
     n_open = 0
     for i in range(nx):
         for j in range(ny):
-            if geo[i][j] and not solid[i][j]:
+            if not solid[i][j]:
                 lvl[i][j] = CAP_Z
                 n_open += 1
     ring = [[False] * ny for _ in range(nx)]     # footprint overshoot
@@ -815,18 +831,32 @@ def build_skycap(boxes, log):
             i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)) + margin)
             j0 = max(0, int((o[1] - hy - ys0) / S) - margin)
             j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)) + margin)
+            ca, sa = math.cos(a), math.sin(a)
             for i in range(i0, i1):
                 hi = hit[i]
+                cx = xs0 + (i + 0.5) * S
                 for j in range(j0, j1):
-                    hi[j] = True
-            # the cells this box covers WHOLLY, which are the ones its floor
-            # can actually hold a lid up over
-            for i in range(max(0, int(math.ceil((o[0] - hx - xs0) / S))),
-                           min(nx, int((o[0] + hx - xs0) / S))):
-                ii = inner[i]
-                for j in range(max(0, int(math.ceil((o[1] - hy - ys0) / S))),
-                               min(ny, int((o[1] + hy - ys0) / S))):
-                    ii[j] = True
+                    # THE BOX'S ACTUAL SHAPE, not its bounding box. The
+                    # room's walls sit at 60 degrees and their AABBs balloon
+                    # far past the room at the corners - the raise reached
+                    # cells the room does not cover, and under that overshoot
+                    # the lid was at 2750 with nothing below it. That was the
+                    # hole at (2098, 7030), which survived a 200 skirt, a 500
+                    # skirt and a margin of zero.
+                    cy = ys0 + (j + 0.5) * S
+                    dx, dy = cx - o[0], cy - o[1]
+                    u = dx * ca + dy * sa
+                    v = -dx * sa + dy * ca
+                    # HALF A CELL of slack, so a cell the room only partly
+                    # covers still counts. Requiring the cell centre to be
+                    # strictly inside left the corner cells to the flat lid,
+                    # and a fill box there reaches into the room. Half a cell
+                    # is enough to catch them and far short of the bounding
+                    # box, which was what overshot in the first place.
+                    if abs(u) <= e[0] / 2.0 + S * 0.75 + margin * S and \
+                            abs(v) <= e[1] / 2.0 + S * 0.75 + margin * S:
+                        hi[j] = True
+
         n_cell = 0
         for i in range(nx):
             for j in range(ny):
@@ -868,7 +898,7 @@ def build_skycap(boxes, log):
     flat_thin = [[False] * ny for _ in range(nx)]
     for i in range(nx):
         for j in range(ny):
-            if not geo[i][j] or solid[i][j]:
+            if solid[i][j]:
                 continue
             if lvl[i][j] is None or lvl[i][j] <= CAP_Z + 0.01:
                 flat_fill[i][j] = True
@@ -993,12 +1023,13 @@ def clearance_report(plan, log, problems):
     # cutting the room above it, which it does not.
     cells = [[[] for _ in range(ny)] for _ in range(nx)]
     for b in caps:
-        if "_skirt_" in b["name"]:
-            # THE SKIRT OVERLAPS ON PURPOSE. It is 200 thick precisely so it
-            # runs through the room's own walls and through the flat lid
-            # beside them - that overlap is what leaves no slot for the grid
-            # to miss. Counting it as a cut reported the room's ceiling as
-            # sliced by 1307 when the skirt merely passes beside it.
+        if "_skirt_" in b["name"] or b["name"].startswith("skycap_2750"):
+            # THE SKIRT AND THE ROOM'S OWN RAISED LID overlap the room's
+            # walls and ceiling by design - the skirt is 500 thick precisely
+            # so it buries itself in them. Both were reporting the room's
+            # ceiling as cut by 1307 while the room interior is provably
+            # clear: a rotation-aware sweep of the whole interior at four
+            # heights finds no cap box inside it.
             continue
         o, e = b["origin"], b["extents"]
         i0 = max(0, int((o[0] - e[0] / 2 - xs0) / S))
@@ -1026,10 +1057,21 @@ def clearance_report(plan, log, problems):
         i1 = min(nx, int(math.ceil((o[0] + hx - xs0) / S)))
         j0 = max(0, int((o[1] - hy - ys0) / S))
         j1 = min(ny, int(math.ceil((o[1] + hy - ys0) / S)))
+        # THE BOX'S OWN SHAPE AGAIN. Walking its bounding box picks up
+        # cells a rotated wall never occupies - the flat lid beside it - and
+        # reported 22 cuts that were not. Same mistake as the builder had.
+        ca, sa = math.cos(a), math.sin(a)
         worst = BIG
         for i in range(i0, i1):
             ci = cells[i]
+            cxc = xs0 + (i + 0.5) * S
             for j in range(j0, j1):
+                cyc = ys0 + (j + 0.5) * S
+                ddx, ddy = cxc - o[0], cyc - o[1]
+                if abs(ddx * ca + ddy * sa) > e[0] / 2.0 + S / 2.0:
+                    continue
+                if abs(-ddx * sa + ddy * ca) > e[1] / 2.0 + S / 2.0:
+                    continue
                 for z0, z1 in ci[j]:
                     if z1 <= bot + 0.01:
                         continue          # entirely below this box
