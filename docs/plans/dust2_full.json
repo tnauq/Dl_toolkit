@@ -83991,6 +83991,186 @@
    "_batch18": true
   },
   {
+   "name": "skycap_s",
+   "origin": [
+    460.1,
+    -1003.375,
+    1813.35
+   ],
+   "extents": [
+    11679.6,
+    11405.15,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_n",
+   "origin": [
+    460.1,
+    13173.475,
+    1813.35
+   ],
+   "extents": [
+    11679.6,
+    11405.15,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_w",
+   "origin": [
+    -3259.9,
+    6085.05,
+    1813.35
+   ],
+   "extents": [
+    4239.6,
+    2771.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_e",
+   "origin": [
+    4180.1,
+    6085.05,
+    1813.35
+   ],
+   "extents": [
+    4239.6,
+    2771.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_hex",
+   "origin": [
+    460.1,
+    6085.05,
+    2633.35
+   ],
+   "extents": [
+    3200.4,
+    2771.7,
+    26.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_skirt_s",
+   "origin": [
+    460.1,
+    4685.85,
+    2223.35
+   ],
+   "extents": [
+    3200.4,
+    26.7,
+    846.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_skirt_n",
+   "origin": [
+    460.1,
+    7484.25,
+    2223.35
+   ],
+   "extents": [
+    3200.4,
+    26.7,
+    846.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_skirt_w",
+   "origin": [
+    -1153.45,
+    6085.05,
+    2223.35
+   ],
+   "extents": [
+    26.7,
+    2825.1,
+    846.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
+   "name": "skycap_skirt_e",
+   "origin": [
+    2073.65,
+    6085.05,
+    2223.35
+   ],
+   "extents": [
+    26.7,
+    2825.1,
+    846.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "material": "materials/dev/reflectivity_30.vmat",
+   "_batch18": true
+  },
+  {
    "name": "bridge_ceil_b_e_s",
    "origin": [
     963.55,
