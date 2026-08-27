@@ -313,6 +313,18 @@ CAP_EXCEPT_FOOTPRINT = [
 # Thickness of a flat tile where it sits under a raised lid.
 CAP_T = 26.7
 
+# A FAT SKIRT AROUND THE HEXAGON ROOM. Six boxes on the room's six sides,
+# running from the flat plane up to the cap top, thick enough that they
+# overlap both the room's own walls and the surrounding 1280 lid. Grid
+# alignment cannot leave a slot between two things that overlap by 100.
+#
+# This replaces the thin ring slab, which closed the hole only to the
+# resolution of the cap grid and so left a smaller one behind.
+CAP_SKIRT = [
+    # name, centre x, centre y, apothem, side length, thickness
+    ("hexagon", 460.1, 6085.05, 1385.85, 1600.2, 200.0),
+]
+
 CAP_SHAFTS = [
     ("midboss_shaft", 326.8, 593.5, 5951.7, 6218.4),
 ]
@@ -821,13 +833,7 @@ def build_skycap(boxes, log):
                 if hit[i][j] and lvl[i][j] is not None:
                     lvl[i][j] = z
                     n_cell += 1
-                    if not inner[i][j]:
-                        # RAISED BUT UNSUPPORTED: the lid covers this cell
-                        # because the room touches it, but the room's floor
-                        # does not reach it. Without something at 1280 here
-                        # there is a hole right round the room, which is what
-                        # showed in the viewer.
-                        ring[i][j] = True
+
         log.append("   %s: raised to %.0f over the footprint of %d %s* "
                    "boxes, %d cells" % (nm, z, n_box, prefix, n_cell))
 
@@ -864,12 +870,7 @@ def build_skycap(boxes, log):
         for j in range(ny):
             if not geo[i][j] or solid[i][j]:
                 continue
-            if ring[i][j]:
-                # a thin slab, only in the overshoot ring. A FILL box here
-                # would fill the room above it, and a thin one anywhere else
-                # under a raise would slice the base interiors at 1280.
-                flat_thin[i][j] = True
-            elif lvl[i][j] is None or lvl[i][j] <= CAP_Z + 0.01:
+            if lvl[i][j] is None or lvl[i][j] <= CAP_Z + 0.01:
                 flat_fill[i][j] = True
     for nm, x0, x1, y0, y1 in CAP_SHAFTS:
         # inner cells: a shaft must not be narrowed by a tile clipping it
@@ -941,6 +942,20 @@ def build_skycap(boxes, log):
                 xs0 + (i0 + i1 + 1) / 2.0 * S, ys0 + (j0 + j1 + 1) / 2.0 * S,
                 float(v), top_z,
                 (i1 - i0 + 1) * S, (j1 - j0 + 1) * S, 0.0, MAT_SKY))
+    for nm, cx, cy, apothem, side, thick in CAP_SKIRT:
+        for k in range(6):
+            theta = 30.0 + 60.0 * k
+            r = apothem + thick / 2.0
+            made.append(rotbox(
+                "skycap_skirt_%s_%d" % (nm, int(theta)),
+                cx + r * math.cos(math.radians(theta)),
+                cy + r * math.sin(math.radians(theta)),
+                CAP_Z, top_z, side + 2.0 * thick, thick,
+                theta + 90.0, MAT_SKY))
+        log.append("   %s skirt: 6 boxes %.0f thick from %.0f to %.0f, "
+                   "overlapping the room's walls and the flat lid both"
+                   % (nm, thick, CAP_Z, top_z))
+
     log.append("sky cap: one plane at %.0f, %d open cell(s) tiled, %d cell(s) "
                "already sealed by a wall, %d exception(s), %d boxes up to %.0f"
                % (CAP_Z, n_open,
@@ -978,6 +993,13 @@ def clearance_report(plan, log, problems):
     # cutting the room above it, which it does not.
     cells = [[[] for _ in range(ny)] for _ in range(nx)]
     for b in caps:
+        if "_skirt_" in b["name"]:
+            # THE SKIRT OVERLAPS ON PURPOSE. It is 200 thick precisely so it
+            # runs through the room's own walls and through the flat lid
+            # beside them - that overlap is what leaves no slot for the grid
+            # to miss. Counting it as a cut reported the room's ceiling as
+            # sliced by 1307 when the skirt merely passes beside it.
+            continue
         o, e = b["origin"], b["extents"]
         i0 = max(0, int((o[0] - e[0] / 2 - xs0) / S))
         i1 = min(nx, int(math.ceil((o[0] + e[0] / 2 - xs0) / S)))
