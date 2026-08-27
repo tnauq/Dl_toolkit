@@ -180,7 +180,12 @@ SHRINE_Y1 = -1587.05
 # The base already closes the south face across this whole span - not just
 # hex_wall_n_l's 200..826.8, but the angled hex_wall_nw_r / _ne_l beyond it,
 # which reach out to 1123.3.
-SHRINE_BASEWALL = [(-1123.3, -200.0), (200.0, 1123.3)]
+# ONLY hex_wall_n_l / _n_r actually close the south face. An earlier version
+# also credited the angled hex_wall_nw_r / _ne_l, whose AABB reaches x 1123.3
+# - but the box itself is at 60 degrees, so it does not fill that rectangle
+# down at the room's south edge, and the result was an open slot between
+# x 826.8 and the room's own south wall. Reported from the viewer, both sides.
+SHRINE_BASEWALL = [(-826.8, -200.0), (200.0, 826.8)]
 
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
@@ -652,14 +657,25 @@ def main():
             # these sit in one team's base and the other team needs its own.
             P += [twin_box(q) for q in P]
             clash = hits_existing(P, boxes)
-            if clash:
-                problems.append("%s clips %s"
-                                % (tag, ", ".join(sorted(clash))[:120]))
+            # The two angled base walls are EXPECTED. The south wall has to
+            # run past them to close the slot they leave, and the clearance
+            # test is AABB, which for a 60 degree box claims a rectangle it
+            # does not fill. Overlapping solids cost nothing; an open slot
+            # does. Everything else still fails the run.
+            allowed = {"hex_wall_nw_r", "hex_wall_ne_l",
+                       "m_hex_wall_nw_r", "m_hex_wall_ne_l"}
+            real = sorted(clash - allowed)
+            if real:
+                problems.append("%s clips %s" % (tag, ", ".join(real)[:120]))
+            elif clash:
+                log.append("   overlaps %s on purpose, to close the slot "
+                           "their angle leaves"
+                           % ", ".join(sorted(clash & allowed)))
             shrine_pieces += P
             log.append("%s: interior x %.1f..%.1f y %.1f..%.1f, floor %.1f, "
                        "ceiling %.1f%s"
                        % (tag, ix0, ix1, SHRINE_Y0, SHRINE_Y1, SHRINE_FLOOR,
-                          top, "" if not clash else "  CLIPS"))
+                          top, "" if not clash else "  (see overlap note)"))
             log.append("   shrine goes at [%.1f, %.1f, %.1f]"
                        % ((ix0 + ix1) / 2.0, (SHRINE_Y0 + SHRINE_Y1) / 2.0,
                           SHRINE_FLOOR))
