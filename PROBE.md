@@ -53,6 +53,48 @@ having. The proxy itself needs no reading — it is a logic entity that can sit
 anywhere, and its links are keyvalues rather than connections, so unlike the
 lid it CAN be expressed in the plan today.
 
+## ANSWERED 2026-08-27 by npc_units.vdata
+
+The file settles the objective chain outright. Model paths and health values,
+read not inferred:
+
+    npc_boss_tier1   boss_tier_01_brazier_guardian.vmdl   5500      GUARDIAN
+    npc_boss_tier2   boss_tier_02_sun_walker.vmdl    6000/9000/12000  WALKER
+    npc_boss_tier3   patron_amber.vmdl               12000 + phase2   PATRON
+    destroyable_building   shrine_amber / shrine_sapphire            SHRINE
+                     generator 5000, second 10000, final 8775
+    neutral_sinners_sacrifice
+                     props_gameplay/sinners_sacrifice_vault/...  500  SINNER
+    npc_super_neutral      midboss.vmdl                             MIDBOSS
+
+Consequences, in order of size:
+
+1. THE PATRON IS npc_boss_tier3, with two phases, a transform sound and
+   phase-1/phase-2 lasers. batch16 now emits it as that instead of a
+   destroyable_building. My earlier case was right and the 2026-08-23 call
+   was wrong.
+
+2. batch13 THEREFORE PLACES SIX PATRONS where it means lane guardians. The
+   lane guardian is npc_boss_tier1. That is one line in batch13's table, but
+   it ripples into batch15's shop wiring, which fires off the guardian's
+   OnBossKilled - so it wants doing deliberately, not folded into a drop
+   about something else. NOT YET CHANGED.
+
+3. The walker was right all along.
+
+4. The shrine model is shrine_amber / shrine_sapphire, not the generator
+   placeholder, and 5000 health matches m_iMaxHealthGenerator exactly - the
+   wiki number was correct and dl_example's 8000 was not the relevant one.
+
+5. THE SINNER'S MODEL PATH CONTAINS "vault":
+   props_gameplay/sinners_sacrifice_vault/sinners_sacrifice.vmdl. That is
+   independent support for your sinner = vault camp read, from a direction
+   nobody was looking.
+
+Still open after this file: the teleporter, which appears nowhere in it, and
+whether neutral_camp_vaults is really the container that spawns
+neutral_sinners_sacrifice.
+
 ## Two files that would close most of this
 
 Neither is reachable from CI; both need a desktop or a clone.

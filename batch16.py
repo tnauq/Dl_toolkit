@@ -323,16 +323,48 @@ BASE_GUARDS = [
     ("guard_ne2", [1238.7, -3148.0, 426.8], "6", "hex_wall_ne arch"),
 ]
 
-# THE SHRINES, in the middle of the two rooms batch18 builds off the base's
-# north wall. A destroyable_building like the patron but with `final` 0,
-# which is what dl_example's own generators carry. 5000 health per the wiki;
-# the fixture's generators say 8000, so this is a WIKI number, not a read
-# one, and the two disagree.
+# THE SHRINES. destroyable_building, CONFIRMED 2026-08-27 by npc_units.vdata:
+#
+#     m_sAmberModelName   models/npc/shrine_amber/shrine_amber.vmdl
+#     m_sSapphModelName   models/npc/shrine_sapphire/shrine_sapphire.vmdl
+#     m_iMaxHealthGenerator        5000
+#     m_iMaxHealthGeneratorSecond 10000
+#     m_iMaxHealthFinal            8775
+#
+# 5000 was the wiki number and it matches m_iMaxHealthGenerator exactly, so
+# building_health stays. The model is now the real shrine rather than the
+# generator placeholder.
+#
+# THE MODEL IS PER TEAM and the twin does not swap it. VData carries an amber
+# and a sapphire name, so the entity may well pick for itself from teamnumber
+# - in which case setting `model` at all is redundant. Both copies currently
+# say amber. If the far shrine renders the wrong colour, that is why.
 SHRINES = [
     ("shrine_w", [-732.5, -1982.2, 426.8], "shrine_w room"),
     ("shrine_e", [732.5, -1982.2, 426.8], "shrine_e room"),
 ]
 
+# THE PATRON IS npc_boss_tier3, READ 2026-08-27 off npc_units.vdata:
+#
+#     npc_boss_tier3   models/npc/patron_amber/patron_amber.vmdl
+#                      m_nMaxHealth 12000, m_nPhase2Health 12000
+#                      m_PatronTransformStartSound "Patron.Phase1.Transform..."
+#                      Phase1/Phase2 lasers, observer origins, dying sequence
+#
+# It is the patron, with two phases, and there is no ambiguity left. That
+# means MY EARLIER CASE WAS RIGHT AND THE 2026-08-23 CALL WAS WRONG, and it
+# also means batch13 currently places SIX PATRONS as lane objectives. The
+# lane guardian is npc_boss_tier1:
+#
+#     npc_boss_tier1   models/npc/.../boss_tier_01_brazier_guardian.vmdl
+#                      m_nMaxHealth 5500
+#     npc_boss_tier2   models/npc/boss_tier_02_sun_walker/...
+#                      6000 / 9000 / 12000 - the walker, which was right
+#
+# batch13 is not changed here; that is a one-line swap in ITS table and it
+# ripples into batch15's shop wiring, so it wants doing deliberately rather
+# than folded into this drop.
+#
 # THE PATRON, on the dais. A destroyable_building like the shrines, told apart
 # from them by `final`, which is 1 here and 0 on every generator in
 # dl_example. The name follows the fixture's own pattern, which the objective
@@ -602,8 +634,11 @@ TEAM_B = "3"
 # Keys whose VALUE names another entity by targetname. On an objective twin
 # these have to be swapped too, or the mirrored proxy wires itself to the
 # base half's walkers - which it did, silently, on the first attempt.
+# BossName belongs here too. Without it the far patron came out as
+# rebels_patron on team 3 - a name that says one team and a teamnumber that
+# says the other.
 LINK_KEYS = ("final_objective", "sub_objective_1", "sub_objective_2",
-             "sub_objective_3", "sub_objective_4", "targetname")
+             "sub_objective_3", "sub_objective_4", "targetname", "BossName")
 
 
 def team_swap(name):
@@ -772,7 +807,7 @@ def main():
         new += make_objective(nm2, o2, "destroyable_building", {
             "targetname": "%s_%s_shrine" % (TEAM_WORD, nm2.split("_")[1]),
             "vscripts": "",
-            "model": "models/props_street/generator.vmdl",  # read
+            "model": "models/npc/shrine_amber/shrine_amber.vmdl",   # read
             "skin": "default",
             "bodygroups": "",
             "disableshadows": "0",
@@ -788,20 +823,17 @@ def main():
 
     # the patron, and the proxy that binds it to the walkers
     name, origin, note = PATRON
-    new += make_objective(name, origin, "destroyable_building", {
+    new += make_objective(name, origin, "npc_boss_tier3", {
         "targetname": "%s_building_final" % TEAM_WORD,
         "vscripts": "",
-        "model": "models/props_street/generator.vmdl",   # PLACEHOLDER
-        "skin": "default",
-        "bodygroups": "",
-        "disableshadows": "0",
-        "add_attribute": "",
-        "add_modifier": "",
         "teamnumber": SPAWN_TEAM_OBJ,
-        "lanenum": "1",
+        "lanenum": "3",              # the fixture's own tier3 carries lane 3
+        "BossName": "%s_patron" % TEAM_WORD,
+        "subclass_name": "npc_boss_tier3",
+        "CoverGroupID": "",
+        "dying_cover_id": "",
+        "vulnerable_cover_id": "",
         "BackdoorProtectionTrigger": "",
-        "building_health": "8000",   # read off the fixture's generators
-        "final": "1",                # what makes this the patron
     })
     sites.append((name, origin, note))
 

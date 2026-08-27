@@ -200,10 +200,10 @@ def mirror_angles(a):
 # mirror has to swap these the same way it swaps teamnumber - a twin left on
 # the team-2 subclass renders in the wrong colours.
 TEAM_SUBCLASS = {
+    "npc_boss_tier1": "alt_npc_boss_tier1",
     "npc_boss_tier3": "alt_npc_boss_tier3",
     "npc_boss_tier2": "alt_npc_boss_tier2",
     "npc_boss_tier2_weak": "alt_npc_boss_tier2_weak",
-    "npc_boss_tier1": "alt_npc_boss_tier1",
 }
 
 # WALKER DIFFICULTY BY LANE. dl_example runs two strengths of npc_boss_tier2
@@ -764,17 +764,26 @@ def build_objectives():
         if kind == "guardian":
             out.append({
                 "name": "guardian_l%s" % lane,
-                # CORRECTED 2026-08-23, user: the objective standing in the
-                # middle of a lane is npc_boss_tier3, and it is the one whose
-                # death disables the lane's shop. npc_barrack_boss is NOT
-                # this: it is the pair guarding a SHRINE in the base, and it
-                # drives nothing.
+                # CORRECTED AGAIN 2026-08-27, from npc_units.vdata itself:
                 #
-                # The vdata agrees where it can be checked. npc_boss_tier3 is
-                # the only objective class dl_example wires an output on
-                # (OnBossKilled), and npc_barrack_boss owns no connection in
-                # the fixture at all.
-                "classname": "npc_boss_tier3",
+                #   npc_boss_tier1  boss_tier_01_brazier_guardian.vmdl   5500
+                #   npc_boss_tier3  patron_amber.vmdl   12000, m_nPhase2Health,
+                #                   Patron.Phase1.Transform.Start, phase 1 and
+                #                   phase 2 lasers, a dying sequence
+                #
+                # npc_boss_tier3 IS THE PATRON. Using it here put six patrons
+                # on the map, one per lane per team. The lane objective - the
+                # brazier guardian - is npc_boss_tier1.
+                #
+                # The 2026-08-23 note this replaces was reasoned from the
+                # fixture: tier3 was the only objective class dl_example wired
+                # an output on. That was true and still is; it just does not
+                # mean tier3 is the guardian. The gym contains one of each
+                # thing, and its tier3 is its patron.
+                #
+                # npc_barrack_boss is unchanged and still not this: it is the
+                # pair guarding a shrine in the base.
+                "classname": "npc_boss_tier1",
                 "origin": list(origin),
                 "angles": face_centre(origin),
                 "surveyed_on": box,
@@ -792,11 +801,13 @@ def build_objectives():
                 # by entity IO from anything except its own outputs, which is
                 # fine: it drives the shop relay rather than being driven.
                 #
-                # SUBCLASS_NAME IS PER TEAM. The fixture's team-2 boss uses
-                # npc_boss_tier3 and its team-3 counterpart alt_npc_boss_tier3,
-                # which the vdata confirms differ only in model scale and core
-                # radius. flip_team does not touch subclass_name, so the twin
-                # is corrected in build_objectives' mirror step below.
+                # SUBCLASS_NAME IS PER TEAM: npc_boss_tier1 for team 2 and
+                # alt_npc_boss_tier1 for team 3. The vdata shows the two are
+                # identical in every value that matters - same model, same
+                # 5500 health, same scale - so the split is bookkeeping, but
+                # it is what the fixture does. flip_team does not touch
+                # subclass_name, so the twin is corrected in
+                # build_objectives' mirror step below.
                 #
                 # The cover ids are UNSET rather than invented. dl_example
                 # carries real values (CoverGroupID 4321 / 1234), which look
@@ -807,8 +818,8 @@ def build_objectives():
                     "teamnumber": TEAM_A,
                     "lanenum": lane,
                     "BackdoorProtectionTrigger": "",
-                    "BossName": "%s_t3_boss_%s" % (TEAM_WORD_A, lane_colour(lane)),
-                    "subclass_name": "npc_boss_tier3",
+                    "BossName": "%s_t1_boss_%s" % (TEAM_WORD_A, lane_colour(lane)),
+                    "subclass_name": "npc_boss_tier1",
                     "CoverGroupID": "",
                     "dying_cover_id": "",
                     "vulnerable_cover_id": "",

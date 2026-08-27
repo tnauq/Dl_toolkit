@@ -32,7 +32,7 @@ WHAT IS A DESIGN DECISION AND NOT A READING. Two things, both the user's
 
   1. LANE OBJECTIVES KILL THEIR OWN LANE'S SHOP. dl_example wires an
      info_super_trooper_spawn's OnTrooperKilled into the kill relay instead.
-     Here the npc_boss_tier3 standing in the lane does it directly, so a
+     Here the npc_boss_tier1 standing in the lane does it directly, so a
      lane's shop dies with the objective that holds the lane.
 
   2. SHRINES UPGRADE TROOPERS. Not implemented below, because there are no
@@ -96,6 +96,17 @@ def team_swap(name):
 GAME_START_DELAY = 15.0
 
 # READ from dl_example: npc_boss_tier3 fires OnBossKilled.
+#
+# STILL OnBossKilled after the 2026-08-27 correction, but the reasoning
+# changed. The lane guardian is now npc_boss_tier1, not tier3 - npc_units.
+# vdata shows tier3 is the PATRON (patron_amber.vmdl, phase 2, transform
+# sound) and tier1 is the brazier guardian at 5500 health.
+#
+# Nothing in dl_example wires an output on a tier1, so this is now an
+# ANALOGY rather than a reading: tier1 and tier3 are both bosses and
+# OnBossKilled is presumably the boss output. A WRONG OUTPUT NAME FAILS
+# SILENTLY - the map emits, the shop simply never closes - so this is the
+# first thing to check if lane shops stay open after a guardian dies.
 GUARDIAN_OUTPUT = "OnBossKilled"
 
 # Which shops get a network, and which entity kills each one.

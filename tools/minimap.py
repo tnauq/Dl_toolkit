@@ -13,10 +13,16 @@ classnames below. Where the game's legend word and the plan's classname
 differ, this file uses the plan and says so:
 
     legend         drawn from
-    Patron         destroyable_building with final 1
-    Shrine         destroyable_building with final 0
+    Patron         npc_boss_tier3
+    Shrine         destroyable_building
     Walker         npc_boss_tier2
-    Guardian       npc_boss_tier3 AND npc_barrack_boss, together
+    Guardian       npc_boss_tier1 AND npc_barrack_boss, together
+
+CORRECTED 2026-08-27 from npc_units.vdata, which gives every class a model
+and a health: tier1 is the brazier guardian at 5500, tier2 the sun walker,
+tier3 the PATRON at 12000 with a second phase. The patron was previously
+looked up as a destroyable_building carrying final 1 - it is its own class,
+and every destroyable_building in the plan is a shrine.
 
 The last two are one entry on purpose. The lane objective and the pair in the
 base do much the same job - stand in the way, die, open something up - so
@@ -173,7 +179,7 @@ def main():
 
     missing = []
     # bosses, sized in chain order - see the header
-    guards = ents(plan, "npc_boss_tier3") + ents(plan, "npc_barrack_boss")
+    guards = ents(plan, "npc_boss_tier1") + ents(plan, "npc_barrack_boss")
     if guards:
         mark(guards, "D", 55, team_colour, "Guardian")
     else:
@@ -182,11 +188,8 @@ def main():
     # The patron and titans are destroyable_building entities distinguished
     # by their `final` keyvalue, not by classname - so they are looked up by
     # that rather than by a class that does not exist.
-    dbs = ents(plan, "destroyable_building")
-    patron = [e for e in dbs
-              if (e.get("properties") or {}).get("final") == "1"]
-    titans = [e for e in dbs
-              if (e.get("properties") or {}).get("final") not in ("1",)]
+    patron = ents(plan, "npc_boss_tier3")
+    titans = ents(plan, "destroyable_building")
     # `titans` is the shrine pair; the name is left from when the legend
     # called them Titans.
     if titans:
