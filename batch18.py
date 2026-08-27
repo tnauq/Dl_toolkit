@@ -273,6 +273,11 @@ WALL_T = 26.7
 ADDED_WALLS = [
     # name, (x0, y0), (x1, y1), bottom
     ("gapwall_tun_n", (-199.8, -814.9), (225.2, -799.9), 1067.0),
+    # This one's third reading landed on the CAP's side face at 1456, above
+    # the 1280 top, so it could not be a bottom. 1067 comes from a separate
+    # reading on m_hex_link_roof.
+    ("gapwall_link", (1920.2, -175.9), (1920.2, -223.9), 1067.0),
+    ("gapwall_tun_nw", (-1799.8, -815.9), (-1399.8, -820.9), 1067.0),
 ]
 
 SKY_CAP = True
