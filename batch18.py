@@ -241,6 +241,26 @@ NOTCHES = [
 # is nothing but air beneath it, and a plain plane would seal the room off
 # under its own floor. Those go in CAP_EXCEPTIONS by hand, which is what you
 # wanted to be marking anyway.
+# ---------------------------------------------------------------------------
+# WALLS RAISED TO MEET THE CAP. These all top out at 1067 and stand under a
+# 1280 lid, leaving a 213 slot between wall and ceiling. Raising them closes
+# it without the cap having to step down.
+#
+# READ off the m_ half; both halves are raised, since a wall and its twin are
+# the same wall. The edit sets an ABSOLUTE top, so running it twice is the
+# same as running it once - it does not stack.
+#
+# ceiling_467_room and axis_456 are only 26.6 and 53.4 thick: raising their
+# tops to 1280 makes them 240 and 267 thick rather than moving them. That is
+# what "raise to the cap" means for a lid, and it is worth knowing before
+# looking at them in the viewer.
+RAISE_TO = [
+    "axis_552", "axis_468", "axis_456", "ceiling_467_room", "axis_468_far",
+    "axis_451_hdr", "axis_452", "axis_563", "compound_564",
+    "axis_562_d562_far", "axis_562",
+]
+RAISE_TOP = 1280.0
+
 SKY_CAP = True
 CAP_CELL = 100.0           # sampling grid for the rectangle decomposition
 CAP_Z = 1280.0             # your reading off ceiling_80_68
@@ -1238,6 +1258,29 @@ def main():
         if abs(top - DECK) > 0.1:
             problems.append("the deck's top is %.2f, not the %.2f this file "
                             "builds on" % (top, DECK))
+
+    # Raise the named walls BEFORE the cap is built, so the cap sees their
+    # new tops and does not tile a plane through them.
+    raised = []
+    by_name = {b["name"]: b for b in boxes + new}
+    for nm in RAISE_TO:
+        for full in (nm, "m_" + nm):
+            b = by_name.get(full)
+            if b is None:
+                problems.append("RAISE_TO names %s, which is not in the plan"
+                                % full)
+                continue
+            o, e = b["origin"], b["extents"]
+            bot = o[2] - e[2] / 2.0
+            if abs(o[2] + e[2] / 2.0 - RAISE_TOP) < 0.01:
+                continue                      # already raised
+            e[2] = round(RAISE_TOP - bot, 4)
+            o[2] = round(bot + e[2] / 2.0, 4)
+            raised.append(full)
+    if raised:
+        log.append("raised %d wall(s) to %.0f to meet the cap: %s"
+                   % (len(raised), RAISE_TOP,
+                      ", ".join(sorted(raised))[:200]))
 
     # THE CAP GOES LAST, over everything including this run's own work.
     # Built earlier it saw only the pre-existing boxes, so the hexagon room,
