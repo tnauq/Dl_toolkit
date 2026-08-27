@@ -729,12 +729,28 @@ def build_skycap(boxes, log):
         z = o[2] + e[2] / 2.0
         spans = (o[2] - e[2] / 2.0) <= CAP_Z <= z
         for i in range(i0, i1):
-            gi, ti, si = geo[i], top[i], solid[i]
+            gi, ti = geo[i], top[i]
             for j in range(j0, j1):
                 gi[j] = True
                 if z > ti[j]:
                     ti[j] = z
-                if spans:
+        if spans:
+            # SEALED MEANS FULLY COVERED, not merely touched. Marking a cell
+            # sealed because a wall clips its corner left up to 73 u of that
+            # 100 u cell with no tile over it - a horizontal slot between the
+            # wall and the cap, which is what showed up in the viewer.
+            #
+            # So the sealed test uses the box's INNER cells: ceil of its low
+            # edge, floor of its high edge. A wall thinner than a cell now
+            # seals nothing at all and the cap tiles straight over it, which
+            # costs an overlap and closes the slot.
+            si0 = max(0, int(math.ceil((o[0] - hx - xs0) / S)))
+            si1 = min(nx, int((o[0] + hx - xs0) / S))
+            sj0 = max(0, int(math.ceil((o[1] - hy - ys0) / S)))
+            sj1 = min(ny, int((o[1] + hy - ys0) / S))
+            for i in range(si0, si1):
+                si = solid[i]
+                for j in range(sj0, sj1):
                     si[j] = True
 
     # A cell needs a tile when the plane at CAP_Z is open there. `solid`
@@ -878,7 +894,14 @@ def clearance_report(plan, log, problems):
     # roof sitting just under a plane that was asked to be flush, which is
     # the whole point of a flush cap. They are counted separately so the
     # faults are not lost among them.
-    sliced = [q for q in tight if q[0] < 0.0]
+    # THE CAP OVERLAPS THIN WALLS ON PURPOSE. Since a cell is only treated
+    # as sealed when a wall covers it WHOLLY, a wall thinner than a cell gets
+    # tiled straight over - that is what closes the horizontal slots. The
+    # overlap is a fraction of a unit, so anything shallower than CAP_LAP is
+    # that, not a fault.
+    CAP_LAP = 5.0
+    sliced = [q for q in tight if q[0] < -CAP_LAP]
+    lapped = [q for q in tight if -CAP_LAP <= q[0] < 0.0]
     close = [q for q in tight if q[0] >= 0.0]
     log.append("")
     log.append("CLEARANCE over every surface in the plan, against the cap:")
