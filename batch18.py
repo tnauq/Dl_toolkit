@@ -187,23 +187,23 @@ SHRINE_Y1 = -1587.05
 # x 826.8 and the room's own south wall. Reported from the viewer, both sides.
 SHRINE_BASEWALL = [(-826.8, -200.0), (200.0, 826.8)]
 
-# THE PASSAGES from the angled doors batch17 cuts into hex_wall_ne_l and
-# hex_wall_nw_r. Those walls run AWAY from the rooms, so the door lands about
-# 110 u short of the room's south wall and needs joining up.
+# THE CORNER NOTCHES. The rooms were joined to their angled doors by a
+# rotated passage; it did not work in the viewer, so the room's corner is
+# extended to swallow the space instead and the door opens straight into it.
 #
-# Each passage is a box rotated to its wall's angle: 160 wide to match the
-# opening, running along the wall's outward normal until it reaches the room.
-# 221.2 is that distance - 110.6 of y divided by the normal's y component,
-# 0.5 - not a chosen number.
+# The notch runs from the room's south face down past the door, and its
+# diagonal side is THE ANGLED WALL ITSELF - no new wall is cut to that angle,
+# which is what the passage got wrong. Its west edge starts where the room's
+# own south wall ends at 826.8, so the two meet with no sliver between them.
 #
-# Where a passage meets the room, the room's south wall is SPLIT around it,
-# or the passage would run into a solid wall.
-PASSAGES = [
-    # tag, door centre, wall yaw, length
-    ("pass_e", (858.3, -2487.9), -60.0, 221.2),
-    ("pass_w", (-858.3, -2487.9), 60.0, 221.2),
+# The floor sits at z 400..426.8 and the angled wall starts at 426.8, so the
+# floor may overlap into the base without touching it. Same trick the south
+# wall already uses.
+NOTCHES = [
+    # tag, x0, x1, y_far  (y_near is the room's south face)
+    ("notch_e", 826.8, 1200.0, -2570.0),
+    ("notch_w", -1200.0, -826.8, -2570.0),
 ]
-PASS_W = 160.0
 
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
@@ -667,14 +667,10 @@ def main():
             # close, which is why this is one piece and not two.
             sx0, sx1 = (ix0, bw0) if ix0 < bw0 else (bw1, ix1)
             # ... minus the stretch a passage comes through.
-            gaps = []
-            for ptag, (dx, dy), pyaw, plen in PASSAGES:
-                a = math.radians(pyaw)
-                nx, ny = -math.sin(a), math.cos(a)
-                ex = dx + nx * plen
-                if sx0 - 200 <= ex <= sx1 + 200:
-                    half = (PASS_W / 2.0) * abs(math.cos(a)) + 20.0
-                    gaps.append((ex - half, ex + half))
+            # The notch replaces the south wall entirely along its span:
+            # that is what "extend the corner" means - the room simply
+            # continues south there.
+            gaps = [(n[1], n[2]) for n in NOTCHES]
             segs = [(sx0, sx1)]
             for g0, g1 in gaps:
                 nxt = []
@@ -731,31 +727,32 @@ def main():
                           SHRINE_FLOOR))
         new += shrine_pieces
 
-        # the passages themselves
-        for ptag, (dx, dy), pyaw, plen in PASSAGES:
-            a = math.radians(pyaw)
-            ux, uy = math.cos(a), math.sin(a)
-            nx, ny = -math.sin(a), math.cos(a)
+        # the corner notches
+        for ntag, nx0, nx1, ny in NOTCHES:
             top = SHRINE_FLOOR + SHRINE_H
-            cx = dx + nx * plen / 2.0
-            cy = dy + ny * plen / 2.0
             Q = []
-            Q.append(rotbox("%s_floor" % ptag, cx, cy,
+            Q.append(rotbox("%s_floor" % ntag, (nx0 + nx1) / 2.0,
+                            (ny + SHRINE_Y0) / 2.0,
                             SHRINE_FLOOR - FLOOR_T, SHRINE_FLOOR,
-                            PASS_W, plen, pyaw, MAT_FLOOR))
-            Q.append(rotbox("%s_ceil" % ptag, cx, cy, top, top + CEIL_T,
-                            PASS_W, plen, pyaw, MAT_WALL))
-            for side in (-1, 1):
-                wx = cx + ux * side * (PASS_W + SHRINE_T) / 2.0
-                wy = cy + uy * side * (PASS_W + SHRINE_T) / 2.0
-                Q.append(rotbox("%s_wall_%s" % (ptag, "ab"[side > 0]),
-                                wx, wy, SHRINE_FLOOR, top,
-                                SHRINE_T, plen, pyaw, MAT_WALL))
+                            nx1 - nx0, SHRINE_Y0 - ny, 0.0, MAT_FLOOR))
+            Q.append(rotbox("%s_ceil" % ntag, (nx0 + nx1) / 2.0,
+                            (ny + SHRINE_Y0) / 2.0, top, top + CEIL_T,
+                            nx1 - nx0, SHRINE_Y0 - ny, 0.0, MAT_WALL))
+            # the outboard wall, continuing the room's own side wall down
+            wx = nx1 + SHRINE_T / 2.0 if nx1 > 0 else nx0 - SHRINE_T / 2.0
+            Q.append(rotbox("%s_wall_out" % ntag, wx,
+                            (ny + SHRINE_Y0) / 2.0, SHRINE_FLOOR, top,
+                            SHRINE_T, SHRINE_Y0 - ny, 0.0, MAT_WALL))
+            # and the far end
+            Q.append(rotbox("%s_wall_far" % ntag, (nx0 + nx1) / 2.0,
+                            ny - SHRINE_T / 2.0, SHRINE_FLOOR, top,
+                            nx1 - nx0 + 2 * SHRINE_T, SHRINE_T, 0.0,
+                            MAT_WALL))
             Q += [twin_box(q) for q in Q]
             new += Q
-            log.append("%s: %.1f long from the door at %.1f, %.1f, %.0f "
-                       "degrees, %.0f wide"
-                       % (ptag, plen, dx, dy, pyaw, PASS_W))
+            log.append("%s: x %.1f..%.1f, y %.1f..%.1f - the room's corner "
+                       "extended to the angled wall, door opens into it"
+                       % (ntag, nx0, nx1, ny, SHRINE_Y0))
 
     new += cut_ceiling(by, log)
     cover = copy_cover(boxes, log)
