@@ -225,18 +225,47 @@ NOTCHES = [
 # so a raised rectangle and the flat lid beside it share a face and no
 # skirts are needed.
 #
-# CAP_Z 1280 is your reading off ceiling_80_68.
+# CAP_Z IS 1720, NOT THE 1280 YOU READ, and here is why. Outside the three
+# exception rectangles, measured column by column with every box present:
 #
-# THE THREE EXCEPTIONS BELOW ARE MEASURED, NOT CHOSEN: they are the only
-# places where geometry rises above 1280, found by sampling the whole map on
-# a 100 u grid and grouping the columns that do. Their bounds are the
-# bounding boxes of those groups, so they are conservative - a group's
-# rectangle covers everything, including the low ground between its tall
-# parts.
+#     roof p50 1027    p90 1280    p99 1565    max 1565
+#     above 1280: 3805 columns     above 1500: 547
+#     above 1400: 1113 columns     above 1600: 0
 #
-#   the middle of the map   x -4700..5600   y  -300..12500   top 1564.9
-#   the team-2 base         x -2200..2200   y -6600..-2300   top 1746.5
-#   the team-3 base         x -1300..3200   y 14500..18700   top 1746.5
+# 1280 is the NINETIETH PERCENTILE of the roofline, not its top. A lid there
+# cuts through 3805 columns of wall - the clearance report listed 709
+# surfaces and a worst gap of -285, meaning the lid was inside them.
+#
+# 1720 clears everything outside the rectangles with 155 to spare. The cost
+# is that the median roof sits 693 below it, which is the gap you are
+# seeing. THE ONLY WAY TO CLOSE THAT IS MORE RECTANGLES: each one lets a
+# patch of the map have its own lower lid.
+#
+# Mark the areas you want lower and add them as rows. The clearance report
+# names anything a rectangle cuts into, so a row that is too low tells you
+# so by name and coordinate.
+#
+# THE EXCEPTIONS ARE MEASURED, NOT CHOSEN: the map was sampled column by
+# column on a 100 u grid and the ones rising above each threshold grouped.
+#
+# THE FIRST ATTEMPT AT THIS WAS WRONG TWICE OVER and left a 1200 gap over
+# most of the map. It measured the plan BEFORE batch18 built its own rooms,
+# so the hexagon room was invisible; and it took one connected region above
+# 1280 - which spans nearly the whole map, because a single continuous run
+# of tall walls links everything - and gave the whole bounding box the
+# height of its tallest part. Most of that rectangle is roofed at 1400.
+#
+# Measured again with every box present, and split by height rather than by
+# connectivity:
+#
+#   above 1650   x -2200..2200   y -6600..-2300   top 1746.5   the S base
+#                x -1300..3200   y 14500..18700   top 1746.5   the N base
+#                x -1200..2100   y  4600.. 7600   top 2587.5   the hexagon
+#   above 1900   x -1200..2100   y  4600.. 7600   top 2587.5   only the hexagon
+#
+# So three rectangles, and everything outside them is roofed below 1650. The
+# hexagon rectangle sits inside nothing else, so it needs its own row rather
+# than being swallowed by a bigger one.
 #
 # ADD, EDIT AND DELETE THESE FREELY. A rectangle is x0, x1, y0, y1 and the
 # height its lid sits at; anything not inside one gets CAP_Z. The clearance
@@ -244,7 +273,7 @@ NOTCHES = [
 # surface, so an exception that is too low shows up by name.
 SKY_CAP = True
 CAP_CELL = 100.0           # sampling grid for the rectangle decomposition
-CAP_Z = 1280.0             # the flat lid, your reading
+CAP_Z = 1720.0             # clears every roof outside the rectangles
 CAP_TOP_MARGIN = 200.0     # how far above the tallest lid the boxes reach
 # What the clearance report complains below. A hero is about 98 tall.
 CAP_MIN_HEAD = 150.0
@@ -252,9 +281,15 @@ MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
 
 CAP_EXCEPTIONS = [
     # name, x0, x1, y0, y1, lid height
-    ("mid", -4700.0, 5600.0, -300.0, 12500.0, 2900.0),
     ("base_s", -2200.0, 2200.0, -6600.0, -2300.0, 1900.0),
     ("base_n", -1300.0, 3200.0, 14500.0, 18700.0, 1900.0),
+    # Widened from -1200..2100 / 4600..7600: the room's own walls stick out
+    # past the footprint of its floor, and the flat lid was cutting 841 into
+    # hex3_wall_270. The clearance report named it.
+    ("hexagon", -1350.0, 2250.0, 4450.0, 7750.0, 2750.0),
+    # Rows below here are yours to add: a patch of map that can take a
+    # lower lid than 1720. For example, the sky bridge deck is roofed at
+    # 1280 over a wide area and would take a 1440 lid comfortably.
 ]
 
 NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
