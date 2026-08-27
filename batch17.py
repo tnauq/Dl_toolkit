@@ -120,6 +120,44 @@ ROOMS = [
         "wall_top": 1280.35,
         "needs": ["axis_546", "axis_572", "yaw_570", "yaw_573"],
     },
+    # ARCH ONLY, no room: batch18 builds the shrine rooms these open into,
+    # because they are boxes rather than the rectangular alcove this file's
+    # builder makes. All this does here is cut the door.
+    #
+    # The doors sit at the INNER corner of each room, not the middle of its
+    # south face: hex_wall_n_l only spans x -826.8..-200, so a door centred
+    # on the room at x -765 would open into the gap beside the wall rather
+    # than into the base.
+    {
+        "name": "shrine_door_w",
+        "side": +1,
+        "arch_only": True,
+        "wall": "hex_wall_n_l",
+        "wall_x0": -826.8, "wall_x1": -200.0,
+        "wall_y0": -2413.75, "wall_y1": -2387.05,
+        "wall_z0": 426.8, "wall_z1": 1707.2,
+        "room_x0": -445.0, "room_x1": -285.0,
+        "floor_top": 426.8, "floor_bot": None,
+        "floor_ext": None,
+        "walls": [],
+        "wall_top": None,
+        "needs": ["hex_wall_nw_r"],
+    },
+    {
+        "name": "shrine_door_e",
+        "side": +1,
+        "arch_only": True,
+        "wall": "hex_wall_n_r",
+        "wall_x0": 200.0, "wall_x1": 826.8,
+        "wall_y0": -2413.75, "wall_y1": -2387.05,
+        "wall_z0": 426.8, "wall_z1": 1707.2,
+        "room_x0": 285.0, "room_x1": 445.0,
+        "floor_top": 426.8, "floor_bot": None,
+        "floor_ext": None,
+        "walls": [],
+        "wall_top": None,
+        "needs": ["hex_wall_ne_l"],
+    },
     {
         "name": "tele_b",
         "side": -1,             # behind the wall, not out on the open floor
@@ -281,8 +319,9 @@ def build_room(spec, src, log, problems):
             add(box(nm, a, b_, ry0, ry1, ft, top), nm)
         else:
             add(box(nm, rx0 - 26.7, rx1 + 26.7, a, b_, ft, top), nm)
-    add(box("ceiling_%s" % tag, rx0, rx1, ry0, ry1,
-            ceil_bot, ceil_bot + CEIL_T), "ceiling")
+    if not spec.get("arch_only"):
+        add(box("ceiling_%s" % tag, rx0, rx1, ry0, ry1,
+                ceil_bot, ceil_bot + CEIL_T), "ceiling")
 
     tele = [round(open_c, 2), round((ry0 + ry1) / 2.0, 2), ft]
 
@@ -292,7 +331,8 @@ def build_room(spec, src, log, problems):
     log.append("        opening %.1f wide at x %.2f..%.2f, crown %.2f"
                % (NEW_OPEN_W, ox0, ox1, crown))
     log.append("        jambs %.2f and %.2f" % (ox0 - wx0, wx1 - ox1))
-    log.append("        teleporter at %s" % tele)
+    if not spec.get("arch_only"):
+        log.append("        teleporter at %s" % tele)
     if skipped:
         log.append("        no %s needed here: the wall does not extend "
                    "below the floor" % ", ".join(skipped))
@@ -343,8 +383,9 @@ def main():
         boxes = [b for b in boxes if b["name"] not in (w, PREFIX + w)]
         made, tele, vol = build_room(spec, src, log, problems)
         new += made
-        teles.append((spec["name"], tele))
-        volumes.append((spec["name"], vol))
+        if not spec.get("arch_only"):
+            teles.append((spec["name"], tele))
+            volumes.append((spec["name"], vol))
 
     boxes.extend(new)
     boxes.extend([twin_box(b) for b in new])

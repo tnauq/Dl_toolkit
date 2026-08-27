@@ -282,6 +282,79 @@ BRUSHES = [
 # Sits on the mirror point, so it is not twinned.
 MIDBOSS = ("midboss", [460.15, 6085.05, 1307.1], "the hexagon room floor")
 
+# ---------------------------------------------------------------------------
+# THE BASE OBJECTIVE CHAIN, from your readings on the m_ half. Authored on the
+# BASE half as usual, so every number here is the mirror of what you sent.
+#
+# BASE GUARDS. Two per arch, three arches. The arch openings were MEASURED off
+# the geometry rather than guessed: a ray sweep at head height finds the
+# narrowest axis through each opening, which is the wall-to-wall direction,
+# and the pair sits at the thirds of that span.
+#
+#   arch 1  shallow_869_d562, a wall arch    487 wide, floor 213.0
+#   arch 2  hex_tun_n mouth                  385 wide, floor 426.8
+#   arch 3  hex_tun_nw mouth                 444 wide, floor 426.8
+#
+# ARCH 3 IS COARSER THAN THE OTHER TWO. Its fine sweep did not finish in the
+# time available, so its numbers come from a 2-degree pass rather than a
+# 0.5-degree one. The pair may sit a few units off the opening's true centre
+# line; worth an eyeball in the viewer before it matters.
+#
+# LANE ASSIGNMENT is by which arch, and it is a GUESS: arch 2 faces the mid
+# lane and arches 1 and 3 the sides, so they take 1, 3 and 6 to match the
+# LANES table. Nothing was read that says which arch belongs to which lane.
+BASE_GUARDS = [
+    # MEASURED off the jamb readings, which is why these are exact where the
+    # first attempt's were not. A ray sweep was finding the wrong axis at two
+    # of the three arches; two crosshaired jambs give the opening's width and
+    # direction outright, and the pair sits at the thirds of it.
+    #
+    #   nw arch   340.4 wide, centre (-1199.5, -3101.0)
+    #   n  arch   330.0 wide, centre (0.0, -2404.5)
+    #   ne arch   330.9 wide, centre (1211.5, -3100.0)
+    #
+    # Floor is 426.8, the base hexagon's own. LANE ASSIGNMENT IS STILL A
+    # GUESS: the n arch faces the mid lane and the other two the sides.
+    ("guard_nw1", [-1228.7, -3149.7, 426.8], "3", "hex_wall_nw arch"),
+    ("guard_nw2", [-1170.3, -3052.3, 426.8], "3", "hex_wall_nw arch"),
+    ("guard_n1", [-55.0, -2404.0, 426.8], "1", "hex_wall_n arch"),
+    ("guard_n2", [55.0, -2405.0, 426.8], "1", "hex_wall_n arch"),
+    ("guard_ne1", [1184.3, -3052.0, 426.8], "6", "hex_wall_ne arch"),
+    ("guard_ne2", [1238.7, -3148.0, 426.8], "6", "hex_wall_ne arch"),
+]
+
+# THE SHRINES, in the middle of the two rooms batch18 builds off the base's
+# north wall. A destroyable_building like the patron but with `final` 0,
+# which is what dl_example's own generators carry. 5000 health per the wiki;
+# the fixture's generators say 8000, so this is a WIKI number, not a read
+# one, and the two disagree.
+SHRINES = [
+    ("shrine_w", [-732.5, -1982.2, 426.8], "shrine_w room"),
+    ("shrine_e", [732.5, -1982.2, 426.8], "shrine_e room"),
+]
+
+# THE PATRON, on the dais. A destroyable_building like the shrines, told apart
+# from them by `final`, which is 1 here and 0 on every generator in
+# dl_example. The name follows the fixture's own pattern, which the objective
+# proxy below refers to by string.
+#
+# THE MODEL IS UNSET. dl_example's generators carry
+# models/props_street/generator.vmdl; no model for a patron has been read, and
+# inventing a path would fail at compile in a way that looks like a bug in
+# something else. It goes in empty and wants filling.
+PATRON = ("patron", [-17.8, -3810.9, 533.0], "hex_dais_0")
+
+# TITAN = THE WALKER, on your read. The proxy's sub_objective_N fields name
+# entities by targetname, and batch13 already gives every walker one
+# (<team>_t2_boss_<colour>), so the proxy points at the walkers that exist
+# rather than at new bodies. If a titan turns out to be its own entity, this
+# is the line that changes.
+#
+# The fixture's proxy has four sub-objectives on lanes 1, 3, 4 and 6. This map
+# has three lanes, so slot 4 is left empty with lane 0 - which is exactly what
+# dl_example's own team-3 proxy does.
+PROXY_LANES = ["1", "3", "6"]
+
 # Landing markers for the pads above. A point, not a volume, and the name
 # must match the pad's `target` exactly - that string is the whole wiring.
 LANDINGS = [
@@ -397,6 +470,15 @@ def rows(table):
 # READ: every one of dl_example's 32 trooper spawns carries teamnumber 4 and
 # HateCrateAttacker 1, midboss and jungle camps alike. Both were 0 here.
 SPAWN_TEAM = "4"
+# Objectives belong to a real team, unlike neutral camps. TEAM_A in batch13.
+SPAWN_TEAM_OBJ = "2"
+TEAM_WORD = "rebels"
+# batch13's own lane -> colour map, needed to name the walkers the proxy
+# points at. If batch13's changes, this must change with it.
+# READ off batch13, not guessed: yellow is lane 1, orange lane 3, purple
+# lane 6. An earlier draft here had these rotated, which would have pointed
+# the proxy at walkers that do not exist.
+LANE_COLOUR = {"1": "yellow", "3": "orange", "4": "blue", "6": "purple"}
 SPAWN_HATE = "1"
 
 
@@ -446,6 +528,57 @@ def make_camp(name, origin, tier, team=SPAWN_TEAM):
         if not on_mirror_point(origin):
             out.append(twin_of(s))
     return out
+
+
+TEAM_WORD_B = "combine"
+TEAM_B = "3"
+# Keys whose VALUE names another entity by targetname. On an objective twin
+# these have to be swapped too, or the mirrored proxy wires itself to the
+# base half's walkers - which it did, silently, on the first attempt.
+LINK_KEYS = ("final_objective", "sub_objective_1", "sub_objective_2",
+             "sub_objective_3", "sub_objective_4", "targetname")
+
+
+def team_swap(name):
+    """rebels <-> combine, anywhere in the string. batch13's own rule."""
+    if TEAM_WORD in name:
+        return name.replace(TEAM_WORD, TEAM_WORD_B, 1)
+    if TEAM_WORD_B in name:
+        return name.replace(TEAM_WORD_B, TEAM_WORD, 1)
+    return PREFIX + name if name else name
+
+
+def twin_objective(e):
+    """The mirrored copy of a TEAM entity, not a neutral one.
+
+    twin_of leaves teamnumber alone, which is right for camps and wrong for
+    everything in the base: the far patron belongs to the other team and its
+    proxy must name the other team's walkers. Both are swapped here.
+    """
+    t = json.loads(json.dumps(e))
+    t["name"] = PREFIX + e["name"]
+    t["origin"] = mirror_point(e["origin"])
+    t["angles"] = mirror_angles(e.get("angles", [0.0, 0.0, 0.0]))
+    props = dict(e.get("properties", {}))
+    if props.get("teamnumber") == SPAWN_TEAM_OBJ:
+        props["teamnumber"] = TEAM_B
+    for k in LINK_KEYS:
+        if props.get(k):
+            props[k] = team_swap(props[k])
+    t["properties"] = props
+    return t
+
+
+def make_objective(name, origin, classname, props):
+    e = {
+        "name": name,
+        "classname": classname,
+        "origin": [round(v, 4) for v in origin],
+        "angles": [0.0, 0.0, 0.0],
+        "properties": dict(props),
+        MARK: True,
+    }
+    return [e, twin_objective(e)]
 
 
 def on_mirror_point(o, tol=1.0):
@@ -554,6 +687,72 @@ def main():
     # teamnumber 4 on the spawn, read off dl_example's own midboss camp.
     new += make_camp("midboss", origin, tier)
     sites.append(("midboss", origin, note))
+
+    # base guards
+    for name, origin, lane, note in BASE_GUARDS:
+        new += make_objective(name, origin, "npc_barrack_boss", {
+            "targetname": "",
+            "vscripts": "",
+            "teamnumber": SPAWN_TEAM_OBJ,
+            "lanenum": lane,
+            "LaneSide": "0",
+            "CoverGroupID": "0",
+            "BackdoorProtectionTrigger": "",
+        })
+        sites.append((name, origin, note))
+
+    for nm2, o2, note2 in SHRINES:
+        new += make_objective(nm2, o2, "destroyable_building", {
+            "targetname": "%s_%s_shrine" % (TEAM_WORD, nm2.split("_")[1]),
+            "vscripts": "",
+            "model": "models/props_street/generator.vmdl",  # read
+            "skin": "default",
+            "bodygroups": "",
+            "disableshadows": "0",
+            "add_attribute": "",
+            "add_modifier": "",
+            "teamnumber": SPAWN_TEAM_OBJ,
+            "lanenum": "1",
+            "BackdoorProtectionTrigger": "",
+            "building_health": "5000",
+            "final": "0",
+        })
+        sites.append((nm2, o2, note2))
+
+    # the patron, and the proxy that binds it to the walkers
+    name, origin, note = PATRON
+    new += make_objective(name, origin, "destroyable_building", {
+        "targetname": "%s_building_final" % TEAM_WORD,
+        "vscripts": "",
+        "model": "",                 # UNKNOWN, see PATRON above
+        "skin": "default",
+        "bodygroups": "",
+        "disableshadows": "0",
+        "add_attribute": "",
+        "add_modifier": "",
+        "teamnumber": SPAWN_TEAM_OBJ,
+        "lanenum": "1",
+        "BackdoorProtectionTrigger": "",
+        "building_health": "8000",   # read off the fixture's generators
+        "final": "1",                # what makes this the patron
+    })
+    sites.append((name, origin, note))
+
+    proxy = {
+        "targetname": "",
+        "final_objective": "%s_building_final" % TEAM_WORD,
+        "teamnumber": SPAWN_TEAM_OBJ,
+    }
+    for i, lane in enumerate(PROXY_LANES, start=1):
+        proxy["sub_objective_%d" % i] = "%s_t2_boss_%s" % (TEAM_WORD,
+                                                           LANE_COLOUR[lane])
+        proxy["sub_objective_lane_%d" % i] = lane
+    proxy["sub_objective_4"] = ""
+    proxy["sub_objective_lane_4"] = "0"
+    # A logic entity with no body. It sits on the patron so it mirrors with
+    # it and is findable in the viewer; nothing depends on where it is.
+    new += make_objective("final_objective_proxy", origin,
+                          "citadel_final_objective_proxy", proxy)
 
     for name, origin, note in LANDINGS:
         new += make_point(name, origin, "info_target_server_only",

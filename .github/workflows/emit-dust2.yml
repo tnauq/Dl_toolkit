@@ -49,6 +49,8 @@ name: emit dust2
 #             the hexagon room over the sky bridge, cuts a square through the
 #             room floor and the bridge ceiling, cuts four triangles off the
 #             cover blocks, and lays the midboss lid.
+#   entities   113 -> 345, the last 16 being six base guards, a patron and
+#             a final-objective proxy, each with a twin.
 #   entities   113 -> 329. 19 camps with their creature spawns, the midboss
 #             camp, four vault camps, two jump pads with landing markers,
 #             four climb ropes, the powerup pair and the relocated shield.
@@ -99,21 +101,21 @@ on: workflow_dispatch
 env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
-  EXPECT_BOXES: 4347
-  EXPECT_ENTS: 329
-  # 4347 boxes + 33 brush entities, each carrying an inline child mesh.
-  EXPECT_MAPMESH: 4380
-  EXPECT_POLYMESH: 4380
-  EXPECT_ENTITY: 329
+  EXPECT_BOXES: 4443
+  EXPECT_ENTS: 349
+  # 4443 boxes + 33 brush entities, each carrying an inline child mesh.
+  EXPECT_MAPMESH: 4476
+  EXPECT_POLYMESH: 4476
+  EXPECT_ENTITY: 349
   EXPECT_PATH: 15
   EXPECT_PATHNODE: 236
-  EXPECT_DATAARRAY: 17520      # 4 x 4380
-  EXPECT_STREAM: 48180         # 11 x 4380
-  EXPECT_SUBDIV: 4380
-  # 580 nodes plus the world's own.
-  EXPECT_CLASSPROPS: 581
-  EXPECT_PLUGLIST: 581
-  EXPECT_ELEMENTS: 80644
+  EXPECT_DATAARRAY: 17904      # 4 x 4476
+  EXPECT_STREAM: 49236         # 11 x 4476
+  EXPECT_SUBDIV: 4476
+  # 600 nodes plus the world's own.
+  EXPECT_CLASSPROPS: 601
+  EXPECT_PLUGLIST: 601
+  EXPECT_ELEMENTS: 82432
   # ENTITY IO, batch15. Unchanged: nothing since has written a connection,
   # and the midboss lid deliberately does not - see PROBE.md item 5.
   EXPECT_CONN: 56

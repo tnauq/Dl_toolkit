@@ -138,6 +138,50 @@ DECK_Z = (1253.7, 1280.3)      # the deck under two of them
 LID = True
 LID_NAME = "midboss_lid"
 
+# ---------------------------------------------------------------------------
+# THE TWO SHRINE ROOMS. Boxes, not hexagons: the urn room's hexagon does not
+# fit between the north tunnels at any radius that still reaches the wall.
+#
+# The space was MEASURED at z 700 rather than assumed - the gaps run x -1280
+# to -230 and x 230 to 1280 at the wall, widening northward, and clear from
+# the wall at y -2387 to beyond y -1000. The rooms sit inside that with a
+# margin either side.
+#
+#   interior   1000 x 800, floor 426.8 (the base hexagon's own)
+#   height     573.5, half the urn room's 1147.0 interior
+#
+# Their doors are cut by batch17 into hex_wall_n_l and hex_wall_n_r, at each
+# room's INNER corner: those walls only span x 200..826.8, so a door in the
+# middle of a room's south face would open into the gap beside the wall.
+#
+# The south wall of each room is therefore in TWO parts, the piece west (or
+# east) of where the base wall already closes it, and nothing across the
+# base wall itself - which carries the arch.
+SHRINE_ROOMS = True
+SHRINE_FLOOR = 426.8
+SHRINE_H = 573.5
+SHRINE_T = 26.7            # wall thickness, matching the base
+# interior x0, x1 per room; y is shared
+# Pulled in from -1250 to -1230: the tunnel walls are angled, so the gap
+# measured at one y is not the gap at another, and the wider version clipped
+# hex_tun_nw_wall_l.
+SHRINE_BOXES = [("shrine_w", -1200.0, -265.0),
+                ("shrine_e", 265.0, 1200.0)]
+# TWO south edges, not one. hex_wall_nw_r and _ne_l are angled and poke
+# about 10 u north of hex_wall_n_l's face, straight into the room footprint.
+# Walls and ceiling therefore start at their north face; the FLOOR runs the
+# extra 36 u south, under them, which is safe because it lives at z 400..426.8
+# and those walls start at 426.8. Without that the room would have a crack
+# along its south edge at the door.
+SHRINE_Y0 = -2377.3        # north face of hex_wall_nw_r / _ne_l
+SHRINE_FLOOR_Y0 = -2413.75  # under the base wall, so the door has floor
+SHRINE_Y1 = -1587.05
+# Where the base wall already closes the south face, so no wall is built.
+# The base already closes the south face across this whole span - not just
+# hex_wall_n_l's 200..826.8, but the angled hex_wall_nw_r / _ne_l beyond it,
+# which reach out to 1123.3.
+SHRINE_BASEWALL = [(-1123.3, -200.0), (200.0, 1123.3)]
+
 APOTHEM = RECT_L / 2.0             # 1385.85, centre to a wall face
 SIDE = RECT_W                      # a hexagon's side equals its circumradius
 
@@ -379,6 +423,94 @@ def copy_cover(boxes, log):
     return out
 
 
+def hex_room(cx, cy, R, floor_top, height, tag, mat_floor, mat_wall):
+    """A hexagon room: 3 floor rects, 6 walls, 3 ceiling rects.
+
+    Same construction as the big room - three rectangles at 0, 60 and 120
+    whose union is the hexagon exactly - but with no hole in it, so the
+    floor and ceiling are three pieces each rather than twelve.
+
+    Turned so the FLAT sides face +y and -y, which is what lets one sit
+    against a wall.
+    """
+    out = []
+    apothem = R * math.sqrt(3.0) / 2.0
+    rect_w, rect_l = R, 2.0 * apothem
+    for yaw, t in ((0.0, "0"), (60.0, "60"), (120.0, "120")):
+        out.append(rotbox("%s_floor_%s" % (tag, t), cx, cy,
+                          floor_top - FLOOR_T, floor_top,
+                          rect_w, rect_l, yaw, mat_floor))
+        out.append(rotbox("%s_ceil_%s" % (tag, t), cx, cy,
+                          floor_top + height, floor_top + height + CEIL_T,
+                          rect_w, rect_l, yaw, mat_wall))
+    for k in range(6):
+        theta = 30.0 + 60.0 * k
+        r = apothem + WALL_T / 2.0
+        out.append(rotbox("%s_wall_%d" % (tag, int(theta)),
+                          cx + r * math.cos(math.radians(theta)),
+                          cy + r * math.sin(math.radians(theta)),
+                          floor_top, floor_top + height,
+                          R + 2 * WALL_T, WALL_T, theta + 90.0, mat_wall))
+    return out
+
+
+def norm_yaw(a):
+    while a > 180.0:
+        a -= 360.0
+    while a <= -180.0:
+        a += 360.0
+    return round(a, 4)
+
+
+def twin_box(b):
+    """180 degrees about the mirror point.
+
+    This file mostly does NOT twin - the central hexagon is its own
+    reflection - so this exists only for the shrine rooms, which sit in one
+    team's base and need a real counterpart in the other's.
+    """
+    t = json.loads(json.dumps(b))
+    t["name"] = "m_" + b["name"]
+    t["origin"] = [round(2.0 * X_PLANE - b["origin"][0], 4),
+                   round(2.0 * Y_PLANE - b["origin"][1], 4),
+                   b["origin"][2]]
+    a = b.get("angles", [0.0, 0.0, 0.0])
+    t["angles"] = [a[0], norm_yaw(a[1] + 180.0), a[2]]
+    return t
+
+
+def aabb(b):
+    """World extent of a yaw-only box. Exact for these, since nothing this
+    file makes or tests carries pitch."""
+    e = b["extents"]
+    a = math.radians(b["angles"][1])
+    c, s_ = abs(math.cos(a)), abs(math.sin(a))
+    hx = (e[0] * c + e[1] * s_) / 2.0
+    hy = (e[0] * s_ + e[1] * c) / 2.0
+    o = b["origin"]
+    return (o[0] - hx, o[0] + hx, o[1] - hy, o[1] + hy,
+            o[2] - e[2] / 2.0, o[2] + e[2] / 2.0)
+
+
+def hits_existing(pieces, boxes):
+    """Names of existing boxes any new piece overlaps, by AABB.
+
+    AABB not exact, so it over-reports at odd angles - which is the right
+    way round for a clearance test.
+    """
+    hit = set()
+    for q in pieces:
+        qx0, qx1, qy0, qy1, qz0, qz1 = aabb(q)
+        for b in boxes:
+            if b.get(MARK):
+                continue
+            x0, x1, y0, y1, z0, z1 = aabb(b)
+            if (x1 > qx0 + 1 and x0 < qx1 - 1 and y1 > qy0 + 1
+                    and y0 < qy1 - 1 and z1 > qz0 + 1 and z0 < qz1 - 1):
+                hit.add(b["name"])
+    return hit
+
+
 def build():
     new = []
 
@@ -478,14 +610,67 @@ def main():
             print("::error::batch18: %s is missing" % n)
             sys.exit(1)
 
+    problems = []
     new = build()
+
+    # ---- the two shrine rooms ---------------------------------------
+    # Shrunk together, not independently: they overlap EACH OTHER before
+    # they overlap anything else, so a per-room search would stop too late.
+    shrine_pieces = []
+    if SHRINE_ROOMS:
+        for (tag, ix0, ix1), (bw0, bw1) in zip(SHRINE_BOXES, SHRINE_BASEWALL):
+            top = SHRINE_FLOOR + SHRINE_H
+            P = []
+            P.append(rotbox("%s_floor" % tag, (ix0 + ix1) / 2.0,
+                            (SHRINE_FLOOR_Y0 + SHRINE_Y1) / 2.0,
+                            SHRINE_FLOOR - FLOOR_T, SHRINE_FLOOR,
+                            ix1 - ix0, SHRINE_Y1 - SHRINE_FLOOR_Y0, 0.0,
+                            MAT_FLOOR))
+            P.append(rotbox("%s_ceil" % tag, (ix0 + ix1) / 2.0,
+                            (SHRINE_Y0 + SHRINE_Y1) / 2.0, top,
+                            top + CEIL_T, ix1 - ix0, SHRINE_Y1 - SHRINE_Y0,
+                            0.0, MAT_WALL))
+            for nm, cx in (("w", ix0 - SHRINE_T / 2.0),
+                           ("e", ix1 + SHRINE_T / 2.0)):
+                P.append(rotbox("%s_wall_%s" % (tag, nm), cx,
+                                (SHRINE_Y0 + SHRINE_Y1) / 2.0,
+                                SHRINE_FLOOR, top, SHRINE_T,
+                                SHRINE_Y1 - SHRINE_Y0, 0.0, MAT_WALL))
+            P.append(rotbox("%s_wall_n" % tag, (ix0 + ix1) / 2.0,
+                            SHRINE_Y1 + SHRINE_T / 2.0, SHRINE_FLOOR, top,
+                            ix1 - ix0 + 2 * SHRINE_T, SHRINE_T, 0.0,
+                            MAT_WALL))
+            # south face: only the stretch the base wall does not already
+            # close, which is why this is one piece and not two.
+            sx0, sx1 = (ix0, bw0) if ix0 < bw0 else (bw1, ix1)
+            if sx1 - sx0 > 1.0:
+                P.append(rotbox("%s_wall_s" % tag, (sx0 + sx1) / 2.0,
+                                SHRINE_Y0 - SHRINE_T / 2.0, SHRINE_FLOOR,
+                                top, sx1 - sx0, SHRINE_T, 0.0, MAT_WALL))
+            # TWINNED, unlike everything else in this file. The central
+            # hexagon sits on the mirror point and is its own reflection;
+            # these sit in one team's base and the other team needs its own.
+            P += [twin_box(q) for q in P]
+            clash = hits_existing(P, boxes)
+            if clash:
+                problems.append("%s clips %s"
+                                % (tag, ", ".join(sorted(clash))[:120]))
+            shrine_pieces += P
+            log.append("%s: interior x %.1f..%.1f y %.1f..%.1f, floor %.1f, "
+                       "ceiling %.1f%s"
+                       % (tag, ix0, ix1, SHRINE_Y0, SHRINE_Y1, SHRINE_FLOOR,
+                          top, "" if not clash else "  CLIPS"))
+            log.append("   shrine goes at [%.1f, %.1f, %.1f]"
+                       % ((ix0 + ix1) / 2.0, (SHRINE_Y0 + SHRINE_Y1) / 2.0,
+                          SHRINE_FLOOR))
+        new += shrine_pieces
+
     new += cut_ceiling(by, log)
     cover = copy_cover(boxes, log)
     new += cover
     dead = {c[0] for c in CEIL_CUT}
     removed += [b for b in boxes if b["name"] in dead]
     boxes = [b for b in boxes if b["name"] not in dead]
-    problems = []
 
     # ---- the four triangle holes ------------------------------------
     def in_hex(x, y, margin=0.0):
