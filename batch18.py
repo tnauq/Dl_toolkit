@@ -258,8 +258,22 @@ RAISE_TO = [
     "axis_552", "axis_468", "axis_456", "ceiling_467_room", "axis_468_far",
     "axis_451_hdr", "axis_452", "axis_563", "compound_564",
     "axis_562_d562_far", "axis_562",
+    # second batch, same 1067 tops under the same 1280 lid
+    "axis_579", "axis_580", "axis_468_d468b_far",
 ]
 RAISE_TOP = 1280.0
+
+# ---------------------------------------------------------------------------
+# WALLS ADDED TO CLOSE GAPS UNDER THE CAP. Two crosshair readings give the
+# ends, a third gives the bottom, and the top is the cap at 1280.
+#
+# READ off the m_ half and MIRRORED here, so the numbers below are the base
+# half. Each is built as a box rotated to the line between the two ends.
+WALL_T = 26.7
+ADDED_WALLS = [
+    # name, (x0, y0), (x1, y1), bottom
+    ("gapwall_tun_n", (-199.8, -814.9), (225.2, -799.9), 1067.0),
+]
 
 SKY_CAP = True
 CAP_CELL = 100.0           # sampling grid for the rectangle decomposition
@@ -1258,6 +1272,17 @@ def main():
         if abs(top - DECK) > 0.1:
             problems.append("the deck's top is %.2f, not the %.2f this file "
                             "builds on" % (top, DECK))
+
+    # Added walls, before the cap for the same reason as the raises.
+    for nm, a_xy, b_xy, bot in ADDED_WALLS:
+        dx, dy = b_xy[0] - a_xy[0], b_xy[1] - a_xy[1]
+        length = math.hypot(dx, dy)
+        yaw = math.degrees(math.atan2(dy, dx))
+        q = rotbox(nm, (a_xy[0] + b_xy[0]) / 2.0, (a_xy[1] + b_xy[1]) / 2.0,
+                   bot, RAISE_TOP, length, WALL_T, yaw, MAT_WALL)
+        new += [q, twin_box(q)]
+        log.append("added %s: %.1f long at %.1f degrees, z %.1f..%.1f"
+                   % (nm, length, yaw, bot, RAISE_TOP))
 
     # Raise the named walls BEFORE the cap is built, so the cap sees their
     # new tops and does not tile a plane through them.
