@@ -210,6 +210,49 @@ NOTCHES = [
 # the far end, which was visible in the viewer - a rectangle cannot follow a
 # 60 degree line. The floor stays axis-aligned: it lives below 426.8 where
 # the wall starts, so it cannot poke out of anything.
+# ---------------------------------------------------------------------------
+# THE SKY CAP. Deadlock has flying heroes and jump items, so the map needs a
+# lid or they leave it.
+#
+# HEIGHT, MEASURED not chosen. The highest geometry per column, sampled on a
+# 200 u grid over the whole map:
+#
+#     above 1300   32.7% of columns      the general roofline
+#     above 1750    6.0%
+#     above 1800    6.0%  - and those 224 columns are EXACTLY the hexagon
+#                           room's footprint, nothing else
+#
+# So 1800 clears everything on the map except the hexagon room, whose roof is
+# at 2587.5. The median box top is 797.9, but that number counts every small
+# box and sits below the sky bridge deck at 1280 - capping there would seal
+# the bridge out of the map.
+#
+# SHAPE: one lid at 1800 with a rectangular hole over the hexagon, a second
+# lid at 2620 over that hole, and four skirt walls joining them. Nine boxes.
+# The hole is rectangular although the room is a hexagon - it is a ceiling
+# nobody stands on, and a rectangle is four pieces instead of twelve.
+#
+# The map's bounding box is symmetric about the mirror point, and so is the
+# hexagon, so every piece here is its own reflection. Not twinned.
+#
+# THE MATERIAL IS A GUESS. Nothing has been read about which material makes
+# geometry render as sky in Source 2 - dl_example's env_sky names a skybox
+# vmat but that is the sky entity, not a surface. This uses the same dev
+# material as everything else, so the lid will look like a solid ceiling
+# rather than sky. It stops people leaving; making it look right is a later
+# job.
+SKY_CAP = True
+CAP_Z = 1800.0             # measured, see above
+CAP_HEX_Z = 2620.0         # clears the hexagon roof at 2587.5
+CAP_T = 26.7
+CAP_MARGIN = 200.0
+# the map's own bounding box, READ off the plan
+CAP_X0, CAP_X1 = -5179.7, 6099.9
+CAP_Y0, CAP_Y1 = -6505.95, 18676.05
+# the hexagon room's footprint, from RECT_W and RECT_L
+HEX_X0, HEX_X1 = CX - 1600.2, CX + 1600.2
+HEX_Y0, HEX_Y1 = CY - 1385.85, CY + 1385.85
+
 NOTCH_BAND = 420.0     # how far out from the wall the rotated pieces reach
 ANGLED_HALF = 313.4    # half of hex_wall_ne_l's 626.8 length
 ANGLED_T = 26.7        # its thickness, same as batch17 uses
@@ -766,6 +809,34 @@ def main():
             log.append("%s: x %.1f..%.1f, y %.1f..%.1f - the room's corner "
                        "extended to the angled wall; ceiling flush on it"
                        % (ntag, nx0, nx1, ny, SHRINE_Y0))
+
+    if SKY_CAP:
+        x0, x1 = CAP_X0 - CAP_MARGIN, CAP_X1 + CAP_MARGIN
+        y0, y1 = CAP_Y0 - CAP_MARGIN, CAP_Y1 + CAP_MARGIN
+        # the main lid, in four pieces around the hexagon's hole
+        for nm, a0, a1, b0, b1 in (
+                ("s", x0, x1, y0, HEX_Y0), ("n", x0, x1, HEX_Y1, y1),
+                ("w", x0, HEX_X0, HEX_Y0, HEX_Y1),
+                ("e", HEX_X1, x1, HEX_Y0, HEX_Y1)):
+            new.append(rotbox("skycap_%s" % nm, (a0 + a1) / 2.0,
+                              (b0 + b1) / 2.0, CAP_Z, CAP_Z + CAP_T,
+                              a1 - a0, b1 - b0, 0.0, MAT_WALL))
+        # the raised lid over the hexagon, and the skirt joining the two
+        new.append(rotbox("skycap_hex", (HEX_X0 + HEX_X1) / 2.0,
+                          (HEX_Y0 + HEX_Y1) / 2.0, CAP_HEX_Z,
+                          CAP_HEX_Z + CAP_T, HEX_X1 - HEX_X0,
+                          HEX_Y1 - HEX_Y0, 0.0, MAT_WALL))
+        for nm, a0, a1, b0, b1 in (
+                ("s", HEX_X0, HEX_X1, HEX_Y0 - CAP_T, HEX_Y0),
+                ("n", HEX_X0, HEX_X1, HEX_Y1, HEX_Y1 + CAP_T),
+                ("w", HEX_X0 - CAP_T, HEX_X0, HEX_Y0 - CAP_T, HEX_Y1 + CAP_T),
+                ("e", HEX_X1, HEX_X1 + CAP_T, HEX_Y0 - CAP_T,
+                 HEX_Y1 + CAP_T)):
+            new.append(rotbox("skycap_skirt_%s" % nm, (a0 + a1) / 2.0,
+                              (b0 + b1) / 2.0, CAP_Z, CAP_HEX_Z + CAP_T,
+                              a1 - a0, b1 - b0, 0.0, MAT_WALL))
+        log.append("sky cap: %.0f over the map, %.0f over the hexagon, "
+                   "9 boxes, not twinned" % (CAP_Z, CAP_HEX_Z))
 
     new += cut_ceiling(by, log)
     cover = copy_cover(boxes, log)
