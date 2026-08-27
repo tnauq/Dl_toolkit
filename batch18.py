@@ -242,10 +242,32 @@ NOTCHES = [
 # above it. That is the check that answers "does this need crosshairing" -
 # if nothing is listed, nothing is.
 SKY_CAP = True
+# TIGHTENED 2026-08-27: 600/300/200 left the ceiling visibly far above the
+# roofs - measured, a median gap of 493 and 320 at its tightest. The three
+# numbers each add to that gap: reach picks the tallest roof nearby, headroom
+# is added on top, and the step rounds up again.
+#
+#   reach head step   boxes   min gap  median  p90
+#     600  300  200     192       320     493  1600
+#     300  150  100     303       154     220  1287
+#     200  150  100     408       154     220  1135
+#     200  120   50     459       122     162  1085
+#
+# 300/150/100 is the pick: it halves the median gap for 111 more boxes.
+# Tighter than that buys little - going to reach 200 costs another 105 boxes
+# and does not move the median at all, because at that point the gap is set
+# by headroom and step, not by reach.
+#
+# 150 of headroom over a 98 tall hero is deliberate and is the floor for
+# these numbers. Do not drop CAP_HEAD below about 120 without checking the
+# clearance report: it is what stops the cap sitting on someone's head.
+#
+# The p90 stays high whatever the settings - that is the hexagon room and
+# the two bases, which are genuinely tall and have open ground beside them.
 CAP_CELL = 100.0           # sampling grid
-CAP_REACH = 600.0          # a column inherits the tallest roof within this
-CAP_HEAD = 300.0           # clearance above that, ~3 hero heights
-CAP_STEP = 200.0           # levels are quantised to this
+CAP_REACH = 300.0          # a column inherits the tallest roof within this
+CAP_HEAD = 150.0           # clearance above that, ~3 hero heights
+CAP_STEP = 100.0           # levels are quantised to this
 CAP_TOP = 3000.0           # every tile runs up to here
 CAP_T = 26.7
 MAT_SKY = "materials/skybox/light_test_psa_low_moon.vmat"
