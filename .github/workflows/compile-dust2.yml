@@ -10,11 +10,31 @@ name: compile dust2
 #      probe left them.
 #   2. there is now a real map to feed it, not a toy fixture.
 #
-# THE 2026-08-14 DECISION SAID resourcecompiler NEEDS A GPU AND HANGS ON A
-# RUNNER. That may still be true and this workflow may prove it again - in
-# which case the log says so and the answer is a cloud VM. But the objection
-# was recorded before the path work, so it has never actually been tested with
-# a compiler that gets as far as reading a map.
+# THE 2026-08-14 DECISION - "needs a GPU and hangs on a CI runner" - IS WRONG
+# ON BOTH COUNTS, settled by the first run of this workflow on 2026-08-28:
+#
+#     Creating device for graphics adapter 0 'Microsoft Basic Render Driver'
+#     - citadel\maps\dust2.vmap
+#     Initialized Embree v4.04.00.
+#
+# It ran on the software rasterizer, accepted our map by name, and reached
+# Embree - the CPU ray tracer it uses for lighting. It did not hang: exit 124
+# was OUR OWN 40 minute cap killing it mid-lighting.
+#
+# So the compile is CPU-bound and slow, not impossible.
+#
+# LIGHTING IS THE COST, AND WE DO NOT NEED IT. Baked lighting decides how the
+# map LOOKS; it has no bearing on whether it loads and can be walked, which
+# is the whole question. Worst case an unlit map is fullbright or black.
+#
+# But the flag that skips it is UNKNOWN - the first run never printed the
+# compiler's usage. So this workflow now asks for usage FIRST and compiles on
+# a SHORT leash by default. Read out/usage.txt, put the right flag in
+# EXTRA_FLAGS, and only then raise TIMEOUT_MIN if it is still needed.
+#
+# Guessing a flag is worse than not passing one: an unrecognised flag may be
+# ignored silently, and then a four hour run tells you nothing you did not
+# already know.
 #
 # WHAT WILL PROBABLY HAPPEN, said in advance so a failure is not read as a
 # surprise:
@@ -40,11 +60,19 @@ env:
   PLAN: docs/plans/dust2_full.json
   RELEASE_TAG: csdk-12
   MAPNAME: dust2
+  # Extra compiler flags. EMPTY until out/usage.txt names a real one - see
+  # the note above about guessing.
+  EXTRA_FLAGS: ''
+  # Minutes for the compile step. 45 is deliberately short: the first run
+  # proved the compiler works and got killed at 40 mid-lighting, so a second
+  # run on the same leash tells you whether a flag helped, cheaply. Raise it
+  # once you know what you are waiting for.
+  TIMEOUT_MIN: '45'
 
 jobs:
   compile:
     runs-on: windows-latest
-    timeout-minutes: 90
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -189,8 +217,28 @@ jobs:
           head -20 build/game/citadel/gameinfo.gi
           ls -R build | head -30
 
+      # WHAT THE COMPILER ACCEPTS. The first run never printed its usage, so
+      # the flag that skips lighting - if there is one - is unknown, and
+      # lighting is what the 40 minutes went on. Cheap to ask.
+      - name: Usage
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          cd build/game
+          "${{ steps.get.outputs.comp }}" -h > "../../out/usage.txt" 2>&1 || true
+          "${{ steps.get.outputs.comp }}" -help >> "../../out/usage.txt" 2>&1 || true
+          cd ../..
+          echo "=== the whole usage dump, %d bytes ==="
+          wc -c out/usage.txt || true
+          cat out/usage.txt || true
+          echo
+          echo "=== lines that might name a lighting-skip flag ==="
+          grep -iE "light|bake|fast|quality|skip|threads|nolight|draft" \
+            out/usage.txt | head -40 || echo "(nothing matched)"
+
       - name: Compile
-        timeout-minutes: 45
+        timeout-minutes: 320
         shell: bash
         run: |
           set -uo pipefail
@@ -200,16 +248,29 @@ jobs:
           RC=0
           # -nop4 keeps it from looking for Perforce. The rest is the
           # invocation probe compiler got working.
-          timeout 2400 "${{ steps.get.outputs.comp }}" \
-            -game citadel -nop4 \
+          SECS=$(( TIMEOUT_MIN * 60 ))
+          echo "compiling for at most $TIMEOUT_MIN minutes, flags: '$EXTRA_FLAGS'"
+          timeout "$SECS" "${{ steps.get.outputs.comp }}" \
+            -game citadel -nop4 $EXTRA_FLAGS \
             -i "../content/citadel/maps/$MAPNAME.vmap" \
             > "$ROOT/out/compile.txt" 2>&1 || RC=$?
           cd "$ROOT"
           echo "exit: $RC" | tee -a out/compile.txt
+          if [ "$RC" -eq 124 ]; then
+            echo "::warning::the compile hit the $TIMEOUT_MIN minute cap. It "\
+                 "was not stuck - the first run reached Embree and kept "\
+                 "going. Either pass a lighting-skip flag in EXTRA_FLAGS or "\
+                 "raise TIMEOUT_MIN."
+          fi
           echo "--- last 120 lines ---"
           tail -120 out/compile.txt
 
       # The point of the run even when the compile dies.
+      # citadel.fgd is NOT in the repo and the first run said so:
+      #     Unable to find fgd file citadel.fgd!
+      # Without it the compiler does no entity validation, so the seven
+      # probe spellings in this map get no verdict from a CI compile. That
+      # question still needs the real file or a desktop.
       - name: What the compiler said about our classnames
         if: always()
         shell: bash
