@@ -231,10 +231,13 @@ jobs:
           import json, os
           p = json.load(open("work/plan.json"))
           b0, e0 = len(p["boxes"]), len(p.get("entities", []))
+          # .get, not [...]: the fixtures' entities have no "name" key at
+          # all, and dust2's do. A filter that assumes one crashes on
+          # sealed_room, which is the map this run exists to compile.
           p["boxes"] = [b for b in p["boxes"]
-                        if not b["name"].startswith("skycap")]
+                        if not b.get("name", "").startswith("skycap")]
           p["entities"] = [e for e in p.get("entities", [])
-                           if not e["name"].startswith("probe_")]
+                           if not e.get("name", "").startswith("probe_")]
           json.dump(p, open("work/plan.json", "w"), indent=1)
           print("lean: boxes %d -> %d, entities %d -> %d"
                 % (b0, len(p["boxes"]), e0, len(p["entities"])))
