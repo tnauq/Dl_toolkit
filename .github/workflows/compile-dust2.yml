@@ -60,14 +60,40 @@ env:
   PLAN: docs/plans/dust2_full.json
   RELEASE_TAG: csdk-12
   MAPNAME: dust2
-  # Extra compiler flags. EMPTY until out/usage.txt names a real one - see
-  # the note above about guessing.
-  EXTRA_FLAGS: ''
-  # Minutes for the compile step. 45 is deliberately short: the first run
-  # proved the compiler works and got killed at 40 mid-lighting, so a second
-  # run on the same leash tells you whether a flag helped, cheaply. Raise it
-  # once you know what you are waiting for.
-  TIMEOUT_MIN: '45'
+  # THERE IS NO LIGHTING FLAG. out/usage.txt from 2026-08-28 lists the whole
+  # option set and it is generic resource-compiler plumbing - -i, -game,
+  # -nop4, -f, -novpk, -skiptype, -crc. Nothing about lighting, bake speed
+  # or quality. Those live in Hammer's build dialog, not on this executable,
+  # so a CI compile takes the lighting it is given.
+  #
+  # -skiptype vmat,vtex is here because the content tree is ABSENT: every
+  # material and texture reference fails to resolve anyway, so not attempting
+  # them saves whatever that attempt costs. It is not a lighting fix.
+  EXTRA_FLAGS: '-skiptype vmat,vtex'
+  # 270 minutes. The short leash existed to find a flag cheaply; there is no
+  # flag, so the only remaining question is whether it FINISHES, and that
+  # needs the time. GitHub allows six hours per job.
+  #
+  # If this hits the cap too, the answer is not more time - it is more cores.
+  # A standard runner is 2 cores and this job is almost pure ray tracing, so
+  # a larger runner would cut it close to linearly.
+  TIMEOUT_MIN: '270'
+  # LEAN BUILD. The runner has two cores and Embree lights on the CPU, so the
+  # cost is roughly the map's surface area. Measured on the current plan:
+  #
+  #     sky cap      287 boxes   1708.8 M u^2      50% of all surface
+  #     everything else 4459 boxes 1725.4 M u^2
+  #
+  # The cap is half the lighting work and it is 287 enormous slabs of a
+  # material that may not even exist. It contributes nothing to the question
+  # "does this compile and can it be walked", so lean mode drops it, along
+  # with the 20 spelling-probe entities that this compile cannot judge
+  # anyway - no citadel.fgd, no entity validation.
+  #
+  # LEAN EDITS A COPY. The committed plan is untouched; the filtering happens
+  # on the file this job feeds the emitter. Set to 'false' for a full run
+  # once a lean one has finished.
+  LEAN: 'true'
 
 jobs:
   compile:
@@ -174,6 +200,28 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
               g.write(f"conv={conv}\ncomp={comp}\n")
 
+      - name: Lean the plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$PLAN" work/plan.json
+          if [ "$LEAN" != "true" ]; then
+            echo "LEAN off - compiling the whole plan"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os
+          p = json.load(open("work/plan.json"))
+          b0, e0 = len(p["boxes"]), len(p.get("entities", []))
+          p["boxes"] = [b for b in p["boxes"]
+                        if not b["name"].startswith("skycap")]
+          p["entities"] = [e for e in p.get("entities", [])
+                           if not e["name"].startswith("probe_")]
+          json.dump(p, open("work/plan.json", "w"), indent=1)
+          print("lean: boxes %d -> %d, entities %d -> %d"
+                % (b0, len(p["boxes"]), e0, len(p["entities"])))
+          PY
+
       - name: Emit the map
         timeout-minutes: 25
         shell: bash
@@ -183,7 +231,7 @@ jobs:
           RC=0
           dotnet run --no-build -c Release \
             --project src/Deadlock.MapSmoke/Deadlock.MapSmoke.csproj \
-            -- emit "$PLAN" work/t1.vmap > out/emit.txt 2>&1 || RC=$?
+            -- emit work/plan.json work/t1.vmap > out/emit.txt 2>&1 || RC=$?
           tail -20 out/emit.txt
           [ "$RC" -eq 0 ] || { echo "::error::emit failed"; exit 1; }
           "${{ steps.get.outputs.conv }}" \
