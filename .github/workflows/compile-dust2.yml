@@ -57,9 +57,18 @@ name: compile dust2
 on: workflow_dispatch
 
 env:
-  PLAN: docs/plans/dust2_full.json
+  # WHICH PLAN. docs/plans/sealed_room.json is a SIX BOX fixture and exists
+  # here as the decisive cheap experiment: if a six box map finishes, the
+  # pipeline works and the only problem is scale, so the answer is cores or a
+  # desktop. If even six boxes never finish, something is wrong that no
+  # amount of hardware fixes, and the log from a tiny map is readable in a
+  # way that dust2's is not.
+  #
+  # RUN IT ON sealed_room FIRST. Switch back to dust2_full only once a small
+  # one has been seen to finish.
+  PLAN: docs/plans/sealed_room.json
   RELEASE_TAG: csdk-12
-  MAPNAME: dust2
+  MAPNAME: testmap
   # THERE IS NO LIGHTING FLAG. out/usage.txt from 2026-08-28 lists the whole
   # option set and it is generic resource-compiler plumbing - -i, -game,
   # -nop4, -f, -novpk, -skiptype, -crc. Nothing about lighting, bake speed
@@ -69,7 +78,13 @@ env:
   # -skiptype vmat,vtex is here because the content tree is ABSENT: every
   # material and texture reference fails to resolve anyway, so not attempting
   # them saves whatever that attempt costs. It is not a lighting fix.
-  EXTRA_FLAGS: '-skiptype vmat,vtex'
+  # -skiptype REMOVED. It was there because the content tree is absent so
+  # material compiles fail anyway - but it also stops the compiler compiling
+  # OUR two dev materials, which is the opposite of helpful. The last log
+  # ended on "Failed loading dev_measuregeneric01.vmat_c" and then ground for
+  # 270 minutes, so whether that missing material is what it was stuck on is
+  # exactly the sort of thing this run should not be hiding.
+  EXTRA_FLAGS: ''
   # 270 minutes. The short leash existed to find a flag cheaply; there is no
   # flag, so the only remaining question is whether it FINISHES, and that
   # needs the time. GitHub allows six hours per job.
@@ -77,7 +92,8 @@ env:
   # If this hits the cap too, the answer is not more time - it is more cores.
   # A standard runner is 2 cores and this job is almost pure ray tracing, so
   # a larger runner would cut it close to linearly.
-  TIMEOUT_MIN: '270'
+  # 30 minutes. On a six box map this is either plenty or the answer is no.
+  TIMEOUT_MIN: '30'
   # LEAN BUILD. The runner has two cores and Embree lights on the CPU, so the
   # cost is roughly the map's surface area. Measured on the current plan:
   #
@@ -93,6 +109,8 @@ env:
   # LEAN EDITS A COPY. The committed plan is untouched; the filtering happens
   # on the file this job feeds the emitter. Set to 'false' for a full run
   # once a lean one has finished.
+  # Lean does nothing on the fixtures - they have no sky cap - and matters
+  # only when PLAN is back on dust2_full.
   LEAN: 'true'
 
 jobs:
