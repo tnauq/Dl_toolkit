@@ -84,7 +84,10 @@ env:
   # ended on "Failed loading dev_measuregeneric01.vmat_c" and then ground for
   # 270 minutes, so whether that missing material is what it was stuck on is
   # exactly the sort of thing this run should not be hiding.
-  EXTRA_FLAGS: ''
+  # -v so the log says WHERE it stops. Both runs so far ended on the same
+  # line - failing to load one of our two dev materials - and then produced
+  # nothing more for the rest of their timeout.
+  EXTRA_FLAGS: '-v'
   # 270 minutes. The short leash existed to find a flag cheaply; there is no
   # flag, so the only remaining question is whether it FINISHES, and that
   # needs the time. GitHub allows six hours per job.
@@ -267,13 +270,44 @@ jobs:
       # as GAMEROOT\..\content\<game>, and GAMEROOT is the working directory -
       # so it must be run from build/game and the map must sit under
       # build/content/citadel/maps.
+      # THE MATERIALS OUR MAP ASKS FOR, as source the compiler can build.
+      #
+      # A SIX BOX MAP TIMED OUT IN THE SAME PLACE AS THE 4700 BOX ONE, on
+      # 2026-08-28: after Embree, on "Failed loading resource
+      # materials/dev/reflectivity_30.vmat_c". That rules out scale - a six
+      # box map is seconds of lighting - and points at the missing material.
+      #
+      # THE SHADER NAME IS A GUESS AND MAY WELL BE WRONG. That is the point:
+      # a wrong shader should make the compiler ERROR, quickly and by name,
+      # where a missing file apparently makes it sit there. An error is
+      # progress; a hang is not.
+      - name: Author the two dev materials
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/content/citadel/materials/dev
+          for m in reflectivity_30 dev_measuregeneric01; do
+            cat > "build/content/citadel/materials/dev/$m.vmat" <<'VMAT'
+          // Minimal material so the compiler has something to build.
+          // shader name UNREAD - see the note in the workflow.
+          Layer0
+          {
+              shader "complex.vfx"
+              g_flMetalness "0.000"
+              g_vColorTint "[1.000000 1.000000 1.000000 0.000000]"
+          }
+          VMAT
+          done
+          ls -l build/content/citadel/materials/dev/
+
       - name: Lay out game and content trees
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p build/game/citadel build/content/citadel/maps
+          mkdir -p build/game/citadel build/content/citadel/maps \
+                   build/content/citadel/materials/dev
           cp "work/$MAPNAME.vmap" "build/content/citadel/maps/$MAPNAME.vmap"
           # gameinfo.gi is FETCHED, not written by hand: a synthesized
           # approximation the compiler rejects looks identical to the
