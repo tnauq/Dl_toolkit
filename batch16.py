@@ -65,9 +65,26 @@ PREFIX = "m_"
 MARK = "_batch16"
 
 # Turn on only when both classnames below are read off the shipped strings.
-EMIT_UNKNOWN = False
-TELEPORTER_CLASS = "UNKNOWN"
-SINNER_CLASS = "UNKNOWN"
+# SOLVED 2026-08-29, off deadlockmodding.pages.dev/entity-list - a dump of
+# every class derived from CBaseEntity, made with CS2ServerGUI:
+#
+#     CCitadelTeleportTrigger     citadel_trigger_teleport
+#     CCitadelTeleportLocation    info_teleport_location
+#
+# The trigger is the volume you walk into; the LOCATION is where you come
+# out, and nobody had guessed there was a second entity at all. The name
+# follows the same citadel_trigger_* convention as climb_rope, push,
+# speed_boost and idol_return - which is why it was the first of the seven
+# probe spellings, and why the LLM's trigger_citadel_teleport is not in the
+# dump at all.
+#
+# The same dump confirms trigger_catapult (CCitadelCatapultTrigger),
+# destroyable_building (CCitadel_Destroyable_Building) and every other
+# classname this file emits.
+EMIT_UNKNOWN = True
+TELEPORTER_CLASS = "citadel_trigger_teleport"
+TELEPORT_LOCATION_CLASS = "info_teleport_location"
+SINNER_CLASS = "UNKNOWN"          # still: the sinner is a unit, not a class
 
 # ---------------------------------------------------------------------------
 # THE SPELLING PROBE. Two classnames came from an LLM search and BOTH invert
@@ -99,7 +116,10 @@ SINNER_CLASS = "UNKNOWN"
 #
 # THIS IS A DIAGNOSTIC, NOT CONTENT. Turn it off before anyone plays the
 # map: it puts several overlapping entities at each teleporter and sinner.
-SPELLING_PROBE = True
+# OFF. The teleporter is known, so there is nothing left to probe for. The
+# tables below are kept because the same trick will be worth repeating the
+# next time a classname is in doubt.
+SPELLING_PROBE = False
 TELEPORTER_SPELLINGS = [
     "citadel_trigger_teleport",     # follows the convention we have read
     "trigger_citadel_teleport",     # the LLM's answer
@@ -965,7 +985,25 @@ def main():
         for name, origin, note in filled:
             sites.append((name, origin, note))
             if EMIT_UNKNOWN and cls != "UNKNOWN":
-                new += make_point(name, origin, cls)
+                # THE TRIGGER AND ITS DESTINATION. A teleporter is two
+                # entities: the volume you enter, and an
+                # info_teleport_location you come out at. Each of the two
+                # rooms sends to the OTHER, so tele_1's trigger targets
+                # tele_2's location.
+                #
+                # THE KEYVALUE NAME IS A GUESS. `target` is the Source
+                # convention and preflight checks that it resolves, but
+                # nothing has been read confirming this entity uses it. If
+                # walking in does nothing, that is the first thing to check.
+                other = "tele_2" if name == "tele_1" else "tele_1"
+                new += make_point(name, origin, cls, {
+                    "targetname": "%s_trigger" % name,
+                    "target": "%s_dest" % other,
+                    "StartDisabled": "0",
+                })
+                new += make_point("%s_dest" % name, origin,
+                                  TELEPORT_LOCATION_CLASS,
+                                  {"targetname": "%s_dest" % name})
             else:
                 held.append((name, label))
 
