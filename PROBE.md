@@ -374,11 +374,34 @@ midboss now stands on it. The deck below stays cut, so on the day the lid
 becomes killable the shaft is already open to the bridge floor and nothing
 has to be recut. Flip `LID` to False and the square opens again.
 
-THE PLAN FORMAT CANNOT EXPRESS THE REAL MECHANISM YET. batch13 emits keyvalues only; no
-script here writes a connection, and the converter has never been asked to.
-Wiring the lid means teaching the plan about DmeConnectionData - outputName,
-targetType 7, targetName, inputName, overrideParam, delay, timesToFire - which
-is a converter job, not an entity-placement job.
+UNSHELVED 2026-08-29, and both halves of the old blocker were wrong.
+
+THE PLAN FORMAT HAS EXPRESSED CONNECTIONS FOR SOME TIME. batch15 has a
+`wire()` helper writing exactly the fields listed above, and `emit-dust2.yml`
+pins `EXPECT_CONN: 56`, verified through dmxconvert's own element census. The
+shop networks and guardian kill-relays are all wired that way. This paragraph
+outlived the thing it described.
+
+AND THE OUTPUT NAMED HERE DOES NOT EXIST. The sentence above says a neutral
+camp fires `OnTrooperKilled`. The connection probe attributed that output to
+exactly one class, `info_super_trooper_spawn`, and citadel.fgd declares it on
+exactly one class, the same one. Every midboss-related class -
+`info_neutral_trooper_camp`, `info_mid_boss_spawn`,
+`info_neutral_trooper_spawn`, `trigger_midboss_shield` and
+`citadel_base_prop_midboss_indicator` - declares NO OUTPUTS AND NO INPUTS AT
+ALL. Nothing on the map fires when the midboss dies.
+
+WHAT IS ACTUALLY LEFT is the event name. `logic_gameevent_listener` takes a
+`gameeventname` and fires `OnEventFired`; Deadlock announces a midboss kill
+globally, so the event exists, but its name is not in any file we hold. Run
+`dumpgameevents` at the console with the dev flags from SHIPPING.md and set
+`MIDBOSS_EVENT` in batch15. Everything downstream is built and waiting.
+
+The lid is now a `func_brush` entity named `midboss_lid` (batch18,
+`LID_ENTITY`), because base.fgd puts `Kill` on the `GameEntity` base class,
+so every entity answers it. The brush class is a CHOICE, not a copy:
+dl_example's own grate and ladder brushes live inside prefabs and no
+targetname in the map resolves to them.
 
 Old note:
 

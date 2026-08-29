@@ -908,6 +908,46 @@ def build_objectives():
                 "TrooperLevel": "4",
             },
         })
+        # REINFORCEMENT SPAWNS, added 2026-08-29 from citadel.fgd, which is
+        # unusually explicit about them:
+        #
+        #   "For reinforcements, one of these needs to be placed for each 4
+        #    troopers in a lane and under their respective zipline, these
+        #    spawns do not require BossNames and if they are not placed,
+        #    troopers will not spawn."
+        #
+        # Same class as the guardian, with ReinforcementsOnly set and BossName
+        # empty. ONE PER LANE, because a wave here is four troopers - the four
+        # LaneSlots read off dl_example - so one covers a lane's wave.
+        #
+        # POSITION IS THE LANE'S FIRST NODE, the same point the trooper spawn
+        # above uses. The FGD says "under their respective zipline", and this
+        # map's ziplines are built from the lane routes at height, so the
+        # first node is under the zipline's first node by construction. Not
+        # surveyed, derived - and marked so.
+        #
+        # THE LAST CLAUSE IS THE ALARMING ONE: without these, troopers do not
+        # spawn at all. If that reading is right, this map had no troopers.
+        # It is also the clause most worth doubting, since info_trooper_spawn
+        # exists as its own class and dl_example carries 36 of them - so the
+        # two probably work together rather than one replacing the other.
+        # Both are emitted.
+        out.append({
+            "name": "reinforce_l%s" % lane,
+            "classname": "info_super_trooper_spawn",
+            "origin": [round(v, 4) for v in first],
+            "angles": face_centre(first),
+            "surveyed_on": "DERIVED from lane %s first node" % lane,
+            "properties": {
+                "targetname": "",
+                "teamnumber": TEAM_A,
+                "lanenum": lane,
+                "BossName": "",
+                "SecondaryBoss": "0",
+                "ReinforcementsOnly": "1",
+                "CoverGroupID": "0",
+            },
+        })
     return out
 
 

@@ -138,6 +138,28 @@ DECK_Z = (1253.7, 1280.3)      # the deck under two of them
 LID = True
 LID_NAME = "midboss_lid"
 
+# THE LID IS AN ENTITY NOW, 2026-08-29, so that it can be killed.
+#
+# The old note above is kept because its reasoning is still the record of why
+# it was shelved - but its premise is wrong twice over. The plan format CAN
+# express a connection (batch15 has written them since EXPECT_CONN went to
+# 56), and base.fgd puts `Kill` on the GameEntity base class, so EVERY entity
+# answers it. Nothing about this was ever a converter problem.
+#
+# func_brush is the class: base.fgd gives it Targetname, Parentname,
+# RenderFields, EnableDisable and a solid model, which is exactly a killable
+# wall. dl_example's own grate and ladder brushes could not be read - they
+# live inside prefabs and no targetname in the map matches them - so this is
+# a CHOICE rather than a copy, and it is the standard Source one.
+#
+# THE GEOMETRY IS UNCHANGED. The lid is still built by rotbox as a box and
+# still takes part in every floor check below; it is converted to an entity
+# at write time, in main. That ordering is deliberate: the solidity sampler
+# only knows about boxes, and moving the lid out of `new` earlier would make
+# it report the hole as open and fail a map that is correct.
+LID_ENTITY = True
+LID_CLASS = "func_brush"
+
 # ---------------------------------------------------------------------------
 # THE TWO SHRINE ROOMS. Boxes, not hexagons: the urn room's hexagon does not
 # fit between the north tunnels at any radius that still reaches the wall.
@@ -1548,8 +1570,50 @@ def main():
     if SKY_CAP:
         new += build_skycap(boxes + new, log)
 
+    # THE LID BECOMES AN ENTITY, after every geometry check has seen it as a
+    # box. Same origin, same extents, same material - it moves from the box
+    # list to the entity list and gains a classname and a targetname, which
+    # is what makes it addressable by `Kill`.
+    #
+    # The mesh-in-"mesh" shape is batch16's, already emitted for the trigger
+    # volumes and already round-tripping through dmxconvert, so this adds no
+    # new format ground.
+    lid_ent = None
+    if LID and LID_ENTITY:
+        for i, b in enumerate(new):
+            if b["name"] == LID_NAME:
+                lid_ent = {
+                    "name": LID_NAME,
+                    "classname": LID_CLASS,
+                    "origin": list(b["origin"]),
+                    "angles": list(b.get("angles", [0.0, 0.0, 0.0])),
+                    "properties": {
+                        "targetname": LID_NAME,
+                        # StartDisabled 0: it is solid from the start. The
+                        # midboss stands on it until something kills it.
+                        "StartDisabled": "0",
+                        "spawnflags": "4097",
+                    },
+                    "mesh": {
+                        "name": LID_NAME + "_vol",
+                        "origin": [0.0, 0.0, 0.0],
+                        "extents": list(b["extents"]),
+                        "angles": [0.0, 0.0, 0.0],
+                    },
+                    MARK: True,
+                }
+                del new[i]
+                break
+        if lid_ent is None:
+            problems.append("LID_ENTITY is on but %s was not built" % LID_NAME)
+
     boxes.extend(new)
     plan["boxes"] = boxes
+    if lid_ent is not None:
+        ents = [e for e in plan.get("entities", [])
+                if e.get("name") != LID_NAME]
+        ents.append(lid_ent)
+        plan["entities"] = ents
     plan["_batch18_removed"] = [json.loads(json.dumps(b)) for b in removed]
 
     log.append("")
@@ -1561,9 +1625,9 @@ def main():
                "opening" % (HOLE_X0, HOLE_X1, HOLE_Y0, HOLE_Y1))
     log.append("lid   %s - %s"
                % ("ON" if LID else "OFF",
-                  "%s fills the square flush with the floor; the deck below "
-                  "is still cut, so the shaft is ready for the day the lid "
-                  "can be killed" % LID_NAME if LID
+                  "%s fills the square flush with the floor as a %s; the "
+                  "deck below is still cut, so killing it opens the shaft "
+                  "to the bridge floor" % (LID_NAME, LID_CLASS) if LID
                   else "the square is open all the way down"))
     log.append("NO DOOR: six solid walls, the floor hole is the only way in")
     log.append("")

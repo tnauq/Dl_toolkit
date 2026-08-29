@@ -1,79 +1,94 @@
-# Inbox drop — guardians become spawn markers (2026-08-29)
+# Inbox drop — items 1, 2, 3 and 5 (2026-08-29)
 
-    batch13.py          MODIFIED - guardian class, BossName, explicit swaps
-    batch15.py          MODIFIED - GUARDIAN_OUTPUT
-    tools/minimap.py    MODIFIED - legend lookup
+    batch13.py    reinforcement spawns
+    batch15.py    the midboss chain: lid kill + night, gated on one constant
+    batch16.py    patron cover groups; the sun becomes env_global_light
+    batch18.py    the lid becomes a func_brush entity
+    PROBE.md      item 5 rewritten
 
-Option 1, taken in full. All three files round-tripped to a byte-exact sha1
-match against `repo-manifest.md` before editing. All three parse, and
-`build_objectives()` was run in isolation to check the result.
+All extracted byte-exact against `repo-manifest.md` before editing, all
+parse, and `build_objectives()` was run in isolation.
 
-## What changed
+## 1. The midboss chain — BUILT, BUT NOT EMITTED
 
-The lane guardian is no longer placed as an NPC. It is placed as
-`info_super_trooper_spawn`, a spawn marker carrying a `BossName`.
+The chain is written and complete: a `logic_gameevent_listener` fires
+`night_relay.Trigger` and `midboss_lid.Kill` at delay 0, and
+`day_relay.Trigger` at delay 300. Two relays hold the fan-out to the fog
+controller and the global light, which is the fixture's own pattern — 39 of
+dl_example's 89 connections are `logic_relay.OnTrigger`.
 
-    guardian_l1   boss_rebel_t1_yellow   lane 1   team 2
-    guardian_l3   boss_rebel_t1_orange   lane 3   team 2
-    guardian_l6   boss_rebel_t1_purple   lane 6   team 2
+**It emits nothing, because `MIDBOSS_EVENT = ""`.** Nothing on the map fires
+when the midboss dies: every midboss class in citadel.fgd declares no outputs
+and no inputs at all, so PROBE.md item 5's "camp fires OnTrooperKilled" was
+wrong. The only route is the game event, and its name isn't in any file we
+hold — not in the retail folder, which has only UI strings like
+`Objective_MidBoss`.
 
-and the mirrored half gets `boss_combine_t1_*`, verified through `team_swap`.
+**One command gets it**: `dumpgameevents` at the console with the dev flags
+from SHIPPING.md. Set the constant and the whole section switches on. Five
+candidate names are listed in the code — do not pick one by eye. An empty or
+wrong `gameeventname` compiles, verifies, loads and silently does nothing,
+which is the failure this project keeps hitting, so the block is gated rather
+than guessed.
 
-Three sources agree and none of them is the vdata:
+The lid is now a `func_brush` entity (batch18, `LID_ENTITY`). `Kill` is on
+base.fgd's `GameEntity` class, so every entity answers it. The brush class is
+a **choice**, not a copy — dl_example's grate and ladder brushes are inside
+prefabs and no targetname resolves to them.
 
-- **citadel.fgd** tool-names the class "Lane Guardian", gives it the brazier
-  guardian editor model, and says a guardian needs one of these placed on its
-  lane with a unique BossName matching lane and team.
-- **The connection probe**: all nine guardian-closes-the-shop wires are owned
-  by this class firing `OnTrooperKilled`.
-- **The fixture census**: 17 `info_super_trooper_spawn`, zero
-  `npc_boss_tier1`.
+The conversion happens at **write time**, after every geometry check has seen
+the lid as a box. Moving it earlier would make the floor sampler report the
+hole as open and fail a map that is correct.
 
-`GUARDIAN_OUTPUT` in batch15 is now `"OnTrooperKilled"`. These two changes
-had to land together — a right output on a wrong entity and a wrong output on
-a right entity fail the same silent way, with the map emitting and verifying
-green while the shop never closes.
+## 2. Cover groups — the unbeatable warning is closed
 
-## Three details worth knowing
+Three groups of three `info_cover_point` around the patron: where it stands
+and fights (r 220), where it moves to die (r 420), where it falls when it
+becomes a core (r 120). Ids 4101/4102/4103.
 
-**The key set shrank.** The old NPC carried ten keys; the marker takes seven,
-and `vscripts`, `BackdoorProtectionTrigger`, `subclass_name`,
-`dying_cover_id` and `vulnerable_cover_id` are gone because the class does
-not have them. `SecondaryBoss` and `ReinforcementsOnly` are new, both 0.
+**Cover ids are now per-team.** `twin_objective` adds an offset of 100 to
+`CoverGroupID`, `dying_cover_id`, `vulnerable_cover_id` and `groupid`.
+Without that both patrons would name group 4101 and share one set of cover
+points on opposite sides of the map — and nothing would report it. The ids
+resolve, the points exist, and the far patron walks the length of the map to
+die.
 
-**BossName is an enumeration, not a name we compose.** The FGD lists eight
-values as `boss_<team>_t1_<colour>` using the SINGULAR "rebel". Our old
-`rebels_t1_boss_orange` matched none of them. The generic rebels↔combine swap
-cannot see "rebel", so batch13 now has an `EXPLICIT_SWAPS` table for the
-pair, same as batch16 needed for the patron's BossName.
+Radii and point counts are invented. The FGD says to use cover groups; it
+does not say how big one is.
 
-**The minimap would have gone quiet.** Its Guardian legend looked up
-`npc_boss_tier1`, so after this change it would have drawn nothing and
-reported "Guardian" missing on a map with three per team. Updated.
+## 3. Reinforcement spawns
 
-## Why npc_boss_tier1 looked right, recorded rather than deleted
+One per lane, `ReinforcementsOnly 1`, empty BossName, at the lane's first
+node — which is under its zipline by construction, since the ziplines are
+built from the lane routes at height.
 
-The 2026-08-27 reasoning was not careless. `npc_units.vdata` really does
-carry `npc_boss_tier1` with the brazier guardian model at 5500 health. But
-that file lists **units**, not map entity classes. The unit is what gets
-spawned; the marker is what you place. citadel.fgd draws the same distinction
-of `npc_trooper_boss`: "creates a Tier1 boss directly. Use
-`info_trooper_boss_spawn` instead."
+The FGD's last clause is the alarming one: "if they are not placed, troopers
+will not spawn." If that's literal, this map had no troopers. It's also the
+clause most worth doubting, since `info_trooper_spawn` is its own class and
+dl_example carries 36 of them. Both are emitted.
 
-`npc_boss_tier1` stays in batch13's `TEAM_SUBCLASS` table, unused, with a
-note — the pairing is read and correct if the NPC is ever placed directly.
+## A correction found on the way: the sun was not a real class
 
-## Counts
+`light_environment` is in **neither** citadel.fgd nor base.fgd. The only
+mention anywhere is a comment inside base.fgd's fog volume. It may exist in
+lights.fgd, which we don't have, but Deadlock's own global light is
+`env_global_light` and citadel.fgd defines it outright.
 
-Entity count is unchanged: one class swapped for another, and the two proxies
-restored in the previous drop put `EXPECT_CLASSPROPS`/`EXPECT_PLUGLIST` back
-at **611**. `EXPECT_ELEMENTS: 87916` may move, since the guardians carry
-three fewer keyvalues each. Let the run report it rather than editing on a
-guess.
+It's also the only lighting entity with runtime inputs — `LightColor`,
+`SetAngles`, `EnableShadows`, `Enable`/`Disable` — so the night mode needs
+it. Switched, and given the targetname `global_light` that batch15 drives.
 
-## Still open, same block of batch13
+## 5. PROBE.md item 5
 
-citadel.fgd says reinforcement spawns are the SAME class with
-`ReinforcementsOnly` set, one per four troopers under each zipline, and that
-without them troopers will not spawn. We emit `info_trooper_spawn` instead.
-Untouched here, but it now sits ten lines from code that knows the answer.
+Rewritten. Both halves of the old blocker were wrong: the plan format has
+expressed connections since `EXPECT_CONN` went to 56, and the output it names
+belongs to a class that isn't the midboss. What's actually left is the event
+name.
+
+## Counts will move
+
+Entities are up by roughly 40: 18 cover points with twins, 6 reinforcement
+spawns with twins, and the lid moves from `boxes` to `entities`. Re-pin
+`EXPECT_CLASSPROPS`, `EXPECT_PLUGLIST` and `EXPECT_ELEMENTS` from what the
+run reports rather than from a guess here. `EXPECT_CONN` stays at 56 until
+`MIDBOSS_EVENT` is set, then rises by 11.

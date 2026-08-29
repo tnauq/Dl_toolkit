@@ -555,19 +555,39 @@ SKY = [
         },
     },
     {
+        # WAS light_environment UNTIL 2026-08-29. That class is in neither
+        # citadel.fgd nor base.fgd - the only mention anywhere is a comment
+        # in base.fgd's fog volume, about "sun (light_environment) light
+        # strength". It may still exist in lights.fgd, which we do not have,
+        # but Deadlock's own global light is this class and citadel.fgd
+        # defines it outright.
+        #
+        # AND IT IS THE ONE WITH RUNTIME INPUTS: LightColor, SetAngles,
+        # SetFOV, SetNearZDistance, SetTexture, EnableShadows, plus
+        # Enable/Disable from EnableDisable. Nothing else in the lighting
+        # stack can be changed mid-match, so the night mode in batch15 drives
+        # this entity. That needs a targetname, which the old sun did not
+        # have.
+        #
+        # Keys are citadel.fgd's own, with its defaults where nothing was
+        # read. angles remain INVENTED - "45 20 180" is the FGD's default and
+        # this is not it, because the old sun's -60/45 was at least chosen to
+        # look at this map.
         "name": "sun",
-        "classname": "light_environment",
+        "classname": "env_global_light",
         "origin": [X_PLANE, Y_PLANE, 2800.0],
-        # angles are INVENTED: nothing was read for the sun's direction, and
-        # this is a plain overhead-ish angle rather than anything considered.
         "angles": [-60.0, 45.0, 0.0],
         "properties": {
-            "targetname": "",
-            "skytexture": SKY_NAME,      # names the env_sky above
+            "targetname": "global_light",
             "color": "228 184 134",
-            "brightness": "6",
-            "enabled": "1",
-            "castshadows": "1",
+            "lightscale": "1.0",
+            "ambientcolor1": "128 128 128",
+            "ambientscale1": "1.0",
+            "ambientcolor2": "24 24 24",
+            "ambientscale2": "1.0",
+            "enableshadows": "1",
+            "SkyboxSlot": "",
+            "StartDisabled": "0",
             "vscripts": "",
         },
     },
@@ -814,8 +834,76 @@ def twin_objective(e):
     for k in LINK_KEYS:
         if props.get(k):
             props[k] = team_swap(props[k])
+
+    # COVER GROUP IDS ARE PER TEAM. A group id is a label, and the twin is a
+    # DIFFERENT patron standing in a DIFFERENT room - if both halves name
+    # group 4101, the two bosses share one set of cover points on opposite
+    # sides of the map. Nothing would report it: the ids resolve, the points
+    # exist, and the far patron walks the length of the map to die.
+    #
+    # The same offset is applied to the points themselves (groupid) and to
+    # the three keys that reference them, so the two halves stay consistent
+    # without either side knowing about the other.
+    for k in ("CoverGroupID", "dying_cover_id", "vulnerable_cover_id",
+              "groupid"):
+        v = props.get(k, "")
+        if v.isdigit():
+            props[k] = str(int(v) + COVER_TEAM_OFFSET)
     t["properties"] = props
     return t
+
+
+# COVER GROUPS FOR THE PATRON. citadel.fgd, on npc_boss_tier3: "Make sure to
+# use cover groups for each of the boss states, otherwise the game will be
+# unbeatable." Until 2026-08-29 all three ids were empty, which is that exact
+# failure.
+#
+# THREE STATES, THREE GROUPS. CoverGroupID is where it stands and fights.
+# dying_cover_id is where it moves before turning into a core;
+# vulnerable_cover_id is where it falls when it does. The FGD names them; it
+# does not say how many points a group wants, so THREE PER GROUP is a choice.
+#
+# The ids are arbitrary integers and only have to be unique within the map.
+# dl_example uses values like 4321 and 1234, which suggests the same - they
+# are labels, not indices into anything.
+COVER_GROUPS = {"stand": 4101, "dying": 4102, "vulnerable": 4103}
+
+# Added to every cover id on the mirrored half. See twin_objective.
+COVER_TEAM_OFFSET = 100
+
+# Ring radii per group, in units, from the patron's own origin. The patron
+# room is the same footprint as the hexagon room, so these stay well inside
+# it. INVENTED: no cover layout was read from anywhere, and the only
+# constraint applied is that every point must have floor under it, which is
+# checked below rather than assumed.
+COVER_RINGS = {"stand": 220.0, "dying": 420.0, "vulnerable": 120.0}
+
+
+def make_cover_points(origin):
+    """Three groups of three info_cover_point around the patron, and twins.
+
+    Points are placed on a ring and the FLOOR UNDER EACH IS CHECKED by the
+    caller's site pass - they go into `sites` so a point hanging in the air
+    is reported like any other. A cover point with nothing under it is a
+    place the boss cannot actually go.
+    """
+    out = []
+    for state, r in COVER_RINGS.items():
+        gid = COVER_GROUPS[state]
+        for i in range(3):
+            a = 2.0 * math.pi * i / 3.0 + (0.5 if state == "dying" else 0.0)
+            p = [round(origin[0] + r * math.cos(a), 4),
+                 round(origin[1] + r * math.sin(a), 4),
+                 round(origin[2], 4)]
+            out += make_objective("cover_%s_%d" % (state, i), p,
+                                  "info_cover_point", {
+                                      "targetname": "",
+                                      "groupid": str(gid),
+                                      "visionradius": "0",
+                                      "AllowOffNav": "0",
+                                      "AutoAdjustDirection": "1",
+                                  })
+    return out
 
 
 def make_objective(name, origin, classname, props):
@@ -1006,11 +1094,12 @@ def main():
         # FGD's word for that outcome is unbeatable. This needs
         # info_cover_point groups authoring - work nobody has started, and
         # not a keyvalue that can be filled in from a string.
-        "CoverGroupID": "",
-        "dying_cover_id": "",
-        "vulnerable_cover_id": "",
+        "CoverGroupID": str(COVER_GROUPS["stand"]),
+        "dying_cover_id": str(COVER_GROUPS["dying"]),
+        "vulnerable_cover_id": str(COVER_GROUPS["vulnerable"]),
         "BackdoorProtectionTrigger": "",
     })
+    new += make_cover_points(origin)
     sites.append((name, origin, note))
 
     # ---- the shrine -> patron chain -----------------------------------

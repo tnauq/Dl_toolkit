@@ -143,6 +143,156 @@ UNKILLED_SHOPS = ["shop_base", "shop_secret"]
 #   ("shrine_west", "super_trooper_spawn_l3", "OnDestroyed", "Enable"),
 SHRINE_UPGRADES = []
 
+# ---------------------------------------------------------------------------
+# THE MIDBOSS CHAIN: the lid, and the night.
+#
+# ONE EVENT DRIVES BOTH, and we do not know its name. That is the whole
+# blocker and it is worth stating precisely, because the shape of the problem
+# has changed twice already.
+#
+# PROBE.md item 5 records the mechanism as "the midboss camp fires
+# OnTrooperKilled -> lid Kill". THAT IS WRONG. The connection probe
+# attributed OnTrooperKilled to exactly one class, info_super_trooper_spawn,
+# and citadel.fgd declares it on exactly one class, the same one. Every
+# midboss-related class - info_neutral_trooper_camp, info_mid_boss_spawn,
+# info_neutral_trooper_spawn, trigger_midboss_shield and
+# citadel_base_prop_midboss_indicator - declares NO OUTPUTS AND NO INPUTS AT
+# ALL. Nothing on the map fires when the midboss dies.
+#
+# The route left is logic_gameevent_listener (citadel.fgd): a gameeventname
+# in, OnEventFired out. Deadlock announces a midboss kill globally - there is
+# a sound and a UI message - so the event exists; we just cannot read its
+# name from any file we have. It is not in the retail folder (only UI strings
+# like Objective_MidBoss), so it is in the vpk or the binaries.
+#
+# HOW TO GET IT: on a desktop, launch with the dev flags in SHIPPING.md and
+# run `dumpgameevents` at the console. One command. Put the name below and
+# everything in this section starts working.
+#
+# UNTIL THEN NOTHING HERE IS EMITTED. An empty or wrong gameeventname is the
+# exact failure this project keeps hitting - it compiles, verifies, loads,
+# and silently does nothing - so the block is gated rather than guessed.
+MIDBOSS_EVENT = ""
+
+# Candidates, for whoever runs dumpgameevents: the answer is probably one of
+# these, but DO NOT pick one by eye. Confirm it against the dump.
+MIDBOSS_EVENT_CANDIDATES = [
+    "citadel_midboss_killed", "midboss_killed", "neutral_midboss_killed",
+    "citadel_neutral_killed", "midboss_defeated",
+]
+
+# How long night lasts, in seconds. Fired as a DELAY on the same output that
+# starts it, so no timer entity is needed - delay is a field on every
+# connection.
+NIGHT_SECONDS = 300.0
+
+# The lid, built by batch18 as a func_brush named midboss_lid. Killing it
+# opens the shaft to the bridge floor below; the deck under it is already
+# cut, so nothing has to move.
+LID_TARGET = "midboss_lid"
+
+# THE SNAP IS DELIBERATE, decided 2026-08-29: the change is instant so it
+# lands with the global midboss death sound. env_fog_controller has a lerp
+# system (SetColorLerpTo and friends, then StartFogTransition) which is
+# deliberately unused; if the cut ever reads as a glitch rather than an
+# event, that is the fallback and it is a change of inputs, not structure.
+#
+# Values are INVENTED. Nothing was read for what this map should look like at
+# night, and fog distances want checking against its actual extents.
+FOG_NAME = "fog_controller"
+LIGHT_NAME = "global_light"          # batch16's env_global_light
+FOG_DAY = {"SetColor": "142 160 178", "SetStartDist": "1200",
+           "SetEndDist": "9000", "SetFarZ": "18000"}
+FOG_NIGHT = {"SetColor": "18 24 44", "SetStartDist": "400",
+             "SetEndDist": "4200", "SetFarZ": "9000"}
+LIGHT_DAY = {"LightColor": "228 184 134", "SetAngles": "-60 45 0"}
+LIGHT_NIGHT = {"LightColor": "58 74 122", "SetAngles": "-24 200 0"}
+
+
+def build_midboss_chain(plan, log):
+    """The listener, the two relays and their wires. Nothing without an event.
+
+    Returns a list of new entities. The lid and the global light are ATTACHED
+    TO, not created here - batch18 and batch16 own those - so both are looked
+    up and their absence is reported rather than papered over.
+    """
+    if not MIDBOSS_EVENT:
+        log.append("")
+        log.append("MIDBOSS CHAIN: not emitted. MIDBOSS_EVENT is unset, and")
+        log.append("  no entity on this map fires anything when the midboss")
+        log.append("  dies - every midboss class in citadel.fgd declares no")
+        log.append("  outputs at all. Run `dumpgameevents` on a desktop and")
+        log.append("  set MIDBOSS_EVENT. The lid stays solid until then, and")
+        log.append("  the map has no night.")
+        return []
+
+    ents = by_name(plan)
+    out = []
+    missing = []
+    if LID_TARGET not in ents:
+        missing.append("%s (batch18, LID/LID_ENTITY)" % LID_TARGET)
+    have_light = any(e.get("properties", {}).get("targetname") == LIGHT_NAME
+                     for e in plan["entities"])
+    if not have_light:
+        missing.append("%s (batch16, env_global_light)" % LIGHT_NAME)
+    have_fog = any(e.get("properties", {}).get("targetname") == FOG_NAME
+                   for e in plan["entities"])
+
+    # The fog controller is created HERE rather than in batch16, because it
+    # exists only to be driven by this chain. If the chain is off there is no
+    # fog controller and the map keeps whatever the compiler defaults to.
+    if not have_fog:
+        out.append(relay(FOG_NAME, [920.2 / 2, 12170.1 / 2, 2600.0],
+                         "env_fog_controller", {
+                             "targetname": FOG_NAME,
+                             "fogenabled": "1",
+                             "fogcolor": FOG_DAY["SetColor"],
+                             "fogstart": FOG_DAY["SetStartDist"],
+                             "fogend": FOG_DAY["SetEndDist"],
+                             "farz": FOG_DAY["SetFarZ"],
+                         }, [], None))
+
+    # Two relays, each holding one state's whole fan-out. 39 of dl_example's
+    # 89 connections are logic_relay.OnTrigger, so this is the fixture's own
+    # pattern rather than an invention.
+    for name, fog, light in (("night_relay", FOG_NIGHT, LIGHT_NIGHT),
+                             ("day_relay", FOG_DAY, LIGHT_DAY)):
+        conns = [wire("OnTrigger", FOG_NAME, k, 0.0) for k in fog]
+        for i, (k, v) in enumerate(fog.items()):
+            conns[i]["overrideParam"] = v
+        for k, v in light.items():
+            c = wire("OnTrigger", LIGHT_NAME, k, 0.0)
+            c["overrideParam"] = v
+            conns.append(c)
+        out.append(relay(name, [920.2 / 2, 12170.1 / 2,
+                                2600.0 + RELAY_Z_STEP], "logic_relay",
+                         {"targetname": name, "TriggerOnce": "0",
+                          "FastRetrigger": "0"}, conns, None))
+
+    # The listener. One output, three consumers: night now, the lid now, day
+    # in NIGHT_SECONDS.
+    out.append(relay("midboss_listener", [920.2 / 2, 12170.1 / 2, 2600.0],
+                     "logic_gameevent_listener",
+                     {"targetname": "midboss_listener",
+                      "gameeventname": MIDBOSS_EVENT,
+                      "gameeventitem": "",
+                      "StartDisabled": "0"},
+                     [wire("OnEventFired", "night_relay", "Trigger", 0.0),
+                      wire("OnEventFired", LID_TARGET, "Kill", 0.0),
+                      wire("OnEventFired", "day_relay", "Trigger",
+                           NIGHT_SECONDS)],
+                     None))
+
+    log.append("")
+    log.append("MIDBOSS CHAIN on event %r: listener -> night_relay, %s.Kill, "
+               "and day_relay after %.0fs" % (MIDBOSS_EVENT, LID_TARGET,
+                                              NIGHT_SECONDS))
+    for m in missing:
+        log.append("  MISSING: %s - the wire will emit and resolve to "
+                   "nothing" % m)
+    return out
+
+
 # Relay placement. Relays are point entities with no volume, so position is
 # cosmetic; they are stacked above their shop so a human opening the map can
 # see which shop they belong to.
@@ -363,6 +513,16 @@ def main(path):
     twins = [twin_of(e) for e in added]
     plan["entities"].extend(added)
     plan["entities"].extend(twins)
+
+    # THE MIDBOSS CHAIN IS NOT MIRRORED. There is one midboss, one lid and
+    # one sky, all on the mirror point, so a twin of any of this would be the
+    # same entity in the same place - and two listeners on one event would
+    # fire everything twice. Added after the twinning step for that reason.
+    chain_log = []
+    chain = build_midboss_chain(plan, chain_log)
+    plan["entities"].extend(chain)
+    for line in chain_log:
+        print(line)
 
     ents = by_name(plan)
     for shop_name, killer in SHOP_KILLERS:
