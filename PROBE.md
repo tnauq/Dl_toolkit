@@ -95,6 +95,41 @@ Still open after this file: the teleporter, which appears nowhere in it, and
 whether neutral_camp_vaults is really the container that spawns
 neutral_sinners_sacrifice.
 
+## CAN CI COMPILE THE MAP? NO - settled 2026-08-29
+
+Seven runs of `compile dust2`. The answer is no, for one reason, and it is
+not any of the reasons anyone expected.
+
+WHAT WORKS, and this is more than was thought:
+
+  - resourcecompiler RUNS on a GitHub runner, on the software rasterizer
+    ('Microsoft Basic Render Driver'). The 2026-08-14 note saying it needs a
+    GPU is wrong.
+  - It never hung. Every "hang" was our own timeout. A stall watcher now
+    kills it after 60 seconds of silence, so a failed run costs 90 seconds
+    rather than 4.5 hours.
+  - IT ACCEPTS THE MAP. Path split correctly, map named, Embree initialised.
+    Valve's own compiler treats the emitter's output as a map.
+  - Content compiling works: one material compiled in 0m:00s and failed with
+    a proper named error.
+
+WHAT STOPS IT:
+
+    No valid vcs file found for shader complex.vfx
+
+.vcs files are compiled shaders. The CSDK contains NONE - a scan of the
+extracted SDK found zero .vcs, zero .vfx, and no shader directory at all.
+Shaders ship with the GAME. No shaders, no materials; no materials, no map.
+
+This is a missing licensed input, not a tuning problem. More cores, more
+time and smaller maps all make no difference - a six box fixture stalls in
+exactly the same place as the 4700 box map, which is how the size theory
+was ruled out.
+
+THE ROUTE THAT WORKS is a machine with Deadlock installed: a desktop, or a
+cloud Windows VM at roughly two to five dollars for one attempt. Everything
+else in the pipeline is ready for it.
+
 ## Two files that would close most of this
 
 Neither is reachable from CI; both need a desktop or a clone.

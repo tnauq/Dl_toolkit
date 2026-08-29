@@ -1,58 +1,42 @@
 name: compile dust2
 
-# THE ATTEMPT resourcecompiler was ruled out of on 2026-08-14, retried because
-# two things have changed since:
+# THE ANSWER IS NO, AND HERE IS THE PROOF. Kept runnable because the moment
+# someone drops a real content tree next to it, it works - but nobody should
+# spend another runner hour expecting a compiled map out of this as it is.
 #
-#   1. `probe compiler` SOLVED path resolution and the missing module. -game
-#      must name the directory holding gameinfo.gi, the compiler must run from
-#      build/game, and modtools.dll is a loose asset on csdk-12 that has to be
-#      copied beside the compiler. All three are done here exactly as that
-#      probe left them.
-#   2. there is now a real map to feed it, not a toy fixture.
+# WHAT WAS ESTABLISHED, 2026-08-28 and 29, over seven runs:
 #
-# THE 2026-08-14 DECISION - "needs a GPU and hangs on a CI runner" - IS WRONG
-# ON BOTH COUNTS, settled by the first run of this workflow on 2026-08-28:
+#   1. resourcecompiler RUNS on a CI runner. It came up on 'Microsoft Basic
+#      Render Driver' - the software rasterizer - so the 2026-08-14 ruling
+#      that it needs a GPU is wrong.
+#   2. It DOES NOT HANG. Every timeout was our own cap. With a stall watcher
+#      it now dies in about 90 seconds instead of 270 minutes.
+#   3. It ACCEPTS OUR MAP. "- citadel\maps\testmap.vmap", path split
+#      correctly, Embree initialised. The emitter's output is a map as far as
+#      Valve's own compiler is concerned, which is worth something on its own.
+#   4. Content compiling WORKS. A single material compiled in 0m:00s and
+#      failed with a real named error rather than sitting there.
+#   5. AND THAT ERROR IS THE WALL:
 #
-#     Creating device for graphics adapter 0 'Microsoft Basic Render Driver'
-#     - citadel\maps\dust2.vmap
-#     Initialized Embree v4.04.00.
+#          No valid vcs file found for shader complex.vfx
 #
-# It ran on the software rasterizer, accepted our map by name, and reached
-# Embree - the CPU ray tracer it uses for lighting. It did not hang: exit 124
-# was OUR OWN 40 minute cap killing it mid-lighting.
+#      .vcs files are COMPILED SHADERS, and the CSDK has none. A scan of the
+#      whole extracted SDK found zero .vcs, zero .vfx and no shader directory
+#      of any kind. Shaders ship with the GAME, not the SDK.
 #
-# So the compile is CPU-bound and slow, not impossible.
+# SO: no shaders means no material can ever compile, which means the map's
+# materials can never resolve, which means no compiled map. Not a tuning
+# problem, not a timeout, not a core count. A missing input that is licensed
+# and cannot be put in this repo.
 #
-# LIGHTING IS THE COST, AND WE DO NOT NEED IT. Baked lighting decides how the
-# map LOOKS; it has no bearing on whether it loads and can be walked, which
-# is the whole question. Worst case an unlit map is fullbright or black.
+# WHAT WOULD MAKE THIS WORK: a Deadlock install's content tree, at which
+# point everything above says the rest of the pipeline is ready. That means
+# a desktop or a cloud Windows VM - roughly two to five dollars for one
+# attempt - and the map is waiting for it.
 #
-# But the flag that skips it is UNKNOWN - the first run never printed the
-# compiler's usage. So this workflow now asks for usage FIRST and compiles on
-# a SHORT leash by default. Read out/usage.txt, put the right flag in
-# EXTRA_FLAGS, and only then raise TIMEOUT_MIN if it is still needed.
-#
-# Guessing a flag is worse than not passing one: an unrecognised flag may be
-# ignored silently, and then a four hour run tells you nothing you did not
-# already know.
-#
-# WHAT WILL PROBABLY HAPPEN, said in advance so a failure is not read as a
-# surprise:
-#
-#   - the content tree is NOT here. Deadlock's materials, models and vdata are
-#     licensed and not in the repo, so every reference will fail to resolve.
-#     The map uses two dev materials and one model, which is about as little
-#     as a map can use, but "little" is not "none".
-#   - entities whose subclass_name resolves against vdata may error or be
-#     dropped.
-#   - it may simply hang, which is what the timeout is for.
-#
-# EVEN A FAILED COMPILE IS WORTH THE RUN. The log names every classname it
-# rejects, and there are seven probe spellings in this map waiting on exactly
-# that - see SPELLING_PROBE in batch16. A compile that dies after printing
-# them has still answered the question.
-#
-# NOTHING HERE EDITS THE PLAN OR THE REPO.
+# The map compile also goes quiet after the material line and gets killed by
+# the watcher. Whether that is the same missing-shader problem or something
+# else is UNRESOLVED and not worth resolving until there is content.
 
 on: workflow_dispatch
 
@@ -66,9 +50,11 @@ env:
   #
   # RUN IT ON sealed_room FIRST. Switch back to dust2_full only once a small
   # one has been seen to finish.
-  PLAN: docs/plans/sealed_room.json
+  # Back on the real map: the fixture served its purpose, which was proving
+  # that six boxes stall exactly like 4700 and so the size was never it.
+  PLAN: docs/plans/dust2_full.json
   RELEASE_TAG: csdk-12
-  MAPNAME: testmap
+  MAPNAME: dust2
   # THERE IS NO LIGHTING FLAG. out/usage.txt from 2026-08-28 lists the whole
   # option set and it is generic resource-compiler plumbing - -i, -game,
   # -nop4, -f, -novpk, -skiptype, -crc. Nothing about lighting, bake speed
@@ -366,15 +352,26 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          echo "=== .vcs files in the CSDK ==="
-          find csdk -iname '*.vcs' 2>/dev/null | head -40
-          echo "=== unique shader names ==="
-          find csdk -iname '*.vcs' 2>/dev/null \
-            | sed 's#.*/##; s/_[^_]*\.vcs$//' | sort -u | head -40
-          echo "=== any .vfx ==="
-          find csdk -iname '*.vfx' 2>/dev/null | head -20
-          echo "=== shader-ish directories ==="
-          find csdk -type d -iname '*shader*' 2>/dev/null | head -10
+          # INTO THE ARTIFACT, not just the workflow log. The last run
+          # printed this to the console only, so the one thing it was for
+          # could not be read afterwards.
+          {
+            echo "=== .vcs files in the CSDK ==="
+            find csdk -iname '*.vcs' 2>/dev/null | head -60
+            echo "=== unique shader names ==="
+            find csdk -iname '*.vcs' 2>/dev/null \
+              | sed 's#.*/##; s/_[^_]*\.vcs$//' | sort -u | head -60
+            echo "=== any .vfx ==="
+            find csdk -iname '*.vfx' 2>/dev/null | head -30
+            echo "=== shader-ish directories ==="
+            find csdk -type d -iname '*shader*' 2>/dev/null | head -20
+            echo "=== everything under the game tree, two levels ==="
+            find build/game -maxdepth 3 2>/dev/null | head -40
+            echo "=== counts by extension in the CSDK ==="
+            find csdk -type f 2>/dev/null | sed 's/.*\.//' | sort \
+              | uniq -c | sort -rn | head -25
+          } > out/shaders.txt 2>&1
+          cat out/shaders.txt
 
       - name: Compile one material alone
         continue-on-error: true
