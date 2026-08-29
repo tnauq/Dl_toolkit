@@ -100580,7 +100580,7 @@
    "_batch16": true
   },
   {
-   "name": "probe_tele_1__citadel_trigger_teleport",
+   "name": "tele_1",
    "classname": "citadel_trigger_teleport",
    "origin": [
     -353.4,
@@ -100593,12 +100593,14 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "tele_1_trigger",
+    "target": "tele_2_dest",
+    "StartDisabled": "0"
    },
    "_batch16": true
   },
   {
-   "name": "m_probe_tele_1__citadel_trigger_teleport",
+   "name": "m_tele_1",
    "classname": "citadel_trigger_teleport",
    "origin": [
     1273.6,
@@ -100611,13 +100613,15 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "m_tele_1_trigger",
+    "target": "m_tele_2_dest",
+    "StartDisabled": "0"
    },
    "_batch16": true
   },
   {
-   "name": "probe_tele_1__trigger_citadel_teleport",
-   "classname": "trigger_citadel_teleport",
+   "name": "tele_1_dest",
+   "classname": "info_teleport_location",
    "origin": [
     -353.4,
     506.75,
@@ -100629,13 +100633,13 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "tele_1_dest"
    },
    "_batch16": true
   },
   {
-   "name": "m_probe_tele_1__trigger_citadel_teleport",
-   "classname": "trigger_citadel_teleport",
+   "name": "m_tele_1_dest",
+   "classname": "info_teleport_location",
    "origin": [
     1273.6,
     11663.35,
@@ -100647,84 +100651,12 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "m_tele_1_dest"
    },
    "_batch16": true
   },
   {
-   "name": "probe_tele_1__citadel_teleport",
-   "classname": "citadel_teleport",
-   "origin": [
-    -353.4,
-    506.75,
-    426.75
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_tele_1__citadel_teleport",
-   "classname": "citadel_teleport",
-   "origin": [
-    1273.6,
-    11663.35,
-    426.75
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_tele_1__trigger_teleport",
-   "classname": "trigger_teleport",
-   "origin": [
-    -353.4,
-    506.75,
-    426.75
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_tele_1__trigger_teleport",
-   "classname": "trigger_teleport",
-   "origin": [
-    1273.6,
-    11663.35,
-    426.75
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_tele_2__citadel_trigger_teleport",
+   "name": "tele_2",
    "classname": "citadel_trigger_teleport",
    "origin": [
     2107.1,
@@ -100737,12 +100669,14 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "tele_2_trigger",
+    "target": "tele_1_dest",
+    "StartDisabled": "0"
    },
    "_batch16": true
   },
   {
-   "name": "m_probe_tele_2__citadel_trigger_teleport",
+   "name": "m_tele_2",
    "classname": "citadel_trigger_teleport",
    "origin": [
     -1186.9,
@@ -100755,13 +100689,15 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "m_tele_2_trigger",
+    "target": "m_tele_1_dest",
+    "StartDisabled": "0"
    },
    "_batch16": true
   },
   {
-   "name": "probe_tele_2__trigger_citadel_teleport",
-   "classname": "trigger_citadel_teleport",
+   "name": "tele_2_dest",
+   "classname": "info_teleport_location",
    "origin": [
     2107.1,
     -80.0,
@@ -100773,13 +100709,13 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
+    "targetname": "tele_2_dest"
    },
    "_batch16": true
   },
   {
-   "name": "m_probe_tele_2__trigger_citadel_teleport",
-   "classname": "trigger_citadel_teleport",
+   "name": "m_tele_2_dest",
+   "classname": "info_teleport_location",
    "origin": [
     -1186.9,
     12250.1,
@@ -100791,519 +100727,7 @@
     0.0
    ],
    "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_tele_2__citadel_teleport",
-   "classname": "citadel_teleport",
-   "origin": [
-    2107.1,
-    -80.0,
-    213.4
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_tele_2__citadel_teleport",
-   "classname": "citadel_teleport",
-   "origin": [
-    -1186.9,
-    12250.1,
-    213.4
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_tele_2__trigger_teleport",
-   "classname": "trigger_teleport",
-   "origin": [
-    2107.1,
-    -80.0,
-    213.4
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_tele_2__trigger_teleport",
-   "classname": "trigger_teleport",
-   "origin": [
-    -1186.9,
-    12250.1,
-    213.4
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_1__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    1721.0,
-    9719.0,
-    253.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_1__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    -800.8,
-    2451.1,
-    253.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_1__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    1721.0,
-    9719.0,
-    253.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_1__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    -800.8,
-    2451.1,
-    253.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_1__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    1721.0,
-    9719.0,
-    253.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_1__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    -800.8,
-    2451.1,
-    253.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_2__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    -1647.0,
-    6766.0,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_2__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    2567.2,
-    5404.1,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_2__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    -1647.0,
-    6766.0,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_2__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    2567.2,
-    5404.1,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_2__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    -1647.0,
-    6766.0,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_2__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    2567.2,
-    5404.1,
-    0.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_3__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    324.0,
-    12027.0,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_3__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    596.2,
-    143.1,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_3__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    324.0,
-    12027.0,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_3__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    596.2,
-    143.1,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_3__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    324.0,
-    12027.0,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_3__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    596.2,
-    143.1,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_4__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    216.0,
-    11344.0,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_4__neutral_sinners_sacrifice",
-   "classname": "neutral_sinners_sacrifice",
-   "origin": [
-    704.2,
-    826.1,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_4__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    216.0,
-    11344.0,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_4__citadel_sinners_sacrifice",
-   "classname": "citadel_sinners_sacrifice",
-   "origin": [
-    704.2,
-    826.1,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": ""
-   },
-   "_batch16": true
-  },
-  {
-   "name": "probe_sinner_4__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    216.0,
-    11344.0,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
-   },
-   "_batch16": true
-  },
-  {
-   "name": "m_probe_sinner_4__citadel_breakable_prop",
-   "classname": "citadel_breakable_prop",
-   "origin": [
-    704.2,
-    826.1,
-    213.0
-   ],
-   "angles": [
-    0.0,
-    180.0,
-    0.0
-   ],
-   "properties": {
-    "targetname": "",
-    "subclass_name": "neutral_sinners_sacrifice"
+    "targetname": "m_tele_2_dest"
    },
    "_batch16": true
   }
