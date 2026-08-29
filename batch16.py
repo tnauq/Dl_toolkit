@@ -119,17 +119,31 @@ SINNER_CLASS = "UNKNOWN"          # still: the sinner is a unit, not a class
 # OFF. The teleporter is known, so there is nothing left to probe for. The
 # tables below are kept because the same trick will be worth repeating the
 # next time a classname is in doubt.
+#
+# SETTLED 2026-08-29 against citadel.fgd. The probe never needed to run: the
+# FGD is the entity table the compiler itself validates against, and it names
+# exactly one of the four teleporter candidates and none of the three sinner
+# ones. Verdicts recorded per line below. Keep the tables as a worked example
+# of the trick, not as live candidates.
 SPELLING_PROBE = False
 TELEPORTER_SPELLINGS = [
-    "citadel_trigger_teleport",     # follows the convention we have read
-    "trigger_citadel_teleport",     # the LLM's answer
-    "citadel_teleport",
-    "trigger_teleport",             # the Source 1 / generic name
+    "citadel_trigger_teleport",     # CORRECT - the only one in citadel.fgd
+    "trigger_citadel_teleport",     # the LLM's answer. Not in the FGD.
+    "citadel_teleport",             # not in the FGD
+    "trigger_teleport",             # the Source 1 / generic name. Not in it.
 ]
+# ALL THREE ARE WRONG. citadel.fgd has no class under any of these names.
+# What it does have is `npc_neutral_sinners_sacrifice_hideout` - note the
+# _hideout suffix, so that one is the Hideout mode's version and may not be
+# what a lane map wants - and, separately, an ENeutralTrooperType of 6
+# labelled "Sinner's Sacrifice" on info_neutral_trooper_camp. The camp route
+# is the likelier one. See the SINNER'S SACRIFICE note in TIERS below: the
+# FGD lists 6 (Sinner's) and 12 (Breakable Vault) as DIFFERENT types, which
+# means sinner and vault are not the same thing after all.
 SINNER_SPELLINGS = [
-    "neutral_sinners_sacrifice",    # the unit name, straight from the vdata
-    "citadel_sinners_sacrifice",    # the LLM's answer
-    "citadel_breakable_prop",       # if it is a breakable with a subclass
+    "neutral_sinners_sacrifice",    # the unit name from the vdata. Not a class.
+    "citadel_sinners_sacrifice",    # the LLM's answer. Not a class.
+    "citadel_breakable_prop",       # a real class, but not the sinner
 ]
 
 # Camp tiers. subclass_name and ENeutralTrooperType decide what spawns.
@@ -170,6 +184,14 @@ TIERS = {
     # READ per-entity 2026-08-26: the vault camp carries an EMPTY trooper
     # type and 120/120 timings. The blank is deliberate in the fixture, not
     # missing data - dl_example labels it "Neutral Trooper Type - None".
+    # 2026-08-29, citadel.fgd: ENeutralTrooperType enumerates 6 as "Sinner's
+    # Sacrifice" and 12 as "Breakable Vault" - SEPARATE VALUES. So sinner and
+    # vault are not the same thing, and the pairing this entry was built on
+    # does not hold. The entry itself is still a faithful read of the
+    # fixture's vault camp; what is wrong is calling it the sinner.
+    # UNCHANGED PENDING A DECISION: switching these four sites to type 6
+    # needs a subclass to go with it, and the FGD names none. Left as-is
+    # rather than guessed at.
     "vault": {"subclass": "neutral_camp_vaults",      # read
               "trooper_type": "",                     # read, genuinely empty
               "creatures": 3,
@@ -305,6 +327,18 @@ BRUSHES = [
         # are both READ, off dl_example via batch13. `target` names the
         # marker, so the pair has to be authored together or the pad
         # launches at nothing.
+        #
+        # CONFIRMED 2026-08-29 against citadel.fgd, which describes the class
+        # as "Bouncepad/Fan Trigger" and lists exactly two keys:
+        # launch_speed (default 1000) and target ("Pair with a
+        # info_target_server_only entity to launch entities at"). Both names
+        # are right and this pairing is exactly what the FGD prescribes.
+        #
+        # THAT ALSO ANSWERS "ARC OR BLINK": a catapult LAUNCHES. These two
+        # rooms are jump pads, not teleporters, and the separate
+        # citadel_trigger_teleport pair below is the teleporter. The FGD's
+        # default speed is 1000 against the 800 used here, which is another
+        # reason the 800 wants testing.
         #
         # The pad's SIZE and launch_speed are invented - batch13's 128
         # square and 800 are the only precedent, and neither was measured.
@@ -574,7 +608,11 @@ def twin_of(e):
     t["origin"] = mirror_point(e["origin"])
     t["angles"] = mirror_angles(e.get("angles", [0.0, 0.0, 0.0]))
     props = dict(e.get("properties", {}))
-    for k in ("targetname", "CampName", "target", "parentname"):
+    # `exitpoint` added 2026-08-29 with the FGD. Without it the mirrored
+    # teleporter would have pointed at the ORIGINAL half's destination, so
+    # both trigger pairs would have dumped players on the same side of the
+    # map. The same class of silent mirror bug LINK_KEYS was written for.
+    for k in ("targetname", "CampName", "target", "exitpoint", "parentname"):
         if props.get(k):
             props[k] = PREFIX + props[k]
     t["properties"] = props
@@ -659,6 +697,13 @@ def make_camp(name, origin, tier, team=SPAWN_TEAM):
             "CampName": camp_name,
             "ENeutralTrooperType": spec["trooper_type"],
             "subclass_name": spec["subclass"],
+            # THESE TWO ARE INERT. citadel.fgd carries both keys COMMENTED
+            # OUT and annotated "Unused", so the camp does not read them and
+            # the timings come from elsewhere (the subclass, most likely).
+            # Kept because they are a faithful copy of what dl_example's own
+            # camps carry, they cost nothing, and if the annotation is wrong
+            # the values are the right ones anyway. The upshot is that the
+            # tier-to-interval mapping worried over above does not matter.
             "InitialSpawnDelayInSeconds": spec["initial_delay"],
             "SpawnIntervalInSeconds": spec["interval"],
         },
@@ -879,9 +924,18 @@ def main():
             "teamnumber": SPAWN_TEAM_OBJ,
             "lanenum": "1",
             "BackdoorProtectionTrigger": "",
+            # BOTH OF THESE ARE MARKED "(Broken)" IN citadel.fgd. The shrine
+            # will not take its health from building_health and will not
+            # honour `final`. Left in place - they are harmless, they are
+            # what the fixture carries, and "broken" is an annotation rather
+            # than a promise. But do not tune shrine health here and expect
+            # it to do anything.
             "building_health": "5000",
             "final": "0",
         })
+        # CLASS CONFIRMED 2026-08-29. citadel.fgd tool-names
+        # destroyable_building "Base Shrine" and describes it as "used
+        # exclusively for base shrines", which is as direct as this gets.
         sites.append((nm2, o2, note2))
 
     # the patron, and the proxy that binds it to the walkers
@@ -891,8 +945,23 @@ def main():
         "vscripts": "",
         "teamnumber": SPAWN_TEAM_OBJ,
         "lanenum": "3",              # the fixture's own tier3 carries lane 3
+        # BossName IS NOT A FREE STRING HERE. citadel.fgd enumerates exactly
+        # two values, boss_rebel_tier2_mid and boss_combine_tier2_mid (the
+        # tier2 naming on the tier3 class is Valve's, not a typo of ours).
+        # On npc_boss_tier2 the FGD annotates its BossName list "//purely
+        # naming"; on THIS class it does not, so the enumeration may be load
+        # bearing. UNCHANGED pending a decision - see the FGD findings doc.
         "BossName": "%s_patron" % TEAM_WORD,
         "subclass_name": "npc_boss_tier3",
+        # READ THIS BEFORE THE FIRST COMPILE. citadel.fgd on this class:
+        # "Make sure to use cover groups for each of the boss states,
+        # otherwise the game will be unbeatable." All three cover ids below
+        # are EMPTY. dying_cover_id is where the patron moves before turning
+        # into a core; vulnerable_cover_id is where it falls when it does.
+        # With neither set, the second phase has nowhere to go, and the
+        # FGD's word for that outcome is unbeatable. This needs
+        # info_cover_point groups authoring - work nobody has started, and
+        # not a keyvalue that can be filled in from a string.
         "CoverGroupID": "",
         "dying_cover_id": "",
         "vulnerable_cover_id": "",
@@ -905,12 +974,31 @@ def main():
         "final_objective": "%s_building_final" % TEAM_WORD,
         "teamnumber": SPAWN_TEAM_OBJ,
     }
+    # LANE 0 IS LEGAL, confirmed 2026-08-29. citadel.fgd makes each
+    # sub_objective_lane_N a choices field and lists 0 : "None" alongside
+    # 1 : "Yellow", 3 : "Orange", 4 : "Blue", 6 : "Purple". The zeroes below
+    # were a guess and the guess was right - a non-lane sub-objective is a
+    # case the schema anticipates.
+    #
+    # AND THE FOUR SLOTS ARE A FOUR-LANE ARTIFACT, not a count. Those colour
+    # names are the four lanes of the old layout, Blue being the one that
+    # went away. Two filled slots plus an empty pair is the correct shape for
+    # a three-lane map, which the outputs corroborate: the FGD declares
+    # SubObjective1Destroyed/Revitilized and SubObjective2Destroyed/
+    # Revitilized and NOTHING for slots 3 and 4. Only two are wired for.
     for i, side in enumerate(PROXY_SUBS, start=1):
         proxy["sub_objective_%d" % i] = "%s_%s_shrine" % (TEAM_WORD, side)
         proxy["sub_objective_lane_%d" % i] = "0"
     for i in range(len(PROXY_SUBS) + 1, 5):
         proxy["sub_objective_%d" % i] = ""
         proxy["sub_objective_lane_%d" % i] = "0"
+    # THE FGD CALLS THIS CLASS "Final objective. Unused. Do not use."
+    # Nothing else in citadel.fgd is labelled that way. It may mean the class
+    # is inert in the shipped game, in which case the shrine-shields-patron
+    # chain has to be built from entity I/O instead - the outputs are all
+    # there on destroyable_building (OnDestroyed, OnBecomeVulnerable) and on
+    # the patron. Emission is UNCHANGED for now: it costs one entity, it is
+    # what the fixture does, and a compile will say more than a guess will.
     # A logic entity with no body. It sits on the patron so it mirrors with
     # it and is findable in the viewer; nothing depends on where it is.
     new += make_objective("final_objective_proxy", origin,
@@ -991,14 +1079,22 @@ def main():
                 # rooms sends to the OTHER, so tele_1's trigger targets
                 # tele_2's location.
                 #
-                # THE KEYVALUE NAME IS A GUESS. `target` is the Source
-                # convention and preflight checks that it resolves, but
-                # nothing has been read confirming this entity uses it. If
-                # walking in does nothing, that is the first thing to check.
+                # THE KEYVALUE IS `exitpoint`, READ off citadel.fgd
+                # 2026-08-29. It was `target` until then - the Source
+                # convention, and a guess. The FGD's own text: "Remote
+                # Destination ... The entity specifying the point to which
+                # entities should be teleported." A `target` on this class
+                # would have been ignored and walking in would have done
+                # nothing, with no compile error to say why.
+                #
+                # The FGD also documents an optional local landmark: with one
+                # set, entities keep their offset from it and their angles are
+                # left alone. Not used here - without it, angles are forced to
+                # the destination's, which is what two facing rooms want.
                 other = "tele_2" if name == "tele_1" else "tele_1"
                 new += make_point(name, origin, cls, {
                     "targetname": "%s_trigger" % name,
-                    "target": "%s_dest" % other,
+                    "exitpoint": "%s_dest" % other,
                     "StartDisabled": "0",
                 })
                 new += make_point("%s_dest" % name, origin,

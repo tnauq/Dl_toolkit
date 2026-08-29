@@ -1,0 +1,2124 @@
+//===================== Copyright (c) Valve Corporation. All Rights Reserved. ======================
+//
+// Defines entity classes specific to Citadel (CSDK 12 Staging)
+//
+//==================================================================================================
+
+@include "base.fgd"
+@include "lights.fgd"
+@include "lights2.fgd"
+@include "markup_volumes.fgd"
+@include "postprocessing.fgd"
+@include "ai_defaultnpc.fgd"
+
+//--------------------------------------------------------------------------------------------------
+// Entity groups. This list specifies which entity groups will show up in the entity tool and in what
+// order. If an entity specifies a group that is not in this list it will not be displayed in the tool.
+// This allows the mod specific fgd to control the ui.
+//--------------------------------------------------------------------------------------------------
+@EntityGroup "Player" { start_expanded = true }
+@EntityGroup "Lighting" { start_expanded = true }
+@EntityGroup "Fog & Sky" { start_expanded = true }
+@EntityGroup "Content" { start_expanded = true }
+@EntityGroup "Items" { start_expanded = true }
+@EntityGroup "NPCs" { start_expanded = true }
+@EntityGroup "Citadel Logic" { start_expanded = true }
+
+
+
+//--------------------------------------------------------------------------------------------------
+// Auto vis group filters.
+//--------------------------------------------------------------------------------------------------
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_concrete.vmat"			group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_plastic.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_wood_basket.vmat"			group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_gravel.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_wood.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_metal.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_metalvehicle.vmat"		group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_metal_sand_barrel.vmat"	group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_wood_crate.vmat"			group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_rubbertire.vmat"			group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_sand.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_concrete.vmat"			group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_dirt.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_glass.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_metalgrate.vmat"			group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_rubber.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsclip_plastic.vmat"				group = "Tool Brushes/Clip"				}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "tools_cs_place.vmat"				group =	"Tool Brushes/Place"			}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsgrenadeclip.vmat"				group =	"Tool Brushes/Clip/Grenades"	}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsblockbullets_cs.vmat"			group =	"Tool Brushes/Clip/Bullets"		}
+@VisGroupFilter { filter_type = "toolsMaterial"		material = "toolsinvisibleladder_wood.vmat"		group =	"Tool Brushes/Ladder"			}
+@VisGroupFilter { filter_type = "entityTag"			tag = "Camera"									group = "Entities/Camera"				}
+
+
+
+
+//--------------------------------------------------------------------------------------------------
+// Excludes
+//--------------------------------------------------------------------------------------------------
+
+//Exclude this since we want to remove some defunct parameters. Only way to do this currently is to exclude and redefine
+
+@exclude func_illusionary
+@exclude light_dynamic
+@exclude beam_spotlight
+@exclude color_correction
+@exclude env_beam
+@exclude env_beverage
+@exclude env_instructor_vr_hint
+@exclude env_laser
+@exclude env_projectedtexture
+@exclude env_rotorshooter
+@exclude env_rotorwash_emitter
+@exclude env_smokestack
+@exclude env_smoketrail
+@exclude env_sprite
+@exclude env_splash
+@exclude env_sprite_oriented
+@exclude env_texturetoggle
+@exclude env_tonemap_controller
+@exclude func_instance
+@exclude func_orator
+@exclude haptic_relay
+@exclude info_ladder_dismount
+@exclude info_lighting
+@exclude postprocess_controller
+@exclude color_correction_volume
+@exclude fog_volume
+@exclude func_detail_blocker
+@exclude func_reflective_glass
+@exclude func_shatterglass
+@exclude func_wall
+@exclude func_wall_toggle
+@exclude trigger_tonemap
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+@OverrideClass base(Targetname, Parentname) tags( Lighting ) = light_base
+[
+	// Remove these until we have a need for them to avoid cluttering up the UI for light ents
+	nearclipplane(remove_key)
+	fademindist(remove_key) 
+	fademaxdist(remove_key) 
+	range(remove_key) 
+]
+
+@OverrideClass = light_base_legacy_params
+[
+	rendertransmissive(remove_key)
+	renderspecular(remove_key)
+	renderdiffuse(remove_key)
+	indirectlight(remove_key)
+]
+
+//@PointClass   editormodel("models/editor/camera.vmdl", fixedbounds) = csm_fov_override :
+	//"This entity indicates the FOV override for cascading shadow maps.   ."
+//[
+	//camera_name(target_destination) : "Target Camera Name" : "default" : "Select a camera name to override a specific camera's CSM FOV.  Target 'default' applies to all cameras not otherwise specified."
+	//csm_fov_override(float) : "CSM FOV Override value" : "75" : "This value will be used to override the FOV for cascading shadow maps only.  Actual camera FOV remains unchanged."
+//]
+
+
+
+@SolidClass base(worldbase) = worldspawn : 
+	"This is the world entity. Each map can only contain one, and it's automatically created for you."
+[
+	max_lightmap_resolution(choices) : "Maximum Lightmap Resolution" : "0" =
+	[
+		"0" : "No Maximum"
+		"512" : "512"
+		"1024" : "1024"
+		"2048" : "2048"
+		"4096" : "4096"
+		"8192" : "8192"
+		"16384" : "16384"
+	]
+	lightmap_queries(boolean) : "Lightmap Queries" : "0" : "Generates data which can be used to lookup lightmap UVs at a given position, useful for high-fidelity illumination of bullet decals on lightmapped geometry."
+
+	steamaudio_reverb_rebake_option(choices) [ group="Steam Audio Reverb Settings" ]: "Rebake Option" : "0" : "<b>Cleanup</b>: Reverb bake is disabled. Baked data will be cleaned up during map compile in Hammer or mapbuilder.<br /><b>Manual</b>: Reverb needs to be baked manually. Baked data is added or updated during map compile in Hammer but untouched by mapbuilder.<br /><b>Auto</b>: Reverb is baked automatically during map compile. Baked data is added or updated during map compile in Hammer or mapbuilder." =
+	[
+		"0" : "Cleanup"
+		"1" : "Manual"
+		"2" : "Auto"
+	]
+	steamaudio_reverb_generation_type(choices) [ group="Steam Audio Reverb Settings" ] : "Generation Type" : "0" : "<b>Automatic, Everywhere</b>: When baking, probes will be generated to cover the entire map.<br/><b>Automatic, Use Probe Generation Volumes</b>: When baking, probes will only be generated within Probe Generation Volumes that have been explicitly placed in the map.<br/><b>Manual</b>: When baking, probes will not be generated. Only probes that have been manually placed in the map will be used." =
+	[
+		"0" : "Automatic, Everywhere"
+		"1" : "Automatic, Use Probe Generation Volumes"
+		"2" : "Manual"
+	]
+	steamaudio_reverb_filter_volumes(boolean) [ group="Steam Audio Reverb Settings" ] : "Filter Using Probe Exclusion Volumes" : "1" : "Don't generate probes inside Probe Exclusion Volumes that have been placed in the map.<br/>(Only used if Generation Type is set to Automatic, Everywhere.)"
+	steamaudio_reverb_filter_navmesh(boolean) [ group="Steam Audio Reverb Settings" ] : "Filter Using NavMesh" : "0" : "Only generate probes that are near the nav mesh.<br/>(Only used if Generation Type is set to Automatic, Everywhere.)"
+	steamaudio_reverb_grid_spacing(float) [ group="Steam Audio Reverb Settings" ]: "Grid Spacing" : "6" : "The horizontal distance (in meters) between adjacent probes."
+	steamaudio_reverb_height_above_floor(float) [ group="Steam Audio Reverb Settings" ]: "Height Above Floor" : "1.5" : "The height (in meters) above the floor at which probes should be placed.."
+	steamaudio_reverb_rays(integer) [ group="Steam Audio Reverb Settings" ]: "Baking Rays" : "32768" : "The number of rays traced from the listener when baking reflections or reverb. Increasing this value results in more accurate reflections, at the cost of increased bake times."
+	steamaudio_reverb_bounces(integer) [ group="Steam Audio Reverb Settings" ]: "Baking Bounces" : "32" : "The number of times each ray traced from the listener is reflected when baking reflections or reverb. Increasing this value results in longer, more accurate reverb tails, at the cost of increased bake times."
+	steamaudio_reverb_ir_duration(float) [ group="Steam Audio Reverb Settings" ]: "Baking Duration" : "1.0" : "The duration (in seconds) of the IRs generated when baking reflections or reverb. Increasing this value results in longer, more accurate reverb tails, at the cost of increased disk space usage."
+	steamaudio_reverb_ambisonic_order(integer) [ group="Steam Audio Reverb Settings" ]: "Baking Ambisonic Order" : "1" : "The Ambisonic order of the IRs generated when baking reflections or reverb. Increasing this value results in more accurate directional variation of reflected sound, at the cost of increased disk space usage."
+	steamaudio_reverb_clustering_enable(boolean) [group="Steam Audio Reverb Settings"]: "Enable Clustering" : "0" : "Reduces the number of probes generated by combining nearby probes that are likely to have similar reverbs."
+	steamaudio_reverb_clustering_cubemap_resolution(integer) [group="Steam Audio Reverb Settings"]: "Cube Map Resolution" : "16" : "Number of rays traced per side for each face of the depth cube map computed for each probe."
+	steamaudio_reverb_clustering_depth_threshold(float) [group="Steam Audio Reverb Settings"]: "Depth Similarity Threshold": "10.0" : "If average depth map values at two probes are within this distance (in meters), then the probes are considered similar."
+
+	steamaudio_pathing_rebake_option(choices) [ group="Steam Audio Pathing Settings" ]: "Rebake Option" : "0" : "<b>Cleanup</b>: Pathing bake is disabled. Baked data will be cleaned up during map compile in Hammer or mapbuilder.<br /><b>Manual</b>: Pathing needs to be baked manually. Baked data is added or updated during map compile in Hammer but untouched by mapbuilder.<br /><b>Auto</b>: Pathing is baked automatically during map compile. Baked data is added or updated during map compile in Hammer or mapbuilder." =
+	[
+		"0" : "Cleanup"
+		"1" : "Manual"
+		"2" : "Auto"
+	]
+	steamaudio_pathing_generation_type(choices) [ group="Steam Audio Pathing Settings" ] : "Generation Type" : "0" : "<b>Automatic, Everywhere</b>: When baking, probes will be generated to cover the entire map.<br/><b>Automatic, Use Probe Generation Volumes</b>: When baking, probes will only be generated within Probe Generation Volumes that have been explicitly placed in the map.<br/><b>Manual</b>: When baking, probes will not be generated. Only probes that have been manually placed in the map will be used." =
+	[
+		"0" : "Automatic, Everywhere"
+		"1" : "Automatic, Use Probe Generation Volumes"
+		"2" : "Manual"
+	]
+	steamaudio_pathing_filter_volumes(boolean) [ group="Steam Audio Pathing Settings" ] : "Filter Using Probe Exclusion Volumes" : "1" : "Don't generate probes inside Probe Exclusion Volumes that have been placed in the map.<br/>(Only used if Generation Type is set to Automatic, Everywhere.)"
+	steamaudio_pathing_filter_navmesh(boolean) [ group="Steam Audio Pathing Settings" ] : "Filter Using NavMesh" : "0" : "Only generate probes that are near the nav mesh.<br/>(Only used if Generation Type is set to Automatic, Everywhere.)"
+	steamaudio_pathing_grid_spacing(float) [ group="Steam Audio Pathing Settings" ]: "Grid Spacing" : "6" : "The horizontal distance (in meters) between adjacent probes."
+	steamaudio_pathing_height_above_floor(float) [ group="Steam Audio Pathing Settings" ]: "Height Above Floor" : "1.5" : "The height (in meters) above the floor at which probes should be placed.."
+	steamaudio_pathing_visibility_samples(integer) [ group="Steam Audio Pathing Settings" ]: "Baking Visibilty Samples" : "1" : "Number of point samples to use around each probe when testing whether one probe can see another. To determine if two probes are mutually visible, rays are traced from each point sample of the first probe, to every other point sample of the second probe. Increasing this value prevents paths from being considered occluded by small objects, at the cost of increased bake times."
+	steamaudio_pathing_visibility_radius(float) [ group="Steam Audio Pathing Settings" ]: "Baking Visibility Radius" : "0.0" : "When testing for mutual visibility between a pair of probes, each probe is treated as a sphere of this radius (in meters), and point samples are generated within this sphere."
+	steamaudio_pathing_visibility_threshold(float) [ group="Steam Audio Pathing Settings" ]: "Baking Visibility Threshold" : "0.1" : "When tracing rays to test for mutual visibility between a pair of probes, the fraction of rays that are unoccluded must be greater than this threshold for the pair of probes to be considered mutually visible."
+	steamaudio_pathing_visibility_pathrange(float) [ group="Steam Audio Pathing Settings" ]: "Baking Path Range" : "100.0" : "If the distance (in meters) between two probes is greater than this value, the probes are considered to not have any path between them. Increasing this value allows sound to propagate over greater distances, at the cost of increased bake times and memory usage."
+
+	steamaudio_customdata_rebake_option(choices) [ group="Steam Audio Custom Data Settings" ]: "Rebake Option" : "0" : "<b>Cleanup</b>: Custom bake is disabled. Baked data will be cleaned up during map compile in Hammer or mapbuilder.<br /><b>Manual</b>: Custom data needs to be baked manually. Baked data is added or updated during map compile in Hammer but untouched by mapbuilder.<br /><b>Auto</b>: Custom data is baked automatically during map compile. Baked data is added or updated during map compile in Hammer or mapbuilder." =
+	[
+		"0" : "Cleanup"
+		"1" : "Manual"
+		"2" : "Auto"
+	]
+	steamaudio_customdata_generation_type(choices) [ group="Steam Audio Custom Data Settings" ] : "Generation Type" : "0" : "<b>Automatic, Everywhere</b>: When baking, probes will be generated to cover the entire map.<br/><b>Automatic, Use Probe Generation Volumes</b>: When baking, probes will only be generated within Probe Generation Volumes that have been explicitly placed in the map.<br/><b>Manual</b>: When baking, probes will not be generated. Only probes that have been manually placed in the map will be used." =
+	[
+		"0" : "Automatic, Everywhere"
+		"1" : "Automatic, Use Probe Generation Volumes"
+		"2" : "Manual"
+	]
+	steamaudio_customdata_filter_volumes(boolean) [ group="Steam Audio Custom Data Settings" ] : "Filter Using Probe Exclusion Volumes" : "1" : "Don't generate probes inside Probe Exclusion Volumes that have been placed in the map.<br/>(Only used if Generation Type is set to Automatic, Everywhere.)"
+	steamaudio_customdata_filter_navmesh(boolean) [ group="Steam Audio Custom Data Settings" ] : "Filter Using NavMesh" : "0" : "Only generate probes that are near the nav mesh.<br/>(Only used if Generation Type is set to Automatic, Everywhere.)"
+	steamaudio_customdata_grid_spacing(float) [ group="Steam Audio Custom Data Settings" ]: "Grid Spacing" : "6" : "The horizontal distance (in meters) between adjacent probes."
+	steamaudio_customdata_height_above_floor(float) [ group="Steam Audio Custom Data Settings" ]: "Height Above Floor" : "1.5" : "The height (in meters) above the floor at which probes should be placed.."
+	steamaudio_customdata_bake_occlusion(boolean) [ group="Steam Audio Custom Data Settings" ]: "Bake Occlusion" : "0" : "Bake custom occlusion data between probe pairs."
+	steamaudio_customdata_bake_dimensions(boolean) [ group="Steam Audio Custom Data Settings" ]: "Bake Dimensions" : "0" : "Bake occlusion dimensions data (size and inside outside) per probe."
+	steamaudio_customdata_bake_materials(boolean) [ group="Steam Audio Custom Data Settings" ]: "Bake Materials" : "0" : "Bake custom materials data (top 3 nearby materials) per probe."
+
+	steamaudio_customdata_occlusion_pathing(boolean) [ group="Steam Audio Custom Data Settings" ]: "Occlusion: Simulate Pathing" : "1" : "Simulate pathing when computing baked occlusion."
+	steamaudio_customdata_occlusion_reflection(boolean) [ group="Steam Audio Custom Data Settings" ]: "Occlusion: Simulate Reflection" : "0" : "Simulate reflections when computing baked occlusion."
+	steamaudio_customdata_occlusion_reflection_rays(integer) [ group="Steam Audio Custom Data Settings" ]: "Occlusion: Reflection Num Rays" : "8192" : "Number of rays to simulate reflections."
+	steamaudio_customdata_occlusion_reflection_bounces(integer) [ group="Steam Audio Custom Data Settings" ]: "Occlusion: Reflection Bounces" : "8" : "Number of bounces to simulate reflections."
+]
+
+@PointClass  base(Targetname, EnableDisable) tags( Lighting )
+	iconsprite( "materials/editor/env_fog_controller.vmat" )
+	gradientfog()
+	global( gradient_fog )
+	metadata
+	{
+		entity_tool_name = "Gradient Fog"
+		entity_tool_tip = "Specifies fog based on a color gradient"
+		entity_tool_group = "Fog & Sky"
+	}
+= env_gradient_fog
+[
+	// Fog Color
+	fogcolor(color255) [ group = "Fog Color" ] : "Fog Color" : "255 255 255" : "Set the gradient fog color."
+	fogstrength(float) [ group = "Fog Color" ] : "Fog Color Multiplier" : "1.0" : "For HDR color values"	
+	fogmaxopacity(float) [ group = "Fog Color" ] : "Fog Maximum Opacity" : "1.0" : "Set the maximum opacity of the gradient fog."
+
+	// Fog Distance
+	fogstart(float) [ group = "Fog Distance" ] : "Fog Start Distance" : "0.0"
+	fogend(float) [ group = "Fog Distance" ] : "Fog End Distance" : "4000.0"
+	fogfalloffexponent(float) [ group = "Fog Distance" ] : "Distance Falloff Exponent" : "2.0" : "Exponent for distance falloff."
+
+	// Fog Height
+	heightfog(boolean) [ group = "Fog Height" ] : "Height Fog Enabled?" : 1
+	fogstartheight(float) [ group = "Fog Height" ] : "Fog Start Height" : "0.0"
+	fogendheight(float) [ group = "Fog Height" ] : "Fog End Height" : "4000.0"
+	fogverticalexponent(float) [ group = "Fog Height" ] : "Height Falloff Exponent" : "2.0" : "Exponent for height falloff."
+
+	// Render Properties
+	fadetime(float) [ group = "Render Properties" ] : "Fade Time" : "1.0" : "How much time it takes to fade in new values."
+	farz(float) [ group = "Render Properties" ] : "Far Z Clip Plane" : "-1.0" : "Controls the Far Z distance clipping plane, beyond which geometry will be culled."
+
+	input SetFogStartDistance(float) : "Set Fog Start Distance"
+	input SetFogEndDistance(float) : "Set Fog End Distance"
+	input SetFogStartHeight(float) : "Set Fog Start Height"
+	input SetFogEndHeight(float) : "Set Fog End Height"
+	input SetFogMaxOpacity(float) : "Set Fog Max Opacity"
+	input SetFogFalloffExponent(float) : "Set Fog Falloff Exponent"
+	input SetFogVerticalExponent(float) : "Set Fog Vertical Exponent"
+	input SetFogColor(color255) : "Set Fog Color"
+	input SetFogStrength(float) : "Set Fog Strength"
+	input SetFarZ(float): "Set the far clip plane distance."
+]
+
+@OverrideClass = sky_camera
+[
+	clip_3D_skybox_near_to_world_far(remove_key)
+	clip_3D_skybox_near_to_world_far_offset(remove_key)
+	SkyboxSlot(remove_key)
+	fogenable(remove_key)
+	fogblend(remove_key)
+	use_angles(remove_key)
+	fogcolor(remove_key)
+	fogcolor2(remove_key)
+	fogdir(remove_key)
+	fogstart(remove_key)
+	fogend(remove_key)
+	fogmaxdensity(remove_key)
+	HDRColorScale(remove_key)
+]
+
+@PointClass base( Targetname ) global( 3dskybox ) = skybox_reference
+[
+	targetMapName(instance_file) : "Map Name"
+	fixupNames(boolean) : "Fixup Entity Names" : 0
+	worldGroupID(string) : "WorldGroupID" : "skyboxWorldGroup0"
+]
+
+@PointClass base( Targetname ) global( shared_environment ) = map_shared_environment
+[
+	targetMapName(instance_file) : "Map Name"
+]
+
+@PointClass base(Targetname, EnableDisable) tags( Lighting )
+	iconsprite( "materials/editor/env_cubemap_fog.vmat" ) 
+	cubemap_fog()
+	metadata
+	{
+		entity_tool_name = "Cubemap fog"
+		entity_tool_tip = "Specifies fog based on an env_sky or skybox material."
+		entity_tool_group = "Fog & Sky"
+	}
+= env_cubemap_fog  
+[
+	cubemapfogsource(Choices) [ group = "Fog Cubemap" ] : "Cubemap Source" : "1" : "Which field to use to select the cubemap and its parameters." =
+	[
+		1 : "Cubemap From Env_Sky"
+		2 : "Cubemap From Material"
+	]
+	cubemapfogskyentity(target_destination) { group="Fog Cubemap" enabled={ variable="cubemapfogsource" value="1" } } : "Env_Sky Target"
+	cubemapfogskymaterial(resource:material) { group="Fog Cubemap" enabled={ variable="cubemapfogsource" value="2" } } :  "Sky Material"
+	cubemapfoglodbiase(float) [ group = "Fog Cubemap" ] : "Cubemap Blur / Mip Bias (0-1)" : "0.5" : "Adjust how blurry the cubemap should be. Lower values are more blurry (0-1) "
+	cubemapfogstartdistance(float) [ group = "Fog Distance" ] : "Fog Start Distance" : "0.0"
+	cubemapfogenddistance(float) [ group = "Fog Distance" ] : "Fog End Distance" : "4000.0"
+	cubemapfogfalloffexponent(float) [ group = "Fog Distance" ] : "Distance Falloff Exponent" : "2.0" : "Exponent for distance falloff. For example, 2.0 = proportional to square of distance"
+	cubemapfogmaxopacity(float) [ group = "Fog Distance" ] : "Maximum Fog Opacity (0-1)" : "1.0" : "Set the maximum opacity of the cubemap fog. (0-1)"
+	cubemapheightfog(boolean) [ group = "Fog Height" ] : "Height Fog Enabled?" : 1
+	cubemapfogheightstart(float) [ group = "Fog Height" ] : "Height Fog Start" : "0.0"
+	cubemapfogheightend(float) [ group = "Fog Height" ] : "Height Fog End" : "4000.0"
+	cubemapfogheightexponent(float) [ group = "Fog Height" ] : "Height Fog Exponent" : "2.0" : "Exponent for distance falloff. For example, 2.0 = proportional to square of distance"
+]
+
+@PointClass base(Targetname, Parentname, EnableDisable,BaseEnvWind) tags( Lighting )
+	volumetric_fog_controller( box_mins, box_maxs )
+= env_wind_controller : "Controller for volumetric wind"
+[
+	IsMaster( bool )  : "Master Wind Controller" : "0" : "Use this as the active wind if there are more than one"
+	
+	direction_variation( float ) : "Direction Variation" : "1.0" : ""
+	speed_variation( float ) : "Speed Variation" : "1.0" : ""
+	turbulence( float ) : "Turbulence" : "1.0" : ""
+
+    volume_depth_override( int ) { group="Resolution" min="0" max="256" } : "Volume Depth" : "0" : "Sets the number of slices in the fog volume.  Increasing from default (128) will increase resolution at the expense of GPU time and memory"
+    volume_first_slice_thickness( float ) { group="Resolution" min="0" max="8" } : "Resolution at Camera" : "0" : "Thickness of the first slice in the volume at the camera.  The remaining slices will be warped to maintain this resolution as the draw distance is increased"
+]
+
+@PointClass base(Targetname, Parentname, EnableDisable) tags( Lighting ) sphere() 
+	box_oriented
+	{
+		box_min = "box_mins"
+		box_max = "box_maxs"
+		auto_center = false
+		toggle_faces_with_selection_overlay = true
+	}
+	iconsprite( "materials/editor/fog_volume.vmat" )
+= env_wind_volume : "Sets a user bounding volume for wind."
+[
+	startDisabled(bool) : "Start Disabled" : 0
+	box_mins(vector) : "Box Mins" : "-64 -64 -64"
+	box_maxs(vector) : "Box Maxs" : "64 64 64"
+	Shape(choices) : "Falloff Shape" : "0" : "" = 
+	[
+		"0" : "Linear (Box) Falloff"
+		"1" : "Radial (Sphere) Falloff"
+		"2" : "Height (Box) Falloff"
+	]
+	windspeedmultiplier( float ) : "Wind speed multiplier" : "1.0" : ""
+	windturbulencemultiplier( float ) : "Wind turbulence multiplier" : "1.0" : ""
+	windspeedvariationmultiplier( float ) : "Wind speed variation multiplier" : "1.0" : ""
+	winddirectionvariationmultiplier( float ) : "Wind direction variation multiplier" : "1.0" : ""
+]
+
+@BaseClass = Angles
+[ 
+	angles(angle) : "Pitch Yaw Roll (Y Z X)" : "0 0 0" : "This entity's orientation in the world. Pitch is rotation around the Y axis, " +
+		"yaw is the rotation around the Z axis, roll is the rotation around the X axis."
+]
+
+@BaseClass = TeamNumber
+[
+	teamnumber(choices) : "Team" : 4 =
+	[
+		2 : "Team Rebels/North/Amber"
+		3 : "Team Combine/South/Sapphire"
+		4 : "Team Neutral"
+	]
+	Input SetTeam (integer) : "Set the team this entity belongs to."
+]
+
+@BaseClass = LaneNumber
+[
+	lanenum(choices) : "Lane" : 0 =
+	[
+		0 : "None"
+		1 : "Yellow"
+		3 : "Orange / Green"
+		4 : "Blue"
+		6 : "Purple"
+	]
+]
+
+//Hideout
+@PointClass base(Targetname, EnableDisable) editormodel( "models/editor/spot", lightModeTint, "255 255 157", "255 64 64" ) dotaGlobalLightHelper() = env_global_light : 
+	"Control the global light that casts shadows in a Dota map."
+[
+	angles(string) : "Pitch Yaw Roll (Y Z X)" : "45 20 180" : "This is the light cast direction. Pitch is rotation around the Y axis, yaw is the rotation around the Z axis, and roll is the rotation around the X axis."
+	ambientangles(angle) : "Ambient Angle ( Y Z X )" : "0 100 0" : ""
+
+	color(color255) : "Color" : "255 255 255 1" : "This is the color of the global light."
+	lightscale(float) : "Light Scale" : "1.0" : "This controls the overall intensity of the light."
+	ambientcolor1(color255) : "Ambient Color" : "128 128 128 1" : "This is the ambient color of the world."
+	ambientscale1(float) : "Ambient Scale" : "1.0" : "This controls how much ambient there is."
+	ambientcolor2(color255) : "Shadow Color" : "24 24 24 1" : "This is the shadow color of the world."
+	ambientscale2(float) : "Shadow Scale" : "1.0" : "This controls how much shadow on entities there are."
+	ambientcolor3(color255) : "Shadow Secondary Color" : "24 24 24 1" : "This is the shadow color for downward facing surfaces."
+	groundscale(float) : "Shadow Ground Scale" : "1.0" : "This controls how much shadow on the ground there is."
+	
+	specularangles(angle) : "Specular Angle ( Y Z X )" : "90 0 0" : ""
+	specularpower(float) : "Specular Power" : "16" : ""
+	specularindependence(float) : "Specular Independence" : "0" : "Specular independence from diffuse light. 0 specular is multiplied by diffuse, 1 specular is independent of diffuse."
+	specularcolor(color255) : "Specular Color" : "128 128 128 1" : "This is the color of the specular."
+	fov(float) : "FOV" : 5 : "This is the field of view that the sunlight casts in. Use lower values for more distant sun and sharper shadows."
+	nearz(float) : "NearZ Distance" : "4" : "This controls the near clipping plane's distance from the player."
+	enableshadows(boolean) : "Enable Shadows" : "1" : "Enables/disables shadows from this projected texture."
+	fow_darkness(float) : "FoW Darkness" : "2.7" : "Controls how dark the fog of war is, 0 is black, larger values are lighter"
+	background_clear_not_required(boolean) : "Clear Not Required" : "0" : "Specifies that a clear of the background is not required, set this to true if the edge map can never be seen to improve performance."
+	dota_no_clouds(boolean) : "Disable clouds" : "0" : ""
+	
+	// Inputs
+	input LightColor(color255) : "Set the light color."
+	input SetAngles(string) : "Set the global light direction."
+	input SetFOV(float) : "Set the field of view the global light casts."
+	input SetNearZDistance(float) : "Set the near z distance."
+	input SetTexture(string) : "Set the texture cookie of the global light."
+	input EnableShadows(bool)		: "Set the if shadows are enabled"
+
+	SkyboxSlot(string) : "SkyboxSlot" : "" : "Name of the skybox this camera belongs to. Leave blank for non-skybox lights."
+
+	
+	enable_separate_skybox_fog(boolean) : "Enable Separate Skybox Fog" : "0" : "Allows the skybox to use its own fog parameters."
+	
+	// Height fog related
+	height_fog_color(color255) [ group="Height Fog" ] : "Height Fog Color" : "255 255 255 0" : "Height Fog Colory"
+	height_fog_max_z(float) [ group="Height Fog" ] : "Height Fog Max Z" : "512.0" : "Z value where height fog stops"
+	height_fog_density(float) [ group="Height Fog" ] : "Height Fog Density" : "0.0" : "Height Fog Density"
+	height_fog_falloff(float) [ group="Height Fog" ] : "Height Fog Falloff" : "1.0" : "Height fog falloff param. Higher values = sharper falloff."
+	height_fog_texture0(resource:texture) [ group="Height Fog" ] : "Height Fog Texture Layer 0" : "materials/dev/fow_clouds_00.vtex"
+	height_fog_texture1(resource:texture) [ group="Height Fog" ] : "Height Fog Texture Layer 1" : "materials/dev/fow_drifts_00.vtex"
+	height_fog_rotation0(float) [ group="Height Fog" ] : "Height Fog Rotation Layer 0" : "0.0"
+	height_fog_scale0(float) [ group="Height Fog" ] : "Height Fog Scale Layer 0" : "4096.0"
+	height_fog_scroll0U(float) [ group="Height Fog" ] : "Height Fog Scroll U Layer 0" : "5"
+	height_fog_scroll0V(float) [ group="Height Fog" ] : "Height Fog Scroll V Layer 0" : "-5"
+	height_fog_rotation1(float) [ group="Height Fog" ] : "Height Fog Rotation Layer 1" : "0.0"
+	height_fog_scale1(float) [ group="Height Fog" ] : "Height Fog Scale Layer 1" : "2048.0"
+	height_fog_scroll1U(float) [ group="Height Fog" ] : "Height Fog Scroll U Layer 1" : "10"
+	height_fog_scroll1V(float) [ group="Height Fog" ] : "Height Fog Scroll V Layer 1" : "-10"
+	height_fog_exclusion_inner_radius(float) [ group="Height Fog" ] : "Height Fog Inner Exclusion Radius" : "0"
+	height_fog_exclusion_height_bias(float) [ group="Height Fog" ] : "Height Fog Exclusion Height Bias" : "128"
+	height_fog_type(choices) [ group="Height Fog" ] : "Height Fog Type" : 0 = 
+	[
+		0: "Height Fog"
+		1: "Caustics"
+	]
+
+	height_fog_caustic_speed_scale(float) [ group="Height Fog" ] : "Caustics Speed Scale" : "1"
+	height_fog_caustic_amplitude_scale(float) [ group="Height Fog" ] : "Caustics Amplitude Scale" : "0.1"
+]
+
+@PointClass color(0 0 255) 
+	base(Targetname) 
+	tags( Choreo )  
+	selected_line( 255 255 255, targetname, target1 )
+	selected_line( 255 255 255, targetname, target2 )
+	selected_line( 255 255 255, targetname, target3 )
+	selected_line( 255 255 255, targetname, target4 )
+	selected_line( 255 255 255, targetname, target5 )
+	selected_line( 255 255 255, targetname, target6 )
+	selected_line( 255 255 255, targetname, target7 )
+	selected_line( 255 255 255, targetname, target8 )
+	iconsprite("editor/choreo_scene.vmat") = scripted_scene :
+		"Manages a choreographed scene of one or more actors."
+
+[
+	// Keys
+	SceneFile(scene) { asset_specific_keys_destination="vcd_keys" } : "Scene file"
+	// vcd_keys( string ) <-- populated based on whatever 'SceneFile' needs
+
+	// Links
+	target1(target_destination) : "Target 1"
+	target2(target_destination) : "Target 2"
+	target3(target_destination) : "Target 3"
+	target4(target_destination) : "Target 4"
+	target5(target_destination) : "Target 5"
+	target6(target_destination) : "Target 6"
+	target7(target_destination) : "Target 7"
+	target8(target_destination) : "Target 8"
+
+	busyactor(choices) : "If an Actor is talking..." : 1 : "What to do if an actor this scene needs is already talking when this scene is told to start." =
+	[
+		0: "Start immediately"
+		1: "Wait for actor to finish"
+		2: "Interrupt at next interrupt event"
+		3: "Cancel at next interrupt event"
+	]
+
+	// Inputs
+	input Start(void) : "Starts playback of the scene file"
+	input Pause(void) : "Pauses playback of the scene file"
+	input Resume(void) : "Resumes playback of the scene if it has been paused"
+	input Cancel(void) : "Cancels playback of the scene"
+	input CancelAtNextInterrupt(void) : "Cancels playback of the scene at the next interrupt event in the scene."
+	input PitchShift(float) : "Multiplies the the pitch"
+
+	input InterjectResponse(string) : "Finds an actor who can respond to the specified concept string while the scene continues playing"
+
+	input StopWaitingForActor(void) : "Stop waiting on an actor to stop talking."
+ 	input PauseAtNextInterrupt(void) : "Pause playback of the scene at the next interrupt event in the scene."
+	input SetTarget1(target_destination) : "Change the entity Target1 references."
+	input SetTarget2(target_destination) : "Change the entity Target2 references."
+
+
+	// Outputs
+	output OnStart(void) : "The scene has started"
+	output OnCompletion(void) : "The scene has completed"
+	output OnCanceled(void) : "The scene has been canceled"
+	output OnPaused(void) : "The scene has been paused"
+	output OnResumed(void) : "The scene has been resumed"
+	output OnTrigger1(void) : "Scene trigger 1"
+	output OnTrigger2(void) : "Scene trigger 2"
+	output OnTrigger3(void) : "Scene trigger 3"
+	output OnTrigger4(void) : "Scene trigger 4"
+	output OnTrigger5(void) : "Scene trigger 5"
+	output OnTrigger6(void) : "Scene trigger 6"
+	output OnTrigger7(void) : "Scene trigger 7"
+	output OnTrigger8(void) : "Scene trigger 8"
+	output OnTrigger9(void) : "Scene trigger 9"
+	output OnTrigger10(void) : "Scene trigger 10"
+	output OnTrigger11(void) : "Scene trigger 11"
+	output OnTrigger12(void) : "Scene trigger 12"
+	output OnTrigger13(void) : "Scene trigger 13"
+	output OnTrigger14(void) : "Scene trigger 14"
+	output OnTrigger15(void) : "Scene trigger 15"
+	output OnTrigger16(void) : "Scene trigger 16"
+
+	onplayerdeath(choices) : "On player death" : 0 : "What should this entity do if the player dies" =
+	[
+		0 : "Do Nothing"
+		1 : "Cancel Script and return to AI"
+	]
+]
+
+@PointClass base( Angles) vdata_model{my_key = "hero_model" vdata_key = "m_strModelName" use_class_when_blank = true}  = point_scale_reference_human : "Scale Reference (Human)"
+[
+	hero_model(vdata_choice:scripts/heroes.vdata ) : "Hero" : "" : "Your hero model. Only used to get reference scale."
+]
+
+@PointClass base(Targetname) = test_entity : "Test entity"
+[
+	string(string) : "String" : "" : "String."
+	integer(integer) : "Integer" : 0
+	boolean(boolean) : "Boolean" : "1"
+	float(float) : "Float" : "500" : ""
+	target_destination(target_destination) : "Target destination" : : "Target destination"
+	target_source(target_source) : "Target source" : : "Target source"
+	actor(target_name_or_class) : "Actor to affect" : "" : "NPC that should perform this operation"
+	side(side) : "Side" : "" : "Side"
+	sides(sidelist) : "Brush faces"
+	point_entity_class(pointentityclass) : "Point entity class" : "" : ""
+	vscript(script) : "Entity Script" : "" : "Name(s) of script files that are executed after all entities have spawned."
+	vscripts(scriptlist) : "Entity Scripts" : "" : "Name(s) of script files that are executed after all entities have spawned."
+	file(instance_file) : "VMAP Filename" : : "This indicates a map file relative to the map's file name"
+	replace01(instance_variable) : "Replace" : : "This is a replacement parameter.  It goes in the form of $variable value.  All entities inside of that instance that have $variable somewhere will be replaced with the value contents.  Example: $color 255 0 0"
+	replace02(instance_parm) : "Replace" : : "This is a replacement parameter.  It goes in the form of $variable value.  All entities inside of that instance that have $variable somewhere will be replaced with the value contents.  Example: $color 255 0 0"
+	nodeid(node_id) : "Node ID"
+	tint( kv3:Gradient ) : "Color Tint"
+	events( array:struct:light_style_event ) : "Events"
+	navProperty_NavGen(tag_list) : "Nav Generation Markup" = 
+	[
+		"WALKABLESEED" : "Walkable Seed" : 0
+		"NONAV" : "No Nav" : 0
+	]
+	groupnames(tag_list_dynamic) : "Markup Groups" =
+	[
+	]
+	teleport_origin(world_point) : "Teleport Target" : "" : "Teleport position associated with this node. If players use Mouse2 to jump to the next node, they'll be moved to that node's corresponding teleport position."
+	burstlocation(local_point) : "Burst Force Location" : : "Location in local space where the burst force is applied."
+	targets(node_id_List) : "Target Objects" : "" : "Limit the box to culling triangles from the specified target objects."
+	bodygroups(bodygroupchoices) : "Body Groups" : ""
+	hero_model(vdata_choice:scripts/heroes.vdata ) : "Hero" : "" : "Your hero model. Only used to get reference scale."
+	subclass_name( subclass_choice:scripts/heroes.vdata ) : "Hero subclass" : "" : "Which subclass hero is."
+	surface_properties(surface_properties) : "Surface Properties" : "" : "Surface properties to apply."
+	Color255(color255) : "Color255" : "255 255 255"
+	Color255alpha(color255alpha) : "Color255 Alpha" : "255 218 36 255"
+	effect_name(particlesystem) [report] : "Particle Sun flare" : "particles/environment/env_sun_clear.vpcf"
+	particle_config(particle_cfg)		{ group="+Stage End" suppress_expr="particle_effect == \"\"" } : "Particle Configuration Name"
+	spawnflags(flags) =
+	[
+		1: "Visible only from front" : 0
+	]
+	sound(sound) : "Custom Sound Effect" : ""
+	message(text_block) : "Message"
+	panorama_image(panorama_image) : "Panorama image" : "file://{resources}/images/coin.png"
+	panorama_layout(panorama_layout) : "Layout XML" : "file://{resources}/layout/worldui_text.xml"
+	panorama_style(panorama_style) : "Layout style" : "file://{resources}/styles/worldui_text.css"
+	panorama_video(panorama_video) : "Layout video" : "file://{resources}/videos/main_menu/menu_streets_intro.webm"
+	animgraph_enum_name(animgraph_enum) : "Animgraph Name" : "e_HeroUI" : "The animgraph enum parameter to play."
+	animgraph(animgraph) : "Animgraph" : "" : "The animgraph"
+	npc_ability_name(npc_ability_name) : "NPC Ability name" : "" : "NPC Ability"
+	texture(sprite) : "Sprite Name" : "sprites/laserbeam.vmat" : "The material used to draw the beam."
+	model(studio) : "World Model" : "models/props_gameplay/shop/shop_01.vmdl"
+	integerchoices(intchoices) : "Integer Choices" : 0
+	model_state(modelstatechoices) : "Model State" : ""
+	lodlevel(lod_level) : "Render LOD" : "-1" : "Auto for standard LOD behaviour, or select an explicit LOD to use. Note that LODs take up more room in the lightmap and do not merge, potentially making them less performant if used on many objects (Set to Auto)."
+	bonename(model_bone) : "Bone"
+	attachment_point(model_attachment)				: "Attachment Point"			: ""	: "Offset the influence point from the named attachment rather than the root of the model"
+	bodygroup_name(model_bodygroup)		{ group="+Stage Start" suppress_expr="!set_bodygroup" } : "Stage Bodygroup"
+	base(propdataname) 		: "Base Prop" : : "Base keys (entry from propdata.txt)"
+	parentAttachmentName(parentAttachment) : "Parent Model Bone/Attachment Name" : : "The name of the bone or attachment to attach to on the entity's parent in the movement hierarchy. Use !bonemerge to use bone-merge style attachment."
+]
+@PointClass base(Targetname) tags( Logic ) iconsprite("editor/point_pulse.vmat") pulse_visualize() = point_pulse : "An entity that acts as a container for Pulse graphs"
+[
+    graph_def(resource:vpulse) { attr_custom_commands = ["PulseCreateAndLinkAsset", "PulseLinkAsset"] } : "Graph path" : "" :
+	graph_keys(string) : "Graph keys" : "" :
+	prefab_relay_interface(boolean) : "Prefab Relay" : "0"
+	highlight_domain_values(boolean) : "Highlight Domain Values" : "0"
+]
+
+@NPCClass base(Targetname) vdata_model{my_key = "subclass_name" vdata_key = "m_hModel" use_class_when_blank = true} = citadel_hideout_clock : "Hideout clock"
+[
+	subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Which subclass citadel_hideout_clock is."
+]
+
+@PointClass base(Targetname) = citadel_hideout_shootable_target_spawner : "Hideout target spawner"
+[
+]
+
+@SolidClass base(Targetname, Trigger) = citadel_trigger_hideout:  
+	"Hideout trigger"
+[
+]
+@SolidClass base(Targetname, Trigger) = trigger_ice_path_volume:  
+	"Ice path"
+[
+]
+
+@SolidClass base(Targetname, Trigger) = citadel_trigger_hideout_teleport:  
+	"Hideout trigger to teleport to another map"
+[
+	map(string) : "New Map Name"
+	landmark(target_destination) : "Landmark Name"
+	locstring(string) : "Localization string"
+	prop(target_destination) : "Teleport prop"
+]
+
+@SolidClass base(Targetname, Trigger) = citadel_trigger_hotel_exit:  
+	"Doorman Hotel Exit"
+[
+	 is_success(boolean) : "Successful Hotel Exit?" : 0
+]
+
+@PointClass base(Targetname) = info_citadel_matchmaking_status : "Matchmaking status"
+[
+]
+
+@PointClass particle() line(255 255 255, targetname, cpoint1) line(255 255 255, targetname, cpoint2) line(255 255 255, targetname, cpoint3) line(255 255 255, targetname, cpoint4) line(255 255 255, targetname, cpoint5) line(255 255 255, targetname, cpoint6) line(255 255 255, targetname, cpoint7) line(255 255 255, targetname, cpoint8) line(255 255 255, targetname, cpoint9) line(255 255 255, targetname, cpoint10) line(255 255 255, targetname, cpoint11) line(255 255 255, targetname, cpoint12) line(255 255 255, targetname, cpoint13) line(255 255 255, targetname, cpoint14) line(255 255 255, targetname, cpoint15) line(255 255 255, targetname, cpoint16) line(255 255 255, targetname, cpoint17) line(255 255 255, targetname, cpoint18) line(255 255 255, targetname, cpoint19) line(255 255 255, targetname, cpoint20) line(255 255 255, targetname, cpoint21) line(255 255 255, targetname, cpoint22) line(255 255 255, targetname, cpoint23) line(255 255 255, targetname, cpoint24) line(255 255 255, targetname, cpoint25) line(255 255 255, targetname, cpoint26) line(255 255 255, targetname, cpoint27) line(255 255 255, targetname, cpoint28) line(255 255 255, targetname, cpoint29) line(255 255 255, targetname, cpoint30) line(255 255 255, targetname, cpoint31) line(255 255 255, targetname, cpoint32) line(255 255 255, targetname, cpoint33) line(255 255 255, targetname, cpoint34) line(255 255 255, targetname, cpoint35) line(255 255 255, targetname, cpoint36) line(255 255 255, targetname, cpoint37) line(255 255 255, targetname, cpoint38) line(255 255 255, targetname, cpoint39) line(255 255 255, targetname, cpoint40) line(255 255 255, targetname, cpoint41) line(255 255 255, targetname, cpoint42) line(255 255 255, targetname, cpoint43) line(255 255 255, targetname, cpoint44) line(255 255 255, targetname, cpoint45) line(255 255 255, targetname, cpoint46) line(255 255 255, targetname, cpoint47) line(255 255 255, targetname, cpoint48) line(255 255 255, targetname, cpoint49) line(255 255 255, targetname, cpoint50) line(255 255 255, targetname, cpoint51) line(255 255 255, targetname, cpoint52) line(255 255 255, targetname, cpoint53) line(255 255 255, targetname, cpoint54) line(255 255 255, targetname, cpoint55) line(255 255 255, targetname, cpoint56) line(255 255 255, targetname, cpoint57) line(255 255 255, targetname, cpoint58) line(255 255 255, targetname, cpoint59) line(255 255 255, targetname, cpoint60) line(255 255 255, targetname, cpoint61) line(255 255 255, targetname, cpoint62) line(255 255 255, targetname, cpoint63) base(Targetname) = citadel_new_years_fireworks : "New years fireworks"
+[
+	fireworkparticle1(particlesystem) [Report] : "Firework 1" : "particles/event/winter/fireworks_teal.vpcf"
+	fireworkparticle2(particlesystem) [Report] : "Firework 2" : "particles/event/winter/fireworks_rocket_face.vpcf"
+	fireworkparticle3(particlesystem) [Report] : "Firework 3" : "particles/event/winter/fireworks_yellow_orange.vpcf"
+	fireworkparticle4(particlesystem) [Report] : "Firework 4" : "particles/event/winter/fireworks_fish_yellow.vpcf"
+	fireworkparticle5(particlesystem) [Report] : "Firework 5" : "particles/event/winter/fireworks_rocket_face.vpcf"
+	fireworkparticle6(particlesystem) [Report] : "Firework 6" : "particles/event/winter/fireworks_shockwave_orange_green.vpcf"
+	fireworkparticle7(particlesystem) [Report] : "Firework 7" : "particles/event/winter/fireworks_shockwave_blue.vpcf"
+	fireworkparticle8(particlesystem) [Report] : "Firework 8" : "particles/event/winter/fireworks_rainbow.vpcf"
+	fireworkintervalmin(integer) : "Min Interval" : "8" : "Value to set min interval"
+	fireworkintervalmax(integer) : "Max Interval" : "10" : "Value to set max interval"
+	showdelayseconds(integer) : "Show Delay" : "0" : "Value to set Show Delay in seconds"
+	showdurationseconds(integer) : "Show Duration" : "80" : "Value to set Show Duration in seconds"
+	soundname(sound) : "Sound Event" : "" : "The name of the sound event to start from the soundevent entity."
+]
+
+@PointClass base(prop_dynamic) tags( PropDynamic ) model() = citadel_hideout_button : "Hideout Interactable Prop"
+[
+	world_panel_opacity_end_distance(integer) : "Opacity End Distance" : "0" : "Value to set opacity end distance for the World Panel."
+	world_panel_opacity_start_distance(integer) : "Opacity Start Distance" : "0" : "Value to set opacity start distance for the World Panel."
+	world_panel_opacity_end(integer) : "Opacity End" : "1" : "Value to set opacity end for the World Panel."
+	world_panel_opacity_start(integer) : "Opacity Start" : "1" : "Value to set opacity start for the World Panel."
+	world_panel_opacity_curve( curve ) : "Opacity Curve" : "" : "World Panel opacity curve."
+	world_panel(target_destination) : "World Panel"
+	hideout_action(choices) : "Hideout button" : "0" : "Hideout action. Select which action this button will be responsible for." =
+	 [
+		 0 : "None"
+		 1 : "Play"
+		 2 : "Watch"
+		 3 : "Heroes"
+		 4 : "Learn"
+		 5 : "Resources"
+		 6 : "Exit"
+		 7 : "News"
+		 8 : "Hero Release Vote"
+		 9 : "Fire Entity IO Output"
+		 10 : "Seasonal 2025"
+	 ]
+	interact_style(choices) : "Interact style" : "" : "How we should interact with the button" =
+	 [
+		 0 : "Button Use"
+		 1 : "Heavy Melee"
+	 ]
+	interact_loc_string(string) : "Interact loc string" : "#Citadel_Hideout" 
+	interact_distance(float) : "Interact distance"
+	// Outputs
+	output OnStartTouch(void) { is_activator_important = true } : "Fired when an entity starts touching this trigger. The touching entity must pass this trigger's filters to cause this output to fire."
+	output OnStartTouchAll(void) { is_activator_important = true } : "Fired when an entity starts touching this trigger, and no other entities are touching it. Only entities that passed this trigger's filters are considered."
+	output OnEndTouch(void) { is_activator_important = true } : "Fired when an entity stops touching this trigger. Only entities that passed this trigger's filters will cause this output to fire."
+	output OnEndTouchAll(void) { is_activator_important = true } : "Fires when an entity stops touching this trigger, and no other entities are touching it. Only entities that passed this trigger's filters are considered."	
+    output OnInteracted(void) : "Send signal when interacted with."
+]
+
+@PointClass base( Parentname,Targetname,CanBeClientOnly ) tags( Sound ) iconsprite("editor/snd_opvar_set.vmat") box_oriented( box_mins, box_maxs ) = citadel_snd_obb :
+	"Creates a box Sound Area"
+[
+	soundname(sound) : "Sound Event" : "" : "The name of the sound event to start from the soundevent entity."
+	startOnSpawn(boolean) : "Start On Spawn" : "" : "Play the sound immediately upon spawning"
+	toLocalPlayer(boolean) : "To Local Player" : "" : "Play the sound directly to the local player"
+	stopOnNew(boolean) : "Re-trigger Stops Last" : 1 : "Stop a previously playing event when a new one is started"
+	saveAndRestore(boolean) : "Save/Restore" : 0 : "This soundevent should be saved and restored."
+	sourceEntityAttachment(string) : "Entity Attachment Name" : : "If set, will play the soundevent from this attachment point."
+	entityIndexSelection(choices) :"Entity Index Selection" : 0 =	
+	[
+		0: "Use World Index"
+		1: "Use Entity Index"
+	]
+	box_mins(vector) : "Sound Area Min" : "-32 -32 -32"
+	box_maxs(vector) : "Sound Area Max" : "32 32 32"	
+]
+
+@PointClass base(Targetname) tags( Sound ) iconsprite("editor/snd_opvar_set.vmat") box_oriented( box_mins, box_maxs ) = citadel_snd_stack_field_obb :
+	"Sets an opvar value on a library stack"
+[
+	box_mins(vector) : "Sound Area Min" : "-32 -32 -32"
+	box_maxs(vector) : "Sound Area Max" : "32 32 32"	
+	stack_name(string) : "Stack Name" : "" : "The name of the stack the operator is in"
+	operator_name(string) : "Operator Name" : "" : "The name of the operator the OpVar is in"
+	operator_variable_name(string) : "OpVar Name" : "" : "The name of the OpVar to change"
+	max_distance(integer) : "Max Distance" : "100" : "Value to set max distance"
+]
+
+@SolidClass base(Targetname) = citadel_passthrough_fake_wall : "Fake wall"
+[
+    allow_anyone(boolean) : "Allow anyone" : "" : "This wall allows anyone."
+    allow_tiny_characters(boolean) : "Allow tiny characters" : "" : "This wall allows tiny characters to pass through."
+    trigger_distance_meters(float) : "Interaction distance"
+
+    output OnClose(void) : "On wall close"
+    output OnOpen(void) : "On wall open"
+]
+
+@SolidClass base(Trigger) = citadel_tunnel_trigger : "Tunnel trigger"
+[
+    kill_when_not_tiny(boolean) : "Kill when not tiny" : "" : "Trigger will start killing you when you're not tiny."
+    movespeed_override(float) : "Move speed override"
+]
+
+@PathClass base(Targetname, LaneNumber)
+	= trooper_approach_horizon : "An editable path when troopers approach the horizon of a shrine " +
+	"4 markers per lane and each should have a different slot, team doesn't matter."
+[
+    LaneSlot(choices) : "Lane Slot" : 0 : "Determines the slot of the lane, each lane should have 4 markers with a different slot." =
+    [
+        0 : "Slot 1"
+        1 : "Slot 2"       
+        2 : "Slot 3"
+        3 : "Slot 4"        
+    ]
+]
+
+@SolidClass base(Trigger)
+ = citadel_trigger_suspend_modifier : "Trigger that suspends modifiers."
+[
+	modifier_name( vdata_choice:scripts/modifiers.vdata ) : "Modifier subclass" : "" : "Subclass of the modifier, recommended are: modifier_citadel_idol_return."
+    //modifier_name(choices) : "Modifier type" : "modifier_citadel_idol_return" : "Sets the type of modifier for this trigger." =
+	//[
+		//"modifier_citadel_idol_return" : "Delivering the Soul Urn (Unused)"
+		// "modifier_citadel_burning" : "Burning (Broken)"
+		// "modifier_citadel_disarmed" : "Disarmed (Broken)"
+		// "modifier_citadel_silenced" : "Silenced (Broken)"
+		// "modifier_citadel_stunned" : "Stunned (Broken)"
+		// "modifier_citadel_sleep" : "Sleeping (Broken)"
+		// "modifier_citadel_muted" : "Muted (Broken)"
+		// "modifier_citadel_knockdown" : "Knockdown (Broken)"
+		//"modifier_citadel_in_base" : "In base (Unused)"
+		//"modifier_citadel_titan_laser_valid_target" : "Patron Valid Target (Unused)"
+	//]
+]
+
+//--------------------------------------------------------------------------------------------------
+// Citadel Solid Entities
+//--------------------------------------------------------------------------------------------------
+@SolidClass base(Trigger)
+ = trigger_buoyancy : "A volumetric trigger that affects the motion of vphysics objects that touch it by applying buoyancy to them."
+[
+	SetFluidDensity(float) : "Fluid density, kg/liter" : "1.0"
+	input SetFluidDensity(float) : "Fluid density, kg/liter"
+]
+
+@SolidClass base(Targetname, Trigger) = func_nav_dynamic_connections:  
+	"Dynamic Nav Volume"
+[
+	connection_target(target_destination) : "Connection target"
+]
+
+@SolidClass base(Targetname, Trigger) = citadel_trigger_no_portals:  
+	"Portal Blocker"
+[
+]
+
+@SolidClass base(Targetname, Trigger) = citadel_dev_trigger:  
+	"Dev Trigger"
+[
+	devtriggertype(choices) : "Dev Trigger Type" : 0 =
+	[
+		0 : "None"
+		1 : "Spawn Idol"
+		2 : "Spawn Neutrals"	
+	]
+]
+
+@SolidClass base(Targetname, Trigger, TeamNumber, EnableDisable) = trigger_item_shop:  
+	"Item Shop Zone. Used to determine where players can shop, it will play music by itself. Set to neutral for the secret shops."
+[
+	AudioOffset(vector) : "Audio Offset" : "-0.25 22 50"
+]
+
+@SolidClass base(Targetname, Trigger)
+metadata
+	{
+		auto_apply_material = "materials/tools/toolsrenderportal.vmat"
+	} = render_portal:  
+	"Remote portal entity. Unused."
+[
+	LocalPortalLink(target_destination) : "LocalPortalLink" : : "Local Portal Link"
+	RemotePortalLink(target_destination) : "RemotePortalLink" : : "Remote Portal Link"
+	fademindist(float) : "Start Fade Dist/Pixels" : 0 : "Distance at which the prop starts to fade."
+	fademaxdist(float) : "End Fade Dist/Pixels" : 3000 : "Maximum distance at which the prop is visible."
+	fadestartangle(float) : "Fade start angle" : 0 : "Fade start angle"
+	fadeendangle(float) : "Fade end angle" : 0 : "Fade end angle"
+	fadetocolor(color255): "Fade to color" : "255 255 255 200" : "Light Color RGB-Intensity"
+]
+
+@SolidClass base(Angles, Targetname, Trigger, EnableDisable) = trigger_item_shop_safe_zone : "A Trigger Zone used for Neutral Item Shop. " +
+ "This entity detects if members of both teams are inside of it to determine if it's being contested. " +
+ "The game uses this entity to send an output signal and disable the shop."
+[
+	// Outputs
+    output OnContested(void) : "Send signal when contested."
+    output OnNotContested(void) : "Send signal when not contested."
+]
+
+@SolidClass base(Targetname, Trigger, TeamNumber, Angles, EnableDisable) = citadel_trigger_teleport : 
+	"A trigger volume that teleports entities that touch it (Citadel ver). Entities are teleported to the Remote Destination, and have their angles "+
+	"set to that of the Remote Destination's. If a Local Destination Landmark is specified, teleported entities are offset from the target "+
+	"by their initial offset from the landmark, and their angles are left alone."
+[
+	exitpoint(target_destination) : "Remote Destination" : : "The entity specifying the point to which entities should be teleported."
+	// Outputs
+	output OnTeleport(void) : "Sends a signal when a entity teleports via this entity."
+]
+
+@SolidClass base(Trigger, Targetname,TeamNumber, EnableDisable) = trigger_modifier : "A brush entity that applies modifiers to any entity that enters it's range."
+[
+	teamnumber(choices) : "Team" : 0 =
+	[
+		0 : "None"
+		2 : "Amber"
+		3 : "Sapphire"
+		4 : "Neutral"
+	]
+	modifier_name( vdata_choice:scripts/modifiers.vdata ) : "Modifier subclass" : "" : "Subclass of the modifier, recommended are: modifier_citadel_idol_return."
+    //modifier_name(choices) : "Modifier type" : "modifier_citadel_idol_return" : "Sets the type of modifier for this trigger." =
+	//[
+		//"modifier_citadel_idol_return" : "Delivering the Soul Urn (Unused)"
+		// "modifier_citadel_burning" : "Burning (Broken)"
+		// "modifier_citadel_disarmed" : "Disarmed (Broken)"
+		// "modifier_citadel_silenced" : "Silenced (Broken)"
+		// "modifier_citadel_stunned" : "Stunned (Broken)"
+		// "modifier_citadel_sleep" : "Sleeping (Broken)"
+		// "modifier_citadel_muted" : "Muted (Broken)"
+		// "modifier_citadel_knockdown" : "Knockdown (Broken)"
+		//"modifier_citadel_in_base" : "In base (Unused)"
+		//"modifier_citadel_titan_laser_valid_target" : "Patron Valid Target (Unused)"
+	//]
+]
+
+@SolidClass base(Trigger, Targetname,TeamNumber, EnableDisable) = trigger_add_modifier : "A brush entity that applies modifiers to any entity that enters it's range. (Unused)"
+[	
+    modifier_name( vdata_choice:scripts/modifiers.vdata ) : "Modifier subclass" : "" : "Subclass of the modifier, recommended are: citadel_idol_return."
+	modifier_duration(float) : "Modifier duration" : : "Set for how long this modifier will last."
+	momentary(boolean) : "Momentary" : 0
+]
+
+@SolidClass base(Trigger, Targetname, EnableDisable) = citadel_trigger_capture_zipline : "A zipline capture trigger. Unused."
+[
+]
+
+@SolidClass base(Trigger, EnableDisable) = trigger_tier3phase2_shield : "A brush entity used to allow any entity in it's range to damage vulnerable patrons." []
+
+@SolidClass base(Trigger, Targetname,TeamNumber, EnableDisable) = trigger_remove_modifier : "A brush entity that removes modifiers to any entity that enters it's range."
+[	
+    modifier_name( vdata_choice:scripts/modifiers.vdata ) : "Modifier subclass" : "" : "Subclass of the modifier, recommended are: citadel_idol_return."
+]
+
+@SolidClass base(Trigger, Targetname, EnableDisable, TeamNumber) = citadel_trigger_idol_return : "A brush entity that serves as a Soul Urn drop off zone." []
+
+@SolidClass base(Trigger, Targetname, EnableDisable, TeamNumber) = citadel_trigger_climb_rope : "A brush entity that spawns a climbable rope." 
+[
+ aligncameraonautodismount(boolean) : "Align Camera on Auto Dismount" : 0
+]
+
+@SolidClass base(Trigger, Targetname, EnableDisable, TeamNumber) = citadel_zap_trigger : "Zap trigger. Place on building roofs to prevent players from " +
+	"camping there. Use a info_target_server_only entity as the origin of the electric arc."
+[
+    PercentMaxHealthDamage(float) : "Max health damage" : "10" : "Sets the maximum damage the zap to a percentage of the target's max health."
+    ShootAfterEnteringTime(float) : "Time before shooting" : "1" : "How many seconds to wait after the entity enters the trigger."
+    TimeBetweenShots(float) : "Time between shots" : "1" : "Time between shots in seconds."
+	ShootFromEntity(target_destination) : "Shoot from entity" : "" : "Pair with a info_target_server_only entity to shoot lightings from."
+    uselocaloffset(boolean) : "Use Local offset" : 0 : "Rotate around landmark by relative landmark orientations."
+]
+
+@SolidClass base(Targetname, Angles) metadata{auto_apply_material = "materials/tools/toolstrigger.vmat"}
+	= func_conditional_collidable : "A trigger that applies collision when the conditions are met. It's used to block spawn areas or other team exclusive areas " + 
+	"and used to block lines of sight by placing them over smoking vents."
+[
+    interactas(choices) : "Interact as" : "" =
+	[
+		"" : "Default"
+		"blocklos, Citadel_Obscured" : "Block Line of Sight"
+	]	
+	interactwith(choices) : "Interact with" : "" =
+	[
+		"" : "Not Specified"
+		"Citadel_Team_Amber" : "North/Rebels/Amber"
+		"Citadel_Team_Sapphire" : "South/Combine/Sapphire"
+	]
+]
+
+@SolidClass base(Targetname, TeamNumber, Angles, Trigger, EnableDisable) = func_regenerate : "Return of func_regenerate from TF2. " +
+	"This entity will rapidly heal up any player within it's range." []
+
+@SolidClass base(Targetname, Trigger, EnableDisable) = trigger_neutral_shield : "Removes shielding from neutral creeps when players enter it's range." []
+@SolidClass base(Targetname, Trigger, EnableDisable) = trigger_midboss_shield : "Removes shielding from midboss when players enter it's range." []
+
+@SolidClass base(Targetname, Trigger, EnableDisable) = trigger_ping_location : "Ping location trigger."
+[
+	ping_location(choices) : "Ping location" : 1 =
+	[
+		1 : "On the Roof"
+		2 : "On the Bridge"
+		3 : "On top of Mid"
+		4 : "Inside of Mid"
+		5 : "On top of the Garage"
+		6 : "Under the Garage (Legacy)"
+	]
+]
+
+@SolidClass base(Targetname, Trigger) = trigger_fan : "Fan trigger."
+[
+	fanend(vector) : "Fan origin" : "0 0 0" : "Sets the speed at which entities get pushed at."
+	noise( vector ) { group="Noise" } : "Noise Scale" : ".01 .01 .01" : "Scale of noise (smaller - smoother, larger - more detailed)"
+	force( float ) : "Force" : "0.0" : "Force scale"
+	ropeforcescale( float ) : "Rope Force Scale" : "0.0" : "Rope Force scale"
+	playerforce( float ) : "Player Force Scale" : "0.0" : "Player Force scale"
+	ramptime( float ) : "Ramp Time" : "0.0" : "Ramp Time"
+	falloff(bool) : "Falloff" : "0" : "Falloff"
+	pushplayer(bool) : "Push player" : "0" : "Push player"
+	rampdown(bool) : "Ramp down" : "0" : "Ramp down"
+	addnoise(bool) : "Add noise" : "0" : "Add noise"
+]
+
+
+@SolidClass base(Targetname, Trigger, EnableDisable, TeamNumber) metadata{auto_apply_material = "materials/tools/toolstrigger.vmat"}
+	= trigger_team_base : "Determines boundaries for bases, used by the Mid Boss and Patron to determine targets." []
+
+@SolidClass base(Targetname, Trigger, EnableDisable, TeamNumber) = trigger_trooper_detector : "Trooper detection trigger. " + 
+"This trigger is used to detect if enemy troopers are inside of it. " +
+"It's placed around an entire base and it's used to disable backdoor protection to specific structures." []
+
+@SolidClass base(Targetname, TeamNumber, Trigger, EnableDisable) = trigger_catapult : "Bouncepad/Fan Trigger."
+[
+	launch_speed(float) : "Launch Speed" : "1000" : "Sets the speed at which entities get launched at."
+	target(target_destination) : "Target Entity" : "" : "Pair with a info_target_server_only entity to launch entities at."
+]
+
+@SolidClass base(Targetname, Trigger, EnableDisable, TeamNumber) = citadel_trigger_interior : "Trigger used in the interiors." 
+[ 
+ interior_type(choices) : "Interior type." =
+	[
+	    "0" : "Overworld"
+		"1" : "Underground/Tunnels"
+	]
+]
+
+@SolidClass base(Targetname, Trigger, EnableDisable, TeamNumber) = citadel_trigger_shop_tunnel : "Trigger used in the tunnels in order to change the minimap." []
+
+@SolidClass base(Targetname, Trigger, EnableDisable) = citadel_trigger_push : "Push trigger."
+[
+	speed(float) : "Push Speed" : "40" : "Sets the speed at which entities get pushed at."
+	pushdir(string) : "Push Direction (Pitch Yaw Roll)" : "0 0 0"
+]
+
+@SolidClass base(Targetname, Trigger, EnableDisable) = citadel_trigger_speed_boost : "Speed Boost trigger." []
+
+ @SolidClass base(Trigger,TeamNumber, Targetname, EnableDisable) = citadel_control_point : "A capturable control point. (Unused)"
+ [	 
+	 capture_time(float) : "Capture Time" : "10" : "Sets the capture time in seconds."
+	 initial_radius(float) : "Initial Radius" : "0" : "Sets the Initial Radius."
+	 end_radius(float) : "End Radius" : "256" : "Sets the End Radius."
+	unlock_prereq(target_destination) : "Unlock Prerequisite" : ""
+	 beam_start(target_destination) : "Beam Start" : ""
+	 beam_target(target_destination) : "Beam Target" : ""
+	
+	 // Outputs
+	 output OnFullyCaptured(void) : "Sends a signal when the capture point is captured."
+	 output OnBecomeCapturable(void) : "Sends a signal when the capture point becomes capturable."
+ ]
+
+  @SolidClass base(Trigger, Targetname, EnableDisable) = citadel_capture_point : "Capture point trigger."
+[
+	 // Outputs
+	 output OnBecomeCapturable(void) : "Sends a signal when the capture point becomes capturable."
+	 output OnFullyCaptured(void) : "Sends a signal when the capture point is fully captured."
+]
+
+//--------------------------------------------------------------------------------------------------
+// Citadel Path Entities
+//--------------------------------------------------------------------------------------------------
+
+@PathClass base(Targetname)
+	metadata
+	{
+		path_node_class = "citadel_zipline_path_node"
+	}
+	= citadel_zipline_path  : "An editable path that controls lane ziplines."
+[
+    lane_number(choices) : "Lane Color" : 0 : "Selects the lane that this zipline will belong to." =
+    [
+        0 : "None"
+        1 : "Yellow"       
+        3 : "Orange"
+        4 : "Blue"        
+        6 : "Purple"
+    ]
+	max_simulation_time(float)  : "Max simulation time" : "0.20000000298023224" : "Test."
+	particle_spacing(float)  : "Particle spacing" : 512 : "Particle spacing."
+	slack(float)  : "Slack" : 0 : "Rope Slack."
+	radius(float)  : "Radius" : 2 : "Rope Thickness."
+	static_collision(boolean)  : "Static collision" : 0
+	color_tint(choices) : "Zipline Color" : "0 0 0" : "Selects the color of the zipline." =
+    [
+        "0 0 0" : "None"
+        "255 106 0" : "Yellow"       
+        "255 0 0" : "Orange"
+        "0 25 255" : "Blue"        
+        "139 0 139" : "Purple"
+    ]
+	effect_name(particlesystem) [report] : "Particle System Name" : "particles/entity/path_particle_cable_default.vpcf"
+]
+
+
+@PathNodeClass base(Targetname, Angles, TeamNumber)
+	studio("models/props_gameplay/zip_tower_hover.vmdl")
+	= citadel_zipline_path_node
+	[
+	always_usable(boolean) : ""
+	corner_node(boolean)  : "Corner node?" : 0 : "When enabled, it won't render the lane sign prop."
+	disable_zipping_to(boolean)  : "Disabled Zipping" : 0 : "Can't zip to this node, used for initial spawn and trooper exclusive nodes."
+	capturable(boolean)  : "Capturable?" : 1 : "Troopers can capture these nodes, make sure that spawn ones aren't capturable."
+	enabled(boolean)  : "Enabled?" : 1
+	guard_boss_name(choices) : "Primary Guard Boss Name" : "" : "Name of the boss guarding this zipline." =
+	[
+		"": "None"
+		"boss_rebel_t1_yellow"  : "Amber Guardian (Yellow)"
+		"boss_rebel_t1_orange"  : "Amber Guardian (Orange)"
+		"boss_rebel_t1_blue" 	: "Amber Guardian (Blue)"
+        "boss_rebel_t1_purple"  : "Amber Guardian (Purple)"
+		"boss_combine_t1_yellow" : "Sapphire Guardian (Yellow)"
+		"boss_combine_t1_orange" : "Sapphire Guardian (Orange)"
+		"boss_combine_t1_blue" 	 : "Sapphire Guardian (Blue)"
+        "boss_combine_t1_purple" : "Sapphire Guardian (Purple)"
+		"rebels_t2_boss_yellow"  : "Amber Sun Walker (Yellow)"
+		"rebels_t2_boss_orange"  : "Amber Sun Walker (Orange)"
+		"rebels_t2_boss_blue" 	 : "Amber Sun Walker (Blue)"
+        "rebels_t2_boss_purple"  : "Amber Sun Walker (Purple)"
+		"combine_t2_boss_yellow" : "Sapphire Sun Walker (Yellow)"
+		"combine_t2_boss_orange" : "Sapphire Sun Walker (Orange)"
+		"combine_t2_boss_blue" 	 : "Sapphire Sun Walker (Blue)"
+        "combine_t2_boss_purple" : "Sapphire Sun Walker (Purple)"	
+	]
+	secondary_guard_boss_name(choices) : "Secondary Guard Boss Name" : "" : "Name of the secondary boss guarding this zipline." =
+	[
+		"": "None"
+		"boss_rebel_t1_yellow"  : "Amber Guardian (Yellow)"
+		"boss_rebel_t1_orange"  : "Amber Guardian (Orange)"
+		"boss_rebel_t1_blue" 	: "Amber Guardian (Blue)"
+        "boss_rebel_t1_purple"  : "Amber Guardian (Purple)"
+		"boss_combine_t1_yellow" : "Sapphire Guardian (Yellow)"
+		"boss_combine_t1_orange" : "Sapphire Guardian (Orange)"
+		"boss_combine_t1_blue" 	 : "Sapphire Guardian (Blue)"
+        "boss_combine_t1_purple" : "Sapphire Guardian (Purple)"
+		"rebels_t2_boss_yellow"  : "Amber Sun Walker (Yellow)"
+		"rebels_t2_boss_orange"  : "Amber Sun Walker (Orange)"
+		"rebels_t2_boss_blue" 	 : "Amber Sun Walker (Blue)"
+        "rebels_t2_boss_purple"  : "Amber Sun Walker (Purple)"
+		"combine_t2_boss_yellow" : "Sapphire Sun Walker (Yellow)"
+		"combine_t2_boss_orange" : "Sapphire Sun Walker (Orange)"
+		"combine_t2_boss_blue" 	 : "Sapphire Sun Walker (Blue)"
+        "combine_t2_boss_purple" : "Sapphire Sun Walker (Purple)"	
+	]
+	tertiary_guard_boss_name(choices) : "Tertiary Guard Boss Name" : "" : "Name of the tertiary boss guarding this zipline." =
+	[
+		"": "None"
+		"boss_rebel_t1_yellow"  : "Amber Guardian (Yellow)"
+		"boss_rebel_t1_orange"  : "Amber Guardian (Orange)"
+		"boss_rebel_t1_blue" 	: "Amber Guardian (Blue)"
+        "boss_rebel_t1_purple"  : "Amber Guardian (Purple)"
+		"boss_combine_t1_yellow" : "Sapphire Guardian (Yellow)"
+		"boss_combine_t1_orange" : "Sapphire Guardian (Orange)"
+		"boss_combine_t1_blue" 	 : "Sapphire Guardian (Blue)"
+        "boss_combine_t1_purple" : "Sapphire Guardian (Purple)"
+		"rebels_t2_boss_yellow"  : "Amber Sun Walker (Yellow)"
+		"rebels_t2_boss_orange"  : "Amber Sun Walker (Orange)"
+		"rebels_t2_boss_blue" 	 : "Amber Sun Walker (Blue)"
+        "rebels_t2_boss_purple"  : "Amber Sun Walker (Purple)"
+		"combine_t2_boss_yellow" : "Sapphire Sun Walker (Yellow)"
+		"combine_t2_boss_orange" : "Sapphire Sun Walker (Orange)"
+		"combine_t2_boss_blue" 	 : "Sapphire Sun Walker (Blue)"
+        "combine_t2_boss_purple" : "Sapphire Sun Walker (Purple)"	
+	]
+	use_for_minimap_drawing(boolean) : "If this zipline node should be drawn on the minimap." : 0
+	]
+
+
+@PathClass base(Targetname, LaneNumber)
+	= lane_marker_path : "An editable path which determines where troopers are supposed to go to, there should be " +
+	"4 markers per lane and each should have a different slot, team doesn't matter."
+[
+    LaneSlot(choices) : "Lane Slot" : 0 : "Determines the slot of the lane, each lane should have 4 markers with a different slot." =
+    [
+        0 : "Slot 1"
+        1 : "Slot 2"       
+        2 : "Slot 3"
+        3 : "Slot 4"        
+    ]
+]
+
+ @PathClass base(Targetname)
+	 metadata
+	 {
+		 path_node_class = "payload_path_marker"
+	 }
+	 = payload_path  : "An editable path that controls payloads. Unused." []
+
+ @PathNodeClass base(Targetname, LaneNumber)
+	 = payload_path_marker : "An editable path which determines where the payload should path towards " +
+	 "4 markers per lane and each should have a different slot, team doesn't matter."
+ [
+	 roll_back_to_here(boolean) : "Roll back to here" : 0
+ ]
+
+
+//--------------------------------------------------------------------------------------------------
+// Citadel Point Entities
+//--------------------------------------------------------------------------------------------------
+
+@BaseClass = shared_enable_disable
+[
+	start_enabled(boolean) : "Start Enabled" : "1"
+	input Enable(void) : "Enable"
+	input Disable(void) : "Disable"
+	input Toggle(void) : "Toggle"
+]
+
+@PointClass base(prop_dynamic) tags( PropDynamic ) editormodel("models/personal/timotheey/hyperbolic/defaulttile.vmdl") = hyperbolicprop : "Hyperbolic prop"
+[
+]
+
+@PointClass base(Targetname) editormodel("models/editor/cone_helper_xyz.vmdl") volumetricanimationhelper() = volumetric_animation : "Test entity"
+[
+	vdb_file(resource:vdb) :  "VDB file"
+	playback_fps(int) : "Playback FPS"
+	animate(boolean) : "Animate" : "1"
+]
+
+@NavLinkClass base(Targetname,shared_enable_disable)
+	editormodel("models/props/navlink/nav_link_hammer_model.vmdl")
+	metadata
+	{
+	}
+ = ai_nav_link_area : "An entity that links navmesh sections togther with animation transitions between them"
+[
+	nav_link_movement( vdata_choice:scripts/navlinks.vdata ) : "NavLink Movement" : "" : "The Type of movement needed to traverse this navlink."
+	nav_link_movement_reverse( vdata_choice:scripts/navlinks.vdata ) : "NavLink Movement (Reverse)" : "" : "The Type of movement needed to traverse this navlink in reverse."
+	use_link_entity_orientation(boolean) : "Use entity orientation" : "0" : "Get link orientation from this entity transform; otherwise orient toward target"
+	IsTerminus(boolean) : "Is Terminus" : "0" : ""
+
+	output OnNavLinkStart(void) : "An NPC started using this nav link"
+	output OnNavLinkFinish(void) : "An NPC finished using this nav link"
+	output OnAnimTagFired(void) : "On fired animtag"
+	output OnAnimTagStart(void) : "On start animtag"
+	output OnAnimTagEnd(void) : "On end animtag"
+]
+
+@PointClass base(Targetname) sphere() = info_remarkable : "An object in the world such that characters seeing it will speak a TLK_REMARK concept"
+[
+	contextsubject(string) : "Subject context" : "" : "Text to put in the SUBJECT context of the TLK_REMARK fired upon sighting this object."
+	radius(string) : "Mock Radius for Origin Placement" : "500" : "Allows you to set a mock radius to determine origin placement on info_remarkables based off their associated Remark radius"
+	times_remarked_upon(string) : "Times remarked upon" : ""
+]
+
+@PointClass base(Targetname,shared_enable_disable) = citadel_energy_tower : "An object in the world"
+[
+	radius(float) : "Radius" : "500" : ""
+	damage(float) : "Damage" : "500" : ""
+]
+
+
+@PointClass base(Targetname, shared_enable_disable,TeamNumber ) tags( Logic ) iconsprite("editor/game_event_listener.vmat") = logic_gameevent_listener :
+	"An entity that listens to game events and fires off an output when the named event it fired"
+[
+	gameeventname(string) : "Game Event Name"
+	gameeventitem(string) :	"Item Name"
+	output OnEventFired(void) : "Fire an output when the named event fires"	
+]
+
+@PointClass base(BasePropDoorRotating) tags( PropDynamic ) model() = prop_door_rotating :
+	"An entity used to place a door in the world. If two doors have the same name, they will open and close together as double doors."
+[
+]
+
+@PointClass base(Targetname)
+    iconsprite("editor/nav_space.vmat")
+    = info_nav_space :
+    "Causes nav space to be generated here and at all points that are reachable via ground movement from here."
+[
+]
+
+@PointClass base(Targetname)
+    iconsprite("editor/nav_space_flight.vmat")
+    = info_nav_space_flight :
+    "Causes nav space to be generated here and at all points that are reachable via ground movement from here."
+[
+]
+
+@PointClass base(Targetname)
+    iconsprite("editor/nav_space_water.vmat")
+    = info_nav_space_water :
+    "Causes nav space to be generated here and at all points that are reachable via ground movement from here."
+[
+]
+
+@PointClass base(Targetname)
+    iconsprite("editor/nav_oriented_mesh.vmat")
+    = info_gravity_shift :
+    "Entity that allows you to create projected navmeshes for gravity shifting."
+[
+     CreateProjectedNavMesh(boolean) : "Create Projected nav mesh" : "1" : "Generate projected nav mesh data."
+	 gravity_type(integer) : "Gravity type" : 0
+     gravity_shift_priority(integer) : "Gravity shift priority" : 0
+	 orientation_shift_priority(integer) : "Gravity shift priority" : 0
+	 orientation_type(integer) : "Orientation type" : 0
+	 trigger_area(target_destination) : "Trigger area" : : "What trigger is our target area"
+]
+
+@PointClass base(Targetname)
+    iconsprite("editor/nav_oriented_mesh.vmat")
+    = point_nav_movable_mesh :
+    "Entity that allows you to create movable navmeshes."
+[
+]
+
+@PointClass base(Targetname) tags( Info )
+	
+	selected_line( 255 255 255, targetname, entity_01 )
+	selected_line( 255 255 255, targetname, entity_02 )
+	selected_line( 255 255 255, targetname, entity_03 )
+	selected_line( 255 255 255, targetname, entity_04 )
+	selected_line( 255 255 255, targetname, entity_05 )
+	selected_line( 255 255 255, targetname, entity_06 )
+	selected_line( 255 255 255, targetname, entity_07 )
+	selected_line( 255 255 255, targetname, entity_08 )
+	selected_line( 255 255 255, targetname, entity_09 )
+	selected_line( 255 255 255, targetname, entity_10 )
+
+	iconsprite("editor/info_notepad.vmat")  = info_notepad : 
+	"A place to leave notes" 
+
+[
+		message(text_block) : "Message"
+		entity_01(target_destination) [ group="Entities" ]: "Entity 1"
+	   	entity_02(target_destination) [ group="Entities" ]: "Entity 2"
+		entity_03(target_destination) [ group="Entities" ]: "Entity 3"
+		entity_04(target_destination) [ group="Entities" ]: "Entity 4"
+		entity_05(target_destination) [ group="Entities" ]: "Entity 5"
+		entity_06(target_destination) [ group="Entities" ]: "Entity 6"
+		entity_07(target_destination) [ group="Entities" ]: "Entity 7"
+		entity_08(target_destination) [ group="Entities" ]: "Entity 8"
+		entity_09(target_destination) [ group="Entities" ]: "Entity 9"
+		entity_10(target_destination) [ group="Entities" ]: "Entity 10"
+
+]
+
+@SolidClass base(Targetname) = func_deformable_density : "Deformable Density." []
+
+@PointClass base( Targetname )
+= citadel_point_talker : 
+	"An entity used for talkers to talk. " +
+[
+	// Inputs
+	input Speak(void) : "Start speaking."
+]
+
+@PointClass base( Targetname ) studio("models/editor/portal_link_helper.vmdl")
+= info_portal_link : 
+	"An entity used to link render portals.Unused. "
+[
+]
+
+@PointClass base( Targetname,TeamNumber,LaneNumber ) studio("models/editor/portal_link_helper.vmdl")
+= info_teleport_location : 
+	"An entity used to mark a teleport location. "
+[
+objective(integer) : "Objective? By default set to 3?" : 3
+]
+
+
+@PointClass base(prop_dynamic,TeamNumber) tags( PropDynamic ) model()
+	metadata
+	{
+	entity_tool_name = "Citadel Dynamic Prop"
+	entity_tool_group = "Content"
+	entity_tool_tip = "Adds a dynamic model - Use this for props that should change skins depending on which team the observer is from"
+	}
+= citadel_prop_dynamic :
+	"An entity used to dynamic props that change depending on what team the user observing it is on."
+[
+	use_animgraph(boolean) { enabled={ function="ModelHasAnimGraph" } } : "Use Animgraph" : 1 : "Allow the model to use its animgraph it has one. If the model has no animgraph this setting has no effect and is disabled"
+	DefaultAnim(sequence) { enabled={ function="NotUsingAnimGraph" } } : "Default Animation" : "" : "The name of the idle animation that this prop will revert to whenever it finishes a random or forced animation. This setting is ignored for models with an animgraph when Use Animgraph is enabled."
+	FriendlySkin(choices) : "Skin that will show up for friendly players." : "friendly" =
+	[
+		"Friendly Skin" : "friendly"
+		"Enemy Skin" : "enemy"
+		"Default Skin" : "default"
+	]
+	EnemySkin(choices) : "Skin that will show up for enemy players." : "enemy" =
+	[
+		"Enemy Skin" : "enemy"
+		"Friendly Skin" : "friendly"
+		"Default Skin" : "default"
+	]
+	DefaultSkin(choices) : "Skin that will show up for Default players." : "default" =
+	[
+		"Default Skin" : "default"
+		"Friendly Skin" : "friendly"
+		"Enemy Skin" : "enemy"
+	]	
+	updatechildren(boolean) : "Update Children" : 1 : "Update the children of the entity."
+	maxanimtime(string) : "Max Animation Time" : "10" : "Time that the animation can last."
+	minanimtime(string) : "Min Animation Time" : "5" : "Time that the animation can last."
+	randomanimation(string) : "Play a random animation" : "0" : "Play a random animation."
+	ScriptedMovement(boolean) : "Scripted Movement" : 0 : "Set this to allow vscript code to move the brush via SetVelocity() calls."
+]
+
+@PointClass base(prop_dynamic,TeamNumber) tags( PropDynamic ) model()
+= citadel_base_prop_stairs :
+	"An entity used for Mid stairs (where the teleporters are)."
+[
+	stairs_location(choices) : "Stairs location." =
+	[
+	    "1" : "Left Side"
+		"2" : "Right Side"
+	]
+]
+
+@PointClass studio("models/props_gameplay/rejuv/rejuv.vmdl") = citadel_base_prop_midboss_indicator : "An entity used for the visual midboss indicator near teleporters."
+[
+]
+
+@PointClass base(prop_dynamic,TeamNumber) tags( PropDynamic ) model()
+	metadata
+	{
+	entity_tool_name = "Citadel Dynamic Shop Prop"
+	entity_tool_group = "Content"
+	entity_tool_tip = "Adds a dynamic shop model - Use this for props that should change skins depending on which team the observer is from"
+	}
+= citadel_shop_prop_dynamic :
+	"New entity used for the shop." //Why is this a new entity???
+[
+    model(studio) : "World Model" : "models/props_gameplay/shop/shop_01.vmdl"
+	use_animgraph(boolean) { enabled={ function="ModelHasAnimGraph" } } : "Use Animgraph" : 1 : "Allow the model to use its animgraph it has one. If the model has no animgraph this setting has no effect and is disabled"
+	DefaultAnim(sequence) { enabled={ function="NotUsingAnimGraph" } } : "Default Animation" : "" : "The name of the idle animation that this prop will revert to whenever it finishes a random or forced animation. This setting is ignored for models with an animgraph when Use Animgraph is enabled."
+	FriendlySkin(choices) : "Skin that will show up for friendly players." : "friendly" =
+	[
+		"Friendly Skin" : "friendly"
+		"Enemy Skin" : "enemy"
+		"Default Skin" : "default"
+	]
+	EnemySkin(choices) : "Skin that will show up for enemy players." : "enemy" =
+	[
+		"Enemy Skin" : "enemy"
+		"Friendly Skin" : "friendly"
+		"Default Skin" : "default"
+	]
+	DefaultSkin(choices) : "Skin that will show up for Default players." : "default" =
+	[
+		"Default Skin" : "default"
+		"Friendly Skin" : "friendly"
+		"Enemy Skin" : "enemy"
+	]	
+	updatechildren(boolean) : "Update Children" : 1 : "Update the children of the entity."
+	maxanimtime(string) : "Max Animation Time" : "10" : "Time that the animation can last."
+	minanimtime(string) : "Min Animation Time" : "5" : "Time that the animation can last."
+	randomanimation(string) : "Play a random animation" : "0" : "Play a random animation."
+	ScriptedMovement(boolean) : "Scripted Movement" : 0 : "Set this to allow vscript code to move the brush via SetVelocity() calls."
+]
+
+@PointClass base(Targetname, Angles, LaneNumber,TeamNumber) vdata_model{my_key = "hero_model" vdata_key = "m_strModelName" use_class_when_blank = true}
+	metadata
+	{
+	entity_tool_name = "Team Player Spawn Point"
+	entity_tool_group = "Player"
+	entity_tool_tip = "This entity marks the spawn point for any player"
+	}
+	= info_team_spawn :
+	"This entity marks the start point for heroes. One of these needs to be placed for each team member. " +
+	"6 start points for each team is typical. Should be placed at least 128 units away from each other and surrounding walls"
+[
+	hero_model(vdata_choice:scripts/heroes.vdata ) : "Hero" : "" : "Your hero model. Only used to get reference scale."
+	initialspawn(boolean) : "Initial player spawn" : 0 : "Used for the round start hero introduction."	
+	grouptag(integer) : "Group tag" : 0 : "Set group tag of initial spawns."
+	
+	// Inputs
+	Input SetTeam (integer) : "Set the team this entity belongs to."
+]
+
+@PointClass
+	light() base(Targetname, Angles, light_base, light_base_legacy_params, light_base_attenuation_params, CanBeClientOnly) leansphere(lightsourceradius,255,255,255) sphere(range,255,255,0)
+	iconsprite
+	{
+		image = "materials/editor/light_omni.vmat"
+		tintKey = "color"
+	}
+	= citadel_volume_omni : "A Dynamic Light entity."
+[
+	useLocalOffset(boolean) : "Use Model Attachment Offset" : 0 : "Whether to respect the specified local offset when doing the initial hierarchical attachment to its parent."
+	lightcolor(color255alpha) : "Light Color" : "255 218 36 255"
+	lightbrightness(float) : "Light Brightness" : "5"
+	lightrange(float) : "Light Range" : "512"
+	mediacolor(color255alpha) : "Media Color" : "255 199 18 255"
+	mediabrightness(float) : "Media Brightness" : "1.000000"
+	mediadensity(float) : "Media Density" : "0.005000"
+	mediainnerradiusscale(float) : "Media Density" : "0.000000"
+	mediamiddleradiusscale(float) : "Media Middle Radius Scale" : "0.000000"
+	mediaouterradiusscale(float) : "Media Outer Radius Scale" : "1.000000"
+	mediaelevationmin(float) : "Media Elevation Minimum" : "-90"
+	mediaelevationmax(float) : "Media Elevation Maximum" : "90"
+	animated(boolean) : "Animated?" : 1
+	animationduration(float) : "Animation Duration" : "1.500000"
+	looping(boolean) : "Loops?" : 0
+	startlightbrightness(float) : "Start Light Brightness" : "2.000000"
+	endlightbrightness(float) : "End Light Brightness" : "0.000000"
+	startlightradius(float) : "Start Light Radius" : "0.000000"
+	endlightradius(float) : "End Light Radius" : "5000"
+	startmediabrightness(float) : "Start Media Brightness" : "1.500000"
+	endmediabrightness(float) : "End Media Brightness" : "0"
+	startmediadensity(float) : "Start Media Density" : "0.010000"
+	endmediadensity(float) : "End Media Density" : "0.000001"
+]
+
+@PointClass light() base(Targetname, Parentname,light_base, light_base_legacy_params, light_base_attenuation_params, CanBeClientOnly,Light2Inputs) leansphere(lightsourceradius,255,255,255) lightcapsule()
+	iconsprite
+	{
+		image = "materials/editor/light_omni.vmat"
+		tintKey = "color"
+	}
+= light_capsule : "A capsule light source."
+[
+	capsule_length(float) [ group="Direct Light" ] : "Capsule Length" : "256.0" : "Length of the light capsule."
+    // Light Units
+	brightness_units(choices) { group="Light Units" } : "Units" : "1" : "Brightness Units" =
+		[
+			"1" : "Lumens"
+			"0" : "EV"
+			"3" : "Legacy"
+		]
+		brightness(float) { group="Light Units" min="-4.0" max="8.0" enabled={ variable="brightness_units" value="0" } } : "Brightness (EV)" : "0" : "Brightness (EV)"
+		brightness_legacy(float) { group="Light Units" enabled={ variable="brightness_units" value="3" } } : "Legacy" : "1" : "Legacy brightness value"
+		brightness_lumens(float) { group="Light Units" min="0.0" max="4000" enabled={ variable="brightness_units" value="1" } } : "Brightness (Lumens)" : "224" : "Brightness in lumens. (See Light Units group for alternative units of measurement)."	
+	innerconeangle(float) { min="1" max="89" } : "Inner Cone Angle" : "45" : "inner cone angle. no angular falloff within this cone"
+	outerconeangle(float) { min="1" max="89" } : "Outer Cone Angle" : "60" : "outer cone angle"
+	secondary_color(color255) [ group = "Direct Light" ] : "Secondary Color" : "255 255 255"
+    use_secondary_color(boolean) { group="Direct Light" } : "Use Secondary Color" : 0
+	range(float) { group="Direct Light" min="2.0" } : "Range" : "256.0" : "Clamps the distance that a light can reach."
+	// Cascade Shadow Maps
+	nearclipplane(float) { group="Cascade Shadow Maps" enabled={ variable="castshadows" value="1" } } : "Shadow Near Clip Plane" : 1 : "Distance for near clip plane for shadow map"
+	castshadows(choices) [ group = "Shadows" ] : "Cast Shadows" : "0" : "Whether this light casts shadow" =
+	[
+		"0" : "No"
+		"1" : "Yes"
+		"2" : "Baked Only"
+	]
+	uselocaloffset(boolean) : "Use Local offset" : 0 : "Rotate around landmark by relative landmark orientations."
+]
+
+//-------------------------------------------------------------------------
+// Used by portraits
+//-------------------------------------------------------------------------
+@PointClass base(Targetname, Parentname) model() = info_target_portrait_root : 
+	"An entity that does nothing, however it previews a model in hammer only. Useful for root nodes of portraits. Parent entities in this map to this."
+[
+	model(studio) [report] : "Hammer Preview Model"
+	animgraph(animgraph) { enabled={ function="ModelHasAnimGraph" } } : "Animgraph" : "" : "Specify animgraph resource.  Overridden if the model is changed by game code."
+	hero_animgraph_enum_name(animgraph_enum) { enabled={ function="ModelHasAnimGraph" } } : "Animgraph Name" : "e_HeroUI" : "The animgraph enum parameter to play."
+	DefaultAnim(sequence) : "Default Animation" : "" : "The name of the idle animation that this prop will revert to whenever it finishes a random or forced animation."
+]
+
+@PointClass base(Parentname, EnableDisable) model() gameUnitModel( MapUnitName ) = portrait_world_unit : 
+	"Can only be used in background maps. Creates a portrait unit based on a unit name."
+[
+    model(studio) [report]: "World Model" : : "Overriden by game code."
+	animgraph(animgraph) { enabled={ function="ModelHasAnimGraph" } } : "Animgraph" : "" : "Specify animgraph resource.  Overridden if the model is changed by game code."
+	ModelScale(float) : "Model Scale" : "1"
+	heroid(float) : "Hero ID" : "1"
+	is_alternate_loadout(boolean): "Is alternate loadout" : "1"
+	suppress_intro_effects(boolean) : "Suppress Intro Effects" : "1"
+	deferred_portrait(boolean) : "Deferred portrait" : "1"
+	show_particle_asset_modifiers(boolean) : "Show particle asset modifiers" : "1"
+	spawn_background_models(boolean) : "Spawn Background Models" : "0"
+	skip_background_entities(boolean) : "Spawn unit only" : "0" : "Don't spawn any background entities (camera, lights, pets, particles, models, etc)"
+	rare_loadout_anim_chance(float) : "Rare Loadout Animation Chance" : "-1" : "Use range 0 - 1 to set the likelihood that the rare loadout animation will be played after a loadout animation completes. Negative numbers means use default."
+	suppress_anim_event_sounds(boolean) : "Suppress Anim Event Sounds" : "0"
+	skip_pet_spawn(boolean) : "Skip Pet Spawn" : "0"
+	flying_courier(boolean) : "Flying Courier" : "0" : "Indicates if you want the courier to appear flying. Only used if your unit type is npc_dota_courier."
+	spawn_wearable_item_defs(boolean) : "Spawn wearable items on the unit" : "1"
+	e_heroui(animgraph_enum) { enabled={ function="ModelHasAnimGraph" } } : "Animgraph Name" : "" : "The animgraph enum parameter to play."
+]
+
+//--------------------------------------------------------------------------------------------------
+// Citadel NPC Entities
+//--------------------------------------------------------------------------------------------------
+
+@BaseClass = CitadelNPC
+[
+	CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+	BackdoorProtectionTrigger(target_destination) : "What entity is the backdoor protection trigger."
+]
+
+//if you use vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} your model of an entity will change based on the chosen subclass and what model it uses, thanks to the vdata_key property.
+
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = simple_animating_ai : "This entity creates a simple animating npc."
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Which subclass simple_animating_ai is."
+		model_state(modelstatechoices) : "Model State" : ""
+	]
+
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = npc_yakuza_kobun_summon : "This entity creates a Skymonk."
+[]
+
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = npc_super_trooper : "This entity creates a super trooper."
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Super Trooper subclass."
+		info_trooper_boss_spawn(target_destination) : "Trooper Boss Spawn" : "" : "The name of an info_target entity that specifies the location of the info_trooper_boss_spawn entity." //well this didn't work
+	]
+
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = npc_trooper_boss : "This entity creates a Tier1 boss directly.Use info_trooper_boss_spawn instead."
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Tier1 Boss Subclass."
+		info_trooper_boss_spawn(target_destination) : "Trooper Boss Spawn" : "" : "The name of an info_target entity that specifies the location of the info_trooper_boss_spawn entity." //well this didn't work
+	]
+	
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = npc_trooper : "This entity creates a trooper directly.Use info_trooper_spawn instead."
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Trooper subclass."
+	]
+
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = npc_trooper_neutral : "This entity creates a neutral trooper directly."
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Neutral trooper subclass."
+	]
+
+@NPCClass base(BaseNPC,Targetname, Angles, LaneNumber,TeamNumber, RenderFields,CitadelNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} = npc_trooper_node_mover : "This entity creates a neutral trooper directly."
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Neutral trooper node mover subclass."
+		info_trooper_neutral_camp(target_destination) : "Trooper Boss Camp" : "" : "The name of an info_target entity that specifies the location of the info_trooper_boss_spawn entity."
+		info_trooper_neutral_spawn(target_destination) : "Trooper Boss Spawn" : "" : "The name of an info_target entity that specifies the location of the info_trooper_boss_spawn entity." //thanks BaseNPC for squads
+	]
+
+@NPCClass base(Targetname, Angles,TeamNumber) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true} studio("models/props_gameplay/sinners_sacrifice_vault/sinners_sacrifice.vmdl") = npc_neutral_sinners_sacrifice_hideout : "Sinners Sacrifice (Hideout)"
+	[
+		subclass_name( subclass_choice:scripts/npc_units.vdata ) : "Subclass" : "" : "Subclass"
+	]
+
+@PointClass base(Targetname, Angles,prop_dynamic) studio("models/editor/ground_node.vmdl")
+metadata
+	{
+	entity_tool_name = "Neutral Mover Node"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Ground Nodes used by NPCs as waypoints"
+	}
+	= info_neutral_move_node : "Determines waypoints for Neutral Node Mover."
+[
+]
+
+@PointClass base(Targetname, Angles) studio("models/editor/ground_node.vmdl")
+	metadata
+	{
+	entity_tool_name = "Cover Point"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Ground Nodes used by NPCs as waypoints"
+	}
+	= info_cover_point : "Determines waypoints for NPCs."
+[
+	visionradius(integer) : "Vision Radius" : 0 : "Distance the cover point can see in units?"
+	AllowOffNav(boolean) : "Allow Off Nav?" : 0
+	AutoAdjustDirection(boolean) : "Auto Adjust Direction?" : 1
+	groupid(node_id) : "Node ID"
+]
+
+
+
+@PointClass base(Targetname, Angles, TeamNumber) studio("models/editor/neutral_camp_marker.vmdl")
+	metadata
+	{
+	entity_tool_name = "Neutral Trooper Spawn Point"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn point for Neutral Trooper"
+	}
+	= info_neutral_trooper_spawn : "Spawn point for Neutral Troopers."
+[
+	CampName(target_destination) : "Camp Name" : "" : "Name of the neutral trooper camp this entity belongs to."
+	ENeutralTrooperType(choices) : "Neutral Trooper Type" : "" =
+	[
+		"" : "None"
+		1 : "Weak"
+		2 : "Medium"
+		3 : "Strong"
+		4 : "Former Punkbot"
+		5 : "Mid Boss"
+		6 : "Sinner's Sacrifice"
+		7 : "Former Chefbot"
+		8 : "Former Cleanbot"
+		9 : "Sushibot (Gargoyle/Type 9)"
+		10 : "Cleanbot (Trashbug/Type 10)"
+		11 : "Punkbot (Whack-A-Ghost/Type 11)"
+		12 : "Breakable Vault"
+	]
+	CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+	// Grenadier(boolean) : "Grenadier?" : 0 : "Unused."
+	// Super(boolean) : "Super?" : 0 : "Unused."
+	HateCrateAttacker(boolean) : "Hates Crate Attackers?" : 1 : "This causes neutral troopers to attack anyone who destroys a nearby crate."
+	// model(studio) : "Override trooper model" : "" : "Select a model to override the model used for enemies spawned at this spawn point." 
+	// modelscale(integer) : "Model Scale" : 1
+]
+
+@PointClass base(Targetname, Angles, TeamNumber) studio("models/editor/neutral_camp_marker.vmdl")
+	metadata
+	{
+	entity_tool_name = "Midboss Spawn Point"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn point for Midboss"
+	}
+	= info_mid_boss_spawn : "Spawn point for Neutral Troopers."
+[
+	CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+]
+
+@PointClass base(Angles) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true}
+	metadata
+	{
+	entity_tool_name = "Neutral Trooper Camp"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "This entity handles neutral camp types and respawn times"
+	}
+	= info_neutral_trooper_camp : "Neutral Trooper Camp entity."
+[
+    targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
+	CampName(target_source) : "Camp Name" : "" : "Name of the neutral trooper camp."
+	ENeutralTrooperType(choices) : "Neutral Trooper Type" : "" =
+	[
+		"" : "None"
+		1 : "Weak"
+		2 : "Medium"
+		3 : "Strong"
+		5 : "Mid Boss"
+		6 : "Sinner's Sacrifice"
+		9 : "Sushibot (Gargoyle/Type 9)"
+		10 : "Cleanbot (Trashbug/Type 10)"
+		11 : "Punkbot (Whack-A-Ghost/Type 11)"
+		12 : "Breakable Vault"
+	]
+	subclass_name( subclass_choice:scripts/misc.vdata ) : "Neutral Camp Subclass" : "" : "Subclass of the neutral camp." //does this even work? i think it should
+	//InitialSpawnDelayInSeconds(string) : "Initial Spawn Delay" : "120" : "Initial Spawn Delay In Seconds. Unused"
+	//SpawnIntervalInSeconds(string) : "Spawn Interval" : "120" : "Spawn Interval In Seconds. Unused"
+]
+
+
+@PointClass base(Targetname, Angles, TeamNumber, LaneNumber) studio("models/npc/trooper/trooper_melee.vmdl")
+	metadata
+	{
+	entity_tool_name = "Trooper Spawn Point"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn point for team troopers"
+	}
+	= info_trooper_spawn :
+	"This entity marks the start point for troopers. One of these needs to be placed for each trooper in a lane. " +
+	"4 start points is typical per lane and they should all be placed same coordinates and under their respective ziplines."
+[
+	 TrooperLevel(choices) : "Trooper Level" : 4 : "Sets the trooper's level. Normal matches have them set to level 4 by default. (Deprecated)" =
+	 [
+		 1 : "Level 1"
+		 2 : "Level 2"
+		 3 : "Level 3"
+		 4 : "Level 4"
+	 ]
+]
+
+@PointClass base(Targetname, Angles, TeamNumber, LaneNumber) studio("models/npc/boss_tier_01_brazier_guardian/boss_tier_01_brazier_guardian.vmdl")
+	metadata
+	{
+	entity_tool_name = "Lane Guardian"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn position for Lane Guardians and Reinforcement Troopers"
+	}
+	= info_super_trooper_spawn :
+	"This entity marks the start point for Guardians and Reinforcement Troopers. " +
+	"For Lane Guardians, one of these needs to be placed on their respective lane with an unique BossName that matches their lane and team. " +
+	"For reinforcements, one of these needs to be placed for each 4 troopers in a lane and under their respective zipline, " +
+	"these spawns do not require BossNames and if they are not placed, troopers will not spawn."
+[
+	BossName(choices) : "Boss Name" : "" : "Name of the boss." =
+	[
+		"": "None"
+		"boss_rebel_t1_yellow"  : "Amber Guardian (Yellow)"
+		"boss_rebel_t1_orange"  : "Amber Guardian (Orange)"
+		"boss_rebel_t1_blue" 	: "Amber Guardian (Blue)"
+        "boss_rebel_t1_purple"  : "Amber Guardian (Purple)"
+		"boss_combine_t1_yellow" : "Sapphire Guardian (Yellow)"
+		"boss_combine_t1_orange" : "Sapphire Guardian (Orange)"
+		"boss_combine_t1_blue" 	 : "Sapphire Guardian (Blue)"
+        "boss_combine_t1_purple" : "Sapphire Guardian (Purple)"
+	] //could this be a subclass instead? no because the entity is info_super_trooper_spawn
+	SecondaryBoss(boolean) : "Is secondary boss? (Not yet used in any official map.)" : 0
+	ReinforcementsOnly(boolean) : "Is a reinforcement?" : 0 : "Spawns extra troopers when towers are destroyed."
+	CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+	
+	//Outputs
+	output OnTrooperKilled(void) : "Send a signal when this trooper is killed."
+]
+
+@NPCClass base(Targetname, Angles, TeamNumber, LaneNumber)
+	vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true}
+	metadata
+	{
+	entity_tool_name = "Sun Walker"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn position for Sun Walkers"
+	}
+	= npc_boss_tier2 : "Entity used to spawn Sun Walkers, there should be one per lane in each team. They can walk between cover points."
+[
+    BossName(choices) : "Boss Name" : "rebels_t2_boss_yellow" : "Name of the boss." =
+	[
+		"rebels_t2_boss_yellow"  : "Rebels/North/Amber Sun Walker (Yellow)"
+		"rebels_t2_boss_orange"  : "Rebels/North/Amber Sun Walker (Orange/Green)"
+		"rebels_t2_boss_blue" 	 : "Rebels/North/Amber Sun Walker (Blue)"
+        "rebels_t2_boss_purple"  : "Rebels/North/Amber Sun Walker (Purple)"
+		"combine_t2_boss_yellow" : "Combine/South/Sapphire Sun Walker (Yellow)"
+		"combine_t2_boss_orange" : "Combine/South/Sapphire Sun Walker (Orange)"
+		"combine_t2_boss_blue" 	 : "Combine/South/Sapphire Sun Walker (Blue)"
+        "combine_t2_boss_purple" : "Combine/South/Sapphire Sun Walker (Purple)"		
+	] //purely naming
+    CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+	subclass_name(subclass_choice:scripts/npc_units.vdata ) : "Boss subclass" : "" : "Subclass of the Tier2 Boss. For Rebels/North/Amber it's npc_boss_tier2, For Combine/South/Sapphire it's alt_npc_boss_tier2. Weak ones are used on Yellow and Purple lane."
+    output OnBossKilled(void) : "Execute an output on boss death."
+]
+
+
+@NPCClass base(Targetname, Angles, TeamNumber, LaneNumber) studio("models/npc/trooper/trooper_boss.vmdl") 
+	metadata
+	{
+	entity_tool_name = "Barrack Guardian"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn position for Barrack Guardians"
+	}
+= npc_barrack_boss : "Entity used to spawn Barrack Guardians, there should be two per lane in each team."
+[
+	BackdoorProtectionTrigger(target_destination) : "What entity is the backdoor protection trigger."
+	CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+    LaneSide(integer) : "Lane Side" : 0 : "Unused property. Used as a way to index barrack guardians?"
+]
+
+@PointClass base(Targetname, Studiomodel, TeamNumber, LaneNumber) model()
+	metadata
+	{
+	entity_tool_name = "Base Shrine"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Destroyable prop used for Base Shrines"
+	}
+	= destroyable_building : "Entity used exclusively for base shrines."
+[
+    model(studio) : "World Model" : "models/props_street/generator.vmdl"
+    BackdoorProtectionTrigger(target_destination) : "Backdoor protection entity."
+    building_health(float) : "Health" : "4000" : "Set building health. (Broken)"
+    final(boolean) : "Final Building?" : 0 : "Set the building as the final one. (Broken)"
+	
+	//Outputs
+    output OnDestroyed(void) : ""
+	output OnDamageTaken(void) : ""
+	output OnLifeChanged(void) : ""
+	output OnBecomeActive(void) : ""
+	output OnRevitilized(void) : ""
+	output OnBecomeInvulnerable(void) : ""
+	output OnBecomeVulnerable(void) : ""
+	output OnUnderAttack(void) : ""
+	output OnAttackSubsided(void) : ""
+]
+
+@NPCClass base(Targetname, Angles, TeamNumber, LaneNumber,BaseNPC) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true}
+	metadata
+	{
+	entity_tool_name = "Patron"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "Spawn position for Tier3 Boss/Titan/Patron"
+	}
+	= npc_boss_tier3 : "Entity used to spawn Tier3 Bosses/Titans/Patrons, there should be one in each team. " + 
+	"Make sure to use cover groups for each of the boss states, otherwise the game will be unbeatable."
+[
+    BackdoorProtectionTrigger(target_destination) : "Backdoor protection entity."
+	BossName(choices) : "Boss Name" : "boss_rebel_tier2_mid" : "Name of the boss." =
+	[
+		"boss_rebel_tier2_mid"  : "Rebels/North/Amber T3 Boss/Titan/Patron"
+		"boss_combine_tier2_mid" : "Combine/South/Sapphire T3 Boss/Titan/Patron"
+	]
+	subclass_name(subclass_choice:scripts/npc_units.vdata ) : "Boss subclass" : "" : "Subclass of the Tier3 Boss. npc_boss_tier3 is Rebels/North/Amber, alt_npc_boss_tier3 is Combine/South/Sapphire."
+    CoverGroupID(node_id) : "Cover Group ID" : 0 : "ID Number of the info_cover_point group this entity belongs to."
+    dying_cover_id(node_id) : "Dying cover ID" : 0 : "ID of the info_cover_point group this entity will move towards before turning into a core."
+    vulnerable_cover_id(node_id) : "Vulnerable cover ID" : 0 : "ID of the info_cover_point group this entity will fall onto when turning into a core."
+	
+	//Outputs
+    output OnBossKilled(void) : ""
+]
+
+@NPCClass base(BaseNPC,CitadelNPC,Targetname, Angles, TeamNumber, RenderFields) vdata_model{my_key = "subclass_name" vdata_key = "m_sModelName" use_class_when_blank = true}
+	metadata
+	{
+	entity_tool_name = "Base Defense Sentry"
+	entity_tool_group = "NPCs"
+	entity_tool_tip = "This entity creates spawn protection sentries"
+	}
+	= npc_base_defense_sentry :
+	"This entity creates a spawn protection sentry turret."
+[
+    subclass_name(subclass_choice:scripts/npc_units.vdata ) : "NPC subclass" : "" : "Subclass of the NPC."
+	//ability_weapon(vdata_choice:scripts/abilities.vdata) : "Ability Weapon." : "spawn_defense_sentry" : "Type of projectile that will be shot.Unused."
+	health(float) : "Health" : "1000.0"
+	attack_cone(float) : "Attack Cone" : "180.0"
+	unit_status_offset(vector) : "Unit Status Offset" : "0 0 60"
+	scales(string) : "Scales" : "1 1 1"
+	sentry_level(string) : "Sentry Level." : "1" : "Level of the sentry."
+	
+	//Inputs
+	input EnableAttacking(void) : "Enable Attacking"
+	input DisableAttacking(void) : "Disable Attacking"
+]
+
+
+//--------------------------------------------------------------------------------------------------
+// Citadel Logic Entities
+//--------------------------------------------------------------------------------------------------
+
+@PointClass base( Targetname ) tags( Logic ) iconsprite("editor/logic_auto.vmat")
+	metadata
+	{
+		entity_tool_name = "Logic Auto Citadel"
+		entity_tool_group = "Citadel Logic"
+		entity_tool_tip = "Fire an output on round start"
+	}
+= logic_auto_citadel : 
+	"Fires outputs when a map spawns. " +
+	"If 'Remove on fire' flag is set the logic_auto_citadel is deleted after firing."
+[
+	spawnflags(Flags) =
+	[
+		1 : "Remove on fire" : 1
+	]
+	// Outputs
+	output OnGameInProgress(void) : "Sends a signal when the game is in progress."
+	output OnWaitingForPlayersToJoin(void) : "Sends a signal while waiting for joining players."
+	output OnPreGameWait(void) : "Sends a signal during the wait before the round begins."
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmat")
+	metadata
+	{
+	entity_tool_name = "Filter Activator Team"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Filter by the Activator's team."
+	}
+	= filter_activator_team :
+	"A filter that filters by the team of the activator."
+[
+	filterteam(choices) : "Team" : 4 : "Filter Team" =
+	[
+		2 : "Team Rebels/North/Amber"
+		3 : "Team Combine/South/Sapphire"
+		4 : "Team Neutral"
+	]
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmat")
+	metadata
+	{
+	entity_tool_name = "Filter Activator Modifier"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Filter by the modifier."
+	}
+	= filter_activator_modifier :
+	"A filter that filters by the modifier"
+[
+	filtermodifier( vdata_choice:scripts/modifiers.vdata ) : "Modifier subclass" : "" : "Subclass of the modifier, recommended are: citadel_idol_return."
+]
+
+@PointClass base(LaneNumber,TeamNumber)
+	metadata
+	{
+	entity_tool_name = "Assigned Lane Particle"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Used to determine which particle will belong to each lane."
+	}
+	= info_assigned_lane_particle : "Sets a particle to the assigned lane."
+[  
+]
+
+@PointClass base(TeamNumber) metadata
+	{
+	entity_tool_name = "Minimap Marker"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Used to set markers for the minimap. Currently used to signal tunnel entrances and exits."
+	} = info_mini_map_marker : "One of two corners needed to define the minimap boundaries."
+[  
+    MarkerType(choices) : "Marker Type" : 0 : "Type of marker that will show up in the minimap." =
+	[
+		0 : "Tunnel Entrance"
+		1 : "Tunnel Exit"
+	]
+]
+
+ @PointClass base(Targetname, Angles,TeamNumber)
+	
+= citadel_final_objective_proxy : "Final objective. Unused. Do not use."
+ [ 
+     final_objective(target_destination) : "Final Objective"
+     sub_objective_1(target_destination) : "Sub-Objective 1"
+     sub_objective_2(target_destination) : "Sub-Objective 2"
+    sub_objective_3(target_destination) : "Sub-Objective 3"
+     sub_objective_4(target_destination) : "Sub-Objective 4"
+	 sub_objective_lane_1(choices) : "Sub-Objective Lane 1" : 1 =
+	 [
+		 0 : "None"
+		 1 : "Yellow"
+		 3 : "Orange"
+		 4 : "Blue"
+		 6 : "Purple"
+	]
+    sub_objective_lane_2(choices) : "Sub-Objective Lane 2" : 3 =
+	 [
+		 0 : "None"
+		 1 : "Yellow"
+		 3 : "Orange"
+		 4 : "Blue"
+		 6 : "Purple"
+	 ]
+     sub_objective_lane_3(choices) : "Sub-Objective Lane 3" : 4 =
+	 [
+		 0 : "None"
+		 1 : "Yellow"
+		 3 : "Orange"
+		 4 : "Blue"
+		 6 : "Purple"
+	 ]
+     sub_objective_lane_4(choices) : "Sub-Objective Lane 4" : 6 =
+	 [
+		 0 : "None"
+		 1 : "Yellow"
+		 3 : "Orange"
+		 4 : "Blue"
+		 6 : "Purple"
+	 ]
+	
+	 //Outputs
+     output BecomeActive(void) : ""
+    output FinalExposed(void) : ""
+     output FinalShielded(void) : ""
+     output SubObjective1Destroyed(void) : ""
+     output SubObjective1Revitilized(void) : ""
+     output SubObjective2Destroyed(void) : ""
+     output SubObjective2Revitilized(void) : ""
+ ]
+
+@PointClass base(Targetname, Angles) studio("models/heroes_staging/gen_man/gen_man.vmdl")
+	metadata
+	{
+	entity_tool_name = "Hero Testing Point"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Spawn positions for Hero Testing Bots."
+	}
+	= info_hero_testing_point :
+	"This entity spawns dummy bots." [
+	PointType(choices) : "Point Type" : 1 : "Determines what team the point will belong to." =
+	[
+		1 : "Combine/South/Sapphire Team"
+		3 : "Rebels/North/Amber Team"
+	]
+	MoveTarget(target_destination) : "Move Target" : "" : ""
+]
+
+@PointClass base(Targetname) iconsprite("materials/editor/point_commentary_node.vmat")
+	metadata
+	{
+	entity_tool_name = "Hero Testing Controller"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Enables Hero Testing Features in any map it is placed on"
+	}
+	= hero_testing_controller  : "This entity enables Sandbox Controls of any map it's placed on." [
+	//Inputs
+	input StartLaneTest(void) : "Start Lane Test"
+	input EndLaneTest(void) : "End Lane Test"
+	]
+
+@PointClass base(Angles) studio("models/editor/ground_node.vmdl") metadata
+	{
+	entity_tool_name = "Ability Test Bot"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Used in the tutorial map to demostrate bot abilities."
+	} = info_ability_test_bot []
+
+@PointClass base(Angles) studio("models/npc/sewer_beast/sewer.vmdl") metadata
+	{
+	entity_tool_name = "Orb Spawner"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Used in the map to spawn soul orbs."
+	} = citadel_herotest_orbspawner []
+	
+@PointClass base(Angles) studio("models/props_gameplay/rejuv_crystal_model.vmdl") metadata
+	{
+	entity_tool_name = "Rejuv Spawner (Hero Testing)"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Used in the map to spawn a hero testing rejuv."
+	} = citadel_item_pickup_rejuv_herotest_infospawn []	
+
+@PointClass metadata
+	{
+	entity_tool_name = "Minimap Boundary"
+	entity_tool_group = "Citadel Logic"
+	entity_tool_tip = "Used to set the boundaries for the minimap."
+	} = citadel_minimap_boundary : "One of two corners needed to define the minimap boundaries." []
+
+//--------------------------------------------------------------------------------------------------
+// Citadel Item Entities
+//--------------------------------------------------------------------------------------------------
+
+@PointClass base(Targetname, Angles) vdata_model{my_key = "subclass_name" vdata_key = "m_hModel" use_class_when_blank = true}
+	metadata
+	{
+	entity_tool_name = "Breakable Prop"
+	entity_tool_group = "Items"
+	entity_tool_tip = "Spawn positions for breakable Crates, Vases and Gold Statues"
+	}
+	= citadel_breakable_prop :
+	"Breakable props that contain pickups."
+[
+	subclass_name(subclass_choice:scripts/misc.vdata ) : "Breakable props" : "" : "Subclass of the prop."
+	scales(string) : "Scales" : "1 1 1"
+	initial_spawn_time_override(float) : "Override initial spawn time" : -1
+	respawn_time_override(float) : "Override respawn time" : -1
+]
+
+@PointClass base(Targetname, Angles) vdata_model{my_key = "subclass_name" vdata_key = "m_hModel" use_class_when_blank = true}
+	= citadel_breakable_prop_gold_pickup :
+	"Gold Pickups.Do not use."
+[
+	subclass_name(subclass_choice:scripts/misc.vdata ) : "Pickups" : "" : "Subclass of the pickup."
+	scales(string) : "Scales" : "1 1 1"
+]
+
+@PointClass base(Targetname, Angles) vdata_model{my_key = "subclass_name" vdata_key = "m_hModel" use_class_when_blank = true}
+	= citadel_breakable_prop_health_pickup :
+	"Health Pickups.Do not use."
+[
+	subclass_name(subclass_choice:scripts/misc.vdata ) : "Pickups" : "" : "Subclass of the pickup."
+	scales(string) : "Scales" : "1 1 1"
+]
+
+@PointClass base(Targetname, Angles) vdata_model{my_key = "subclass_name" vdata_key = "m_hModel" use_class_when_blank = true}
+	= citadel_breakable_prop_modifier_pickup :
+	"Modifier Pickups.Do not use."
+[
+	subclass_name(subclass_choice:scripts/misc.vdata ) : "Pickups" : "" : "Subclass of the pickup."
+	scales(string) : "Scales" : "1 1 1"
+]
+
+@PointClass studio("models/props_gameplay/idol_urn/idol_urn.vmdl")
+	metadata
+	{
+	entity_tool_name = "Soul Urn"
+	entity_tool_group = "Items"
+	entity_tool_tip = "Spawn positions for the Soul Urn"
+	}
+	= item_crate_spawn : "Used exclusively to spawn the Soul Urn."
+[
+    
+	loot_type(choices) : "Loot type" : 0 : "Sets the type of loot to spawn." =
+	[
+		0 : "Soul Urn"
+		3 : "Team Creds (Unused)"
+	]
+	objective_position(choices) : "Objective position" : 0 : "Sets the position of the objective." =
+	[
+		0 : "Yellow Lane"
+        1 : "Purple Lane"
+		3 : "Middle Building (Unused)"
+	]
+	early_spawn(boolean) : "Spawn early?" : 0 : "Legacy Value, leave off."
+]
+
+@PointClass studio("models/npc/sewer_beast/sewer.vmdl")
+	metadata
+	{
+	entity_tool_name = "Power Up Spawner"
+	entity_tool_group = "Items"
+	entity_tool_tip = "This entity generates power ups periodically."
+	}
+	= citadel_item_powerup_spawner : "Spawns random power ups. In sandbox mode, this entity will alternate between multiple power up types." 
+	[
+        subclass_name(subclass_choice:scripts/misc.vdata ) : "Pickups" : "" : "Subclass of the pickup."
+	]

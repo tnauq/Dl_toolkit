@@ -3,7 +3,18 @@
 Extracted from a helper's retail Deadlock install, 2026-08-29. Trimmed from
 404 files / 205 MB down to the 22 that are useful to this project.
 
-## THE HEADLINE: there is no citadel.fgd in a retail install
+## UPDATE, later the same day: we have the FGD
+
+A copy turned up in the helper's own storage and is committed here as
+`citadel.fgd` (114,917 bytes, 2,123 lines, 197 class declarations). Read
+`docs/FINDINGS-fgd-2026-08-29.md` for what it answered.
+
+The section below still stands and is still worth knowing: the file is NOT
+part of a retail install, so this copy came from a tools or community
+distribution. It carries hand annotations, which is why FINDINGS treats its
+absences as weak evidence and its presences as strong.
+
+## THE ORIGINAL HEADLINE: there is no citadel.fgd in a retail install
 
 `find -iname '*.fgd'` over the whole retail `game/citadel` tree returned
 NOTHING. This is not a mistake by whoever sent it.

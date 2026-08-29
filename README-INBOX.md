@@ -1,84 +1,92 @@
-# Inbox drop — retail reference files, and a workflow to find the FGD (2026-08-29)
+# Inbox drop — citadel.fgd, and the fixes it forced (2026-08-29)
 
-Two things, no deletions, nothing replaced.
+**This supersedes the earlier drop from the same day.** If that one was never
+applied, this contains all of it plus the FGD work. If it was applied, this
+overwrites the same files with newer content. Either way, apply this one.
 
-    .github/workflows/csdk-fgd-check.yml    new workflow
-    docs/reference/citadel/                 new directory, 22 files
+    batch16.py                          MODIFIED - the exitpoint fix, + notes
+    tools/preflight.py                  MODIFIED - exitpoint in REF_KEYS
+    tools/fix_exitpoint.py              NEW - migrates the committed plan
+    docs/FINDINGS-fgd-2026-08-29.md     NEW - the full reading
+    docs/reference/citadel/citadel.fgd  NEW - the file itself
+    docs/reference/citadel/             retail reference files + README
+    .github/workflows/csdk-fgd-check.yml  NEW - now mainly a shader check
 
-## THE FINDING: citadel.fgd is not in a retail install
+`batch16.py` and `tools/preflight.py` were taken from `repo-dump-4`, and both
+round-tripped to a **byte-exact sha1 match against `repo-manifest.md`** before
+being edited, so these are true modifications of the committed files rather
+than reconstructions. Both parse.
 
-A helper sent their whole retail `game/citadel` folder. `find -iname '*.fgd'`
-over 404 files returned NOTHING.
+## Run this after applying
 
-This is not their mistake. `gameinfo.gi` line 194 declares
+    python3 tools/fix_exitpoint.py
 
-    "fgd"   "citadel.fgd"   // NOTE: This is relative to the 'game' path.
+`docs/plans/dust2_full.json` is a committed artifact built before the FGD
+arrived, so its four teleport triggers still carry the old key. The tool is
+idempotent, refuses to touch `trigger_catapult` (which uses `target`
+correctly), and verifies every destination resolves before writing. Re-running
+the whole batch chain would also work and is the more honest fix.
 
-so the game expects it at the game path and it still is not shipped there.
-It is a tools-side file. That agrees with what CI already found from the
-other direction — GameTracking ships no `.fgd` at all, and the compiler said
-`Unable to find fgd file citadel.fgd!`.
+## THE BUG THIS CAUGHT
 
-**Do not ask a player for it again.** It is not on their disk.
-`docs/one_file_please.md` and `docs/zip_citadel_folder.md` both send someone
-looking for a file that is not there, and should be amended or retired.
+The teleporter's destination keyvalue is **`exitpoint`**, not `target`. We had
+`target` — the Source convention, flagged in the code as a guess. It was
+wrong, and it fails **silently**: no compile error, you walk into the trigger
+and nothing happens. This was going to cost a desktop session.
 
-## The workflow
+It also would have broken the mirror. `twin_of` prefixes every key that names
+another entity, and `exitpoint` was not in that list, so both mirrored
+triggers would have pointed at the original half's destination. Fixed too.
 
-`csdk-fgd-check` (`workflow_dispatch`) searches the ONE place nobody has
-looked: the `csdk-12` release this repo already downloads on every compile
-run. The FGD is a tools-side file and the CSDK is the tools. It may have been
-sitting in the cache the whole time.
+## The other reversal: titan means PATRON
 
-It reuses the `csdk-12-v1` cache key, so on a warm cache it is nearly free.
-No compile, no wine, no timeout risk. Any FGDs found are uploaded as the
-`csdk-fgds` artifact; the step sets `citadel=yes/no`.
+`npc_boss_tier3` is tool-named "Patron" and described as "Tier3 Bosses/Titans/
+Patrons". `destroyable_building` is tool-named "Base Shrine". So this
+morning's titan = shrine reading had the right entity and the wrong word.
 
-**Read the listing even on a miss** — a differently-named FGD could still
-carry the citadel entity definitions, so the job warns rather than passing
-silently.
+**No code changed for this.** `minimap.py` already labels them Shrine and
+Patron, and `PROXY_SUBS` still correctly points the sub-objectives at the
+shrines. Only comments. But the next handoff should not repeat the claim.
 
-### The side question it also settles
+## READ THIS BEFORE THE FIRST COMPILE
 
-While the tree is unpacked it counts `.vcs` and `.vfx`. SHIPPING.md asserts
-the Reduced CSDK ships no shaders and that this is the sole reason CI cannot
-compile — but that is read off community docs, and the only direct evidence
-has ever been the compiler complaining about `complex.vfx`.
+The FGD says of `npc_boss_tier3`: *"Make sure to use cover groups for each of
+the boss states, otherwise the game will be unbeatable."* We emit
+`CoverGroupID`, `dying_cover_id` and `vulnerable_cover_id` all **empty**.
+That needs `info_cover_point` groups authored — real work, not a keyvalue.
+It is flagged in the code and belongs at the top of the next handoff.
 
-If a `complex.vcs` turns out to be present, the failure is a search-path
-problem rather than a missing file, and **the depot pull may not be needed at
-all**. Worth knowing before anyone spends an afternoon on DepotDownloader.
+## Confirmed without needing a compile
 
-## What landed in docs/reference/citadel/
+- **Jump pads arc, they do not blink.** `trigger_catapult` is a
+  "Bouncepad/Fan Trigger" with `launch_speed` (default 1000, we use 800) and
+  `target` → `info_target_server_only`. One of SHIPPING.md's three
+  first-compile questions, answered off the file.
+- **Probe spellings.** `citadel_trigger_teleport` is the only teleporter
+  candidate that exists; all three sinner candidates are absent. Verdicts
+  recorded per line. `SPELLING_PROBE` was already off.
+- **Lane 0 is legal** on the proxy's sub-objectives, so our zeroes were right,
+  and the four slots are a four-lane artifact — the colour list still has
+  Blue in it, and the FGD declares outputs for slots 1 and 2 only.
 
-Trimmed 205 MB / 404 files down to 22. The keeper is `gameinfo.gi`:
-SHIPPING.md says addon search paths plus an AddonRoot section are required
-for a community-SDK map to load, and that a wrong brace gives
-"Failed to parse KeyValues". This is the unmodified retail file to diff that
-edit against. `SearchPaths` at line 64, `Game citadel` / `Game core` at 73-74.
+## Corrections to things we believed
 
-Also `steam.inf` for build provenance, the 14 `citadel_*.cfg` mode configs
-(the sandbox and dev-intro ones are the closest thing to a documented way to
-boot into a map alone, which is the first-compile scenario), and four convar
-schema/default files.
+- **Sinner is not the vault.** `ENeutralTrooperType` lists 6 "Sinner's
+  Sacrifice" and 12 "Breakable Vault" as different values.
+- **Camp spawn timings are inert** — both keys commented out and annotated
+  "Unused" in the FGD. The tier-to-interval mapping does not matter.
+- **`building_health` and `final` on the shrine are marked "(Broken)".**
+- **`citadel_final_objective_proxy` is marked "Unused. Do not use."** Nothing
+  else in the file is. Emission unchanged, but see the open questions.
 
-Dropped: the helper's personal data — `account_*.stats`, `cache_*.soc`, every
-`user_convars_*` and `user_keys_*` slot, `video.txt`, and nine dated folders
-of `rpt/` crash reports — plus 180 MB of CJK fonts, 35 localizations, and the
-controller `.vdf` mappings. `maps/` and `bin/win64/` held no files at all.
-The kept files were grepped for the account IDs; clean.
+## Deliberately NOT changed
 
-See `docs/reference/citadel/README.md` for the per-file rationale.
+Four judgement calls were left alone rather than guessed at, with the reading
+recorded beside each in the code: whether to emit `objective` / `TeamNumber` /
+`LaneNumber` on `info_teleport_location`; whether to move the sinners to a
+type-6 camp and under which subclass; whether to keep emitting the proxy; and
+whether `npc_boss_tier3.BossName` must conform to its two-value enumeration.
 
-## Also settled this session, for whoever writes the next handoff
-
-Titan is the SHRINE, confirmed on a second reading: it is the destroyable
-building shielding the Patron, and destroyable_building is the class every
-shrine in the plan already uses. The fixture proxy's four sub-objective slots
-at lanes 1/3/4/6 are a FOUR-LANE ARTIFACT, not a count — dl_example is a
-four-lane map, this one is three. That reconciles the tension that kept the
-question open, and it also means two filled slots with an empty pair is the
-expected shape rather than a gap.
-
-`HANDOFF_20260829.md` still lists "whether titan means shrine or walker" as
-unknown. It can move to the settled section.
+Also unchanged: `npc_boss_tier1` is absent from this FGD, but dl_example is
+full of them, so that is an FGD gap and not a fault in our plan. This file is
+annotated by hand — its presences are strong evidence, its absences weak.

@@ -61,7 +61,11 @@ X_PLANE = 460.1
 Y_PLANE = 6085.05
 PREFIX = "m_"
 
-REF_KEYS = ("target", "final_objective", "sub_objective_1",
+# `exitpoint` is the teleporter's destination key, READ off citadel.fgd
+# 2026-08-29. It replaced `target` on citadel_trigger_teleport, which was a
+# guess at the Source convention. `target` stays in this list because
+# trigger_catapult really does use it - the FGD confirms that one.
+REF_KEYS = ("target", "exitpoint", "final_objective", "sub_objective_1",
             "sub_objective_2", "sub_objective_3", "sub_objective_4")
 
 # Coordinates beyond this are almost certainly a units mistake rather than a
@@ -130,8 +134,8 @@ def main():
         fail.append("%d reference(s) to entities that do not exist: %s"
                     % (len(dangling), "; ".join(sorted(dangling))[:240]))
     else:
-        log.append("every target, final_objective and sub_objective "
-                   "resolves")
+        log.append("every target, exitpoint, final_objective and "
+                   "sub_objective resolves")
 
     # 4. empty model where the class uses one
     models = defaultdict(set)

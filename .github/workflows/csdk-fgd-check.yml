@@ -1,4 +1,12 @@
-# Does the Reduced CSDK 12 ship citadel.fgd?
+# Does the Reduced CSDK 12 ship citadel.fgd? (and: does it ship shaders?)
+#
+# STATUS 2026-08-29: THE FGD QUESTION IS CLOSED. A copy turned up in a
+# helper's own storage and is committed at docs/reference/citadel/citadel.fgd.
+# This job is kept and still worth running for TWO reasons: it says whether
+# the CSDK carries its own copy (so a compile finds one without our staging
+# it), and it settles the shader question in the second step, which is the
+# thing actually blocking a compile. Compare any FGD it finds against the
+# committed one - a different sha means one of them is stale.
 #
 # WHY THIS EXISTS. The FGD is the only thing that gives entity KEYVALUES —
 # the entity list gives classnames only. Everything still open in NEXT.md is
