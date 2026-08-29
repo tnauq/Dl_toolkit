@@ -1,0 +1,10 @@
+"config"
+{
+	"convars"
+	{
+		"cl_updaterate"		"128"
+		"rate"		"196608"
+		"sv_parallel_checktransmit" "2"
+		"r_texture_budget_threshold" "0.80"
+	}
+}
