@@ -1,81 +1,82 @@
-# Night mode, revised with base.fgd in hand
+# Night mode on midboss death
 
-Supersedes the lighting half of `docs/LID-DOORS-LIGHTING.md`. Everything
-below is read off `base.fgd` and `postprocessing.fgd`, now committed under
-`docs/reference/citadel/`.
+Read off `base.fgd`, `postprocessing.fgd` and `citadel.fgd`, all committed
+under `docs/reference/citadel/`. Supersedes the lighting half of
+`docs/LID-DOORS-LIGHTING.md`.
 
-## The lever is fog, not the sun
+## The transition is a SNAP, by choice
 
-`env_fog_controller` (base.fgd) is the strongest thing available, because it
-has a **transition system built in**:
+Decided 2026-08-29: the change is instant, timed to land with the global
+midboss death sound. It is a rare event, and a hard cut reads as an event
+rather than as weather.
 
-    SetColorLerpTo        SetColorSecondaryLerpTo
-    SetStartDistLerpTo    SetEndDistLerpTo
-    SetMaxDensityLerpTo   Set2DSkyboxFogFactorLerpTo
-    StartFogTransition    <- fires the lerp
+This simplifies the design considerably, so it is worth being explicit about
+what is NOT being used:
 
-So: set every LerpTo value, then fire `StartFogTransition`, and the fog eases
-from day to night rather than snapping. It also has plain `SetColor`,
-`SetStartDist`, `SetEndDist`, `SetFarZ`, `SetMaxDensity`, `TurnOn`/`TurnOff`.
+- `env_fog_controller`'s lerp system - `SetColorLerpTo`,
+  `SetEndDistLerpTo`, `SetMaxDensityLerpTo`, `StartFogTransition`. Available,
+  deliberately unused. If the snap turns out to read as a glitch rather than
+  an event, this is the fallback and it is a change of inputs, not of
+  structure.
+- `post_processing_volume`'s `fadetime`, which should be set to **0** for the
+  same reason. Its default is 1.0, so leaving it alone would give a
+  one-second fade that fights the sound cue.
 
-`env_volumetric_fog_controller` and `env_volumetric_fog_volume` exist too, if
-the flat fog is not enough.
+Everything below is the instant form.
 
-## The sun, second
+## The three levers
 
-`env_global_light` (citadel.fgd) takes `LightColor`, `SetAngles`, `SetFOV`,
-`EnableShadows`, plus `Enable`/`Disable` from its base. Recolouring and
-re-aiming it changes direct light and shadow direction. It has no lerp, so
-any change here is instant — one reason fog carries the transition.
+**Fog** - `env_fog_controller` (base.fgd). Plain setters, no lerp:
+`SetColor`, `SetColorSecondary`, `SetStartDist`, `SetEndDist`,
+`SetMaxDensity`, `SetFarZ`, `TurnOn`/`TurnOff`. This carries most of the
+effect. `env_volumetric_fog_controller` and `env_volumetric_fog_volume` are
+there too if flat fog is not enough.
 
-## Post-processing, third
+**Sun** - `env_global_light` (citadel.fgd). `LightColor`, `SetAngles`,
+`SetFOV`, `EnableShadows`, plus `Enable`/`Disable` from its base. It has no
+lerp at all, so it was always going to snap; the rest now matches it.
 
-`post_processing_volume` (postprocessing.fgd) is a **solid** entity based on
-`Trigger`, so it takes `Enable`/`Disable`. It carries a `.vpost` resource
-plus exposure controls and — the useful part —
-**`fadetime`, "Time to transition to these postprocessing settings in
-seconds"**. Set `master` to 1 for an unbounded volume covering the map.
-
-Two of these, day and night, one enabled at a time, is the cleanest switch in
-the whole design.
+**Post-processing** - `post_processing_volume` (postprocessing.fgd). A solid
+entity based on `Trigger`, so it takes `Enable`/`Disable`. Set `master` to 1
+for an unbounded volume and `fadetime` to 0. Two of these, day and night, one
+enabled at a time, is the cleanest switch in the design.
 
 ## THE SKY DOES NOT CHANGE
 
-`env_sky` declares **no inputs at all**. `skyname`, `tint_color` and
-`brightnessscale` are set at author time and stay. So the sky material is
-fixed for the match and the night look has to come from fog, sun and
-post-processing under an unchanged sky.
+`env_sky` declares **no inputs**. `skyname`, `tint_color` and
+`brightnessscale` are author-time only. The sky material is fixed for the
+match, and night has to come from fog, sun and post-processing underneath an
+unchanged sky.
 
-Incidental confirmation: `skyname(resource:material)` with an
-`initial_filter_string` of `materials/skybox/` is exactly what batch16
-already emits, so that key was right.
+If a visibly different sky matters, the only route is a second `env_sky` and
+a `Kill` on the first - permanent, one-way, and it cannot come back for the
+day state. Not recommended.
 
-## The wiring, and the timer
+Incidental: `skyname(resource:material)` filtered to `materials/skybox/` is
+exactly what batch16 already emits, so that key was right.
 
-`logic_relay` (base.fgd) is confirmed: inputs `Trigger`, `Toggle`,
-`CancelPending`; outputs `OnSpawn`, `OnTrigger`. `logic_timer` exists as
-well, and `logic_auto` for the initial state.
+## Wiring
 
-`Kill` is confirmed too, on the `GameEntity` base class, which is why it
-appears in twelve fixture connections and nowhere in citadel.fgd. **Every
-entity answers Kill.** That closes the lid's only open question in principle
-— though which brush class to use is still worth reading off the probe.
-
-The X-minute revert needs no timer entity, since `delay` is a field on every
-connection:
+`logic_relay` (base.fgd): inputs `Trigger`, `Toggle`, `CancelPending`;
+outputs `OnSpawn`, `OnTrigger`. `Kill` is on the `GameEntity` base, so every
+entity answers it.
 
     midboss_camp  OnTrooperKilled -> night_relay . Trigger   delay 0
     midboss_camp  OnTrooperKilled -> day_relay   . Trigger   delay 300
 
-A relay per state keeps the wiring in one place: each relay's `OnTrigger`
-fans out to the fog controller, the global light and the post-processing
-volumes. Around 8-10 connections total, all of them shapes `batch15.wire()`
-already emits.
+`delay` is a field on every connection, so the X-minute revert needs no timer
+entity. Each relay's `OnTrigger` then fans out to the fog controller, the
+global light and the two post-processing volumes - roughly 8-10 connections
+in total, every one of them a shape `batch15.wire()` already emits.
 
-## What is still unknown
+**The fixture backs this pattern**: it fires `OnTrooperKilled -> <relay> .
+Trigger` nine times. A camp driving a relay is exactly what dl_example does.
 
-- Whether the fog lerp inputs behave over a baked map in Deadlock
-  specifically. base.fgd is the generic Source 2 table.
-- What a sensible `.vpost` is, and whether one has to be authored.
-- Whether the midboss camp fires `OnTrooperKilled` at all here — the fixture
-  camp has both spawn timings at -1. The probe answers this.
+## Open
+
+- `FastRetrigger` on `logic_relay` - without it a relay waits for everything
+  downstream to finish before it can fire again. With a 300 s gap that will
+  not matter, but if night is ever shortened it might.
+- Whether the midboss camp fires `OnTrooperKilled` here at all. The fixture's
+  midboss camp carries both spawn timings at -1.
+- What a sensible `.vpost` looks like, and whether one has to be authored.

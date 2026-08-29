@@ -282,6 +282,7 @@ jobs:
           root = {'type': 'ROOT', 'id': None, 'attrs': {}, 'kids': [],
                   'refs': [], 'line': 0}
           stack = [root]
+          frames = []
           pending = None
           by_id = {}
           all_elements = []
@@ -291,12 +292,26 @@ jobs:
               if not t:
                   continue
 
+              # BRACKETS ARE NOT BRACES. The first working parser popped the
+              # element stack on ']' as well as '}', but only ever PUSHED on
+              # '{'. Every array in the file therefore popped an element that
+              # was never pushed, the tree collapsed, and all 89 connections
+              # inherited the classname of whatever element happened to be
+              # left on the stack - which is how run 2 reported 89 x
+              # `point_worldtext`. Frames record what each opener was so the
+              # matching closer pops the right thing.
+              if t[0] == '[':
+                  frames.append('A')
+                  continue
+
               if t[0] in '}]':
-                  if len(stack) > 1:
+                  f = frames.pop() if frames else None
+                  if f == 'E' and len(stack) > 1:
                       stack.pop()
                   continue
 
               if t.startswith('{'):
+                  frames.append('E')
                   e = pending or {'type': '?', 'id': None, 'line': i + 1,
                                   'attrs': {}, 'kids': [], 'refs': []}
                   stack[-1]['kids'].append(e)
@@ -426,6 +441,18 @@ jobs:
 
           print('method A attributed %d, method B attributed %d, of %d'
                 % (len(owner_a), len(owner_b), len(conns)))
+
+          # RUN 2 REPORTED ALL 89 CONNECTIONS OWNED BY point_worldtext and
+          # called it a clean result, because a bracket bug had collapsed the
+          # tree and every connection inherited one classname. One owner for
+          # every connection in a 2.3M-line map is not a finding, it is a
+          # parser failure, and it is cheap to notice.
+          distinct = {v[0] for v in list(owner_a.values()) + list(owner_b.values())}
+          if len(conns) > 10 and len(distinct) <= 1:
+              print('::error::every connection resolved to the same owner '
+                    '(%s). That is a collapsed tree, not a map. Read '
+                    'out/structure.md.' % (', '.join(distinct) or 'none'))
+              raise SystemExit(1)
 
           rows, disagree, unattributed = [], [], []
           for c in conns:
