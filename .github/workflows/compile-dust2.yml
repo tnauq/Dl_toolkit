@@ -340,6 +340,38 @@ jobs:
           grep -iE "light|bake|fast|quality|skip|threads|nolight|draft" \
             out/usage.txt | head -40 || echo "(nothing matched)"
 
+      # ONE MATERIAL, ON A FIVE MINUTE LEASH.
+      #
+      # Three runs have now stopped at the same line - "Failed loading
+      # resource materials/dev/reflectivity_30.vmat_c" - and then produced
+      # nothing until the timeout, at six boxes and at 4700 alike. Authoring
+      # the material as source did not change it: the compiler never tried to
+      # build it.
+      #
+      # So before another map compile, compile A SINGLE MATERIAL and nothing
+      # else. If that works, content compiling is fine and the map compile is
+      # stuck on something after it. If that hangs too, then this compiler
+      # cannot build anything in this environment and the CI route is dead -
+      # which is worth knowing in five minutes rather than five hours.
+      - name: Compile one material alone
+        continue-on-error: true
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          cd build/game
+          RC=0
+          timeout 300 "${{ steps.get.outputs.comp }}" \
+            -game citadel -nop4 -v \
+            -i "../content/citadel/materials/dev/reflectivity_30.vmat" \
+            > "$ROOT/out/compile_mat.txt" 2>&1 || RC=$?
+          cd "$ROOT"
+          echo "material compile exit: $RC" | tee -a out/compile_mat.txt
+          tail -40 out/compile_mat.txt
+          echo "--- did it produce anything? ---"
+          find build -name '*.vmat_c' | head
+
       - name: Compile
         timeout-minutes: 320
         shell: bash
