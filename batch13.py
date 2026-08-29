@@ -101,6 +101,17 @@ def lane_colour(lane):
     return LANE_COLOUR.get(lane, "lane" + lane)
 
 
+# NAMES THAT ARE NOT OURS TO BUILD. citadel.fgd enumerates the guardian's
+# BossName as a fixed list using the SINGULAR "rebel", so the rebels <->
+# combine rule below matches neither half of the pair, falls through, and
+# would prefix the twin's to "m_boss_rebel_t1_yellow" - off the enumeration
+# and naming the wrong team. Added 2026-08-29 with the guardian switch.
+EXPLICIT_SWAPS = {}
+for _c in ("yellow", "orange", "blue", "purple"):
+    EXPLICIT_SWAPS["boss_rebel_t1_%s" % _c] = "boss_combine_t1_%s" % _c
+    EXPLICIT_SWAPS["boss_combine_t1_%s" % _c] = "boss_rebel_t1_%s" % _c
+
+
 def team_swap(name):
     """Swap the team word in a targetname, for the mirrored copy.
 
@@ -112,6 +123,8 @@ def team_swap(name):
     """
     if not name:
         return name
+    if name in EXPLICIT_SWAPS:
+        return EXPLICIT_SWAPS[name]
     if TEAM_WORD_A in name:
         return name.replace(TEAM_WORD_A, TEAM_WORD_B, 1)
     if TEAM_WORD_B in name:
@@ -199,6 +212,10 @@ def mirror_angles(a):
 # and the vdata shows the pair differing only in model and scale. So the
 # mirror has to swap these the same way it swaps teamnumber - a twin left on
 # the team-2 subclass renders in the wrong colours.
+# npc_boss_tier1 stays in this table although nothing emits it any more
+# (guardians became info_super_trooper_spawn 2026-08-29). It costs nothing,
+# and if a guardian ever needs the NPC placed directly the pairing is already
+# read and correct.
 TEAM_SUBCLASS = {
     "npc_boss_tier1": "alt_npc_boss_tier1",
     "npc_boss_tier3": "alt_npc_boss_tier3",
@@ -764,65 +781,68 @@ def build_objectives():
         if kind == "guardian":
             out.append({
                 "name": "guardian_l%s" % lane,
-                # CORRECTED AGAIN 2026-08-27, from npc_units.vdata itself:
+                # CORRECTED 2026-08-29. Was npc_boss_tier1. THE GUARDIAN IS
+                # NOT PLACED AS AN NPC - it is placed as a spawn marker.
                 #
-                #   npc_boss_tier1  boss_tier_01_brazier_guardian.vmdl   5500
-                #   npc_boss_tier3  patron_amber.vmdl   12000, m_nPhase2Health,
-                #                   Patron.Phase1.Transform.Start, phase 1 and
-                #                   phase 2 lasers, a dying sequence
+                # citadel.fgd tool-names info_super_trooper_spawn "Lane
+                # Guardian", gives it the brazier guardian editor model, and
+                # says: "For Lane Guardians, one of these needs to be placed
+                # on their respective lane with an unique BossName that
+                # matches their lane and team."
                 #
-                # npc_boss_tier3 IS THE PATRON. Using it here put six patrons
-                # on the map, one per lane per team. The lane objective - the
-                # brazier guardian - is npc_boss_tier1.
+                # The connection probe agrees and is decisive. All NINE
+                # guardian-closes-the-shop wires in dl_example are owned by
+                # info_super_trooper_spawn firing OnTrooperKilled. Not one is
+                # owned by a boss NPC. The fixture census has 17 of these and
+                # ZERO npc_boss_tier1.
                 #
-                # The 2026-08-23 note this replaces was reasoned from the
-                # fixture: tier3 was the only objective class dl_example wired
-                # an output on. That was true and still is; it just does not
-                # mean tier3 is the guardian. The gym contains one of each
-                # thing, and its tier3 is its patron.
-                #
-                # npc_barrack_boss is unchanged and still not this: it is the
-                # pair guarding a shrine in the base.
-                "classname": "npc_boss_tier1",
+                # WHY npc_boss_tier1 LOOKED RIGHT, because the earlier
+                # reasoning was not careless: npc_units.vdata really does
+                # carry npc_boss_tier1 with the brazier guardian model and
+                # 5500 health. But npc_units.vdata lists UNITS, not map
+                # entity classes. The unit is what gets spawned; the marker
+                # is what you place. citadel.fgd draws the same distinction
+                # elsewhere - of npc_trooper_boss it says "creates a Tier1
+                # boss directly. Use info_trooper_boss_spawn instead."
+                # npc_boss_tier1 is absent from citadel.fgd entirely.
+                "classname": "info_super_trooper_spawn",
                 "origin": list(origin),
                 "angles": face_centre(origin),
                 "surveyed_on": box,
-                # KEY SET READ 2026-08-23, not copied. dl_example's two
-                # npc_boss_tier3 carry exactly ten keys and all ten are here.
-                # Three were missing from the earlier tier2-shaped guess:
-                # BackdoorProtectionTrigger, dying_cover_id and
-                # vulnerable_cover_id.
+                # KEY SET IS THE FGD'S, and it is much smaller than the NPC
+                # one it replaces. The class derives from Targetname, Angles,
+                # TeamNumber and LaneNumber and adds four keys of its own.
+                # Everything that went with the NPC - vscripts,
+                # BackdoorProtectionTrigger, subclass_name, dying_cover_id,
+                # vulnerable_cover_id - does not exist here and is gone.
                 #
-                # TARGETNAME IS EMPTY in both of dl_example's, which use
-                # BossName as the identity instead. That is followed here,
-                # because BossName is what the fixture keys on and an
-                # invented targetname could collide with something the game
-                # looks up. NOTE that this makes the objective unaddressable
-                # by entity IO from anything except its own outputs, which is
-                # fine: it drives the shop relay rather than being driven.
+                # BOSSNAME IS AN ENUMERATION, not a name we compose. The FGD
+                # lists exactly eight values, boss_<team>_t1_<colour>, using
+                # the SINGULAR "rebel". The old "%s_t1_boss_%s" spelling was
+                # ours and matched nothing. The twin's value comes from
+                # EXPLICIT_SWAPS at the top of this file, because the generic
+                # rebels<->combine rule cannot see "rebel".
                 #
-                # SUBCLASS_NAME IS PER TEAM: npc_boss_tier1 for team 2 and
-                # alt_npc_boss_tier1 for team 3. The vdata shows the two are
-                # identical in every value that matters - same model, same
-                # 5500 health, same scale - so the split is bookkeeping, but
-                # it is what the fixture does. flip_team does not touch
-                # subclass_name, so the twin is corrected in
-                # build_objectives' mirror step below.
+                # BossName is also the identity here: targetname stays empty,
+                # following the fixture, and the objective is addressed by
+                # BossName. Its OnTrooperKilled output is what batch15 wires
+                # to the shop relay.
                 #
-                # The cover ids are UNSET rather than invented. dl_example
-                # carries real values (CoverGroupID 4321 / 1234), which look
-                # like references into cover groups this map does not have.
+                # SecondaryBoss 0 - the FGD says it is "Not yet used in any
+                # official map". ReinforcementsOnly 0 - these are guardians,
+                # not the reinforcement spawns. See the note in batch13's
+                # header about reinforcement spawns, which are the SAME class
+                # with this flag set and are a separate open question.
                 "properties": {
                     "targetname": "",
-                    "vscripts": "",
                     "teamnumber": TEAM_A,
                     "lanenum": lane,
-                    "BackdoorProtectionTrigger": "",
-                    "BossName": "%s_t1_boss_%s" % (TEAM_WORD_A, lane_colour(lane)),
-                    "subclass_name": "npc_boss_tier1",
-                    "CoverGroupID": "",
-                    "dying_cover_id": "",
-                    "vulnerable_cover_id": "",
+                    "BossName": "boss_%s_t1_%s" % (
+                        "rebel" if TEAM_WORD_A == "rebels" else TEAM_WORD_A,
+                        lane_colour(lane)),
+                    "SecondaryBoss": "0",
+                    "ReinforcementsOnly": "0",
+                    "CoverGroupID": "0",
                 },
             })
         else:

@@ -32,7 +32,8 @@ WHAT IS A DESIGN DECISION AND NOT A READING. Two things, both the user's
 
   1. LANE OBJECTIVES KILL THEIR OWN LANE'S SHOP. dl_example wires an
      info_super_trooper_spawn's OnTrooperKilled into the kill relay instead.
-     Here the npc_boss_tier1 standing in the lane does it directly, so a
+     Here the info_super_trooper_spawn that places the lane guardian does
+     it directly, so a
      lane's shop dies with the objective that holds the lane.
 
   2. SHRINES UPGRADE TROOPERS. Not implemented below, because there are no
@@ -95,19 +96,27 @@ def team_swap(name):
 # logic_auto_citadel OnGameInProgress wire.
 GAME_START_DELAY = 15.0
 
-# READ from dl_example: npc_boss_tier3 fires OnBossKilled.
+# CORRECTED 2026-08-29 by the connection probe, from OnBossKilled.
 #
-# STILL OnBossKilled after the 2026-08-27 correction, but the reasoning
-# changed. The lane guardian is now npc_boss_tier1, not tier3 - npc_units.
-# vdata shows tier3 is the PATRON (patron_amber.vmdl, phase 2, transform
-# sound) and tier1 is the brazier guardian at 5500 health.
+# All NINE guardian-closes-the-shop connections in dl_example are owned by
+# info_super_trooper_spawn firing OnTrooperKilled -> <shop>_kill_relay .
+# Trigger. Not one is owned by a boss NPC. The fixture's OnBossKilled wires
+# belong to npc_boss_tier3 and go to a counter, not to a shop.
 #
-# Nothing in dl_example wires an output on a tier1, so this is now an
-# ANALOGY rather than a reading: tier1 and tier3 are both bosses and
-# OnBossKilled is presumably the boss output. A WRONG OUTPUT NAME FAILS
-# SILENTLY - the map emits, the shop simply never closes - so this is the
-# first thing to check if lane shops stay open after a guardian dies.
-GUARDIAN_OUTPUT = "OnBossKilled"
+# citadel.fgd agrees: OnTrooperKilled is declared on exactly one class, and
+# that class is info_super_trooper_spawn - which the FGD tool-names "Lane
+# Guardian" and gives the brazier guardian editor model.
+#
+# batch13 now places guardians as info_super_trooper_spawn rather than
+# npc_boss_tier1, so THIS CONSTANT AND THAT CLASS HAVE TO MATCH. A right
+# output on a wrong entity and a wrong output on a right entity both fail
+# the same silent way: the map emits, verifies, loads, and the shop simply
+# never closes.
+#
+# The previous value was reasoned by analogy - tier1 and tier3 are both
+# bosses, so presumably both fire OnBossKilled - and was recorded as an
+# analogy rather than a reading. It is now a reading.
+GUARDIAN_OUTPUT = "OnTrooperKilled"
 
 # Which shops get a network, and which entity kills each one.
 #
@@ -373,8 +382,10 @@ def main(path):
     print("  entities %d (+%d, of which %d mirrored)"
           % (len(plan["entities"]), len(added) + len(twins), len(twins)))
     print("  connections %d" % conns)
-    print("\nGUARDIAN_OUTPUT = %r, read from dl_example's npc_boss_tier3."
+    print("\nGUARDIAN_OUTPUT = %r, read off dl_example's own connections:"
           % GUARDIAN_OUTPUT)
+    print("nine of them, all owned by info_super_trooper_spawn. This must")
+    print("match the class batch13 places for a guardian.")
     print("Names follow dl_example: rebels_/combine_ pairs, lane colours")
     print("yellow/orange/purple for lanes 1/3/6, and no m_ prefix on any")
     print("targetname. The m_ prefix is plan bookkeeping only.")

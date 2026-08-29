@@ -1,59 +1,79 @@
-# Inbox drop — the proxy goes back on (2026-08-29)
+# Inbox drop — guardians become spawn markers (2026-08-29)
 
-    batch16.py                                  MODIFIED - EMIT_PROXY = True
-    docs/FINDINGS-connections-2026-08-29.md     NEW
+    batch13.py          MODIFIED - guardian class, BossName, explicit swaps
+    batch15.py          MODIFIED - GUARDIAN_OUTPUT
+    tools/minimap.py    MODIFIED - legend lookup
 
-The third probe run worked: 89 of 89 attributed, no disagreements, owners
-varied and plausible.
+Option 1, taken in full. All three files round-tripped to a byte-exact sha1
+match against `repo-manifest.md` before editing. All three parse, and
+`build_objectives()` was run in isolation to check the result.
 
-## The headline: §13 was wrong, and the fixture says so
+## What changed
 
-`citadel_final_objective_proxy` carries **sixteen** connections in
-dl_example, despite citadel.fgd marking it "Unused. Do not use."
+The lane guardian is no longer placed as an NPC. It is placed as
+`info_super_trooper_spawn`, a spawn marker carrying a `BossName`.
 
-And two of them are `FinalShielded -> Trigger` and `FinalExposed ->
-Trigger` — **the proxy's own outputs**. The proxy computes the shielding from
-its sub-objectives and announces it. That is why `npc_boss_tier3` has no
-input: nothing has to tell the patron it is exposed.
+    guardian_l1   boss_rebel_t1_yellow   lane 1   team 2
+    guardian_l3   boss_rebel_t1_orange   lane 3   team 2
+    guardian_l6   boss_rebel_t1_purple   lane 6   team 2
 
-So the dead end in `FINDINGS-fgd-2026-08-29` §13 was an artifact of assuming
-the chain had to be hand-wired. It doesn't. `EMIT_PROXY` is back to `True`
-with the evidence recorded in the code, and the map has its win condition
-again.
+and the mirrored half gets `boss_combine_t1_*`, verified through `team_swap`.
 
-Only slots 1 and 2 are used, and the sub-objectives are named **left and
-right** rather than by lane — which is the shape `PROXY_SUBS = ["w", "e"]`
-with lane 0 already has.
+Three sources agree and none of them is the vdata:
 
-## The lid: mechanism confirmed, class unavailable
+- **citadel.fgd** tool-names the class "Lane Guardian", gives it the brazier
+  guardian editor model, and says a guardian needs one of these placed on its
+  lane with a unique BossName matching lane and team.
+- **The connection probe**: all nine guardian-closes-the-shop wires are owned
+  by this class firing `OnTrooperKilled`.
+- **The fixture census**: 17 `info_super_trooper_spawn`, zero
+  `npc_boss_tier1`.
 
-Twelve `OnDestroyed -> Kill`, owned by `destroyable_building`, three per
-shrine: a grate prop, a grate brush, a ladder brush.
+`GUARDIAN_OUTPUT` in batch15 is now `"OnTrooperKilled"`. These two changes
+had to land together — a right output on a wrong entity and a wrong output on
+a right entity fail the same silent way, with the map emitting and verifying
+green while the shop never closes.
 
-All twelve targets are **unresolved**, and this time that is a finding rather
-than a bug — other targets resolved fine. Every unresolved name carries a
-`125_` prefix or is a grate/ladder, which is the signature of **prefab-scoped
-entities**. They are not in dl_example.vmap, so the lid's brush class cannot
-be read from it.
+## Three details worth knowing
 
-`base.fgd` settles the mechanism anyway: `Kill` is on the `GameEntity` base,
-so every entity answers it. The brush class is now a choice — `func_brush` is
-the obvious one — rather than something to copy.
+**The key set shrank.** The old NPC carried ten keys; the marker takes seven,
+and `vscripts`, `BackdoorProtectionTrigger`, `subclass_name`,
+`dying_cover_id` and `vulnerable_cover_id` are gone because the class does
+not have them. `SecondaryBoss` and `ReinforcementsOnly` are new, both 0.
 
-## A correction that needs your call
+**BossName is an enumeration, not a name we compose.** The FGD lists eight
+values as `boss_<team>_t1_<colour>` using the SINGULAR "rebel". Our old
+`rebels_t1_boss_orange` matched none of them. The generic rebels↔combine swap
+cannot see "rebel", so batch13 now has an `EXPLICIT_SWAPS` table for the
+pair, same as batch16 needed for the patron's BossName.
 
-The nine guardian-closes-the-shop connections are owned by
-**`info_super_trooper_spawn`** firing `OnTrooperKilled`, not by a boss NPC
-firing `OnBossKilled`. citadel.fgd is explicit that this class is what places
-a lane guardian, via a `BossName` like `boss_rebel_t1_yellow`.
+**The minimap would have gone quiet.** Its Guardian legend looked up
+`npc_boss_tier1`, so after this change it would have drawn nothing and
+reported "Guardian" missing on a map with three per team. Updated.
 
-That makes two things wrong at once:
+## Why npc_boss_tier1 looked right, recorded rather than deleted
 
-- `batch15.GUARDIAN_OUTPUT = "OnBossKilled"` should be `"OnTrooperKilled"`.
-- Our guardians are `npc_boss_tier1`, a class that is **in neither
-  citadel.fgd nor the fixture census** (17 `info_super_trooper_spawn`, zero
-  `npc_boss_tier1`).
+The 2026-08-27 reasoning was not careless. `npc_units.vdata` really does
+carry `npc_boss_tier1` with the brazier guardian model at 5500 health. But
+that file lists **units**, not map entity classes. The unit is what gets
+spawned; the marker is what you place. citadel.fgd draws the same distinction
+of `npc_trooper_boss`: "creates a Tier1 boss directly. Use
+`info_trooper_boss_spawn` instead."
 
-They have to change together — a wrong output on a right entity and a right
-output on a wrong entity both fail silently — and the entity change is
-batch13's, not batch16's. Not made here. See §3 of the findings.
+`npc_boss_tier1` stays in batch13's `TEAM_SUBCLASS` table, unused, with a
+note — the pairing is read and correct if the NPC is ever placed directly.
+
+## Counts
+
+Entity count is unchanged: one class swapped for another, and the two proxies
+restored in the previous drop put `EXPECT_CLASSPROPS`/`EXPECT_PLUGLIST` back
+at **611**. `EXPECT_ELEMENTS: 87916` may move, since the guardians carry
+three fewer keyvalues each. Let the run report it rather than editing on a
+guess.
+
+## Still open, same block of batch13
+
+citadel.fgd says reinforcement spawns are the SAME class with
+`ReinforcementsOnly` set, one per four troopers under each zipline, and that
+without them troopers will not spawn. We emit `info_trooper_spawn` instead.
+Untouched here, but it now sits ten lines from code that knows the answer.

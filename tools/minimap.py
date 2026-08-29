@@ -16,7 +16,7 @@ differ, this file uses the plan and says so:
     Patron         npc_boss_tier3
     Shrine         destroyable_building
     Walker         npc_boss_tier2
-    Guardian       npc_boss_tier1 AND npc_barrack_boss, together
+    Guardian       info_super_trooper_spawn AND npc_barrack_boss, together
 
 CORRECTED 2026-08-27 from npc_units.vdata, which gives every class a model
 and a health: tier1 is the brazier guardian at 5500, tier2 the sun walker,
@@ -179,7 +179,13 @@ def main():
 
     missing = []
     # bosses, sized in chain order - see the header
-    guards = ents(plan, "npc_boss_tier1") + ents(plan, "npc_barrack_boss")
+    # info_super_trooper_spawn, not npc_boss_tier1, since 2026-08-29. The
+    # guardian is placed as a SPAWN MARKER carrying a BossName; the NPC named
+    # in npc_units.vdata is what the marker spawns, and is not an entity
+    # class at all. Looking up the old name here would draw an empty legend
+    # entry and report "Guardian" missing on a map that has three per team.
+    guards = (ents(plan, "info_super_trooper_spawn")
+              + ents(plan, "npc_barrack_boss"))
     if guards:
         mark(guards, "D", 55, team_colour, "Guardian")
     else:
