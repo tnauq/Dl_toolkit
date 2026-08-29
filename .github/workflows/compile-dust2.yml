@@ -88,15 +88,17 @@ env:
   # line - failing to load one of our two dev materials - and then produced
   # nothing more for the rest of their timeout.
   EXTRA_FLAGS: '-v'
-  # 270 minutes. The short leash existed to find a flag cheaply; there is no
-  # flag, so the only remaining question is whether it FINISHES, and that
-  # needs the time. GitHub allows six hours per job.
+  # FIVE MINUTES, not thirty. Every run so far has stopped producing output
+  # within the first minute and then sat there. A process that went quiet at
+  # minute one is no more informative at minute 270, and four runs have now
+  # paid that price.
   #
-  # If this hits the cap too, the answer is not more time - it is more cores.
-  # A standard runner is 2 cores and this job is almost pure ray tracing, so
-  # a larger runner would cut it close to linearly.
-  # 30 minutes. On a six box map this is either plenty or the answer is no.
-  TIMEOUT_MIN: '30'
+  # The STALL WATCHER in the compile step is what actually decides: it kills
+  # the compiler when the log stops growing, so a hang costs about a minute.
+  # Raise this only once something is seen to make progress.
+  TIMEOUT_MIN: '5'
+  # Kill the compiler when the log has not grown for this many seconds.
+  STALL_SECS: '60'
   # LEAN BUILD. The runner has two cores and Embree lights on the CPU, so the
   # cost is roughly the map's surface area. Measured on the current plan:
   #
@@ -353,6 +355,27 @@ jobs:
       # stuck on something after it. If that hangs too, then this compiler
       # cannot build anything in this environment and the CI route is dead -
       # which is worth knowing in five minutes rather than five hours.
+      # WHICH SHADERS ACTUALLY EXIST. The material compile failed instantly
+      # with "No valid vcs file found for shader complex.vfx" - a real,
+      # fast, named error, which is what a working compiler looks like. The
+      # shader name was my guess and it was wrong. Compiled shaders are .vcs
+      # files, so the ones this SDK has are on disk and can simply be listed
+      # rather than guessed at again.
+      - name: What shaders are available
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          echo "=== .vcs files in the CSDK ==="
+          find csdk -iname '*.vcs' 2>/dev/null | head -40
+          echo "=== unique shader names ==="
+          find csdk -iname '*.vcs' 2>/dev/null \
+            | sed 's#.*/##; s/_[^_]*\.vcs$//' | sort -u | head -40
+          echo "=== any .vfx ==="
+          find csdk -iname '*.vfx' 2>/dev/null | head -20
+          echo "=== shader-ish directories ==="
+          find csdk -type d -iname '*shader*' 2>/dev/null | head -10
+
       - name: Compile one material alone
         continue-on-error: true
         timeout-minutes: 10
@@ -385,12 +408,48 @@ jobs:
           # invocation probe compiler got working.
           SECS=$(( TIMEOUT_MIN * 60 ))
           echo "compiling for at most $TIMEOUT_MIN minutes, flags: '$EXTRA_FLAGS'"
+          RC=0
+          # THE STALL WATCHER. The compiler is started in the background and
+          # a watcher checks the log's size every 10 seconds. If it has not
+          # grown for STALL_SECS the compiler is killed and the run says so.
+          #
+          # This is the difference between learning "it stalls after the
+          # material line" in ninety seconds and learning the same thing in
+          # four and a half hours, which is what the last four runs did.
           timeout "$SECS" "${{ steps.get.outputs.comp }}" \
             -game citadel -nop4 $EXTRA_FLAGS \
             -i "../content/citadel/maps/$MAPNAME.vmap" \
-            > "$ROOT/out/compile.txt" 2>&1 || RC=$?
+            > "$ROOT/out/compile.txt" 2>&1 &
+          CPID=$!
+          LAST=0
+          QUIET=0
+          STALLED=0
+          while kill -0 "$CPID" 2>/dev/null; do
+            sleep 10
+            NOW=$(wc -c < "$ROOT/out/compile.txt" 2>/dev/null || echo 0)
+            if [ "$NOW" -eq "$LAST" ]; then
+              QUIET=$(( QUIET + 10 ))
+            else
+              QUIET=0
+              LAST=$NOW
+            fi
+            if [ "$QUIET" -ge "$STALL_SECS" ]; then
+              echo "STALLED: no output for ${QUIET}s, killing it" \
+                | tee -a "$ROOT/out/compile.txt"
+              STALLED=1
+              kill "$CPID" 2>/dev/null || true
+              break
+            fi
+          done
+          wait "$CPID" 2>/dev/null || RC=$?
+          [ "$STALLED" -eq 1 ] && RC=99
           cd "$ROOT"
           echo "exit: $RC" | tee -a out/compile.txt
+          if [ "$RC" -eq 99 ]; then
+            echo "::warning::the compiler went quiet for ${STALL_SECS}s and "\
+                 "was killed. The last lines of the log are where it stopped "\
+                 "- that is the whole finding, and it cost a minute."
+          fi
           if [ "$RC" -eq 124 ]; then
             echo "::warning::the compile hit the $TIMEOUT_MIN minute cap. It "\
                  "was not stuck - the first run reached Embree and kept "\
