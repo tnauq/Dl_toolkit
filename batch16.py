@@ -196,6 +196,20 @@ TIERS = {
               "trooper_type": "",                     # read, genuinely empty
               "creatures": 3,
               "initial_delay": "120", "interval": "120"},
+    # THE SINNER, split off from "vault" 2026-08-29 on your call. The FGD
+    # lists 6 "Sinner's Sacrifice" and 12 "Breakable Vault" as separate
+    # ENeutralTrooperType values, so the two are not the same camp.
+    # The type is READ. The subclass is BORROWED from the vault camp,
+    # because the FGD names no subclass for a sinner and neutral_camp_vaults
+    # is the closest real one - it is the only camp family member that is
+    # a static thing to break rather than a spawner of creatures. If the
+    # sinner comes out looking like a vault, this pairing is why.
+    # Timings copied from the vault camp, and inert either way (see the
+    # emission note in make_camp).
+    "sinner": {"subclass": "neutral_camp_vaults",     # borrowed, not read
+               "trooper_type": "6",                   # read, citadel.fgd
+               "creatures": 3,
+               "initial_delay": "120", "interval": "120"},
     # THE MIDBOSS IS A CAMP: there is no npc_ classname for it. Both timings
     # at -1, so it does not respawn on a clock.
     "midboss": {"subclass": "neutral_camp_midboss",   # read
@@ -495,8 +509,16 @@ PATRON = ("patron", [-17.8, -3810.9, 533.0], "hex_dais_0")
 # The fixture's proxy has four sub-objective slots on lanes 1, 3, 4 and 6.
 # This map has TWO shrines per team and they are not per-lane, so slots 3 and
 # 4 are left empty and every lane field is 0 - dl_example's own team-3 proxy
-# leaves its unused slots empty the same way. The lane fields being 0 is a
-# GUESS: nothing says what a non-lane sub-objective should carry.
+# leaves its unused slots empty the same way.
+#
+# THE LANE-0 GUESS WAS RIGHT, and the four slots turned out to be a four-lane
+# artifact rather than a count. citadel.fgd, 2026-08-29: 0 is "None" in the
+# choices list, and only slots 1 and 2 have outputs declared.
+#
+# ALSO: THE PROXY IS NO LONGER EMITTED. See EMIT_PROXY in main - the FGD
+# marks the class "Unused. Do not use." These readings are kept because they
+# are correct and because putting the proxy back for one compile is a
+# one-line change.
 PROXY_SUBS = ["w", "e"]
 
 # ---------------------------------------------------------------------------
@@ -749,8 +771,25 @@ LINK_KEYS = ("final_objective", "sub_objective_1", "sub_objective_2",
              "sub_objective_3", "sub_objective_4", "targetname", "BossName")
 
 
+# Names that are NOT ours to build and cannot be swapped by the rebels <->
+# combine rule below. citadel.fgd enumerates npc_boss_tier3.BossName as
+# exactly two values, and they use the SINGULAR "rebel" - so the generic rule
+# matches neither, falls through, and would prefix the twin's to
+# "m_boss_rebel_tier2_mid": off the enumeration, and pointing at the wrong
+# team besides. (The "tier2" inside a tier3 name is Valve's, not a typo.)
+EXPLICIT_SWAPS = {
+    "boss_rebel_tier2_mid": "boss_combine_tier2_mid",
+    "boss_combine_tier2_mid": "boss_rebel_tier2_mid",
+}
+
+# The base half is the rebels/north/amber side, so it takes the rebel value.
+PATRON_BOSSNAME = "boss_rebel_tier2_mid"
+
+
 def team_swap(name):
     """rebels <-> combine, anywhere in the string. batch13's own rule."""
+    if name in EXPLICIT_SWAPS:
+        return EXPLICIT_SWAPS[name]
     if TEAM_WORD in name:
         return name.replace(TEAM_WORD, TEAM_WORD_B, 1)
     if TEAM_WORD_B in name:
@@ -951,7 +990,12 @@ def main():
         # On npc_boss_tier2 the FGD annotates its BossName list "//purely
         # naming"; on THIS class it does not, so the enumeration may be load
         # bearing. UNCHANGED pending a decision - see the FGD findings doc.
-        "BossName": "%s_patron" % TEAM_WORD,
+        # CONFORMED TO THE ENUMERATION 2026-08-29. Was "rebels_patron", a
+        # name of our own. citadel.fgd allows exactly two values here and
+        # npc_boss_tier2's list is annotated "//purely naming" while this
+        # one is NOT, so the enumeration is treated as load bearing. The
+        # twin's value comes from EXPLICIT_SWAPS, not the generic rule.
+        "BossName": PATRON_BOSSNAME,
         "subclass_name": "npc_boss_tier3",
         # READ THIS BEFORE THE FIRST COMPILE. citadel.fgd on this class:
         # "Make sure to use cover groups for each of the boss states,
@@ -969,40 +1013,85 @@ def main():
     })
     sites.append((name, origin, note))
 
-    proxy = {
-        "targetname": "",
-        "final_objective": "%s_building_final" % TEAM_WORD,
-        "teamnumber": SPAWN_TEAM_OBJ,
-    }
-    # LANE 0 IS LEGAL, confirmed 2026-08-29. citadel.fgd makes each
-    # sub_objective_lane_N a choices field and lists 0 : "None" alongside
-    # 1 : "Yellow", 3 : "Orange", 4 : "Blue", 6 : "Purple". The zeroes below
-    # were a guess and the guess was right - a non-lane sub-objective is a
-    # case the schema anticipates.
+    # ---- the shrine -> patron chain -----------------------------------
     #
-    # AND THE FOUR SLOTS ARE A FOUR-LANE ARTIFACT, not a count. Those colour
-    # names are the four lanes of the old layout, Blue being the one that
-    # went away. Two filled slots plus an empty pair is the correct shape for
-    # a three-lane map, which the outputs corroborate: the FGD declares
-    # SubObjective1Destroyed/Revitilized and SubObjective2Destroyed/
-    # Revitilized and NOTHING for slots 3 and 4. Only two are wired for.
-    for i, side in enumerate(PROXY_SUBS, start=1):
-        proxy["sub_objective_%d" % i] = "%s_%s_shrine" % (TEAM_WORD, side)
-        proxy["sub_objective_lane_%d" % i] = "0"
-    for i in range(len(PROXY_SUBS) + 1, 5):
-        proxy["sub_objective_%d" % i] = ""
-        proxy["sub_objective_lane_%d" % i] = "0"
-    # THE FGD CALLS THIS CLASS "Final objective. Unused. Do not use."
-    # Nothing else in citadel.fgd is labelled that way. It may mean the class
-    # is inert in the shipped game, in which case the shrine-shields-patron
-    # chain has to be built from entity I/O instead - the outputs are all
-    # there on destroyable_building (OnDestroyed, OnBecomeVulnerable) and on
-    # the patron. Emission is UNCHANGED for now: it costs one entity, it is
-    # what the fixture does, and a compile will say more than a guess will.
-    # A logic entity with no body. It sits on the patron so it mirrors with
-    # it and is findable in the viewer; nothing depends on where it is.
-    new += make_objective("final_objective_proxy", origin,
-                          "citadel_final_objective_proxy", proxy)
+    # THE PROXY IS NO LONGER EMITTED, decided 2026-08-29. citadel.fgd calls
+    # citadel_final_objective_proxy "Final objective. Unused. Do not use."
+    # Nothing else in the file is labelled that way, and shipping a class the
+    # entity table itself tells you not to use is a poor bet when the whole
+    # win condition hangs off it.
+    #
+    # AND THE REPLACEMENT DOES NOT EXIST YET. Wiring shrine -> patron by
+    # entity I/O needs an INPUT on the patron to fire, and citadel.fgd
+    # declares none: npc_boss_tier3 has BackdoorProtectionTrigger, BossName,
+    # subclass_name, three cover ids and one output, OnBossKilled. No
+    # SetVulnerable, no Enable, nothing. The whole file has 35 inputs and
+    # every one belongs to fog, lighting, scenes, buoyancy, EnableDisable,
+    # the speaking NPC, the defense sentry or the lane test.
+    #
+    # The outputs on the shrine are real and rich - OnDestroyed,
+    # OnBecomeVulnerable, OnBecomeInvulnerable, OnRevitilized and five more -
+    # so the SOURCE half of the wire is known and only the target is missing.
+    # Inventing an input name is exactly the mistake `target` was: it would
+    # emit clean, verify green, and do nothing.
+    #
+    # So this map currently has NO shrine-to-patron chain, by choice, rather
+    # than a chain built on a class marked do-not-use. That is a REGRESSION
+    # in behaviour and a deliberate one. To close it, one of:
+    #
+    #   1. Find the input. dl_example is the place to look - if its shrines
+    #      carry connections, the input name is sitting in them. The entity
+    #      survey reported 89 DmeConnectionData blocks and NO OWNER COLUMN,
+    #      so nobody has yet seen which entity owns which wire. That is the
+    #      single highest-value probe left.
+    #   2. Compile with the proxy and see whether "Unused" means inert or
+    #      just undocumented. Set EMIT_PROXY back to True for that run.
+    #   3. Accept that the patron is always vulnerable, which is what this
+    #      emits today.
+    #
+    # PROXY_SUBS, the lane readings and the slot-count findings are all kept
+    # below the flag, because if 2 is the answer they are needed intact.
+    EMIT_PROXY = False
+
+    if EMIT_PROXY:
+        proxy = {
+            "targetname": "",
+            "final_objective": "%s_building_final" % TEAM_WORD,
+            "teamnumber": SPAWN_TEAM_OBJ,
+        }
+        # LANE 0 IS LEGAL, confirmed 2026-08-29. citadel.fgd makes each
+        # sub_objective_lane_N a choices field and lists 0 : "None" alongside
+        # 1 : "Yellow", 3 : "Orange", 4 : "Blue", 6 : "Purple". The zeroes
+        # were a guess and the guess was right - a non-lane sub-objective is
+        # a case the schema anticipates.
+        #
+        # AND THE FOUR SLOTS ARE A FOUR-LANE ARTIFACT, not a count. Those
+        # colour names are the four lanes of the old layout, Blue being the
+        # one that went away. Two filled slots plus an empty pair is the
+        # correct shape for a three-lane map, which the outputs corroborate:
+        # the FGD declares SubObjective1Destroyed/Revitilized and
+        # SubObjective2Destroyed/Revitilized and NOTHING for slots 3 and 4.
+        for i, side in enumerate(PROXY_SUBS, start=1):
+            proxy["sub_objective_%d" % i] = "%s_%s_shrine" % (TEAM_WORD, side)
+            proxy["sub_objective_lane_%d" % i] = "0"
+        for i in range(len(PROXY_SUBS) + 1, 5):
+            proxy["sub_objective_%d" % i] = ""
+            proxy["sub_objective_lane_%d" % i] = "0"
+        # A logic entity with no body. It sits on the patron so it mirrors
+        # with it and is findable in the viewer; nothing depends on where.
+        new += make_objective("final_objective_proxy", origin,
+                              "citadel_final_objective_proxy", proxy)
+        log.append("final_objective_proxy EMITTED - the FGD marks this class "
+                   "'Unused. Do not use.'")
+    else:
+        log.append("")
+        log.append("NO SHRINE -> PATRON CHAIN IN THIS PLAN.")
+        log.append("  the proxy is dropped (citadel.fgd: 'Unused. Do not "
+                   "use.') and entity I/O cannot replace it yet - the FGD")
+        log.append("  declares no input on npc_boss_tier3 to fire. The "
+                   "patron is vulnerable from the first second.")
+        log.append("  To find the input: look for connections on "
+                   "dl_example's own shrines. See the note in this file.")
 
     for spec in SKY:
         e = {
@@ -1032,13 +1121,14 @@ def main():
     # are still checked and reported so a bad one is caught now rather than
     # on the day the classname turns up.
     held = []
-    # Sinners are now emitted as vault camps rather than held back: the
-    # classname and subclass are both real. Only the trooper type is a
-    # blank.
+    # Sinners are emitted as camps. They were "vault" camps until
+    # 2026-08-29; they are now their own tier carrying
+    # ENeutralTrooperType 6, which citadel.fgd labels "Sinner's Sacrifice".
+    # The subclass is still the vault's - see TIERS.
     filled = rows(SINNERS)
     have["sinner"] = len(filled)
     for name, origin, note in filled:
-        new += make_camp(name, origin, "vault")
+        new += make_camp(name, origin, "sinner")
         sites.append((name, origin, note))
 
     if SPELLING_PROBE:
@@ -1097,9 +1187,26 @@ def main():
                     "exitpoint": "%s_dest" % other,
                     "StartDisabled": "0",
                 })
+                # THE DESTINATION'S OWN KEYS, added 2026-08-29 from the FGD.
+                # info_teleport_location derives from Targetname, TeamNumber
+                # and LaneNumber and adds objective(integer), default 3 -
+                # annotated in the FGD itself as 'Objective? By default set
+                # to 3?', question marks and all, so nobody knows what it
+                # selects. 3 is what the file says the default is, so 3 is
+                # what goes in.
+                #
+                # teamnumber 0 is "None" in the FGD's own TeamNumber list.
+                # These two rooms are neutral map furniture, not base
+                # infrastructure, so neither team owns them; a 2 or 3 here
+                # would be a claim nothing supports. lanenum 0 for the same
+                # reason - the rooms are not on a lane.
                 new += make_point("%s_dest" % name, origin,
-                                  TELEPORT_LOCATION_CLASS,
-                                  {"targetname": "%s_dest" % name})
+                                  TELEPORT_LOCATION_CLASS, {
+                                      "targetname": "%s_dest" % name,
+                                      "teamnumber": "0",
+                                      "lanenum": "0",
+                                      "objective": "3",
+                                  })
             else:
                 held.append((name, label))
 

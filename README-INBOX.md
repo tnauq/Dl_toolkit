@@ -79,14 +79,48 @@ It is flagged in the code and belongs at the top of the next handoff.
 - **`citadel_final_objective_proxy` is marked "Unused. Do not use."** Nothing
   else in the file is. Emission unchanged, but see the open questions.
 
-## Deliberately NOT changed
+## The four judgement calls, now decided
 
-Four judgement calls were left alone rather than guessed at, with the reading
-recorded beside each in the code: whether to emit `objective` / `TeamNumber` /
-`LaneNumber` on `info_teleport_location`; whether to move the sinners to a
-type-6 camp and under which subclass; whether to keep emitting the proxy; and
-whether `npc_boss_tier3.BossName` must conform to its two-value enumeration.
+- **Teleport locations** emit `objective 3`, `teamnumber 0`, `lanenum 0`.
+- **Sinners** are their own tier with `ENeutralTrooperType 6`, keeping
+  `neutral_camp_vaults` as the subclass — borrowed, since the FGD names none.
+- **Patron `BossName`** conforms to the enumeration: `boss_rebel_tier2_mid`,
+  and `boss_combine_tier2_mid` on the twin via a new `EXPLICIT_SWAPS` table.
+  The generic rebels↔combine rule matches neither (the FGD uses the singular
+  "rebel") and would have produced `m_boss_rebel_tier2_mid`.
+- **The proxy is dropped.** Read the next section before accepting this one.
 
-Also unchanged: `npc_boss_tier1` is absent from this FGD, but dl_example is
+## THE PROXY REPLACEMENT DOES NOT EXIST — READ THIS
+
+Dropping `citadel_final_objective_proxy` was meant to be paired with wiring
+shrine → patron by entity I/O. That half **cannot be done**: citadel.fgd
+declares **no input on `npc_boss_tier3`** to fire. It has one output,
+`OnBossKilled`, and no `SetVulnerable`, no `Enable`, nothing. All 35 inputs in
+the entire file belong to fog, lighting, scenes, buoyancy, `EnableDisable`,
+the speaking NPC, the sentry, or the lane test.
+
+The shrine's side is fine — nine outputs including `OnDestroyed` and
+`OnBecomeVulnerable`. Only the target is missing, and inventing an input name
+would repeat the exact `target`/`exitpoint` mistake.
+
+**So this plan now has no shrine-to-patron chain. The patron is vulnerable
+from the first second.** That is a deliberate regression, taken over shipping
+a class the FGD marks do-not-use. `EMIT_PROXY = False` in batch16 puts it
+back in one line if you want the compile to tell you whether "Unused" means
+inert.
+
+The way out is dl_example's own connections. The entity survey found **89
+`DmeConnectionData` blocks and could not attribute one of them to an owner**.
+Reading who owns which wire is now the highest-value probe left.
+
+## Counts will move
+
+Dropping the proxy removes two entities (base and twin). `emit-dust2.yml`
+pins `EXPECT_CLASSPROPS: 611`, `EXPECT_PLUGLIST: 611` and
+`EXPECT_ELEMENTS: 87916`. The first two should become 609; the element delta
+I did not try to predict. Let the run report and update from what it says —
+those constants are deliberately not edited here on a guess.
+
+## Also unchanged: `npc_boss_tier1` is absent from this FGD, but dl_example is
 full of them, so that is an FGD gap and not a fault in our plan. This file is
 annotated by hand — its presences are strong evidence, its absences weak.

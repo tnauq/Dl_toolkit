@@ -196,13 +196,64 @@ fill in. Flagged loudly in the code. It belongs on the next handoff.
 - **Team numbers confirmed**: 2 Amber/Rebels/North, 3 Sapphire/Combine/South,
   4 Neutral.
 
+## Decisions taken, same day
+
+1. **`info_teleport_location`** now emits `objective 3` (the FGD's own
+   default), `teamnumber 0` and `lanenum 0` — 0 is "None" in the FGD's
+   TeamNumber list, and these two rooms are neutral furniture on no lane.
+2. **Sinners** are their own tier now, carrying `ENeutralTrooperType 6`.
+   The subclass stays `neutral_camp_vaults` — borrowed, not read, because
+   the FGD names no subclass for a sinner. If the sinner comes out looking
+   like a vault, that borrow is why.
+3. **The proxy is dropped.** See §13 — this did not go the way it looked.
+4. **`npc_boss_tier3.BossName`** now emits `boss_rebel_tier2_mid`, with
+   `boss_combine_tier2_mid` on the twin via a new `EXPLICIT_SWAPS` table.
+   The generic rebels↔combine rule matches neither (the FGD uses the
+   singular "rebel") and would have prefixed the twin's to
+   `m_boss_rebel_tier2_mid` — off the enumeration and naming the wrong team.
+
+## 13. Dropping the proxy leaves a hole that cannot be filled yet
+
+The plan was: drop `citadel_final_objective_proxy`, wire shrine → patron with
+entity I/O instead. The first half is done. **The second half is not
+possible from this file.**
+
+Wiring shrine → patron needs an **input on the patron to fire**, and
+citadel.fgd declares none. `npc_boss_tier3` has `BackdoorProtectionTrigger`,
+`BossName`, `subclass_name`, three cover ids, and exactly one output,
+`OnBossKilled`. No `SetVulnerable`, no `Enable`, nothing.
+
+That is not an oversight in the reading. The whole file contains 35 `input`
+declarations and every one belongs to fog, lighting, scenes, buoyancy, the
+generic `EnableDisable` base, the speaking NPC, the defense sentry, or the
+lane test.
+
+The shrine's side is fine — `destroyable_building` declares nine outputs
+including `OnDestroyed`, `OnBecomeVulnerable` and `OnRevitilized`. The source
+of the wire is known and only the target is missing. Inventing an input name
+would repeat exactly the `target`/`exitpoint` mistake: it emits clean,
+verifies green, and does nothing.
+
+**So the map currently has no shrine-to-patron chain at all.** The patron is
+vulnerable from the first second. That is a behaviour regression, taken
+deliberately over shipping a class the entity table says not to use.
+
+Three ways to close it, in order of value:
+
+1. **Find the input in dl_example.** If its shrines carry connections, the
+   input name is sitting in them. The entity survey found **89
+   `DmeConnectionData` blocks and could not attribute a single one to an
+   owner** — it reported every field as `?` twice, then fell back to dumping
+   80 lines of context around each. Nobody has yet read who owns which wire.
+   This is now the highest-value probe left in the project.
+2. **Compile with the proxy anyway** and see whether "Unused" means inert or
+   merely undocumented. `EMIT_PROXY = True` in batch16, one line.
+3. **Accept an always-vulnerable patron**, which is what ships today.
+
 ## Still open after this
 
-1. `info_teleport_location`: emit `objective`, `TeamNumber`, `LaneNumber`?
-2. Sinners: camp with type 6, and if so under which subclass?
-3. The proxy: keep emitting a class the FGD says not to use?
-4. `npc_boss_tier3.BossName`: conform to the enumeration?
-5. Cover groups for the patron's states — §11, the biggest one.
-
-None of these is blocking a compile. All of them are cheaper to answer with
-the FGD in hand than they were yesterday.
+- Cover groups for the patron's states — §11. Still the biggest one, and now
+  joined by §13, which is the same kind of problem: a chain the map needs and
+  the FGD does not describe.
+- Whether `neutral_camp_vaults` is the right subclass for a type-6 sinner.
+- Whether `objective 3` on a teleport location means anything.
