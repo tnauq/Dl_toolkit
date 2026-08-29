@@ -1015,43 +1015,41 @@ def main():
 
     # ---- the shrine -> patron chain -----------------------------------
     #
-    # THE PROXY IS NO LONGER EMITTED, decided 2026-08-29. citadel.fgd calls
-    # citadel_final_objective_proxy "Final objective. Unused. Do not use."
-    # Nothing else in the file is labelled that way, and shipping a class the
-    # entity table itself tells you not to use is a poor bet when the whole
-    # win condition hangs off it.
+    # THE PROXY IS BACK ON, 2026-08-29, and the round trip is worth recording
+    # because it is the clearest case yet of the fixture outranking the FGD.
     #
-    # AND THE REPLACEMENT DOES NOT EXIST YET. Wiring shrine -> patron by
-    # entity I/O needs an INPUT on the patron to fire, and citadel.fgd
-    # declares none: npc_boss_tier3 has BackdoorProtectionTrigger, BossName,
-    # subclass_name, three cover ids and one output, OnBossKilled. No
-    # SetVulnerable, no Enable, nothing. The whole file has 35 inputs and
-    # every one belongs to fog, lighting, scenes, buoyancy, EnableDisable,
-    # the speaking NPC, the defense sentry or the lane test.
+    # citadel.fgd calls citadel_final_objective_proxy "Final objective.
+    # Unused. Do not use." - the only class in the file marked that way. On
+    # that reading it was dropped, and nothing could replace it: the FGD
+    # declares NO input on npc_boss_tier3, so shrine -> patron could not be
+    # wired by hand either. The map shipped with no chain at all.
     #
-    # The outputs on the shrine are real and rich - OnDestroyed,
-    # OnBecomeVulnerable, OnBecomeInvulnerable, OnRevitilized and five more -
-    # so the SOURCE half of the wire is known and only the target is missing.
-    # Inventing an input name is exactly the mistake `target` was: it would
-    # emit clean, verify green, and do nothing.
+    # THEN THE CONNECTION PROBE RAN. dl_example wires this class SIXTEEN
+    # TIMES, eight per team:
     #
-    # So this map currently has NO shrine-to-patron chain, by choice, rather
-    # than a chain built on a class marked do-not-use. That is a REGRESSION
-    # in behaviour and a deliberate one. To close it, one of:
+    #     BecomeActive            -> <objective particle> . Start      x4
+    #     SubObjective1Destroyed  -> <left particle> . StopPlayEndCap  x2
+    #     SubObjective1Revitilized-> <left particle> . Start           x2
+    #     SubObjective2Destroyed  -> <right particle> . StopPlayEndCap x2
+    #     SubObjective2Revitilized-> <right particle> . Start          x2
+    #     FinalShielded           -> <relay> . Trigger                 x2
+    #     FinalExposed            -> <relay> . Trigger                 x2
     #
-    #   1. Find the input. dl_example is the place to look - if its shrines
-    #      carry connections, the input name is sitting in them. The entity
-    #      survey reported 89 DmeConnectionData blocks and NO OWNER COLUMN,
-    #      so nobody has yet seen which entity owns which wire. That is the
-    #      single highest-value probe left.
-    #   2. Compile with the proxy and see whether "Unused" means inert or
-    #      just undocumented. Set EMIT_PROXY back to True for that run.
-    #   3. Accept that the patron is always vulnerable, which is what this
-    #      emits today.
+    # Read the last four. FinalShielded and FinalExposed are the proxy's OWN
+    # OUTPUTS, which means THE PROXY COMPUTES THE SHIELDING ITSELF from the
+    # state of its sub-objectives and announces the result. That is why
+    # npc_boss_tier3 needs no input: nothing has to tell the patron it is
+    # exposed. The proxy IS the chain, and the missing-input dead end was an
+    # artifact of assuming the chain had to be hand-wired.
     #
-    # PROXY_SUBS, the lane readings and the slot-count findings are all kept
-    # below the flag, because if 2 is the answer they are needed intact.
-    EMIT_PROXY = False
+    # Only slots 1 and 2 are used, exactly as the four-lane-artifact reading
+    # predicted, and the two sub-objectives are named left and right rather
+    # than by lane.
+    #
+    # The FGD annotation is a mapper's note on a file that is annotated by
+    # hand throughout. The shipped map disagrees with it. The shipped map
+    # wins.
+    EMIT_PROXY = True
 
     if EMIT_PROXY:
         proxy = {
