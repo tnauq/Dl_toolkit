@@ -83151,26 +83151,6 @@
    "_batch18": true
   },
   {
-   "name": "midboss_lid",
-   "origin": [
-    460.15,
-    6085.05,
-    1293.7
-   ],
-   "extents": [
-    266.7,
-    266.7,
-    26.8
-   ],
-   "angles": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "material": "materials/dev/dev_measuregeneric01.vmat",
-   "_batch18": true
-  },
-  {
    "name": "hex3_wall_30",
    "origin": [
     1671.8427,
@@ -91697,6 +91677,54 @@
    "_batch13": true
   },
   {
+   "name": "reinforce_l1",
+   "classname": "info_super_trooper_spawn",
+   "origin": [
+    -4.0,
+    -2630.0,
+    427.0
+   ],
+   "angles": [
+    0.0,
+    86.95,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "teamnumber": "2",
+    "lanenum": "1",
+    "BossName": "",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "1",
+    "CoverGroupID": "0"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_reinforce_l1",
+   "classname": "info_super_trooper_spawn",
+   "origin": [
+    924.2,
+    14800.1,
+    427.0
+   ],
+   "angles": [
+    0.0,
+    -93.05,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "teamnumber": "3",
+    "lanenum": "1",
+    "BossName": "",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "1",
+    "CoverGroupID": "0"
+   },
+   "_batch13": true
+  },
+  {
    "name": "trooper_spawn_l3",
    "classname": "info_trooper_spawn",
    "origin": [
@@ -91741,6 +91769,54 @@
    "_batch13": true
   },
   {
+   "name": "reinforce_l3",
+   "classname": "info_super_trooper_spawn",
+   "origin": [
+    -1016.0,
+    -3206.0,
+    427.0
+   ],
+   "angles": [
+    0.0,
+    80.97,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "teamnumber": "2",
+    "lanenum": "3",
+    "BossName": "",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "1",
+    "CoverGroupID": "0"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_reinforce_l3",
+   "classname": "info_super_trooper_spawn",
+   "origin": [
+    1936.2,
+    15376.1,
+    427.0
+   ],
+   "angles": [
+    0.0,
+    -99.03,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "teamnumber": "3",
+    "lanenum": "3",
+    "BossName": "",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "1",
+    "CoverGroupID": "0"
+   },
+   "_batch13": true
+  },
+  {
    "name": "trooper_spawn_l6",
    "classname": "info_trooper_spawn",
    "origin": [
@@ -91781,6 +91857,54 @@
     "teamnumber": "3",
     "lanenum": "6",
     "TrooperLevel": "4"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "reinforce_l6",
+   "classname": "info_super_trooper_spawn",
+   "origin": [
+    1002.0,
+    -3207.0,
+    427.0
+   ],
+   "angles": [
+    0.0,
+    93.34,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "teamnumber": "2",
+    "lanenum": "6",
+    "BossName": "",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "1",
+    "CoverGroupID": "0"
+   },
+   "_batch13": true
+  },
+  {
+   "name": "m_reinforce_l6",
+   "classname": "info_super_trooper_spawn",
+   "origin": [
+    -81.8,
+    15377.1,
+    427.0
+   ],
+   "angles": [
+    0.0,
+    -86.66,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "teamnumber": "3",
+    "lanenum": "6",
+    "BossName": "",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "1",
+    "CoverGroupID": "0"
    },
    "_batch13": true
   },
@@ -92739,6 +92863,44 @@
    ],
    "properties": {},
    "_batch13": true
+  },
+  {
+   "name": "midboss_lid",
+   "classname": "func_brush",
+   "origin": [
+    460.15,
+    6085.05,
+    1293.7
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "midboss_lid",
+    "StartDisabled": "0",
+    "spawnflags": "4097"
+   },
+   "mesh": {
+    "name": "midboss_lid_vol",
+    "origin": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "extents": [
+     266.7,
+     266.7,
+     26.8
+    ],
+    "angles": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "_batch18": true
   },
   {
    "name": "shop_lane3_enable_relay",
@@ -99168,7 +99330,7 @@
     "teamnumber": "3",
     "lanenum": "3",
     "LaneSide": "0",
-    "CoverGroupID": "0",
+    "CoverGroupID": "100",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99216,7 +99378,7 @@
     "teamnumber": "3",
     "lanenum": "3",
     "LaneSide": "0",
-    "CoverGroupID": "0",
+    "CoverGroupID": "100",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99264,7 +99426,7 @@
     "teamnumber": "3",
     "lanenum": "1",
     "LaneSide": "0",
-    "CoverGroupID": "0",
+    "CoverGroupID": "100",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99312,7 +99474,7 @@
     "teamnumber": "3",
     "lanenum": "1",
     "LaneSide": "0",
-    "CoverGroupID": "0",
+    "CoverGroupID": "100",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99360,7 +99522,7 @@
     "teamnumber": "3",
     "lanenum": "6",
     "LaneSide": "0",
-    "CoverGroupID": "0",
+    "CoverGroupID": "100",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99408,7 +99570,7 @@
     "teamnumber": "3",
     "lanenum": "6",
     "LaneSide": "0",
-    "CoverGroupID": "0",
+    "CoverGroupID": "100",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99553,9 +99715,9 @@
     "lanenum": "3",
     "BossName": "boss_rebel_tier2_mid",
     "subclass_name": "npc_boss_tier3",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": "",
+    "CoverGroupID": "4101",
+    "dying_cover_id": "4102",
+    "vulnerable_cover_id": "4103",
     "BackdoorProtectionTrigger": ""
    },
    "_batch16": true
@@ -99580,10 +99742,406 @@
     "lanenum": "3",
     "BossName": "boss_combine_tier2_mid",
     "subclass_name": "npc_boss_tier3",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": "",
+    "CoverGroupID": "4201",
+    "dying_cover_id": "4202",
+    "vulnerable_cover_id": "4203",
     "BackdoorProtectionTrigger": ""
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_stand_0",
+   "classname": "info_cover_point",
+   "origin": [
+    202.2,
+    -3810.9,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4101",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_stand_0",
+   "classname": "info_cover_point",
+   "origin": [
+    718.0,
+    15981.0,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4201",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_stand_1",
+   "classname": "info_cover_point",
+   "origin": [
+    -127.8,
+    -3620.3744,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4101",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_stand_1",
+   "classname": "info_cover_point",
+   "origin": [
+    1048.0,
+    15790.4744,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4201",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_stand_2",
+   "classname": "info_cover_point",
+   "origin": [
+    -127.8,
+    -4001.4256,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4101",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_stand_2",
+   "classname": "info_cover_point",
+   "origin": [
+    1048.0,
+    16171.5256,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4201",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_dying_0",
+   "classname": "info_cover_point",
+   "origin": [
+    350.7847,
+    -3609.5413,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4102",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_dying_0",
+   "classname": "info_cover_point",
+   "origin": [
+    569.4153,
+    15779.6413,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4202",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_dying_1",
+   "classname": "info_cover_point",
+   "origin": [
+    -376.4741,
+    -3592.3757,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4102",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_dying_1",
+   "classname": "info_cover_point",
+   "origin": [
+    1296.6741,
+    15762.4757,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4202",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_dying_2",
+   "classname": "info_cover_point",
+   "origin": [
+    -27.7106,
+    -4230.7831,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4102",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_dying_2",
+   "classname": "info_cover_point",
+   "origin": [
+    947.9106,
+    16400.8831,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4202",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_vulnerable_0",
+   "classname": "info_cover_point",
+   "origin": [
+    102.2,
+    -3810.9,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4103",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_vulnerable_0",
+   "classname": "info_cover_point",
+   "origin": [
+    818.0,
+    15981.0,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4203",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_vulnerable_1",
+   "classname": "info_cover_point",
+   "origin": [
+    -77.8,
+    -3706.977,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4103",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_vulnerable_1",
+   "classname": "info_cover_point",
+   "origin": [
+    998.0,
+    15877.077,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4203",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "cover_vulnerable_2",
+   "classname": "info_cover_point",
+   "origin": [
+    -77.8,
+    -3914.823,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4103",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
+   },
+   "_batch16": true
+  },
+  {
+   "name": "m_cover_vulnerable_2",
+   "classname": "info_cover_point",
+   "origin": [
+    998.0,
+    16084.923,
+    533.0
+   ],
+   "angles": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "properties": {
+    "targetname": "",
+    "groupid": "4203",
+    "visionradius": "0",
+    "AllowOffNav": "0",
+    "AutoAdjustDirection": "1"
    },
    "_batch16": true
   },
@@ -99667,7 +100225,7 @@
   },
   {
    "name": "sun",
-   "classname": "light_environment",
+   "classname": "env_global_light",
    "origin": [
     460.1,
     6085.05,
@@ -99679,12 +100237,16 @@
     0.0
    ],
    "properties": {
-    "targetname": "",
-    "skytexture": "sky_entity",
+    "targetname": "global_light",
     "color": "228 184 134",
-    "brightness": "6",
-    "enabled": "1",
-    "castshadows": "1",
+    "lightscale": "1.0",
+    "ambientcolor1": "128 128 128",
+    "ambientscale1": "1.0",
+    "ambientcolor2": "24 24 24",
+    "ambientscale2": "1.0",
+    "enableshadows": "1",
+    "SkyboxSlot": "",
+    "StartDisabled": "0",
     "vscripts": ""
    },
    "_batch16": true
