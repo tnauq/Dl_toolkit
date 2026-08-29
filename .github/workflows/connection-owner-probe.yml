@@ -1,0 +1,578 @@
+# Who owns the 89 connections?
+#
+# THE QUESTION. dl_example contains 89 DmeConnectionData blocks. We can read
+# every field in them - outputName, inputName, targetName, delay - but not
+# WHICH ENTITY FIRES EACH ONE. Three previous attempts:
+#
+#   1. "nearest classname above the block" -> reported light_omni2 firing
+#      OnTrooperKilled. Wrong, and confidently so.
+#   2. brace-depth nesting -> reported all 89 as unnested. Wrong.
+#   3. dump 80 lines of context and let a human read it. Not wrong, but
+#      nobody has read 89 blocks, so it has answered nothing in three weeks.
+#
+# WHY 1 AND 2 FAILED, and this is the whole idea of this workflow: the
+# fixture is converted with `-oe keyvalues2_noids`. NOIDS STRIPS THE ELEMENT
+# IDS. Without ids, an element referenced from elsewhere cannot be linked
+# back to its referrer, and the serialiser is free to lay blocks out in ways
+# that defeat both "nearest above" and brace depth. The probe was fighting a
+# format decision made upstream of it.
+#
+# So: CONVERT WITH IDS. `-oe keyvalues2` keeps them, every DmeConnectionData
+# gets an id, and the CMapEntity that owns it names that id in its own
+# attributes. Ownership stops being an inference and becomes a lookup.
+#
+# WHAT THIS UNBLOCKS, all currently stalled on the same missing fact:
+#
+#   - THE LID. destroyable_building fires OnDestroyed -> <brush> . Kill,
+#     twelve times, at targets named *_grate_prop / *_grate_brush /
+#     *_ladder_brush. Confirming the OWNER confirms the mechanism, and
+#     resolving the TARGET's classname answers the question that actually
+#     blocks it: what class is a brush that answers Kill?
+#   - DOORS ON GUARDIAN DEATH. Same mechanism, different source. If a
+#     guardian's OnBossKilled can drive a Kill, lane doors can open on it.
+#   - THE SHRINE -> PATRON CHAIN. citadel.fgd declares NO input on
+#     npc_boss_tier3, so the proxy was dropped with nothing to replace it
+#     (FINDINGS-fgd-2026-08-29 §13). If dl_example's shrines carry
+#     connections, the input name is in them - and that is the only known
+#     place it can be.
+#
+# WHAT COMES OUT
+#   out/owners.md          one row per connection: owner class, owner
+#                          targetname, output -> target . input, delay
+#   out/owners.json        the same, machine-readable
+#   out/targets.md         every targetName resolved to the CLASSNAME of the
+#                          entity that carries it. This is the lid answer.
+#   out/by-class.md        grouped by owning classname: what does a
+#                          destroyable_building fire, what does a camp fire
+#   out/structure.md       how ids actually appear in the file, written
+#                          BEFORE any parsing, so a failed run is diagnosable
+#   out/disagreements.md   every connection the two methods disagree on
+#
+# NO INFERENCE. Two independent attribution methods run and are cross
+# checked. Agreement is reported as a finding. Disagreement is reported as a
+# disagreement. Neither method's answer is promoted on its own.
+
+name: connection-owner-probe
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: dl_example.vmap
+  RELEASE_TAG: csdk-12
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Before
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          [ -s "$FIXTURE" ] || { echo "::error::no $FIXTURE"; exit 1; }
+          wc -c "$FIXTURE"
+
+      - name: Cache the extracted CSDK
+        id: csdk-cache
+        uses: actions/cache@v4
+        with:
+          path: csdk
+          key: csdk-12-v1
+
+      - name: Fetch, reassemble, extract
+        if: steps.csdk-cache.outputs.cache-hit != 'true'
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          tag = os.environ['RELEASE_TAG']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/{tag}'],
+              capture_output=True, text=True, check=True).stdout)
+
+          assets = rel['assets']
+          if not assets:
+              print("::error::no assets on release"); sys.exit(1)
+
+          os.makedirs('dl', exist_ok=True)
+          for a in assets:
+              dest = os.path.join('dl', a['name'])
+              with open(dest, 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          if not files:
+              print("::error::no zip parts"); sys.exit(1)
+
+          h = hashlib.sha256()
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk); h.update(chunk)
+          sums = os.path.join('dl', 'SHA256SUMS.txt')
+          if os.path.exists(sums):
+              want = open(sums).read().split()[0]
+              if want != h.hexdigest():
+                  print("::error::checksum mismatch"); sys.exit(1)
+
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+      - name: Locate dmxconvert
+        id: get
+        shell: python
+        run: |
+          import os, sys
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          if not conv:
+              print("::error::dmxconvert.exe missing"); sys.exit(1)
+          print("dmxconvert:", conv)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+
+      # THE ONE CHANGE THAT MATTERS. keyvalues2, not keyvalues2_noids.
+      # The noids copy is produced too, purely so the two can be compared and
+      # so a reader can tell this run apart from the old survey's output.
+      - name: Convert WITH ids, and again without
+        timeout-minutes: 25
+        shell: bash
+        run: |
+          set -uo pipefail
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/$FIXTURE" -ie binary \
+            -o "$ROOT/work/ids.txt" -oe keyvalues2 > out/conv.txt 2>&1 || RC=$?
+          echo "with-ids exit: $RC" | tee -a out/conv.txt
+          RC=0
+          "${{ steps.get.outputs.conv }}" \
+            -i "$ROOT/$FIXTURE" -ie binary \
+            -o "$ROOT/work/noids.txt" -oe keyvalues2_noids >> out/conv.txt 2>&1 || RC=$?
+          echo "noids exit: $RC" | tee -a out/conv.txt
+          cat out/conv.txt
+          [ -s work/ids.txt ] || { echo "::error::no with-ids text"; exit 1; }
+          wc -c work/ids.txt work/noids.txt | tee -a out/conv.txt
+
+      # BEFORE PARSING ANYTHING, write down what the file looks like. If the
+      # attribution below comes back empty, this is the file that says why,
+      # and it costs one pass.
+      - name: What the format actually looks like
+        shell: python
+        run: |
+          import re, collections
+
+          lines = open('work/ids.txt', encoding='utf-8',
+                       errors='replace').read().split('\n')
+
+          # An element header in keyvalues2 looks like:  Type "id"  or
+          # "key" "elementtype" { ... }. Rather than assume, count the shapes
+          # that occur and show real examples of each.
+          shapes = collections.Counter()
+          examples = collections.defaultdict(list)
+          for i, t in enumerate(lines[:400000]):
+              u = t.strip()
+              if not u:
+                  continue
+              if re.match(r'^[A-Za-z_][A-Za-z0-9_]*\s*$', u):
+                  shape = 'bare type name'
+              elif re.match(r'^[A-Za-z_][A-Za-z0-9_]*\s+"[^"]*"\s*$', u):
+                  shape = 'type + quoted (id?)'
+              elif re.match(r'^"[^"]*"\s+"element"\s+"[^"]*"\s*,?$', u):
+                  shape = 'attr of type element (reference)'
+              elif re.match(r'^"[^"]*"\s+"element_array"\s*$', u):
+                  shape = 'attr of type element_array'
+              elif re.match(r'^"[^"]*"\s+"[^"]*"\s+"', u):
+                  shape = 'ordinary attr'
+              else:
+                  continue
+              shapes[shape] += 1
+              if len(examples[shape]) < 6:
+                  examples[shape].append('%d: %s' % (i + 1, u[:160]))
+
+          conn_lines = [i for i, t in enumerate(lines)
+                        if 'DmeConnectionData' in t]
+
+          with open('out/structure.md', 'w', encoding='utf-8') as fh:
+              fh.write('# What work/ids.txt looks like\n\n')
+              fh.write('%d lines. %d lines mention DmeConnectionData.\n\n'
+                       % (len(lines), len(conn_lines)))
+              fh.write('## Line shapes seen\n\n')
+              for s, c in shapes.most_common():
+                  fh.write('\n### %s  (x%d)\n\n```\n' % (s, c))
+                  for e in examples[s]:
+                      fh.write(e + '\n')
+                  fh.write('```\n')
+              fh.write('\n## First DmeConnectionData in the file, verbatim\n\n')
+              fh.write('```\n')
+              if conn_lines:
+                  a = max(0, conn_lines[0] - 30)
+                  for t in lines[a:conn_lines[0] + 25]:
+                      fh.write(t.rstrip() + '\n')
+              fh.write('```\n')
+          print('%d DmeConnectionData mentions' % len(conn_lines))
+
+      - name: Attribute every connection to an owner
+        id: attribute
+        shell: python
+        run: |
+          import re, json, collections, os
+
+          lines = open('work/ids.txt', encoding='utf-8',
+                       errors='replace').read().split('\n')
+
+          ATTR3 = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*?)"\s*,?$')
+          HEAD = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(?:"([^"]*)")?\s*$')
+          REF = re.compile(r'^"([^"]*)"\s*,?$')
+
+          # ---- one pass, building a real element tree ---------------------
+          # An element is (type, id, attrs, children, line). Nesting is by
+          # brace. This is the same walk the old probe did, with two
+          # differences: the ids are present now, and element REFERENCES are
+          # collected as well as nested children.
+          root = {'type': 'ROOT', 'id': None, 'attrs': {}, 'kids': [],
+                  'refs': [], 'line': 0}
+          stack = [root]
+          pending = None          # a header seen, waiting for its {
+          by_id = {}
+          all_elements = []
+
+          for i, raw in enumerate(lines):
+              t = raw.strip()
+              if not t:
+                  continue
+
+              if t.startswith('}') or t.startswith(']'):
+                  if len(stack) > 1:
+                      stack.pop()
+                  continue
+
+              if t.startswith('{'):
+                  e = pending or {'type': '?', 'id': None, 'line': i + 1}
+                  e.setdefault('attrs', {})
+                  e.setdefault('kids', [])
+                  e.setdefault('refs', [])
+                  stack[-1]['kids'].append(e)
+                  if e.get('id'):
+                      by_id[e['id']] = e
+                  all_elements.append(e)
+                  stack.append(e)
+                  pending = None
+                  continue
+
+              m = ATTR3.match(t)
+              if m:
+                  k, ty, v = m.group(1), m.group(2), m.group(3)
+                  cur = stack[-1]
+                  if ty in ('elementid', 'element_id') and k == 'id':
+                      # THE ID IS AN ATTRIBUTE, not part of the header, in
+                      # every keyvalues2 sample seen. Both shapes are
+                      # accepted because neither has been confirmed for this
+                      # file - see structure.md, which is written first for
+                      # exactly this reason.
+                      cur['id'] = v
+                      by_id[v] = cur
+                  elif ty == 'element':
+                      cur['refs'].append((k, v))
+                  else:
+                      cur['attrs'][k] = v
+                  continue
+
+              # A bare quoted string inside an element_array is a reference.
+              m = REF.match(t)
+              if m and stack[-1] is not root:
+                  stack[-1]['refs'].append(('(array)', m.group(1)))
+                  continue
+
+              m = HEAD.match(t)
+              if m:
+                  pending = {'type': m.group(1), 'id': m.group(2),
+                             'line': i + 1, 'attrs': {}, 'kids': [],
+                             'refs': []}
+                  continue
+
+          print('parsed %d elements, %d with ids'
+                % (len(all_elements), len(by_id)))
+
+          conns = [e for e in all_elements
+                   if e['type'] == 'DmeConnectionData']
+          print('%d DmeConnectionData elements' % len(conns))
+
+          # ---- who is an entity, and what is it called --------------------
+          def classname_of(e):
+              # keyvalues live in an EditGameClassProps child. Look one and
+              # two levels down rather than assuming a shape.
+              # ONE LEVEL ONLY, and this is deliberate. Descending two
+              # levels finds a classname under the ROOT element - every map
+              # has one somewhere below it - and then the root looks like an
+              # entity and swallows every unnested connection in the file.
+              # That is attempt 1's "nearest classname above" bug wearing a
+              # different hat. If a real file nests props deeper than one
+              # level, method A still attributes it and the disagreement
+              # report will say so; widening this is not the fix.
+              for k in e['kids']:
+                  if 'classname' in k['attrs']:
+                      return k['attrs']['classname'], k['attrs'].get(
+                          'targetname', '')
+              if 'classname' in e['attrs']:
+                  return e['attrs']['classname'], e['attrs'].get(
+                      'targetname', '')
+              return None, None
+
+          entities = []
+          for e in all_elements:
+              cn, tn = classname_of(e)
+              if cn:
+                  entities.append((e, cn, tn))
+          print('%d elements carry a classname' % len(entities))
+
+          # targetname -> classname, for resolving what a wire POINTS AT.
+          by_targetname = {}
+          for e, cn, tn in entities:
+              if tn:
+                  by_targetname.setdefault(tn, set()).add(cn)
+
+          # ---- METHOD A: by reference id ----------------------------------
+          # Whoever names this connection's id owns it. Exact, when ids are
+          # present.
+          owner_a = {}
+          conn_ids = {id(c): c for c in conns}
+          id_to_conn = {c['id']: c for c in conns if c.get('id')}
+          for e, cn, tn in entities:
+              for _, ref in e['refs']:
+                  c = id_to_conn.get(ref)
+                  if c is not None:
+                      owner_a[id(c)] = (cn, tn, 'reference id')
+
+          # ---- METHOD B: by containment -----------------------------------
+          # Whoever encloses this connection owns it. Exact, when the
+          # serialiser nests rather than references.
+          owner_b = {}
+
+          def walk(node, holder):
+              cn, tn = classname_of(node)
+              here = (cn, tn) if cn else holder
+              for k in node['kids']:
+                  if k['type'] == 'DmeConnectionData' and here:
+                      owner_b[id(k)] = (here[0], here[1], 'containment')
+                  walk(k, here)
+
+          walk(root, None)
+
+          print('method A attributed %d, method B attributed %d, of %d'
+                % (len(owner_a), len(owner_b), len(conns)))
+
+          rows, disagree, unattributed = [], [], []
+          for c in conns:
+              a = owner_a.get(id(c))
+              b = owner_b.get(id(c))
+              at = c['attrs']
+              rec = {
+                  'line': c['line'],
+                  'output': at.get('outputName', '?'),
+                  'input': at.get('inputName', '?'),
+                  'target': at.get('targetName', '?'),
+                  'delay': at.get('delay', ''),
+                  'timesToFire': at.get('timesToFire', ''),
+                  'overrideParam': at.get('overrideParam', ''),
+                  'owner_by_id': a[0] if a else None,
+                  'owner_by_nesting': b[0] if b else None,
+                  'owner_targetname': (a or b or (None, '', ''))[1],
+              }
+              if a and b and a[0] != b[0]:
+                  rec['verdict'] = 'DISAGREE'
+                  disagree.append(rec)
+              elif a or b:
+                  rec['verdict'] = 'agreed' if (a and b) else 'single method'
+                  rec['owner'] = (a or b)[0]
+              else:
+                  rec['verdict'] = 'UNATTRIBUTED'
+                  unattributed.append(rec)
+              tgt = sorted(by_targetname.get(rec['target'], []))
+              rec['target_classnames'] = tgt
+              rows.append(rec)
+
+          with open('out/owners.json', 'w', encoding='utf-8') as fh:
+              json.dump({'connections': rows,
+                         'entity_count': len(entities),
+                         'elements': len(all_elements),
+                         'ids_present': len(by_id)}, fh, indent=1)
+
+          def w(fh, s=''):
+              fh.write(s + '\n')
+
+          with open('out/owners.md', 'w', encoding='utf-8') as fh:
+              w(fh, '# Connection ownership')
+              w(fh)
+              w(fh, '%d connections. attributed by id: %d. by nesting: %d. '
+                    'disagreements: %d. unattributed: %d.'
+                    % (len(conns), len(owner_a), len(owner_b),
+                       len(disagree), len(unattributed)))
+              w(fh)
+              w(fh, '| line | owner | owner name | output | -> target | '
+                    'target is a | input | delay | verdict |')
+              w(fh, '|---|---|---|---|---|---|---|---|---|')
+              for r in rows:
+                  w(fh, '| %d | `%s` | `%s` | `%s` | `%s` | %s | `%s` | %s | %s |'
+                    % (r['line'],
+                       r.get('owner') or r.get('owner_by_id')
+                       or r.get('owner_by_nesting') or '?',
+                       r['owner_targetname'] or '',
+                       r['output'], r['target'],
+                       ', '.join('`%s`' % c for c in r['target_classnames'])
+                       or '**unresolved**',
+                       r['input'], r['delay'], r['verdict']))
+
+          with open('out/disagreements.md', 'w', encoding='utf-8') as fh:
+              w(fh, '# Where the two methods disagree')
+              w(fh)
+              if not disagree and not unattributed:
+                  w(fh, 'None. Every connection was attributed and both '
+                        'methods agreed.')
+              for r in disagree:
+                  w(fh, '- line %d `%s` -> `%s`: by id `%s`, by nesting `%s`'
+                    % (r['line'], r['output'], r['target'],
+                       r['owner_by_id'], r['owner_by_nesting']))
+              if unattributed:
+                  w(fh)
+                  w(fh, '## Unattributed')
+                  for r in unattributed:
+                      w(fh, '- line %d `%s` -> `%s` . `%s`'
+                        % (r['line'], r['output'], r['target'], r['input']))
+
+          # grouped, which is the view that answers the design questions
+          by_class = collections.defaultdict(list)
+          for r in rows:
+              by_class[r.get('owner') or r.get('owner_by_id')
+                       or r.get('owner_by_nesting') or '(unattributed)'
+                       ].append(r)
+          with open('out/by-class.md', 'w', encoding='utf-8') as fh:
+              w(fh, '# What each classname fires')
+              for cn in sorted(by_class):
+                  w(fh)
+                  w(fh, '## `%s`  (%d connection(s))' % (cn, len(by_class[cn])))
+                  seen = collections.Counter()
+                  for r in by_class[cn]:
+                      seen['%s -> %s' % (r['output'], r['input'])] += 1
+                  for k, c in seen.most_common():
+                      w(fh, '- `%s`  x%d' % (k, c))
+
+          with open('out/targets.md', 'w', encoding='utf-8') as fh:
+              w(fh, '# What the wires point at')
+              w(fh)
+              w(fh, 'THE LID QUESTION IS HERE: find a row whose input is '
+                    '`Kill` and read its classname.')
+              w(fh)
+              w(fh, '| targetName | classname(s) carrying it | fired with |')
+              w(fh, '|---|---|---|')
+              seen = collections.defaultdict(set)
+              for r in rows:
+                  seen[r['target']].add(r['input'])
+              for t in sorted(seen):
+                  cns = sorted(by_targetname.get(t, []))
+                  w(fh, '| `%s` | %s | %s |'
+                    % (t, ', '.join('`%s`' % c for c in cns)
+                       or '**nothing carries this targetname**',
+                       ', '.join('`%s`' % i for i in sorted(seen[t]))))
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write('total=%d\n' % len(conns))
+              g.write('attributed=%d\n'
+                      % len([r for r in rows
+                             if r['verdict'] not in ('UNATTRIBUTED',)]))
+              g.write('disagree=%d\n' % len(disagree))
+
+      # The three questions this was built to answer, pulled out so nobody
+      # has to read 89 rows to find them.
+      - name: Answers
+        if: always()
+        shell: python
+        run: |
+          import json, os
+
+          if not os.path.exists('out/owners.json'):
+              print('::warning::no owners.json - attribution step did not '
+                    'finish. Read out/structure.md.')
+              raise SystemExit(0)
+
+          d = json.load(open('out/owners.json'))
+          rows = d['connections']
+
+          def show(title, pred, note):
+              hits = [r for r in rows if pred(r)]
+              print('\n=== %s ===' % title)
+              if not hits:
+                  print('  NOTHING MATCHED. %s' % note)
+                  return
+              for r in hits:
+                  print('  %-28s %-22s -> %-26s . %-18s  [%s]'
+                        % (r.get('owner') or r.get('owner_by_id') or '?',
+                           r['output'], r['target'], r['input'],
+                           ', '.join(r['target_classnames']) or 'unresolved'))
+
+          show('THE LID: what answers Kill',
+               lambda r: r['input'] == 'Kill',
+               'No connection uses a Kill input. The lid mechanism may not '
+               'be what PROBE.md item 5 recorded - re-read owners.md.')
+
+          show('DOORS: what a boss death drives',
+               lambda r: 'BossKilled' in r['output'],
+               'No OnBossKilled connection in the fixture. Doors-on-guardian'
+               '-death has no precedent here and would be new ground.')
+
+          show('THE MIDBOSS: what a camp fires',
+               lambda r: 'TrooperKilled' in r['output'],
+               'No OnTrooperKilled connection found.')
+
+          show('THE SHRINE -> PATRON CHAIN',
+               lambda r: (r.get('owner') or '') == 'destroyable_building'
+               or 'Shielded' in r['output'] or 'Exposed' in r['output'],
+               'Nothing here. citadel.fgd declares no input on '
+               'npc_boss_tier3 either, so the chain remains unsolved and '
+               'the proxy stays dropped.')
+
+          bad = [r for r in rows if r['verdict'] == 'DISAGREE']
+          un = [r for r in rows if r['verdict'] == 'UNATTRIBUTED']
+          print('\n%d connections, %d disagreements, %d unattributed'
+                % (len(rows), len(bad), len(un)))
+          if bad or un:
+              print('::warning::attribution is not clean - read '
+                    'out/disagreements.md before trusting any row above')
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connection-owners
+          path: out/
+
+      - name: Verdict
+        if: always()
+        shell: bash
+        run: |
+          echo "connections : ${{ steps.attribute.outputs.total }}"
+          echo "attributed  : ${{ steps.attribute.outputs.attributed }}"
+          echo "disagree    : ${{ steps.attribute.outputs.disagree }}"

@@ -1,126 +1,83 @@
-# Inbox drop — citadel.fgd, and the fixes it forced (2026-08-29)
+# Inbox drop — the connection-ownership probe (2026-08-29)
 
-**This supersedes the earlier drop from the same day.** If that one was never
-applied, this contains all of it plus the FGD work. If it was applied, this
-overwrites the same files with newer content. Either way, apply this one.
+    .github/workflows/connection-owner-probe.yml   NEW
+    docs/LID-DOORS-LIGHTING.md                     NEW
 
-    batch16.py                          MODIFIED - the exitpoint fix, + notes
-    tools/preflight.py                  MODIFIED - exitpoint in REF_KEYS
-    tools/fix_exitpoint.py              NEW - migrates the committed plan
-    docs/FINDINGS-fgd-2026-08-29.md     NEW - the full reading
-    docs/reference/citadel/citadel.fgd  NEW - the file itself
-    docs/reference/citadel/             retail reference files + README
-    .github/workflows/csdk-fgd-check.yml  NEW - now mainly a shader check
+Additive. Nothing existing is touched. Apply the FGD drop
+(`inbox-20260829c-fgd`) first if it has not gone in yet — this one assumes
+`docs/FINDINGS-fgd-2026-08-29.md` exists but does not depend on it.
 
-`batch16.py` and `tools/preflight.py` were taken from `repo-dump-4`, and both
-round-tripped to a **byte-exact sha1 match against `repo-manifest.md`** before
-being edited, so these are true modifications of the committed files rather
-than reconstructions. Both parse.
+## Why the last three attempts failed, and what changed
 
-## Run this after applying
+89 connections in dl_example, and no attempt has been able to say which
+entity fires which. Nearest-classname-above said `light_omni2` fires
+`OnTrooperKilled`. Brace depth said all 89 are unnested. The third dumped 80
+lines of context around each and nobody has read 89 blocks.
 
-    python3 tools/fix_exitpoint.py
+**The cause was upstream of all three.** `entity-survey.yml` converts the
+fixture with `-oe keyvalues2_noids`, and noids strips element ids. Without
+ids there is nothing linking a connection back to its owner, so both
+inference methods were guessing at a file the format had already stripped the
+answer out of.
 
-`docs/plans/dust2_full.json` is a committed artifact built before the FGD
-arrived, so its four teleport triggers still carry the old key. The tool is
-idempotent, refuses to touch `trigger_catapult` (which uses `target`
-correctly), and verifies every destination resolves before writing. Re-running
-the whole batch chain would also work and is the more honest fix.
+This workflow converts with `-oe keyvalues2`. Ownership becomes a lookup.
 
-## THE BUG THIS CAUGHT
+## How it avoids repeating the mistake
 
-The teleporter's destination keyvalue is **`exitpoint`**, not `target`. We had
-`target` — the Source convention, flagged in the code as a guess. It was
-wrong, and it fails **silently**: no compile error, you walk into the trigger
-and nothing happens. This was going to cost a desktop session.
+Two independent attribution methods — by reference id, and by containment —
+run and are **cross-checked**. Agreement is a finding. Disagreement goes in
+`out/disagreements.md` and neither answer is promoted. `out/structure.md` is
+written before any parsing, so a run that attributes nothing still says why.
 
-It also would have broken the mirror. `twin_of` prefixes every key that names
-another entity, and `exitpoint` was not in that list, so both mirrored
-triggers would have pointed at the original half's destination. Fixed too.
+I tested the parser on a synthetic keyvalues2 sample covering both an inline
+nested connection and one referenced by id from an element_array. It caught a
+real bug in the process: descending two levels to find a classname makes the
+ROOT element look like an entity, at which point it swallows every unnested
+connection in the file — attempt 1's bug wearing a different hat. Descent is
+one level, with a comment saying why widening it is not the fix.
 
-## The other reversal: titan means PATRON
+## What it answers
 
-`npc_boss_tier3` is tool-named "Patron" and described as "Tier3 Bosses/Titans/
-Patrons". `destroyable_building` is tool-named "Base Shrine". So this
-morning's titan = shrine reading had the right entity and the wrong word.
+- **THE LID.** `out/targets.md` resolves every `targetName` to the classname
+  of the entity carrying it. The row whose input is `Kill` names the class of
+  a killable brush outright — the single fact the lid has been blocked on.
+- **DOORS ON GUARDIAN DEATH.** Reports what an `OnBossKilled` drives, and
+  says so plainly if nothing matches.
+- **THE SHRINE → PATRON CHAIN.** If dl_example's shrines carry connections,
+  the input name citadel.fgd does not declare is in them. This is the only
+  known place it can be.
 
-**No code changed for this.** `minimap.py` already labels them Shrine and
-Patron, and `PROXY_SUBS` still correctly points the sub-objectives at the
-shrines. Only comments. But the next handoff should not repeat the claim.
+## A correction worth propagating
 
-## READ THIS BEFORE THE FIRST COMPILE
+`PROBE.md` item 5 says the plan format cannot express a connection. **It can,
+and has for a while** — `batch15.py` has a `wire()` helper and
+`emit-dust2.yml` pins `EXPECT_CONN: 56`, verified through dmxconvert. The lid
+is not blocked on converter work. That paragraph in PROBE.md should go.
 
-The FGD says of `npc_boss_tier3`: *"Make sure to use cover groups for each of
-the boss states, otherwise the game will be unbeatable."* We emit
-`CoverGroupID`, `dying_cover_id` and `vulnerable_cover_id` all **empty**.
-That needs `info_cover_point` groups authored — real work, not a keyvalue.
-It is flagged in the code and belongs at the top of the next handoff.
+## On the night mode
 
-## Confirmed without needing a compile
+`docs/LID-DOORS-LIGHTING.md` covers it. The short version: pre-baking two
+lighting solutions and swapping them is not a thing Source 2 does — baked
+lightmaps are baked once. What can change at runtime is the sun
+(`env_global_light` takes `LightColor`, `SetAngles`, `EnableShadows` and
+`Enable`/`Disable`), the fog (`SetFogColor`, `SetFogStrength`, `SetFarZ`),
+and post-processing. Fog is where most of the effect lives.
 
-- **Jump pads arc, they do not blink.** `trigger_catapult` is a
-  "Bouncepad/Fan Trigger" with `launch_speed` (default 1000, we use 800) and
-  `target` → `info_target_server_only`. One of SHIPPING.md's three
-  first-compile questions, answered off the file.
-- **Probe spellings.** `citadel_trigger_teleport` is the only teleporter
-  candidate that exists; all three sinner candidates are absent. Verdicts
-  recorded per line. `SPELLING_PROBE` was already off.
-- **Lane 0 is legal** on the proxy's sub-objectives, so our zeroes were right,
-  and the four slots are a four-lane artifact — the colour list still has
-  Blue in it, and the FGD declares outputs for slots 1 and 2 only.
+The X-minute revert is free: `delay` is already a field on every connection,
+so one output fires night at delay 0 and day at delay 300.
 
-## Corrections to things we believed
+## NEXT ASK: five more FGD files
 
-- **Sinner is not the vault.** `ENeutralTrooperType` lists 6 "Sinner's
-  Sacrifice" and 12 "Breakable Vault" as different values.
-- **Camp spawn timings are inert** — both keys commented out and annotated
-  "Unused" in the FGD. The tier-to-interval mapping does not matter.
-- **`building_health` and `final` on the shrine are marked "(Broken)".**
-- **`citadel_final_objective_proxy` is marked "Unused. Do not use."** Nothing
-  else in the file is. Emission unchanged, but see the open questions.
+`citadel.fgd` line 7 onwards:
 
-## The four judgement calls, now decided
+    @include "base.fgd"          @include "lights.fgd"
+    @include "lights2.fgd"       @include "markup_volumes.fgd"
+    @include "postprocessing.fgd"  @include "ai_defaultnpc.fgd"
 
-- **Teleport locations** emit `objective 3`, `teamnumber 0`, `lanenum 0`.
-- **Sinners** are their own tier with `ENeutralTrooperType 6`, keeping
-  `neutral_camp_vaults` as the subclass — borrowed, since the FGD names none.
-- **Patron `BossName`** conforms to the enumeration: `boss_rebel_tier2_mid`,
-  and `boss_combine_tier2_mid` on the twin via a new `EXPLICIT_SWAPS` table.
-  The generic rebels↔combine rule matches neither (the FGD uses the singular
-  "rebel") and would have produced `m_boss_rebel_tier2_mid`.
-- **The proxy is dropped.** Read the next section before accepting this one.
+**The entity table we have is incomplete by design.** `logic_relay`,
+`logic_timer` and the `Kill` input itself all live in `base.fgd` — which is
+why `Kill` appears in twelve fixture connections and nowhere in citadel.fgd.
+`postprocessing.fgd` and `lights2.fgd` are the night-mode question.
 
-## THE PROXY REPLACEMENT DOES NOT EXIST — READ THIS
-
-Dropping `citadel_final_objective_proxy` was meant to be paired with wiring
-shrine → patron by entity I/O. That half **cannot be done**: citadel.fgd
-declares **no input on `npc_boss_tier3`** to fire. It has one output,
-`OnBossKilled`, and no `SetVulnerable`, no `Enable`, nothing. All 35 inputs in
-the entire file belong to fog, lighting, scenes, buoyancy, `EnableDisable`,
-the speaking NPC, the sentry, or the lane test.
-
-The shrine's side is fine — nine outputs including `OnDestroyed` and
-`OnBecomeVulnerable`. Only the target is missing, and inventing an input name
-would repeat the exact `target`/`exitpoint` mistake.
-
-**So this plan now has no shrine-to-patron chain. The patron is vulnerable
-from the first second.** That is a deliberate regression, taken over shipping
-a class the FGD marks do-not-use. `EMIT_PROXY = False` in batch16 puts it
-back in one line if you want the compile to tell you whether "Unused" means
-inert.
-
-The way out is dl_example's own connections. The entity survey found **89
-`DmeConnectionData` blocks and could not attribute one of them to an owner**.
-Reading who owns which wire is now the highest-value probe left.
-
-## Counts will move
-
-Dropping the proxy removes two entities (base and twin). `emit-dust2.yml`
-pins `EXPECT_CLASSPROPS: 611`, `EXPECT_PLUGLIST: 611` and
-`EXPECT_ELEMENTS: 87916`. The first two should become 609; the element delta
-I did not try to predict. Let the run report and update from what it says —
-those constants are deliberately not edited here on a guess.
-
-## Also unchanged: `npc_boss_tier1` is absent from this FGD, but dl_example is
-full of them, so that is an FGD gap and not a fault in our plan. This file is
-annotated by hand — its presences are strong evidence, its absences weak.
+They sit in the same folder as citadel.fgd. Since you have the full copy on
+storage: those five, and `base.fgd` first.
