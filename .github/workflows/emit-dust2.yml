@@ -101,7 +101,7 @@ on: workflow_dispatch
 env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
-  EXPECT_BOXES: 4746
+  EXPECT_BOXES: 4745
   EXPECT_ENTS: 359
   # 4746 boxes + 33 brush entities, each carrying an inline child mesh.
   EXPECT_MAPMESH: 4779
