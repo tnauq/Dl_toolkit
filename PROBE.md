@@ -91,9 +91,9 @@ Consequences, in order of size:
    independent support for your sinner = vault camp read, from a direction
    nobody was looking.
 
-Still open after this file: the teleporter, which appears nowhere in it, and
-whether neutral_camp_vaults is really the container that spawns
-neutral_sinners_sacrifice.
+Still open after this file: whether neutral_camp_vaults is really the
+container that spawns neutral_sinners_sacrifice. The teleporter was answered
+separately, by the entity list - see above.
 
 ## CAN CI COMPILE THE MAP? NO - settled 2026-08-29
 
