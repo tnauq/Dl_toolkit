@@ -91254,7 +91254,7 @@
  "entities": [
   {
    "name": "guardian_l3",
-   "classname": "npc_boss_tier1",
+   "classname": "info_super_trooper_spawn",
    "origin": [
     -1753.0,
     4750.0,
@@ -91267,20 +91267,17 @@
    ],
    "properties": {
     "targetname": "",
-    "vscripts": "",
     "teamnumber": "2",
     "lanenum": "3",
-    "BackdoorProtectionTrigger": "",
-    "BossName": "rebels_t1_boss_orange",
-    "subclass_name": "npc_boss_tier1",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": ""
+    "BossName": "boss_rebel_t1_orange",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "0",
+    "CoverGroupID": "0"
    },
    "_batch13": true,
    "connections": [
     {
-     "outputName": "OnBossKilled",
+     "outputName": "OnTrooperKilled",
      "targetType": 7,
      "targetName": "shop_rebels_t1_orange_shop_kill_relay",
      "inputName": "Trigger",
@@ -91293,7 +91290,7 @@
   },
   {
    "name": "m_guardian_l3",
-   "classname": "npc_boss_tier1",
+   "classname": "info_super_trooper_spawn",
    "origin": [
     2673.2,
     7420.1,
@@ -91306,20 +91303,17 @@
    ],
    "properties": {
     "targetname": "",
-    "vscripts": "",
     "teamnumber": "3",
     "lanenum": "3",
-    "BackdoorProtectionTrigger": "",
-    "BossName": "combine_t1_boss_orange",
-    "subclass_name": "alt_npc_boss_tier1",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": ""
+    "BossName": "boss_combine_t1_orange",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "0",
+    "CoverGroupID": "0"
    },
    "_batch13": true,
    "connections": [
     {
-     "outputName": "OnBossKilled",
+     "outputName": "OnTrooperKilled",
      "targetType": 7,
      "targetName": "shop_combine_t1_orange_shop_kill_relay",
      "inputName": "Trigger",
@@ -91332,7 +91326,7 @@
   },
   {
    "name": "guardian_l1",
-   "classname": "npc_boss_tier1",
+   "classname": "info_super_trooper_spawn",
    "origin": [
     425.0,
     4126.0,
@@ -91345,20 +91339,17 @@
    ],
    "properties": {
     "targetname": "",
-    "vscripts": "",
     "teamnumber": "2",
     "lanenum": "1",
-    "BackdoorProtectionTrigger": "",
-    "BossName": "rebels_t1_boss_yellow",
-    "subclass_name": "npc_boss_tier1",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": ""
+    "BossName": "boss_rebel_t1_yellow",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "0",
+    "CoverGroupID": "0"
    },
    "_batch13": true,
    "connections": [
     {
-     "outputName": "OnBossKilled",
+     "outputName": "OnTrooperKilled",
      "targetType": 7,
      "targetName": "shop_rebels_t1_yellow_shop_kill_relay",
      "inputName": "Trigger",
@@ -91371,7 +91362,7 @@
   },
   {
    "name": "m_guardian_l1",
-   "classname": "npc_boss_tier1",
+   "classname": "info_super_trooper_spawn",
    "origin": [
     495.2,
     8044.1,
@@ -91384,20 +91375,17 @@
    ],
    "properties": {
     "targetname": "",
-    "vscripts": "",
     "teamnumber": "3",
     "lanenum": "1",
-    "BackdoorProtectionTrigger": "",
-    "BossName": "combine_t1_boss_yellow",
-    "subclass_name": "alt_npc_boss_tier1",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": ""
+    "BossName": "boss_combine_t1_yellow",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "0",
+    "CoverGroupID": "0"
    },
    "_batch13": true,
    "connections": [
     {
-     "outputName": "OnBossKilled",
+     "outputName": "OnTrooperKilled",
      "targetType": 7,
      "targetName": "shop_combine_t1_yellow_shop_kill_relay",
      "inputName": "Trigger",
@@ -91410,7 +91398,7 @@
   },
   {
    "name": "guardian_l6",
-   "classname": "npc_boss_tier1",
+   "classname": "info_super_trooper_spawn",
    "origin": [
     3467.0,
     4143.0,
@@ -91423,20 +91411,17 @@
    ],
    "properties": {
     "targetname": "",
-    "vscripts": "",
     "teamnumber": "2",
     "lanenum": "6",
-    "BackdoorProtectionTrigger": "",
-    "BossName": "rebels_t1_boss_purple",
-    "subclass_name": "npc_boss_tier1",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": ""
+    "BossName": "boss_rebel_t1_purple",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "0",
+    "CoverGroupID": "0"
    },
    "_batch13": true,
    "connections": [
     {
-     "outputName": "OnBossKilled",
+     "outputName": "OnTrooperKilled",
      "targetType": 7,
      "targetName": "shop_rebels_t1_purple_shop_kill_relay",
      "inputName": "Trigger",
@@ -91449,7 +91434,7 @@
   },
   {
    "name": "m_guardian_l6",
-   "classname": "npc_boss_tier1",
+   "classname": "info_super_trooper_spawn",
    "origin": [
     -2546.8,
     8027.1,
@@ -91462,20 +91447,17 @@
    ],
    "properties": {
     "targetname": "",
-    "vscripts": "",
     "teamnumber": "3",
     "lanenum": "6",
-    "BackdoorProtectionTrigger": "",
-    "BossName": "combine_t1_boss_purple",
-    "subclass_name": "alt_npc_boss_tier1",
-    "CoverGroupID": "",
-    "dying_cover_id": "",
-    "vulnerable_cover_id": ""
+    "BossName": "boss_combine_t1_purple",
+    "SecondaryBoss": "0",
+    "ReinforcementsOnly": "0",
+    "CoverGroupID": "0"
    },
    "_batch13": true,
    "connections": [
     {
-     "outputName": "OnBossKilled",
+     "outputName": "OnTrooperKilled",
      "targetType": 7,
      "targetName": "shop_combine_t1_purple_shop_kill_relay",
      "inputName": "Trigger",
@@ -99569,7 +99551,7 @@
     "vscripts": "",
     "teamnumber": "2",
     "lanenum": "3",
-    "BossName": "rebels_patron",
+    "BossName": "boss_rebel_tier2_mid",
     "subclass_name": "npc_boss_tier3",
     "CoverGroupID": "",
     "dying_cover_id": "",
@@ -99596,7 +99578,7 @@
     "vscripts": "",
     "teamnumber": "3",
     "lanenum": "3",
-    "BossName": "combine_patron",
+    "BossName": "boss_combine_tier2_mid",
     "subclass_name": "npc_boss_tier3",
     "CoverGroupID": "",
     "dying_cover_id": "",
@@ -99828,7 +99810,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -99852,7 +99834,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "m_sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -99877,7 +99859,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -99901,7 +99883,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -99925,7 +99907,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -99949,7 +99931,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -99973,7 +99955,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -99997,7 +99979,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_1_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100020,7 +100002,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -100044,7 +100026,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "m_sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -100069,7 +100051,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100093,7 +100075,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100117,7 +100099,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100141,7 +100123,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100165,7 +100147,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100189,7 +100171,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_2_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100212,7 +100194,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -100236,7 +100218,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "m_sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -100261,7 +100243,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100285,7 +100267,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100309,7 +100291,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100333,7 +100315,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100357,7 +100339,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100381,7 +100363,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_3_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100404,7 +100386,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -100428,7 +100410,7 @@
     "targetname": "",
     "vscripts": "",
     "CampName": "m_sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "subclass_name": "neutral_camp_vaults",
     "InitialSpawnDelayInSeconds": "120",
     "SpawnIntervalInSeconds": "120"
@@ -100453,7 +100435,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100477,7 +100459,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100501,7 +100483,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100525,7 +100507,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100549,7 +100531,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100573,7 +100555,7 @@
     "vscripts": "",
     "teamnumber": "4",
     "CampName": "m_sinner_4_neutrals",
-    "ENeutralTrooperType": "",
+    "ENeutralTrooperType": "6",
     "CoverGroupID": "",
     "HateCrateAttacker": "1"
    },
@@ -100594,7 +100576,7 @@
    ],
    "properties": {
     "targetname": "tele_1_trigger",
-    "target": "tele_2_dest",
+    "exitpoint": "tele_2_dest",
     "StartDisabled": "0"
    },
    "_batch16": true
@@ -100614,7 +100596,7 @@
    ],
    "properties": {
     "targetname": "m_tele_1_trigger",
-    "target": "m_tele_2_dest",
+    "exitpoint": "m_tele_2_dest",
     "StartDisabled": "0"
    },
    "_batch16": true
@@ -100633,7 +100615,10 @@
     0.0
    ],
    "properties": {
-    "targetname": "tele_1_dest"
+    "targetname": "tele_1_dest",
+    "teamnumber": "0",
+    "lanenum": "0",
+    "objective": "3"
    },
    "_batch16": true
   },
@@ -100651,7 +100636,10 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_tele_1_dest"
+    "targetname": "m_tele_1_dest",
+    "teamnumber": "0",
+    "lanenum": "0",
+    "objective": "3"
    },
    "_batch16": true
   },
@@ -100670,7 +100658,7 @@
    ],
    "properties": {
     "targetname": "tele_2_trigger",
-    "target": "tele_1_dest",
+    "exitpoint": "tele_1_dest",
     "StartDisabled": "0"
    },
    "_batch16": true
@@ -100690,7 +100678,7 @@
    ],
    "properties": {
     "targetname": "m_tele_2_trigger",
-    "target": "m_tele_1_dest",
+    "exitpoint": "m_tele_1_dest",
     "StartDisabled": "0"
    },
    "_batch16": true
@@ -100709,7 +100697,10 @@
     0.0
    ],
    "properties": {
-    "targetname": "tele_2_dest"
+    "targetname": "tele_2_dest",
+    "teamnumber": "0",
+    "lanenum": "0",
+    "objective": "3"
    },
    "_batch16": true
   },
@@ -100727,7 +100718,10 @@
     0.0
    ],
    "properties": {
-    "targetname": "m_tele_2_dest"
+    "targetname": "m_tele_2_dest",
+    "teamnumber": "0",
+    "lanenum": "0",
+    "objective": "3"
    },
    "_batch16": true
   }
