@@ -1,83 +1,69 @@
-# Inbox drop — the connection-ownership probe (2026-08-29)
+# Inbox drop — probe fix, base.fgd, postprocessing.fgd (2026-08-29)
 
-    .github/workflows/connection-owner-probe.yml   NEW
-    docs/LID-DOORS-LIGHTING.md                     NEW
+    .github/workflows/connection-owner-probe.yml   REPLACES the broken version
+    docs/reference/citadel/base.fgd                NEW (414 KB)
+    docs/reference/citadel/postprocessing.fgd      NEW
+    docs/NIGHT-MODE.md                             NEW
 
-Additive. Nothing existing is touched. Apply the FGD drop
-(`inbox-20260829c-fgd`) first if it has not gone in yet — this one assumes
-`docs/FINDINGS-fgd-2026-08-29.md` exists but does not depend on it.
+## The probe run found 0 connections. Here is why, and it is fixed
 
-## Why the last three attempts failed, and what changed
+The conversion worked — 51 MB of keyvalues2, exit 0, and `structure.md`
+counted **89 lines mentioning DmeConnectionData**. The parser then reported
+**0 connection elements** and exited green.
 
-89 connections in dl_example, and no attempt has been able to say which
-entity fires which. Nearest-classname-above said `light_omni2` fires
-`OnTrooperKilled`. Brace depth said all 89 are unnested. The third dumped 80
-lines of context around each and nobody has read 89 blocks.
+The cause is visible in `structure.md`'s verbatim dump, which is the one part
+of the run that did its job. Element headers in this file are **quoted**, and
+there are two forms:
 
-**The cause was upstream of all three.** `entity-survey.yml` converts the
-fixture with `-oe keyvalues2_noids`, and noids strips element ids. Without
-ids there is nothing linking a connection back to its owner, so both
-inference methods were guessing at a file the format had already stripped the
-answer out of.
+    "connectionsData" "element_array"
+    [
+        "DmeConnectionData"          <- type alone, inside an array
+        {
 
-This workflow converts with `-oe keyvalues2`. Ownership becomes a lookup.
+    "relayPlugData" "DmePlugList"    <- key + type, under a key
+    {
 
-## How it avoids repeating the mistake
+The parser expected BARE type names, so `"DmeConnectionData"` fell through to
+the array-reference branch and every connection was filed as a reference to
+an id that does not exist. Nothing crashed. It just reported zero.
 
-Two independent attribution methods — by reference id, and by containment —
-run and are **cross-checked**. Agreement is a finding. Disagreement goes in
-`out/disagreements.md` and neither answer is promoted. `out/structure.md` is
-written before any parsing, so a run that attributes nothing still says why.
+A quoted line is a header only if the next non-blank line opens a brace, so
+the fix is a **lookahead**, not a tighter regex — the distinction cannot be
+made from the line alone.
 
-I tested the parser on a synthetic keyvalues2 sample covering both an inline
-nested connection and one referenced by id from an element_array. It caught a
-real bug in the process: descending two levels to find a classname makes the
-ROOT element look like an entity, at which point it swallows every unnested
-connection in the file — attempt 1's bug wearing a different hat. Descent is
-one level, with a comment saying why widening it is not the fix.
+**And a guard.** The run compared nothing against nothing: 89 mentions and 0
+elements were both printed, in different files, and never compared. They are
+compared now, and a mismatch is a hard error. A total parse failure will
+never again look like a clean result.
 
-## What it answers
+I tested the new parser against the exact syntax from your run — nested
+connections inside `connectionsData`, `DmePlugList` under a key,
+`EditGameClassProps` siblings — and it attributes owners and resolves target
+classnames correctly.
 
-- **THE LID.** `out/targets.md` resolves every `targetName` to the classname
-  of the entity carrying it. The row whose input is `Kill` names the class of
-  a killable brush outright — the single fact the lid has been blocked on.
-- **DOORS ON GUARDIAN DEATH.** Reports what an `OnBossKilled` drives, and
-  says so plainly if nothing matches.
-- **THE SHRINE → PATRON CHAIN.** If dl_example's shrines carry connections,
-  the input name citadel.fgd does not declare is in them. This is the only
-  known place it can be.
+Worth noting the connections turn out to be **nested inside their owners**,
+not referenced by id. So the containment method is the one that will answer,
+and the id method will report 0 — that is expected, not a second failure.
+The `keyvalues2` conversion is still what made this legible.
 
-## A correction worth propagating
+## base.fgd answers three things outright
 
-`PROBE.md` item 5 says the plan format cannot express a connection. **It can,
-and has for a while** — `batch15.py` has a `wire()` helper and
-`emit-dust2.yml` pins `EXPECT_CONN: 56`, verified through dmxconvert. The lid
-is not blocked on converter work. That paragraph in PROBE.md should go.
+- **`Kill` is on the `GameEntity` base class.** Every entity answers it.
+  That is why it appears in twelve fixture connections and nowhere in
+  citadel.fgd, and it means the lid mechanism is sound in principle.
+- **`logic_relay` confirmed**: `Trigger`, `Toggle`, `CancelPending` in;
+  `OnSpawn`, `OnTrigger` out. `logic_timer` and `logic_auto` are there too.
+- **`env_fog_controller` has a lerp system** — `SetColorLerpTo`,
+  `SetEndDistLerpTo`, `SetMaxDensityLerpTo`, then `StartFogTransition`. Fog
+  is where the night mode should live, because it is the only part that can
+  transition rather than snap.
 
-## On the night mode
+`postprocessing.fgd` adds `post_processing_volume`, with `master` for an
+unbounded volume and `fadetime` for a smooth swap.
 
-`docs/LID-DOORS-LIGHTING.md` covers it. The short version: pre-baking two
-lighting solutions and swapping them is not a thing Source 2 does — baked
-lightmaps are baked once. What can change at runtime is the sun
-(`env_global_light` takes `LightColor`, `SetAngles`, `EnableShadows` and
-`Enable`/`Disable`), the fog (`SetFogColor`, `SetFogStrength`, `SetFarZ`),
-and post-processing. Fog is where most of the effect lives.
+**`env_sky` has no inputs**, so the sky cannot change at runtime. Night has
+to come from fog, sun and post-processing under a fixed sky. Incidentally it
+confirms `skyname` is the right key, which is what batch16 already emits.
 
-The X-minute revert is free: `delay` is already a field on every connection,
-so one output fires night at delay 0 and day at delay 300.
-
-## NEXT ASK: five more FGD files
-
-`citadel.fgd` line 7 onwards:
-
-    @include "base.fgd"          @include "lights.fgd"
-    @include "lights2.fgd"       @include "markup_volumes.fgd"
-    @include "postprocessing.fgd"  @include "ai_defaultnpc.fgd"
-
-**The entity table we have is incomplete by design.** `logic_relay`,
-`logic_timer` and the `Kill` input itself all live in `base.fgd` — which is
-why `Kill` appears in twelve fixture connections and nowhere in citadel.fgd.
-`postprocessing.fgd` and `lights2.fgd` are the night-mode question.
-
-They sit in the same folder as citadel.fgd. Since you have the full copy on
-storage: those five, and `base.fgd` first.
+See `docs/NIGHT-MODE.md`, which supersedes the lighting half of
+`docs/LID-DOORS-LIGHTING.md`.

@@ -245,18 +245,44 @@ jobs:
                        errors='replace').read().split('\n')
 
           ATTR3 = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s+"(.*?)"\s*,?$')
-          HEAD = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(?:"([^"]*)")?\s*$')
-          REF = re.compile(r'^"([^"]*)"\s*,?$')
+          ATTR2 = re.compile(r'^"([^"]*)"\s+"([^"]*)"\s*,?$')
+          ONE = re.compile(r'^"([^"]*)"\s*,?$')
 
-          # ---- one pass, building a real element tree ---------------------
-          # An element is (type, id, attrs, children, line). Nesting is by
-          # brace. This is the same walk the old probe did, with two
-          # differences: the ids are present now, and element REFERENCES are
-          # collected as well as nested children.
+          # THE FIRST RUN OF THIS PROBE FOUND 0 CONNECTIONS out of 89, and
+          # this is where it went wrong. Element headers in this file are
+          # QUOTED, and there are two forms:
+          #
+          #     "connectionsData" "element_array"
+          #     [
+          #         "DmeConnectionData"          <- type alone, inside an array
+          #         {
+          #             "id" "elementid" "..."
+          #
+          #     "relayPlugData" "DmePlugList"    <- key + type, under a key
+          #     {
+          #
+          # The first version expected BARE type names, so `"DmeConnectionData"`
+          # fell through to the array-reference branch and every connection
+          # was recorded as a reference to a non-existent id. Nothing crashed;
+          # it just reported zero, which is the failure mode this whole
+          # workflow exists to avoid.
+          #
+          # A quoted line is a header only if the next non-blank line opens a
+          # brace, so the lookahead below is what tells a header apart from an
+          # ordinary array string. That distinction cannot be made on the line
+          # alone, which is why the first version could not have got it right
+          # by tightening a regex.
+          nxt = [None] * len(lines)
+          following = None
+          for i in range(len(lines) - 1, -1, -1):
+              nxt[i] = following
+              if lines[i].strip():
+                  following = lines[i].strip()
+
           root = {'type': 'ROOT', 'id': None, 'attrs': {}, 'kids': [],
                   'refs': [], 'line': 0}
           stack = [root]
-          pending = None          # a header seen, waiting for its {
+          pending = None
           by_id = {}
           all_elements = []
 
@@ -265,53 +291,56 @@ jobs:
               if not t:
                   continue
 
-              if t.startswith('}') or t.startswith(']'):
+              if t[0] in '}]':
                   if len(stack) > 1:
                       stack.pop()
                   continue
 
               if t.startswith('{'):
-                  e = pending or {'type': '?', 'id': None, 'line': i + 1}
-                  e.setdefault('attrs', {})
-                  e.setdefault('kids', [])
-                  e.setdefault('refs', [])
+                  e = pending or {'type': '?', 'id': None, 'line': i + 1,
+                                  'attrs': {}, 'kids': [], 'refs': []}
                   stack[-1]['kids'].append(e)
-                  if e.get('id'):
-                      by_id[e['id']] = e
                   all_elements.append(e)
                   stack.append(e)
                   pending = None
                   continue
+
+              opens = (nxt[i] or '').startswith('{')
 
               m = ATTR3.match(t)
               if m:
                   k, ty, v = m.group(1), m.group(2), m.group(3)
                   cur = stack[-1]
                   if ty in ('elementid', 'element_id') and k == 'id':
-                      # THE ID IS AN ATTRIBUTE, not part of the header, in
-                      # every keyvalues2 sample seen. Both shapes are
-                      # accepted because neither has been confirmed for this
-                      # file - see structure.md, which is written first for
-                      # exactly this reason.
                       cur['id'] = v
                       by_id[v] = cur
-                  elif ty == 'element':
+                  elif ty == 'element' and v:
                       cur['refs'].append((k, v))
                   else:
                       cur['attrs'][k] = v
                   continue
 
-              # A bare quoted string inside an element_array is a reference.
-              m = REF.match(t)
-              if m and stack[-1] is not root:
-                  stack[-1]['refs'].append(('(array)', m.group(1)))
+              m = ATTR2.match(t)
+              if m:
+                  k, ty = m.group(1), m.group(2)
+                  if opens:
+                      # "key" "TypeName" {   - a nested typed element
+                      pending = {'type': ty, 'id': None, 'line': i + 1,
+                                 'attrs': {}, 'kids': [], 'refs': [],
+                                 'key': k}
+                  # otherwise it is an empty element attr or an array header;
+                  # neither carries information this probe needs.
                   continue
 
-              m = HEAD.match(t)
+              m = ONE.match(t)
               if m:
-                  pending = {'type': m.group(1), 'id': m.group(2),
-                             'line': i + 1, 'attrs': {}, 'kids': [],
-                             'refs': []}
+                  if opens:
+                      # "TypeName" {   - an element inside an element_array
+                      pending = {'type': m.group(1), 'id': None,
+                                 'line': i + 1, 'attrs': {}, 'kids': [],
+                                 'refs': []}
+                  elif stack[-1] is not root:
+                      stack[-1]['refs'].append(('(array)', m.group(1)))
                   continue
 
           print('parsed %d elements, %d with ids'
@@ -320,6 +349,19 @@ jobs:
           conns = [e for e in all_elements
                    if e['type'] == 'DmeConnectionData']
           print('%d DmeConnectionData elements' % len(conns))
+
+          # THE FIRST RUN REPORTED ZERO AND EXITED GREEN. structure.md said
+          # 89 mentions on the same file, and the two numbers were never
+          # compared, so a total parse failure looked like a clean result.
+          # They are compared now, and a mismatch is fatal.
+          mentions = sum(1 for t in lines if 'DmeConnectionData' in t)
+          if len(conns) < mentions:
+              print('::error::parsed %d connection elements but %d lines '
+                    'mention DmeConnectionData. The element-header syntax '
+                    'has changed again - read out/structure.md and fix the '
+                    'parser rather than trusting anything below.'
+                    % (len(conns), mentions))
+              raise SystemExit(1)
 
           # ---- who is an entity, and what is it called --------------------
           def classname_of(e):
