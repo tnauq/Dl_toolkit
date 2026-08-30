@@ -38,10 +38,46 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FGD_DIR = os.path.join(os.path.dirname(HERE), "docs", "reference", "citadel")
+REPO = os.path.dirname(HERE)
 
 # Order matters only for reporting; the tables are merged.
 FGD_FILES = ["citadel.fgd", "base.fgd", "postprocessing.fgd"]
+
+# WHERE TO LOOK. The first run of this tool found nothing and said so in a
+# way that read like "the plan is fine" rather than "I checked nothing" -
+# the FGDs had simply not been committed yet. So: search several plausible
+# places, take whatever is there, and make an empty table LOUD.
+#
+# FGD_DIR in the environment overrides all of this, which is also how to
+# point it at a working copy without committing anything.
+SEARCH_DIRS = [
+    os.environ.get("FGD_DIR", ""),
+    os.path.join(REPO, "docs", "reference", "citadel"),
+    os.path.join(REPO, "docs", "reference"),
+    os.path.join(REPO, "reference"),
+    REPO,
+]
+
+
+def find_fgds():
+    """Every FGD we can find, wherever it is. Also reports empty-handedness."""
+    found, looked = [], []
+    for d in SEARCH_DIRS:
+        if not d or not os.path.isdir(d):
+            continue
+        looked.append(d)
+        for f in FGD_FILES:
+            p = os.path.join(d, f)
+            if os.path.exists(p) and not any(
+                    os.path.basename(x) == f for x in found):
+                found.append(p)
+    # Anything else ending .fgd, so a file we did not anticipate still counts.
+    for d in looked:
+        for f in sorted(os.listdir(d)):
+            if f.lower().endswith(".fgd") and not any(
+                    os.path.basename(x) == f for x in found):
+                found.append(os.path.join(d, f))
+    return found, looked
 
 CLASS_RE = re.compile(
     r'^@(PointClass|SolidClass|NPCClass|BaseClass|KeyFrameClass|MoveClass|'
@@ -200,10 +236,25 @@ def main():
     path = args[0] if args else "docs/plans/dust2_full.json"
 
     print("tables:")
-    table = load_tables([os.path.join(FGD_DIR, f) for f in FGD_FILES])
+    paths, looked = find_fgds()
+    table = load_tables(paths)
     if not table:
-        print("::error::no FGD tables found under %s" % FGD_DIR)
+        # NOT a pass. Checking nothing and reporting nothing looks identical
+        # to a clean run in a log, and that is how a validator becomes
+        # decoration. Missing tables fail.
+        print("::error::no FGD found, so NOTHING WAS CHECKED. Looked in:")
+        for d in looked:
+            print("    %s" % d)
+        print("  Expected %s." % ", ".join(FGD_FILES))
+        print("  They ship in the inbox drops of 2026-08-29: citadel.fgd in")
+        print("  the -fgd drop, base.fgd and postprocessing.fgd in the")
+        print("  -probefix drop. Apply those, or set FGD_DIR.")
         return 1
+    missing = [f for f in FGD_FILES
+               if not any(os.path.basename(p) == f for p in paths)]
+    if missing:
+        print("  NOT FOUND: %s - classes and keys defined only there will "
+              "warn" % ", ".join(missing))
     print("  %d classes total\n" % len(table))
 
     plan = json.load(open(path))
