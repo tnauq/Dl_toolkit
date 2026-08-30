@@ -1,73 +1,79 @@
-# Inbox drop — thirteen FGDs, and reading the compile log (2026-08-30)
+# Inbox drop — acting on the first real fgd_check run (2026-08-30)
 
-    docs/reference/citadel/*.fgd        15 files - the complete set
-    docs/reference/citadel/README-FGDS.md   what each one carries
-    docs/logs/compile_20260828.md       NEW - the compile attempt, read
+    tools/fgd_check.py    MODIFIED - two parser faults, one noise filter
+    batch16.py            MODIFIED - the teamnumber error
+    batch15.py            MODIFIED - teamnumber off logic_relay
 
-## Why fgd_check still found nothing
+The check earned its keep on the first run against the real plan: 384
+entities, 4 errors, 127 warnings, 20 notes. Triage below. **Two of the four
+findings are real bugs and two were the checker's own fault.**
 
-**The files have to be in the repo, not in your storage.** `fgd_check` reads
-the working tree — it searches `docs/reference/citadel`, `docs/reference`,
-`reference`, the repo root and `$FGD_DIR`, and nothing else. Uploading the
-FGDs to a chat does not put them on the runner. This drop commits all
-thirteen, so applying it is the fix.
+## REAL: teamnumber=0 on the teleport destinations (the 4 errors)
 
-With the full set the table goes from 447 classes to **557**, and the
-`@include` closure of citadel.fgd is now complete - nothing it references is
-missing.
+Mine, from yesterday. The reasoning was right and the value was wrong.
 
-`models_gamedata.fgd` and `lights_base.fgd` both arrived, so the two asks
-from the last drop are closed. Three files report 0 classes
-(`models_gamedata`, `models_base`, `vdata_base`); that is expected, they
-declare anim events and vdata structs rather than map entities. See
-`docs/reference/citadel/README-FGDS.md`.
+Those rooms ARE neutral — but citadel.fgd's `TeamNumber` base enumerates
+only 2 (Rebels/North/Amber), 3 (Combine/South/Sapphire) and 4 (**Neutral**),
+and defaults to 4. There is no 0. I took "0 is None" from the PROXY's
+`sub_objective_lane` fields, which do list 0, and carried it across to a
+different base class where it does not hold.
 
-## The compile log is the real news
+Now 4. `lanenum` 0 stays — `LaneNumber` is a different base and does list 0.
 
-It got further than CI ever has: it found `citadel\maps\dust2.vmap` and
-initialised Embree. But it never compiled anything, and it names why.
+## REAL: 30 relays carried a teamnumber that logic_relay does not have
 
-**The CSDK has no game content.** Ninety-odd `Failed loading resource` lines,
-starting with `materials/error.vmat_c`. That is READ ME FIRST step 3 — the
-`pak01_dir.vpk` export — still not done. The access violation is very
-probably a null resource handle downstream of that, not our map. `exit: 124`
-is a timeout kill, not a compiler code; give the next run a longer one so the
-crash reports itself.
+`logic_relay` derives from Targetname and EnableDisable and declares
+`TriggerOnce` and `FastRetrigger`. No TeamNumber base, no teamnumber key.
 
-**The FGDs must also go into the CSDK.** `gameinfo.gi` line 194 declares the
-fgd path relative to the GAME path, so the compiler wants
-`Reduced_CSDK_12/game/citadel/citadel.fgd`. The repo copies are for
-`fgd_check` and for reading; they are on no search path the compiler uses.
+Harmless in that an undeclared keyvalue is ignored — but it was also doing
+nothing, and the twin swap was dutifully rewriting a value the entity cannot
+represent. If anything ever reads teamnumber off a relay to decide ownership
+it would read the twin's swapped value and be wrong silently. Now gated by a
+`TEAM_KEY_CLASSES` table.
 
-**And there is no entity validation in that log.** No parse errors, no
-unknown classnames — but with `citadel.fgd` unloaded the compiler had no
-table to check against, so it could not have complained. Do not read the
-silence as a clean map. That is precisely the gap `fgd_check` fills.
+I did **not** add `logic_auto` to that table even though it looks similar.
+fgd_check did not warn about it, so guessing would be changing behaviour on
+no evidence.
 
-## One correction to yesterday, in our favour and against a conclusion I made
+## CHECKER'S FAULT: `skyname` on env_sky
 
-**`light_environment` is a real class.** I switched the sun off it on the
-grounds that it appeared in neither citadel.fgd nor base.fgd. It lives in
-`lights_base.fgd`, which is now here. That was an absence argument, and the
-handoff's own trust rule says absences are weak — it was weaker than I
-treated it.
+`base.fgd` line 7217 declares `skyname(resource:material)`. The key regex
+only accepted `[A-Za-z_0-9]+` as a type, so **every resource-typed key was
+invisible** and a correct entity was reported as wrong.
 
-**But the switch was right anyway, and now for a second reason.** Running
-the validator against the complete set with the OLD sun restored:
+That is the worst failure mode a validator has — a false positive sends
+someone to "fix" working code. Fixed, and worth remembering when reading
+future warnings.
 
-    WARN  light_environment: key 'color' not declared on the class or its bases
+## CHECKER'S FAULT: `Input SetTeam (integer)` listed as a legal team value
 
-`light_environment` takes `skycolor`, `skyintensity`, `skytexture`,
-`brightnessscale`, `angulardiameter` and the shadow cascades. It has no
-`color`, no `brightness`, no `castshadows` — three of the five keys the old
-sun emitted were not on the class. So that entity was wrong in its keys as
-well as arguably wrong in its class.
+The input line sits inside the choices block and matched the choice pattern.
+It did not change any verdict but it made the error message nonsense. Input
+and output lines are now skipped.
 
-The primary reason still stands too: `env_global_light` is the only lighting
-entity with runtime inputs (`LightColor`, `SetAngles`, `EnableShadows`,
-`Enable`/`Disable`), and the night mode cannot work without them.
+## NOISE, now filtered: 94 camp-timing warnings
 
-## Nothing further needed from storage
+`InitialSpawnDelayInSeconds` and `SpawnIntervalInSeconds` are commented out
+in citadel.fgd and annotated Unused. We emit them deliberately — they are a
+faithful copy of dl_example's own camps. 94 repetitions of two lines buried
+everything else, so they are now in an `EXPECTED_UNDECLARED` allowlist with
+the reason attached. **Not deleted: entries there are decisions, and the list
+is meant to be read.**
 
-The include closure is complete. If a future compile names an FGD we do not
-have, that is the moment to go back — otherwise the table is done.
+## LEFT ALONE, deliberately
+
+**`citadel_minimap_boundary` is in none of the tables** (2 entities). It came
+from batch13's read of dl_example, so the fixture says it is real and the FGD
+does not mention it. That is the FGD trust rule working exactly as written:
+presences are strong, absences weak, and the fixture outranks the FGD. No
+change — but worth watching for in the next compile log, since the compiler
+now has a table and can complain.
+
+**20 notes are informational** — `LaneSide` annotated Unused on the twelve
+barrack guardians, and `building_health`/`final` marked (Broken) on the four
+shrines. Both already documented in the code. Nothing to do.
+
+## After this the check should be: 0 errors, 3 warnings
+
+The two `citadel_minimap_boundary` lines and nothing else. If more appear,
+they are new.

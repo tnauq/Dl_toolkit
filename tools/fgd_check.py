@@ -83,7 +83,13 @@ CLASS_RE = re.compile(
     r'^@(PointClass|SolidClass|NPCClass|BaseClass|KeyFrameClass|MoveClass|'
     r'FilterClass|PathClass|OverrideClass)\b(.*)$', re.I)
 # `name(type) : "Display" : default : "help"` - default and help optional.
-KEY_RE = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*\(([A-Za-z_0-9]+)\)')
+# The type can carry a colon - resource:material, resource:model,
+# target_destination and so on. The first version stopped at [A-Za-z_0-9]+,
+# so every resource-typed key was invisible and `skyname` on env_sky came
+# back as "not declared" when base.fgd line 7217 declares it plainly. A
+# false positive from a validator is worse than a miss: it sends someone to
+# fix working code.
+KEY_RE = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*\(([A-Za-z_0-9:]+)\)')
 BASE_RE = re.compile(r'\bbase\s*\(([^)]*)\)', re.I)
 NAME_RE = re.compile(r'=\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?::|\[|$)')
 CHOICE_RE = re.compile(r'^\s*"?([^":]+?)"?\s*:\s*"')
@@ -174,8 +180,13 @@ def parse_fgd(path):
                     "line": j + 1,
                 }
             elif cur and keys.get(cur.lower(), {}).get("type") == "choices":
+                # `Input SetTeam (integer) : "..."` sits inside the same
+                # block and matched CHOICE_RE, so it was reported as a legal
+                # value of teamnumber. Harmless to the verdict but it made
+                # the error message nonsense.
                 cm = CHOICE_RE.match(body)
-                if cm and ":" in stripped:
+                if cm and ":" in stripped and not low.startswith(
+                        ("input ", "output ")):
                     keys[cur.lower()]["choices"].add(cm.group(1).strip())
 
             if started and depth <= 0:
@@ -223,6 +234,18 @@ def resolve(table, cname, seen=None):
     keys.update(table[cname]["keys"])
     return keys
 
+
+# KEYS WE EMIT ON PURPOSE THAT THE FGD DOES NOT DECLARE. Each one is a
+# decision recorded elsewhere, not an oversight, and 94 repetitions of the
+# same two lines buries everything else in the report.
+#
+# The camp timings are COMMENTED OUT in citadel.fgd and annotated "Unused".
+# We emit them anyway because they are a faithful copy of what dl_example's
+# own camps carry and they cost nothing - see the note in batch16.make_camp.
+EXPECTED_UNDECLARED = {
+    ("info_neutral_trooper_camp", "initialspawndelayinseconds"),
+    ("info_neutral_trooper_camp", "spawnintervalinseconds"),
+}
 
 # Keys the editor writes on every entity, which are not FGD keyvalues.
 EDITOR_KEYS = {"model", "skin", "bodygroups", "vscripts", "spawnflags",
@@ -278,6 +301,8 @@ def main():
             info = keys.get(k.lower())
             if info is None:
                 if k.lower() in EDITOR_KEYS:
+                    continue
+                if (cn, k.lower()) in EXPECTED_UNDECLARED:
                     continue
                 warns.append("%s (%s): key %r not declared on the class or "
                              "its bases" % (nm, cn, k))

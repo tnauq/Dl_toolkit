@@ -1295,15 +1295,24 @@ def main():
                 # selects. 3 is what the file says the default is, so 3 is
                 # what goes in.
                 #
-                # teamnumber 0 is "None" in the FGD's own TeamNumber list.
-                # These two rooms are neutral map furniture, not base
-                # infrastructure, so neither team owns them; a 2 or 3 here
-                # would be a claim nothing supports. lanenum 0 for the same
-                # reason - the rooms are not on a lane.
+                # TEAMNUMBER 4, NOT 0. Corrected 2026-08-30 by fgd_check,
+                # which is the first thing it caught on the real plan.
+                #
+                # The reasoning was right and the value was wrong. These
+                # rooms ARE neutral - but citadel.fgd's TeamNumber base
+                # enumerates only 2 (Rebels/North/Amber), 3 (Combine/South/
+                # Sapphire) and 4 (NEUTRAL), and defaults to 4. There is no
+                # 0. The "0 is None" reading came from the PROXY's
+                # sub_objective_lane fields, which do list 0 as None, and it
+                # was carried across to a different base class where it does
+                # not hold.
+                #
+                # lanenum 0 stays: LaneNumber is a different base and does
+                # list 0.
                 new += make_point("%s_dest" % name, origin,
                                   TELEPORT_LOCATION_CLASS, {
                                       "targetname": "%s_dest" % name,
-                                      "teamnumber": "0",
+                                      "teamnumber": "4",
                                       "lanenum": "0",
                                       "objective": "3",
                                   })

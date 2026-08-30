@@ -363,9 +363,33 @@ def relay(name, origin, classname, props, conns, team):
         "connections": conns,
         MARK: True,
     }
-    if team:
+    # TEAMNUMBER ONLY WHERE THE CLASS HAS ONE. fgd_check, 2026-08-30: 30
+    # relays carried a teamnumber and logic_relay does not derive from the
+    # TeamNumber base - it has TriggerOnce, FastRetrigger and the
+    # EnableDisable/Targetname bases, and nothing else.
+    #
+    # The key was harmless in the sense that an undeclared keyvalue is
+    # ignored, but it was also doing nothing: the mirrored half's relays were
+    # being "assigned" to a team that the entity cannot represent. If
+    # anything downstream ever reads teamnumber off a relay to decide
+    # ownership, it will read the twin's swapped value and be wrong in a way
+    # nothing reports. Better that the key is simply absent.
+    #
+    # The twin swap at line ~437 still works: it only rewrites teamnumber
+    # where one exists, so relays now fall through it untouched.
+    if team and TEAM_KEY_CLASSES.get(classname, True):
         e["properties"]["teamnumber"] = team
     return e
+
+
+# Classes that do NOT derive from citadel.fgd's TeamNumber base, so must not
+# be given a teamnumber. Checked against the FGD rather than assumed; add to
+# this rather than deleting the assignment, since most citadel entities DO
+# take one.
+# Only logic_relay so far. logic_auto was NOT added: fgd_check did not warn
+# about it, so whatever this emits for logic_auto is either absent or legal,
+# and guessing at a second entry would be changing behaviour on no evidence.
+TEAM_KEY_CLASSES = {"logic_relay": False}
 
 
 def build_network(shop, killer_name):
