@@ -92917,8 +92917,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_orange_shop_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -92949,8 +92948,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_orange_shop_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -92981,8 +92979,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_orange_shop_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93075,8 +93072,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_yellow_shop_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93107,8 +93103,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_yellow_shop_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93139,8 +93134,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_yellow_shop_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93233,8 +93227,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_purple_shop_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93265,8 +93258,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_purple_shop_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93297,8 +93289,7 @@
    ],
    "properties": {
     "targetname": "shop_rebels_t1_purple_shop_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93391,8 +93382,7 @@
    ],
    "properties": {
     "targetname": "base_shop_rebels_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93423,8 +93413,7 @@
    ],
    "properties": {
     "targetname": "base_shop_rebels_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93455,8 +93444,7 @@
    ],
    "properties": {
     "targetname": "base_shop_rebels_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93549,8 +93537,7 @@
    ],
    "properties": {
     "targetname": "secret_shop_rebels_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93581,8 +93568,7 @@
    ],
    "properties": {
     "targetname": "secret_shop_rebels_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93613,8 +93599,7 @@
    ],
    "properties": {
     "targetname": "secret_shop_rebels_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "2"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93707,8 +93692,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_orange_shop_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93739,8 +93723,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_orange_shop_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93771,8 +93754,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_orange_shop_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93865,8 +93847,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_yellow_shop_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93897,8 +93878,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_yellow_shop_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -93929,8 +93909,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_yellow_shop_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94023,8 +94002,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_purple_shop_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94055,8 +94033,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_purple_shop_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94087,8 +94064,7 @@
    ],
    "properties": {
     "targetname": "shop_combine_t1_purple_shop_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94181,8 +94157,7 @@
    ],
    "properties": {
     "targetname": "base_shop_combine_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94213,8 +94188,7 @@
    ],
    "properties": {
     "targetname": "base_shop_combine_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94245,8 +94219,7 @@
    ],
    "properties": {
     "targetname": "base_shop_combine_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94339,8 +94312,7 @@
    ],
    "properties": {
     "targetname": "secret_shop_combine_enable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94371,8 +94343,7 @@
    ],
    "properties": {
     "targetname": "secret_shop_combine_disable_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -94403,8 +94374,7 @@
    ],
    "properties": {
     "targetname": "secret_shop_combine_kill_relay",
-    "StartDisabled": "0",
-    "teamnumber": "3"
+    "StartDisabled": "0"
    },
    "connections": [
     {
@@ -101178,7 +101148,7 @@
    ],
    "properties": {
     "targetname": "tele_1_dest",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "lanenum": "0",
     "objective": "3"
    },
@@ -101199,7 +101169,7 @@
    ],
    "properties": {
     "targetname": "m_tele_1_dest",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "lanenum": "0",
     "objective": "3"
    },
@@ -101260,7 +101230,7 @@
    ],
    "properties": {
     "targetname": "tele_2_dest",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "lanenum": "0",
     "objective": "3"
    },
@@ -101281,7 +101251,7 @@
    ],
    "properties": {
     "targetname": "m_tele_2_dest",
-    "teamnumber": "0",
+    "teamnumber": "4",
     "lanenum": "0",
     "objective": "3"
    },
