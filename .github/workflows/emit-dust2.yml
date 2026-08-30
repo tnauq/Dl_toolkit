@@ -102,11 +102,11 @@ env:
   PLAN: docs/plans/dust2_full.json
   EXPECT_HEADER: 'binary 9 format vmap 40'
   EXPECT_BOXES: 4745
-  EXPECT_ENTS: 359
+  EXPECT_ENTS: 384
   # 4746 boxes + 33 brush entities, each carrying an inline child mesh.
   EXPECT_MAPMESH: 4779
   EXPECT_POLYMESH: 4779
-  EXPECT_ENTITY: 359
+  EXPECT_ENTITY: 384
   EXPECT_PATH: 15
   EXPECT_PATHNODE: 236
   EXPECT_DATAARRAY: 19116      # 4 x 4779
@@ -114,9 +114,9 @@ env:
   EXPECT_SUBDIV: 4779
   # 610 nodes plus the world's own. The spelling probe is off; the four
   # teleporter entities and their four destinations are real now.
-  EXPECT_CLASSPROPS: 611
-  EXPECT_PLUGLIST: 611
-  EXPECT_ELEMENTS: 87916
+  EXPECT_CLASSPROPS: 636
+  EXPECT_PLUGLIST: 636
+  EXPECT_ELEMENTS: 87991
   # ENTITY IO, batch15. Unchanged: nothing since has written a connection,
   # and the midboss lid deliberately does not - see PROBE.md item 5.
   EXPECT_CONN: 56
