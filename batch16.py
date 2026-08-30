@@ -1158,9 +1158,22 @@ def main():
         # correct shape for a three-lane map, which the outputs corroborate:
         # the FGD declares SubObjective1Destroyed/Revitilized and
         # SubObjective2Destroyed/Revitilized and NOTHING for slots 3 and 4.
+        # LANE VALUES ARE A LIVE QUESTION, not a settled one. 0 is legal -
+        # the FGD lists it as "None" - and 0 is what we emit. But dl_example
+        # names its shrines PER LANE (rebels_t3_generator_yellow, _purple:
+        # lanes 1 and 6, the outer pair) and its proxy slots carry real lane
+        # numbers, so Valve never uses the None value here.
+        #
+        # Our two shrines are west and east rather than on a lane, so 0 is
+        # the honest description. But if the game routes sub-objective state
+        # BY lane, 0 means no lane is shielded and the chain does nothing
+        # while resolving perfectly cleanly - the failure mode this project
+        # keeps meeting. Set PROXY_LANES to ["1", "6"] to match the fixture's
+        # outer-lane pairing if a compile or a play test points that way.
+        PROXY_LANES = ["0" for _ in PROXY_SUBS]
         for i, side in enumerate(PROXY_SUBS, start=1):
             proxy["sub_objective_%d" % i] = "%s_%s_shrine" % (TEAM_WORD, side)
-            proxy["sub_objective_lane_%d" % i] = "0"
+            proxy["sub_objective_lane_%d" % i] = PROXY_LANES[i - 1]
         for i in range(len(PROXY_SUBS) + 1, 5):
             proxy["sub_objective_%d" % i] = ""
             proxy["sub_objective_lane_%d" % i] = "0"

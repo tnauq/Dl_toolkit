@@ -306,7 +306,16 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
               g.write(f"conv={conv}\n")
 
-      - name: Binary to keyvalues2_noids text
+      # keyvalues2, NOT keyvalues2_noids, since 2026-08-29. noids strips the
+      # element ids, and without ids an element cannot be linked back to
+      # whatever references it - which is why three separate attempts to
+      # attribute the 89 connections to their owners failed. The flag was
+      # upstream of every one of those failures.
+      #
+      # The text is larger with ids in it (51 MB) and every consumer below
+      # was written against the noids shape, so if a step here starts
+      # reporting differently, this line is the first thing to look at.
+      - name: Binary to keyvalues2 text
         timeout-minutes: 20
         shell: bash
         run: |
@@ -315,7 +324,7 @@ jobs:
           RC=0
           "${{ steps.get.outputs.conv }}" \
             -i "$ROOT/$FIXTURE" -ie binary \
-            -o "$ROOT/work/example.txt" -oe keyvalues2_noids > out/conv.txt 2>&1 || RC=$?
+            -o "$ROOT/work/example.txt" -oe keyvalues2 > out/conv.txt 2>&1 || RC=$?
           cat out/conv.txt
           echo "exit: $RC" | tee -a out/conv.txt
           [ -s work/example.txt ] || { echo "FAIL: no text out"; exit 1; }
@@ -570,7 +579,7 @@ jobs:
               fh.write(s + '\n')
 
           with open('out/entity-survey.md', 'w', encoding='utf-8') as fh:
-              w(fh, '# Entity survey of dl_example.vmap (keyvalues2_noids)')
+              w(fh, '# Entity survey of dl_example.vmap (keyvalues2, with ids)')
               w(fh)
               w(fh, f'elements referenced MORE THAN ONCE (carry an id): {ids}')
               w(fh)

@@ -1,0 +1,40 @@
+# Check the plan against the FGDs the compiler uses.
+#
+# This is the cheapest bug-finder in the project. Almost every fault found on
+# 2026-08-29 was statically detectable against citadel.fgd: `target` for
+# `exitpoint`, `light_environment` as a class that does not exist,
+# `npc_boss_tier1` likewise, and a BossName outside its enumeration. All four
+# emitted cleanly and verified green.
+#
+# It runs in seconds, needs no CSDK, no wine and no shaders - so unlike a
+# compile, it can run on every push. That is the point: we cannot compile
+# yet, and this recovers most of what a compile would have told us.
+name: fgd-check
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/plans/**'
+      - 'batch*.py'
+      - 'tools/fgd_check.py'
+      - 'docs/reference/citadel/*.fgd'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # NOT --strict. A warning here means "not in the tables we hold", and
+      # citadel.fgd @includes six files of which we have two, so an unknown
+      # class may simply live in lights.fgd. Errors are different: an error
+      # is something the tables CONTRADICT, and those fail the run.
+      - name: Check
+        run: python3 tools/fgd_check.py docs/plans/dust2_full.json

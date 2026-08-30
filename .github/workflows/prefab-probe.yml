@@ -1,0 +1,253 @@
+# What class is a killable brush? Follow the prefabs.
+#
+# THE QUESTION. destroyable_building fires OnDestroyed -> Kill twelve times
+# in dl_example, at targets named *_grate_prop, *_grate_brush and
+# *_ladder_brush. The connection probe resolved every other target to a
+# classname and ALL TWELVE OF THESE TO NOTHING.
+#
+# That is not a probe failure. Every unresolved target carries a numeric
+# prefix (125_...) or is a grate/ladder name, and everything that resolved
+# has no prefix. A numeric prefix on an instance's entities is how Source
+# keeps prefab names unique - so these entities are inside PREFAB FILES, not
+# in dl_example.vmap, which is also why the entity survey could never find
+# them in its census.
+#
+# So: find the prefab references in the map, find the files they point at,
+# convert those, and read the classname off the entity that carries the
+# targetname. The lid's brush class stops being a choice and becomes a copy.
+#
+# The lid works either way - base.fgd puts `Kill` on the GameEntity base
+# class, so every entity answers it, and batch18 currently emits func_brush
+# on that basis. This is about matching what the shipped game actually does.
+name: prefab-probe
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: dl_example.vmap
+  RELEASE_TAG: csdk-12
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache the extracted CSDK
+        id: csdk-cache
+        uses: actions/cache@v4
+        with:
+          path: csdk
+          key: csdk-12-v1
+
+      - name: Fetch, reassemble, extract
+        if: steps.csdk-cache.outputs.cache-hit != 'true'
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os, re, json, hashlib, zipfile, sys, subprocess, shutil
+          repo = os.environ['GITHUB_REPOSITORY']
+          tag = os.environ['RELEASE_TAG']
+          rel = json.loads(subprocess.run(
+              ['gh', 'api', f'repos/{repo}/releases/tags/{tag}'],
+              capture_output=True, text=True, check=True).stdout)
+          os.makedirs('dl', exist_ok=True)
+          for a in rel['assets']:
+              with open(os.path.join('dl', a['name']), 'wb') as fh:
+                  subprocess.run(
+                      ['gh', 'api', '-H', 'Accept: application/octet-stream',
+                       f"repos/{repo}/releases/assets/{a['id']}"],
+                      stdout=fh, check=True)
+          files = [f for f in os.listdir('dl') if f.lower().endswith('.zip')]
+          def ordinal(n):
+              m = re.match(r'^bin\.cs2\.(\d+)\.zip$', n)
+              return int(m.group(1)) if m else 1
+          files.sort(key=ordinal)
+          with open('bin_cs2.zip', 'wb') as out:
+              for f in files:
+                  with open(os.path.join('dl', f), 'rb') as p:
+                      for chunk in iter(lambda: p.read(1 << 20), b''):
+                          out.write(chunk)
+          with zipfile.ZipFile('bin_cs2.zip') as z:
+              z.extractall('csdk')
+          ghosts = os.path.join('csdk', '__MACOSX')
+          if os.path.isdir(ghosts):
+              shutil.rmtree(ghosts)
+
+      - name: Locate dmxconvert
+        id: get
+        shell: python
+        run: |
+          import os, sys
+          conv = ''
+          for root, _, fs in os.walk('csdk'):
+              for f in fs:
+                  if f.lower() == 'dmxconvert.exe':
+                      conv = os.path.abspath(os.path.join(root, f))
+          if not conv:
+              print("::error::dmxconvert.exe missing"); sys.exit(1)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write(f"conv={conv}\n")
+
+      - name: Convert the map
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p work out
+          ROOT="$(pwd -W 2>/dev/null || pwd)"
+          "${{ steps.get.outputs.conv }}" -i "$ROOT/$FIXTURE" -ie binary \
+            -o "$ROOT/work/map.txt" -oe keyvalues2 > out/conv.txt 2>&1 || true
+          wc -c work/map.txt
+
+      # STEP 1: what prefabs does the map reference, and what are they called?
+      - name: Find the prefab references
+        id: refs
+        shell: python
+        run: |
+          import re, os, json, collections
+
+          txt = open('work/map.txt', encoding='utf-8',
+                     errors='replace').read()
+
+          # Cast a wide net: any string that looks like a map or prefab path.
+          paths = set(re.findall(
+              r'"([^"\n]*?\.vmap[^"\n]*?)"', txt))
+          paths |= set(re.findall(
+              r'"(maps/[^"\n]+|prefabs?/[^"\n]+)"', txt, re.I))
+
+          # And the classes that carry them, so a human can see the shape.
+          holders = collections.Counter(
+              re.findall(r'"(CMapInstance|CMapPrefab|CMapGroup|'
+                         r'CMapWorldLayer)"', txt))
+
+          # The 125_ style prefix seen on every unresolved target. If the
+          # numbers here match the prefixes there, the link is confirmed.
+          prefixes = collections.Counter(
+              re.findall(r'"(\d+)_[a-z_]+"', txt))
+
+          with open('out/prefab-refs.md', 'w', encoding='utf-8') as fh:
+              fh.write('# Prefab references in %s\n\n' % os.environ['FIXTURE'])
+              fh.write('## Instance-ish elements\n\n')
+              for k, v in holders.most_common():
+                  fh.write('- `%s` x%d\n' % (k, v))
+              fh.write('\n## Paths that look like maps or prefabs (%d)\n\n'
+                       % len(paths))
+              for p in sorted(paths):
+                  fh.write('- `%s`\n' % p)
+              fh.write('\n## Numeric name prefixes (%d distinct)\n\n'
+                       % len(prefixes))
+              fh.write('If 125 appears here, it is the instance whose entities'
+                       ' the connection probe could not resolve.\n\n')
+              for k, v in prefixes.most_common(20):
+                  fh.write('- `%s_` x%d\n' % (k, v))
+
+          print('%d candidate paths, %d prefix groups'
+                % (len(paths), len(prefixes)))
+          json.dump(sorted(paths), open('out/paths.json', 'w'), indent=1)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as g:
+              g.write('count=%d\n' % len(paths))
+
+      # STEP 2: do those files exist anywhere we can reach, and if so, what
+      # is in them? A prefab that ships with the CSDK is readable; one that
+      # lives in the game vpk is not, and this says which.
+      - name: Convert any prefab we can find, and read the brush classes
+        shell: python
+        run: |
+          import os, json, subprocess, re, collections
+
+          paths = json.load(open('out/paths.json'))
+          conv = r"${{ steps.get.outputs.conv }}"
+
+          # Index everything on disk once by basename - the reference is a
+          # game-relative path and the file, if present, will be somewhere
+          # else entirely.
+          index = collections.defaultdict(list)
+          for root in ('csdk', '.'):
+              for dirpath, _, fs in os.walk(root):
+                  for f in fs:
+                      index[f.lower()].append(os.path.join(dirpath, f))
+
+          found, missing = [], []
+          for p in paths:
+              base = os.path.basename(p).lower()
+              hits = index.get(base, [])
+              (found if hits else missing).append((p, hits))
+
+          lines = ['# Prefab files: found and missing', '']
+          lines.append('%d referenced, %d present on disk, %d not.'
+                       % (len(paths), len(found), len(missing)))
+          lines.append('')
+
+          targets = {}
+          for p, hits in found:
+              src = hits[0]
+              dst = os.path.join('work', os.path.basename(p) + '.txt')
+              rc = subprocess.run([conv, '-i', os.path.abspath(src),
+                                   '-ie', 'binary', '-o', os.path.abspath(dst),
+                                   '-oe', 'keyvalues2'],
+                                  capture_output=True, text=True).returncode
+              lines.append('- `%s` -> `%s` (convert rc=%d)' % (p, src, rc))
+              if rc != 0 or not os.path.exists(dst):
+                  continue
+
+              # THE PAYLOAD: targetname -> classname inside the prefab.
+              t = open(dst, encoding='utf-8', errors='replace').read()
+              for m in re.finditer(
+                      r'"classname"\s+"string"\s+"([^"]+)"', t):
+                  pass
+              blocks = re.split(r'"CMapEntity"', t)
+              for b in blocks:
+                  cn = re.search(r'"classname"\s+"string"\s+"([^"]+)"', b)
+                  tn = re.search(r'"targetname"\s+"string"\s+"([^"]+)"', b)
+                  if cn and tn:
+                      targets.setdefault(tn.group(1), set()).add(cn.group(1))
+
+          if missing:
+              lines.append('')
+              lines.append('## Not on disk - these live in the game vpk')
+              for p, _ in missing:
+                  lines.append('- `%s`' % p)
+
+          lines.append('')
+          lines.append('## Named entities inside the prefabs (%d)'
+                       % len(targets))
+          lines.append('')
+          lines.append('**THE LID ANSWER**: find a grate or ladder row.')
+          lines.append('')
+          lines.append('| targetname | classname |')
+          lines.append('|---|---|')
+          for t in sorted(targets):
+              lines.append('| `%s` | %s |'
+                           % (t, ', '.join('`%s`' % c
+                                           for c in sorted(targets[t]))))
+
+          open('out/prefab-entities.md', 'w',
+               encoding='utf-8').write('\n'.join(lines) + '\n')
+
+          hits = [t for t in targets
+                  if 'grate' in t or 'ladder' in t]
+          print('=== grate / ladder entities ===')
+          if hits:
+              for t in sorted(hits):
+                  print('  %-34s %s' % (t, ', '.join(sorted(targets[t]))))
+              print('::notice::the lid class is above - copy it into '
+                    'batch18 LID_CLASS')
+          else:
+              print('  none found.')
+              print('::warning::no grate or ladder entity in any reachable '
+                    'prefab. If the paths are all listed as not on disk, '
+                    'they are in the game vpk and this cannot be answered '
+                    'without the depot pull. func_brush stands as the '
+                    'reasoned choice.')
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prefab-probe
+          path: out/
