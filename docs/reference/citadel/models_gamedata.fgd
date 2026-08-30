@@ -1,0 +1,150 @@
+//===================== Copyright (c) Valve Corporation. All Rights Reserved. ======================
+// Defines ModelDoc gamedata for Citadel (CSDK12 Rel)
+//==================================================================================================
+
+@include "models_base.fgd"
+@include "models_base_breakables.fgd"
+
+@ModelAnimEvent = AE_TAGGED_SOUND
+[
+	name(vdata_choice:scripts/tagged_sounds/abrams_anim_sounds.vdata) : "Event Name" : "" : "Animation will play the defined sound event. List of events is in scripts/tagged_souds/_anim_sounds.vdata"
+	attachment(model_attachment) : "Attachment" : ""
+]
+
+
+@ModelGameData = camera_settings : "Citadel camera settings (Legacy)"
+[
+    camera_side_offset(float) : "Side offset" : ""
+    camera_back_offset(float) : "Back offset" : ""
+    camera_back_offset_aiming(float) : "Back offset for aiming" : ""
+    camera_height_standing(float) : "Height standing" : ""
+    camera_height_crouching(float) : "Height crouching" : ""
+]
+
+@ModelGameData = particle_settings : "Citadel particle settings (Legacy)"
+[
+    scale(float) : "Scale" : ""
+]
+
+@ModelGameData game_data_list(muzzle_desc_list) = muzzle_settings : "Muzzle settings (Legacy)"
+[
+    attachment_name(model_attachment) : ""    
+    animgraph_trigger_parameter_name(choices): "": "" =
+    [
+        "none"                :"None"
+        "b_Shoot"            :"b_Shoot"
+        "b_ShootLeft"        :"b_ShootLeft"
+        "b_ShootRight"        :"b_ShootRight"
+    ]
+    primary(bool): ""
+]
+
+@ModelGameData game_data_list(unit_status_settings_list) = unit_status_settings : "unit status settings (Legacy)"
+[
+name(string) : "name" : ""
+unit_status_offset(vector) : "unit status offset" : ""
+]
+
+@ModelGameData game_data_list(team_relative_particles_cfg_list) = team_relative_particle_settings : "team relative particles (Legacy)"
+[
+friendly_name(resource:vpcf) : "Friendly Particle" : ""
+enemy_name(resource:vpcf) : "Enemy Particle" : ""
+config(string) : "name" : ""
+]
+
+@ModelGameData = damage_number_settings : "Citadel damage settings (Legacy)"
+[
+    side_offset_near(float) : "Side offset near" : ""
+    side_offset_far(float) : "Side offset far" : ""
+    height_offset_near(float) : "Height offset near" : ""
+    height_offset_far(float) : "Height offset far" : ""
+]
+
+@ModelGameData = CCitadelHeroModelGameData_t : "CCitadelHeroModelGameData_t"
+[
+ //m_sAG2HeroPawnAnimGraph(resource_name:vnmgraph) : "AG2 Hero graph" : ""
+ m_bUseAG2HeroGraph(bool) : "Use AG2 Hero Graph" : "1"
+ m_bUseAG2UIGraph(bool) : "Use AG2 UI Graph" : "1"
+]
+
+/* @ModelGameData = CitadelUnitStatusSettings_t : "CitadelUnitStatusSettings_t"
+[
+ m_vStatusEffectsOffset(vector) : "Status Effect Offset" : ""
+] */
+
+@ModelGameData = DeformablePropModelGameData_t : "Deformable Prop Data"
+[
+  m_strDetailMeshName(string) : "Detail Mesh name" : ""
+  m_strPhysicsMeshName(string) : "Physics mesh name" : ""
+  m_strNavMeshName(string) : "Nav mesh name" : ""
+]
+
+@ModelGameData = fire_interactions
+[	
+	flammable(choices) : "Flammable" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+	explosive_resist(choices) : "Explosive Resist" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+	ignite(choices) : "Ignition Criteria" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"halfhealth"	:	"At Half Health"
+	]
+	melee_immune(choices) : "Melee Immune" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+    turn_to_ash(choices) : "Turn to Ash" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+    
+    flashpoint(float) : "Flashpoint" : ""
+    heat_delay(float) : "Heat Delay" : ""
+    burn_forever(choices) : "Burn Forever" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+    starts_fires_in_bounding_box(choices) : "Starts fires in bounding box" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+    leak_liquid(choices) : "Leak liquid" : "" : "" =
+	[
+		"oil"				:	"Leak Oil"
+		"water"	:	"Leak Water"
+	]
+]
+
+@ModelGameData = electrical_interactions
+[	
+	can_electrify(choices) : "Can Electrify?" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+	destroy_on_expire(choices) : "Destroy on Expire" : "" : "" =
+	[
+		""				:	"Default (No)"
+		"yes"			:	"Yes"
+	]
+]
+
+@ModelGameData = world_interactions
+[
+    onworldimpact(choices) : "World Impact" : "" : "Behavior when impacting the world" =
+	[
+		""				:	"Default"
+		"bloodsplat"	:	"Blood decal"
+	]
+]
