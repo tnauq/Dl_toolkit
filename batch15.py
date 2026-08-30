@@ -527,7 +527,14 @@ def main(path):
                 wire(out_name, target, in_name))
             print("  %s %s -> %s %s" % (shrine, out_name, in_name, target))
     else:
-        print("\nshrine upgrades: none. No shrines in the plan yet; see")
+        # NOT a missing feature, and the old wording read like one. batch15
+        # runs BEFORE batch16 in the script order, and batch16 is what
+        # creates the shrines - so at this point in the run there are none
+        # to upgrade, and there will be four by the time the run ends.
+        print("\nshrine upgrades: none. batch16 has not run yet, so no")
+        print("  shrines exist at this point - it creates four. To wire")
+        print("  them, this has to move after batch16 or batch16 has to")
+        print("  do it. See")
         print("  SHRINE_UPGRADES in this file for the shape they will take.")
 
     # Mirror everything added, and the twins of the entities we attached to

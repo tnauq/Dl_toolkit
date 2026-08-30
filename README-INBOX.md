@@ -1,59 +1,64 @@
-# Inbox drop — prefab-probe run 2 (2026-08-30)
+# Inbox drop — SHIPPING correction, cleanups, handoff (2026-08-30)
 
-    .github/workflows/prefab-probe.yml   MODIFIED
+    SHIPPING.md              MODIFIED - the shader claim was false
+    HANDOFF_20260831.md      NEW
+    tools/fgd_check.py       MODIFIED - stale-plan note
+    batch15.py               MODIFIED - one misleading log line
 
-## Run 1 answered the structural question, in the negative
+`SHIPPING.md` and `batch15.py` were sha1-verified against the manifest before
+editing. Both parse / render.
 
-    Paths that look like maps or prefabs (0)
-    CMapInstance x2, CMapGroup x2
-    125_ x22   2399_ x4   1456_ x3   2150_ x2
+## The correction that matters
 
-**Zero external prefab paths.** So the instances are EMBEDDED, not file
-references — there is no second file to fetch, and nothing is hiding in the
-game vpk. The grate and ladder entities have been inside `dl_example.vmap`
-the whole time.
+SHIPPING.md's central claim — the Reduced CSDK ships no shaders, so a
+DepotDownloader pull is required — **is false**, and it has shaped the desktop
+plan for weeks. The `.vcs` files are there, inside VPKs that were never
+unpacked.
 
-**And the prefix theory is confirmed outright.** Four instances, four numeric
-prefixes, `125_` twenty-two times. A connection says
-`125_rebels_titan_yellow`; the entity inside the instance is named
-`rebels_titan_yellow`, with the prefix stamped on at instance time. Matching
-a decorated name against an undecorated one fails every time — that is the
-entire reason twelve targets came back unresolved, and it was never a missing
-file.
+The old text is kept below the correction rather than deleted, because the
+depot commands are still the fallback and because the reasoning is worth
+seeing next to what was wrong with it.
 
-That also retires the worry in the last handoff that the lid's class could
-only come from the depot pull. It cannot be far away.
+Two things added to the compile section while I was there: **copy the FGDs
+into `Reduced_CSDK_12/game/citadel/`** (the last compile found neither, so it
+had no entity table and could not have reported a bad classname), and **raise
+the timeout** (`exit: 124` was a kill, not a compiler code).
 
-## What run 2 does instead
+## The stale-plan note
 
-The file-fetching steps are kept but demoted; the new step does a **full
-targetname census** — every `CMapEntity` in the file, by targetname and
-classname, matched crudely by regex rather than by tree walk, because pairs
-are all this needs. Plus:
+Not a failure — a printed note when `docs/plans/dust2_full.json` is older
+than any `batch*.py`. That exact confusion cost real time earlier today: a
+fix was pushed, the check ran, and it reported the same four errors, because
+the plan is a committed artifact and editing a script does not regenerate it.
 
-- `out/census.md` — every targetname in the file, with the grate/ladder/lid
-  rows pulled to the top. **That table is the lid answer.**
-- `out/instances.md` — the two `CMapInstance` elements verbatim, since what
-  an embedded instance points at is the one thing run 1 could not show.
+Tested both ways: silent when the plan is current, and it names the offending
+scripts when it is not.
 
-## If the census comes back empty
+## batch15's shrine line
 
-The step says so explicitly rather than shrugging. An empty grate/ladder
-table would mean those names are not entity targetnames at all — they would
-be group names, mesh names, or instance-local names the text form does not
-carry — and `out/instances.md` becomes the thing to read. That is a real
-possible outcome and it is worth knowing which of the two it is.
+It printed *"shrine upgrades: none. No shrines in the plan yet"* on a map with
+four. batch15 runs before batch16, which creates them. Now says so, and says
+what would have to change to wire them.
 
-`func_brush` stands either way: `base.fgd` puts `Kill` on the `GameEntity`
-base, so the mechanism works regardless of what Valve chose.
+## The handoff
 
-## Unrelated, from the batch log
+`HANDOFF_20260831.md`. The two things I would make sure survive into the next
+session:
 
-The run is consistent: boxes 4745, entities 384, connections 56, and batch16
-reports `final_objective_proxy EMITTED`. The earlier `emit.txt` showing
-4746/391 was from a stale run — the numbers in this one are the ones to pin.
+**dl_example is a template map** — 58 targetnames, none containing grate or
+ladder, and names like `shop_Sapphire_t1_lanecolor_shop_kill_relay`. Its
+connections are pre-wired to names a mapper is expected to create. That closes
+the lid question: `func_brush` is the answer, not a placeholder, because the
+example declines to specify one.
 
-One line in batch15 is now misleading: *"shrine upgrades: none. No shrines in
-the plan yet."* There are four shrines; batch15 simply runs before batch16
-creates them. Harmless, but it reads like a missing feature. Worth a comment
-fix in the next cleanup pass rather than a drop of its own.
+**Four faults this session shared one shape** — a conclusion from a plausible
+premise nobody verified: `target` for `exitpoint`, `npc_boss_tier1`,
+`light_environment`, the shaders. The handoff records the pattern, not just
+the fixes.
+
+## Not done, still on the list
+
+`csdk-fgd-check` is obsolete — it reports confidently about a partial release
+excerpt and its FGD question is closed. `one_file_please.md` and
+`zip_citadel_folder.md` still send people hunting for a file that is not on a
+retail disk. All three are prose-or-delete decisions I would rather you make.

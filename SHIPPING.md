@@ -6,7 +6,44 @@ has been done by anyone on this project, because none of it can be done from
 a phone. It is written down so whoever has a desktop does not have to find it
 again.
 
-## Why CI could not do this
+## CORRECTION, 2026-08-30: the shaders were there all along
+
+**The section below was wrong on its central claim, and it cost weeks.** Read
+this first.
+
+The reasoning was: the Reduced CSDK ships "without full game files", so it has
+no shaders, so `No valid vcs file found for shader complex.vfx` is a missing
+dependency, so a DepotDownloader pull is required. Every step of that follows
+from the one before it. The first step was never checked.
+
+It is false. **The Reduced CSDK contains plenty of `.vcs` files.** They are
+inside VPKs that had not been unpacked, so the compiler — which resolves
+loose files on a search path, not archive members — could not see them.
+
+The 2026-08-28 compile log agrees in hindsight. Roughly ninety
+`Failed loading resource` lines for `materials/dev/*` and `materials/tools/*`
+sit alongside the missing shader, and I read those as two problems. They are
+one: everything is still packed.
+
+**So the depot pull in step 2 below is probably NOT required.** What is
+required is finishing the export, which is steps 3 to 5 — and note step 4
+deletes the VPKs deliberately, because with both the archive and the loose
+files present the engine can resolve to either.
+
+The order to try: do 3, 4 and 5 against the VPKs already present. Only if
+something is genuinely absent after that does step 2 become necessary.
+
+### The reasoning error, recorded because it will recur
+
+"Not shipped with full game files" is a claim about game content. Shaders
+were assumed to be game content. Nobody looked. The same shape has now caught
+this project four times — `target` for `exitpoint`, `npc_boss_tier1`,
+`light_environment`, and this — and the tell each time was a conclusion drawn
+from a plausible premise that nothing had verified.
+
+The old section, kept because the depot commands are still the fallback:
+
+## Why CI could not do this (SUPERSEDED — see above)
 
 Your repo's `csdk-12` release is the **Reduced** CSDK 12 — the community docs
 say plainly it is "a stripped down version of the full CSDK 12 (without full
@@ -37,7 +74,20 @@ The documented procedure, which needs Deadlock owned on Steam:
 5. Re-extract the Reduced CSDK zip over the top, replacing files. The docs
    call this a necessary step.
 
-THE SHADERS ARRIVE AT STEP 3. That is the thing CI cannot have.
+THE SHADERS ARRIVE AT STEP 3 — and step 3 is an unpack, not a download. See
+the correction at the top: they are already on disk, inside the VPKs. Step 2
+is the fallback, not the prerequisite.
+
+ALSO COPY THE FGDs IN. `gameinfo.gi` line 194 declares `"fgd" "citadel.fgd"`
+relative to the GAME path, so `citadel.fgd` and `models_gamedata.fgd` belong
+at `Reduced_CSDK_12/game/citadel/`. Both are committed under
+`docs/reference/citadel/`. The 2026-08-28 compile could not find either, and
+without them the compiler has no entity table — so it cannot report a bad
+classname even when there is one, and a silent log is not a clean map.
+
+AND RAISE THE TIMEOUT. That run ended in `exit: 124`, which is a timeout kill
+rather than a compiler code, after an access violation. The crash is the
+payload; do not let the wrapper kill it first.
 
 ## Compiling
 

@@ -283,6 +283,31 @@ def main():
     plan = json.load(open(path))
     ents = plan.get("entities", [])
 
+    # IS THIS PLAN OLDER THAN THE CODE THAT MAKES IT? On 2026-08-30 a fix to
+    # batch15 and batch16 was pushed, this ran, and it reported the same four
+    # errors as before - because the plan is a COMMITTED ARTIFACT and editing
+    # a batch script does not change it. The report was correct and the
+    # reading of it was not.
+    #
+    # This does not fail the run: a stale plan is a sequencing matter, not a
+    # fault in the map. It just says so, so nobody spends ten minutes
+    # wondering why a fix did not take.
+    try:
+        plan_age = os.path.getmtime(path)
+        newer = [f for f in sorted(os.listdir(REPO))
+                 if f.startswith("batch") and f.endswith(".py")
+                 and os.path.getmtime(os.path.join(REPO, f)) > plan_age]
+        if newer:
+            print("NOTE: %s is older than %s."
+                  % (os.path.basename(path), ", ".join(newer)))
+            print("  Run the batch workflow before trusting this report - "
+                  "the plan is a committed")
+            print("  artifact and editing a batch script does not "
+                  "regenerate it.")
+            print()
+    except OSError:
+        pass
+
     errors, warns, notes = [], [], []
     seen_class = {}
 
